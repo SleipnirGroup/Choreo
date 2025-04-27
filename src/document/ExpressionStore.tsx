@@ -191,7 +191,8 @@ type Evaluator = (arg: MathNode) => Evaluated;
 export const ExpressionStore = types
   .model("ExpressionStore", {
     expr: types.frozen<MathNode>(),
-    dimension: types.frozen<DimensionName>()
+    dimension: types.frozen<DimensionName>(),
+    uuid: types.identifier
   })
   .volatile((self) => ({
     tempDisableRecalc: false,
@@ -626,7 +627,8 @@ export const Variables = types
         if (dimension === "Number") {
           store = ExpressionStore.create({
             expr: new ConstantNode(expr),
-            dimension
+            dimension,
+            uuid: crypto.randomUUID()
           });
         } else {
           store = ExpressionStore.create({
@@ -634,21 +636,24 @@ export const Variables = types
               new math.ConstantNode(expr),
               Dimensions[dimension]?.unit.toString()
             ),
-            dimension
+            dimension,
+            uuid: crypto.randomUUID()
           });
         }
       } else if (isExpr(expr)) {
         // deserialize Expr
         store = ExpressionStore.create({
           expr: math.parse(expr.exp),
-          dimension
+          dimension,
+          uuid: crypto.randomUUID()
         });
         store.deserialize(expr);
       } else {
         // handle string exprs
         store = ExpressionStore.create({
           expr: math.parse(expr),
-          dimension
+          dimension,
+          uuid: crypto.randomUUID()
         });
       }
 

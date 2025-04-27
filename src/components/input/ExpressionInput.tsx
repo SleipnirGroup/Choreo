@@ -4,9 +4,9 @@ import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
-import { IReactionDisposer, reaction } from "mobx";
+import { IReactionDisposer, makeObservable, observable, reaction } from "mobx";
 
-type Props = {
+export type ExpressionInputProps = {
   /** The text to show before the number */
   title: string | (() => React.ReactNode);
   /** Whether the input should be editable, or else italic and grayed out */
@@ -28,20 +28,21 @@ type State = {
   matchesProp: boolean;
   resetCounter: number;
 };
-
-class Input extends Component<Props, State> {
+class Input extends Component<ExpressionInputProps, State> {
   inputElemRef: React.RefObject<HTMLInputElement>;
   unsubscriber: IReactionDisposer | undefined;
-  constructor(props: Props) {
+  number: IExpressionStore;
+  constructor(props: ExpressionInputProps) {
     super(props);
+    this.number = this.props.number;
+    console.log("Creating new input for ", this.number.uuid);
     this.state = {
       matchesProp: true,
-      editedValue: this.props.number.expr.toString(),
-      resetCounter: 0
+      editedValue: this.number.expr.toString(),
+      resetCounter: 0 
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
-
   // Increment the reset counter state to trigger a re-render that fully recreates the input.
   // This clears the input's own undo history.
   // Should be used when submitting a new value.
@@ -53,7 +54,7 @@ class Input extends Component<Props, State> {
 
   // Return the string of the expression prop.
   getExprStr(): string {
-    return this.props.number.expr.toString();
+    return this.number.expr.toString();
   }
 
   // If the internal state is marked as matching the prop, use the prop's validity
@@ -61,12 +62,12 @@ class Input extends Component<Props, State> {
   getValid(): boolean {
     try {
       if (!this.state.matchesProp) {
-        const newNode = this.props.number.validate(
+        const newNode = this.number.validate(
           math.parse(this.state.editedValue)
         );
         return newNode !== undefined;
       } else {
-        return this.props.number.valid;
+        return this.number.valid;
       }
     } catch {
       return false;
@@ -103,7 +104,8 @@ class Input extends Component<Props, State> {
     this.unsubscriber?.();
   }
   render() {
-    if (!isAlive(this.props.number)) {
+    console.log(this.number.expr.toString(), this.getExprStr())
+    if (!isAlive(this.number)) {
       return <></>;
     }
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
@@ -147,14 +149,14 @@ class Input extends Component<Props, State> {
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
           onBlur={(_e) => {
-            const newNode = this.props.number.validate(
+            const newNode = this.number.validate(
               math.parse(this.state.editedValue)
             );
             if (
               newNode !== undefined &&
-              !newNode.equals(this.props.number.expr)
+              !newNode.equals(this.number.expr)
             ) {
-              this.props.number.set(newNode);
+              this.number.set(newNode);
             } else {
               this.revert();
             }
@@ -179,5 +181,12 @@ class Input extends Component<Props, State> {
       </>
     );
   }
+
+
 }
-export default observer(Input);
+const ObservedInput = observer(Input);
+// Recreate the input element entirely when the store changes.
+function ExpressionInput(props:ExpressionInputProps) {
+  return <ObservedInput {...props} key={props.number.uuid}></ObservedInput>;
+}
+export default ExpressionInput;
