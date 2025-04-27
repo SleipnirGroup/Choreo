@@ -1,7 +1,7 @@
 import { Add, ArrowDropDown, ArrowDropUp, Delete } from "@mui/icons-material";
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { doc } from "../../../document/DocumentManager";
 import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
@@ -10,8 +10,8 @@ import VariableRenamingInput from "./VariableRenamingInput";
 type PoseVariablePanelProps = {
   entry: [string, IExprPose];
   setName: (name: string) => void;
-  actionButton: () => JSX.Element;
-  logo: () => JSX.Element;
+  actionButton: () => React.JSX.Element;
+  logo: () => React.JSX.Element;
   validateName: (name: string) => boolean;
 };
 
@@ -122,7 +122,7 @@ const OpenablePoseVariablePanel = observer(
   }
 );
 export type AddPoseVariablePanelProps = {
-  logo: () => JSX.Element;
+  logo: () => React.JSX.Element;
   name: string;
   setName: (name: string) => void;
   pose: IExprPose;

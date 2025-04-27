@@ -51,8 +51,8 @@ class FieldOverlayRoot extends Component<Props, State> {
   };
   canvasHeightMeters!: number;
   canvasWidthMeters!: number;
-  svgRef: React.RefObject<SVGSVGElement>;
-  frameRef: React.RefObject<SVGGElement>;
+  svgRef: React.RefObject<SVGSVGElement | null>;
+  frameRef: React.RefObject<SVGGElement | null>;
   constructor(props: Props) {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();

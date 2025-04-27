@@ -1,3 +1,4 @@
+import React from "react";
 import {
   KeyboardArrowRight,
   KeyboardDoubleArrowRight,
@@ -100,7 +101,7 @@ export type Dimension<T> = {
   type: T;
   name: string;
   unit?: Unit;
-  icon: () => JSX.Element;
+  icon: () => React.JSX.Element;
 };
 export const Dimensions = {
   Number: {
