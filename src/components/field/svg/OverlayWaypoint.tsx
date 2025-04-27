@@ -44,31 +44,33 @@ class OverlayWaypoint extends Component<Props, State> {
       robotConfig,
       strokeColor,
       strokeWidthPx,
-      dashed
+      dashed,
+      index
     }: {
       robotConfig: IRobotConfigStore;
       strokeColor: string;
       strokeWidthPx: number;
       dashed: boolean;
+      index: number;
     }) => (
       <g>
         <defs>
           <path
-            id={this.appendIndexID("bumpers")}
+            id={this.appendIndexID("bumpers", index)}
             d={
               dashed
                 ? robotConfig.dashedBumperSVGElement()
                 : robotConfig.bumperSVGElement()
             }
           ></path>
-          <clipPath id={this.appendIndexID("clip")}>
-            <use xlinkHref={`#${this.appendIndexID("bumpers")}`} />
+          <clipPath id={this.appendIndexID("clip", index)}>
+            <use xlinkHref={`#${this.appendIndexID("bumpers", index)}`} />
           </clipPath>
         </defs>
 
         <use
-          xlinkHref={`#${this.appendIndexID("bumpers")}`}
-          clipPath={`url(#${this.appendIndexID("clip")})`}
+          xlinkHref={`#${this.appendIndexID("bumpers", index)}`}
+          clipPath={`url(#${this.appendIndexID("clip", index)})`}
           stroke={strokeColor}
           strokeWidth={strokeWidthPx * uiState.fieldScalingFactor}
           strokeLinecap="square"
@@ -166,8 +168,8 @@ class OverlayWaypoint extends Component<Props, State> {
     }
   }
 
-  appendIndexID(id: string): string {
-    return `${id}${this.props.index}`;
+  appendIndexID(id: string, index: number): string {
+    return `${id}${index}`;
   }
 
   getBoxColor() {
@@ -208,7 +210,7 @@ class OverlayWaypoint extends Component<Props, State> {
           transform={`translate(${waypoint.x.value}, ${waypoint.y.value}) rotate(${
             (waypoint.heading.value * 180) / Math.PI
           })`}
-          id={this.appendIndexID("waypointGroup")}
+          id={this.appendIndexID("waypointGroup", this.props.index)}
         >
           {this.props.waypoint.type === 0 && (
             <this.BumperBox
@@ -216,13 +218,14 @@ class OverlayWaypoint extends Component<Props, State> {
               strokeColor={boxColorStr}
               strokeWidthPx={6}
               dashed={this.props.waypoint.type !== 0}
+              index={this.props.index}
             ></this.BumperBox>
           )}
 
           {/* Heading drag point */}
           <polygon
             transform={`translate(${robotConfig.bumper.length / 2},0)`}
-            id={this.appendIndexID("rotateTarget")}
+            id={this.appendIndexID("rotateTarget", this.props.index)}
             fill={boxColorStr}
             strokeWidth={outlineWidth}
             stroke="black"
@@ -254,7 +257,7 @@ class OverlayWaypoint extends Component<Props, State> {
                         robotConfig.bumper.length
                       )
                     }
-                    id={this.appendIndexID("dragTarget")}
+                    id={this.appendIndexID("dragTarget", this.props.index)}
                     fill={
                       type == 2 || type == 3
                         ? "transparent"
@@ -295,7 +298,7 @@ class OverlayWaypoint extends Component<Props, State> {
                       onClick={() => this.selectWaypoint()}
                     ></circle>
                     <path
-                      id={this.appendIndexID("dragTarget")}
+                      id={this.appendIndexID("dragTarget", this.props.index)}
                       fill={this.getDragTargetColor()}
                       transform={`matrix(${sx}, 0, 0, ${sy}, ${cx - sx * cx}, ${
                         cy - sy * cy
