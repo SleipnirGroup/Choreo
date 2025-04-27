@@ -4,7 +4,7 @@ import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
-import { IReactionDisposer, makeObservable, observable, reaction } from "mobx";
+import { IReactionDisposer, reaction } from "mobx";
 
 export type ExpressionInputProps = {
   /** The text to show before the number */
@@ -39,7 +39,7 @@ class Input extends Component<ExpressionInputProps, State> {
     this.state = {
       matchesProp: true,
       editedValue: this.number.expr.toString(),
-      resetCounter: 0 
+      resetCounter: 0
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
@@ -104,7 +104,7 @@ class Input extends Component<ExpressionInputProps, State> {
     this.unsubscriber?.();
   }
   render() {
-    console.log(this.number.expr.toString(), this.getExprStr())
+    console.log(this.number.expr.toString(), this.getExprStr());
     if (!isAlive(this.number)) {
       return <></>;
     }
@@ -152,10 +152,7 @@ class Input extends Component<ExpressionInputProps, State> {
             const newNode = this.number.validate(
               math.parse(this.state.editedValue)
             );
-            if (
-              newNode !== undefined &&
-              !newNode.equals(this.number.expr)
-            ) {
+            if (newNode !== undefined && !newNode.equals(this.number.expr)) {
               this.number.set(newNode);
             } else {
               this.revert();
@@ -181,12 +178,10 @@ class Input extends Component<ExpressionInputProps, State> {
       </>
     );
   }
-
-
 }
 const ObservedInput = observer(Input);
 // Recreate the input element entirely when the store changes.
-function ExpressionInput(props:ExpressionInputProps) {
+function ExpressionInput(props: ExpressionInputProps) {
   return <ObservedInput {...props} key={props.number.uuid}></ObservedInput>;
 }
 export default ExpressionInput;
