@@ -10,7 +10,7 @@
 ### Requirements for macOS
 
 - [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
-- Xcode ≥ 15.3 command-line tools via `xcode-select --install`
+- Xcode ≥ 16.2 command-line tools via `xcode-select --install`
 
 ### Requirements for Linux
 

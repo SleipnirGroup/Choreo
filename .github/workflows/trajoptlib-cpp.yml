@@ -50,7 +50,7 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
-      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
