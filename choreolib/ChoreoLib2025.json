@@ -5,10 +5,10 @@
   "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
   "frcYear": "2025",
   "mavenUrls": [
-    "https://lib.choreo.autos/dep",
+    "https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/",
     "https://repo1.maven.org/maven2"
   ],
-  "jsonUrl": "https://lib.choreo.autos/dep/ChoreoLib2025.json",
+  "jsonUrl": "https://raw.githubusercontent.com/SleipnirGroup/Choreo/refs/heads/main/choreolib/ChoreoLib2025.json",
   "javaDependencies": [
     {
       "groupId": "choreo",
