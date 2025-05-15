@@ -598,14 +598,14 @@ export const Variables = types
         expressions: {},
         poses: {}
       };
-      for (const [_uuid, {name, expr}] of self.expressions.entries()) {
+      for (const [_varUUID, {name, expr}] of self.expressions.entries()) {
         out.expressions[name] = {
           dimension: expr.dimension,
           var: (expr as IExpressionStore).serialize
         };
       }
 
-      for (const [_uuid, {name, pose}] of self.poses.entries()) {
+      for (const [_varUUID, {name, pose}] of self.poses.entries()) {
         out.poses[name] = pose.serialize;
       }
       return out;
@@ -613,32 +613,32 @@ export const Variables = types
     get scope() {
       const vars: Map<string, any> = new Map();
       //vars.set("m", math.unit("m"));
-      for (const [_uuid, {name, expr}] of self.expressions.entries()) {
+      for (const [_varUUID, {name, expr}] of self.expressions.entries()) {
         vars.set(name, expr.asScope);
       }
-      for (const [_uuid, {name, pose}] of self.poses.entries()) {
+      for (const [_varUUID, {name, pose}] of self.poses.entries()) {
         vars.set(name, pose.asScope);
       }
       return vars;
     },
     get sortedExpressions(): Array<[string, IExpressionVariable]> {
       return Array.from(self.expressions.entries()).sort(
-        ([_uuidA, {name:nameA}], [_uuidB, {name:nameB}]) =>
+        ([_varUUIDA, {name:nameA}], [_varUUIDB, {name:nameB}]) =>
         nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
       );
     },
     get sortedPoses(): Array<[string, IPoseVariable]> {
       return Array.from(self.poses.entries()).sort(
-        ([_uuidA, {name:nameA}], [_uuidB, {name:nameB}]) =>
+        ([_varUUIDA, {name:nameA}], [_varUUIDB, {name:nameB}]) =>
           nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
       );
     },
     get sortedPoseKeys(): Array<string> {
-      return this.sortedPoses.map(([_uuid, {name}]) => name);
+      return this.sortedPoses.map(([_varUUID, {name}]) => name);
     },
     hasName(name: string) {
-      return Array.from(self.expressions).some(([_, exprVar])=>exprVar.name === name) ||
-            Array.from(self.poses).some(([_, poseVar])=>poseVar.name === name);
+      return Array.from(self.expressions).some(([_varUUID, exprVar])=>exprVar.name === name) ||
+            Array.from(self.poses).some(([_varUUID, poseVar])=>poseVar.name === name);
     }
   }))
   .actions((self) => ({

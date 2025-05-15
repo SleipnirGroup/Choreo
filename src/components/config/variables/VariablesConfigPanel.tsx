@@ -165,7 +165,7 @@ const VariablesConfigPanel = observer(() => {
           setName={variable.setName}
           actionButton={() => (
             <Delete
-              onClick={() => doc.variables.deleteExpression(variable.expr.uuid)}
+              onClick={() => doc.variables.deleteExpression(uuid)}
             ></Delete>
           )}
         ></VariablePanel>
