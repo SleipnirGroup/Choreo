@@ -15,6 +15,10 @@ function VariableRenamingInput(props: Props) {
     if (name !== null && props.validateName(name)) {
       props.setName(name);
     }
+    else {
+      setNewName(props.name);
+      setValid(props.validateName(props.name));
+    }
   }
   const [newName, setNewName] = useState<string>(props.name);
   const [valid, setValid] = useState<boolean>(props.validateName(props.name));

@@ -3,12 +3,13 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { doc } from "../../../document/DocumentManager";
-import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
+import { DimensionsExt, IExprPose} from "../../../document/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import VariableRenamingInput from "./VariableRenamingInput";
 
 type PoseVariablePanelProps = {
-  entry: [string, IExprPose];
+  name: string;
+  pose: IExprPose;
   setName: (name: string) => void;
   actionButton: () => React.JSX.Element;
   logo: () => React.JSX.Element;
@@ -22,16 +23,14 @@ const PoseVariablePanel = observer(
       setOpen: undefined | ((open: boolean) => void);
     }
   ) => {
-    const entry = props.entry;
-
     return (
       <>
         {props.logo()}
 
         <VariableRenamingInput
           width="7ch"
-          key={entry[0] + ".name"}
-          name={entry[0]}
+          key={props.name + ".name"}
+          name={props.name}
           setName={(name) => props.setName(name)}
           validateName={(name) => props.validateName(name)}
         ></VariableRenamingInput>
@@ -49,7 +48,7 @@ const PoseVariablePanel = observer(
           }}
         >
           <span>
-            {`(${entry[1].x.value.toFixed(2)} m, ${entry[1].y.value.toFixed(2)} m, ${entry[1].heading.value.toFixed(2)} rad)`}
+            {`(${props.pose.x.value.toFixed(2)} m, ${props.pose.y.value.toFixed(2)} m, ${props.pose.heading.value.toFixed(2)} rad)`}
           </span>
           <Tooltip
             disableInteractive
@@ -71,9 +70,9 @@ const PoseVariablePanel = observer(
             <ExpressionInput
               enabled
               maxWidthCharacters={6}
-              key={entry[0] + ".x"}
+              key={name + ".x"}
               title={".x"}
-              number={entry[1].x}
+              number={props.pose.x}
             ></ExpressionInput>
 
             <span></span>
@@ -81,19 +80,19 @@ const PoseVariablePanel = observer(
             <ExpressionInput
               enabled
               maxWidthCharacters={6}
-              key={entry[0] + ".y"}
+              key={name + ".y"}
               title={".y"}
-              number={entry[1].y}
+              number={props.pose.y}
             ></ExpressionInput>
             <span></span>
             <span></span>
 
             <ExpressionInput
-              key={entry[0] + ".heading"}
+              key={name + ".heading"}
               enabled
               maxWidthCharacters={6}
               title={".heading"}
-              number={entry[1].heading}
+              number={props.pose.heading}
             ></ExpressionInput>
             <span></span>
           </>
@@ -135,7 +134,8 @@ export const AddPoseVariablePanel = observer(
         logo={props.logo}
         open={true}
         setOpen={undefined}
-        entry={[props.name, props.pose]}
+        name={props.name}
+        pose={props.pose}
         setName={(name) => props.setName(name)}
         actionButton={() => (
           <Add
@@ -162,13 +162,14 @@ const PoseVariablesConfigPanel = observer(() => {
   doc.variables.poses.keys();
   return (
     <>
-      {doc.variables.sortedPoses.map((entry) => (
+      {doc.variables.sortedPoses.map(([uuid, variable]) => (
         <OpenablePoseVariablePanel
-          entry={entry}
-          setName={(name) => doc.variables.renamePose(entry[0], name)}
-          validateName={(name) => doc.variables.validateName(name, entry[0])}
+          name={variable.name}
+          pose={variable.pose}
+          setName={variable.setName}
+          validateName={(name) => doc.variables.validateName(name, variable.name)}
           actionButton={() => (
-            <Delete onClick={() => doc.variables.deletePose(entry[0])}></Delete>
+            <Delete onClick={() => doc.variables.deletePose(uuid)}></Delete>
           )}
         ></OpenablePoseVariablePanel>
       ))}
