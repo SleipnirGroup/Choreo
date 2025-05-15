@@ -633,7 +633,7 @@ export const Variables = types
           nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
       );
     },
-    get sortedPoseKeys(): Array<string> {
+    get sortedPoseNames(): Array<string> {
       return this.sortedPoses.map(([_varUUID, {name}]) => name);
     },
     hasName(name: string) {
@@ -702,7 +702,6 @@ export const Variables = types
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
     validateName(name: string, selfName: string): boolean {
-      console.log(Object.keys(Unit.UNITS));
       const notAlreadyExists =
         name === selfName || !(
           self.hasName(name)

@@ -31,7 +31,6 @@ function VariableRenamingInput(props: Props) {
       value={newName}
       onChange={(e) => {
         setNewName(e.currentTarget.value);
-        console.log("change");
         setValid(props.validateName(e.currentTarget.value));
       }}
       error={!valid}

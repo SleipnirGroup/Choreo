@@ -68,7 +68,7 @@ class WaypointPanel extends Component<Props, State> {
                   setXExpression={(node) => waypoint.x.set(node)}
                   setYExpression={(node) => waypoint.y.set(node)}
                   setHeadingExpression={(node) => waypoint.heading.set(node)}
-                  poses={doc.variables.sortedPoseKeys.map((k) => ({
+                  poses={doc.variables.sortedPoseNames.map((k) => ({
                     title: k,
                     variableName: k
                   }))}
