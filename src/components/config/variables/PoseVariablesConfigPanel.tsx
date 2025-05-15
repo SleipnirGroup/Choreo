@@ -3,7 +3,7 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { doc } from "../../../document/DocumentManager";
-import { DimensionsExt, IExprPose} from "../../../document/ExpressionStore";
+import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import VariableRenamingInput from "./VariableRenamingInput";
 
@@ -167,7 +167,9 @@ const PoseVariablesConfigPanel = observer(() => {
           name={variable.name}
           pose={variable.pose}
           setName={variable.setName}
-          validateName={(name) => doc.variables.validateName(name, variable.name)}
+          validateName={(name) =>
+            doc.variables.validateName(name, variable.name)
+          }
           actionButton={() => (
             <Delete onClick={() => doc.variables.deletePose(uuid)}></Delete>
           )}

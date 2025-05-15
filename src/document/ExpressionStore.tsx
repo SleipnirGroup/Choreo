@@ -532,16 +532,18 @@ export const ExpressionStore = types
     };
   });
 export type IExpressionStore = Instance<typeof ExpressionStore>;
-const ExpressionVariable = types.model({
-  expr: ExpressionStore,
-  name: types.string,
-  uuid: types.identifier
-}).actions(self=>({
-  setName(name: string){
-    getEnv<Env>(self).renameVariable(self.name, name);
-    self.name = name;
-  }
-}));
+const ExpressionVariable = types
+  .model({
+    expr: ExpressionStore,
+    name: types.string,
+    uuid: types.identifier
+  })
+  .actions((self) => ({
+    setName(name: string) {
+      getEnv<Env>(self).renameVariable(self.name, name);
+      self.name = name;
+    }
+  }));
 export type IExpressionVariable = Instance<typeof ExpressionVariable>;
 const ExprPose = types
   .model({
@@ -576,16 +578,18 @@ const ExprPose = types
   }));
 export type IExprPose = Instance<typeof ExprPose>;
 type Pose = { x: number; y: number; heading: number };
-const PoseVariable = types.model({
-  pose: ExprPose,
-  name: types.string,
-  uuid: types.identifier
-}).actions(self=>({
-  setName(name: string){
-    getEnv<Env>(self).renameVariable(self.name, name);
-    self.name = name;
-  }
-}));
+const PoseVariable = types
+  .model({
+    pose: ExprPose,
+    name: types.string,
+    uuid: types.identifier
+  })
+  .actions((self) => ({
+    setName(name: string) {
+      getEnv<Env>(self).renameVariable(self.name, name);
+      self.name = name;
+    }
+  }));
 export type IPoseVariable = Instance<typeof PoseVariable>;
 export const Variables = types
   .model("Variables", {
@@ -598,14 +602,14 @@ export const Variables = types
         expressions: {},
         poses: {}
       };
-      for (const [_varUUID, {name, expr}] of self.expressions.entries()) {
+      for (const [_varUUID, { name, expr }] of self.expressions.entries()) {
         out.expressions[name] = {
           dimension: expr.dimension,
           var: (expr as IExpressionStore).serialize
         };
       }
 
-      for (const [_varUUID, {name, pose}] of self.poses.entries()) {
+      for (const [_varUUID, { name, pose }] of self.poses.entries()) {
         out.poses[name] = pose.serialize;
       }
       return out;
@@ -613,32 +617,38 @@ export const Variables = types
     get scope() {
       const vars: Map<string, any> = new Map();
       //vars.set("m", math.unit("m"));
-      for (const [_varUUID, {name, expr}] of self.expressions.entries()) {
+      for (const [_varUUID, { name, expr }] of self.expressions.entries()) {
         vars.set(name, expr.asScope);
       }
-      for (const [_varUUID, {name, pose}] of self.poses.entries()) {
+      for (const [_varUUID, { name, pose }] of self.poses.entries()) {
         vars.set(name, pose.asScope);
       }
       return vars;
     },
     get sortedExpressions(): Array<[string, IExpressionVariable]> {
       return Array.from(self.expressions.entries()).sort(
-        ([_varUUIDA, {name:nameA}], [_varUUIDB, {name:nameB}]) =>
-        nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
+        ([_varUUIDA, { name: nameA }], [_varUUIDB, { name: nameB }]) =>
+          nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
       );
     },
     get sortedPoses(): Array<[string, IPoseVariable]> {
       return Array.from(self.poses.entries()).sort(
-        ([_varUUIDA, {name:nameA}], [_varUUIDB, {name:nameB}]) =>
+        ([_varUUIDA, { name: nameA }], [_varUUIDB, { name: nameB }]) =>
           nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
       );
     },
     get sortedPoseNames(): Array<string> {
-      return this.sortedPoses.map(([_varUUID, {name}]) => name);
+      return this.sortedPoses.map(([_varUUID, { name }]) => name);
     },
     hasName(name: string) {
-      return Array.from(self.expressions).some(([_varUUID, exprVar])=>exprVar.name === name) ||
-            Array.from(self.poses).some(([_varUUID, poseVar])=>poseVar.name === name);
+      return (
+        Array.from(self.expressions).some(
+          ([_varUUID, exprVar]) => exprVar.name === name
+        ) ||
+        Array.from(self.poses).some(
+          ([_varUUID, poseVar]) => poseVar.name === name
+        )
+      );
     }
   }))
   .actions((self) => ({
@@ -702,11 +712,7 @@ export const Variables = types
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
     validateName(name: string, selfName: string): boolean {
-      const notAlreadyExists =
-        name === selfName || !(
-          self.hasName(name)
-        )
-;
+      const notAlreadyExists = name === selfName || !self.hasName(name);
       return (
         notAlreadyExists &&
         name.length != 0 &&
@@ -731,13 +737,25 @@ export const Variables = types
     },
     addPose(name: string, pose?: Pose | { x: Expr; y: Expr; heading: Expr }) {
       const poseStore = self.createPose(pose);
-      self.poses.put(PoseVariable.create(
-        {pose: poseStore, name, uuid: crypto.randomUUID()}
-      ));
+      self.poses.put(
+        PoseVariable.create({
+          pose: poseStore,
+          name,
+          uuid: crypto.randomUUID()
+        })
+      );
     },
-    add(name: string, expr: string | number | Expr, defaultUnit: DimensionName) {
-      self.expressions.put(ExpressionVariable.create(
-        {expr: self.createExpression(expr, defaultUnit), name: name, uuid: crypto.randomUUID()})
+    add(
+      name: string,
+      expr: string | number | Expr,
+      defaultUnit: DimensionName
+    ) {
+      self.expressions.put(
+        ExpressionVariable.create({
+          expr: self.createExpression(expr, defaultUnit),
+          name: name,
+          uuid: crypto.randomUUID()
+        })
       );
     },
     deserialize(vars: DocVariables) {

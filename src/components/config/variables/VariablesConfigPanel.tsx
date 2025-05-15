@@ -23,7 +23,6 @@ const VariablePanel = observer(
     logo: () => React.JSX.Element;
     validateName: (name: string) => boolean;
   }) => {
-    
     return (
       <>
         {props.logo()}
@@ -151,7 +150,9 @@ const VariablesConfigPanel = observer(() => {
     <>
       {doc.variables.sortedExpressions.map(([uuid, variable]) => (
         <VariablePanel
-          validateName={(newName) => doc.variables.validateName(newName, variable.name)}
+          validateName={(newName) =>
+            doc.variables.validateName(newName, variable.name)
+          }
           logo={() => (
             <Tooltip
               disableInteractive

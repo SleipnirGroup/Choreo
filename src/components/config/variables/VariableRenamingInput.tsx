@@ -14,8 +14,7 @@ function VariableRenamingInput(props: Props) {
   function submit(name: string) {
     if (name !== null && props.validateName(name)) {
       props.setName(name);
-    }
-    else {
+    } else {
       setNewName(props.name);
       setValid(props.validateName(props.name));
     }
