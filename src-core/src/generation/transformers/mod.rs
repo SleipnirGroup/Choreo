@@ -235,7 +235,7 @@ fn postprocess(
     // `intervals` contains (
     //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
     //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
-    //    The timestamp of the sample indexed by the previous parameter    
+    //    The timestamp of the sample indexed by the previous parameter
     // )
     let intervals = snapshot
         .waypoints
@@ -270,9 +270,11 @@ fn postprocess(
     path.snapshot = Some(snapshot);
     // update event markers' target timestamps with the corresponding timestamp from trajectory.waypoints
     // or None if the targeted index is None or out of bounds
-    path.events.iter_mut().for_each(|marker|{
-        marker.from.target_timestamp = marker.from.target.and_then(
-            |idx|path.trajectory.waypoints.get(idx).copied());
+    path.events.iter_mut().for_each(|marker| {
+        marker.from.target_timestamp = marker
+            .from
+            .target
+            .and_then(|idx| path.trajectory.waypoints.get(idx).copied());
     });
     path
 }
