@@ -75,7 +75,15 @@ pub fn setup_progress_sender() -> Receiver<HandledLocalProgressUpdate> {
     rx
 }
 
-fn set_initial_guess(snapshot: &Parameters<f64>) -> Parameters<f64>{
+///
+/// Populate the is_initial_guess field of each waypoint in this snapshot. A waypoint is an initial guess
+/// if it is not the endpoint of a constraint range (or the target of a waypoint constraint)
+/// 
+/// Returns a modified clone of the input snapshot.
+/// 
+/// TODO: set is_initial_guess to false if the waypoint is fix_heading or fix_translation,
+/// then remove those checks from other places where is_initial_guess is checked.
+pub fn set_initial_guess(snapshot: &Parameters<f64>) -> Parameters<f64>{
     let mut mut_snapshot = snapshot.clone();
     let waypoint_count = mut_snapshot.waypoints.len();
     for waypoint in mut_snapshot.waypoints.iter_mut() {
@@ -111,7 +119,10 @@ fn set_initial_guess(snapshot: &Parameters<f64>) -> Parameters<f64>{
     mut_snapshot
 }
 
-fn update_control_interval_counts(snapshot: &Parameters<f64>, config: &RobotConfig<f64>) -> Parameters<f64> {
+/// Update the `intervals` field of each waypoint in the snapshot with guessed values according to robot config
+/// 
+/// Returns a modified clone of the input snapshot.
+pub fn update_control_interval_counts(snapshot: &Parameters<f64>, config: &RobotConfig<f64>) -> Parameters<f64> {
     let counts_vec = guess_control_interval_counts(config, snapshot).unwrap_or_default();
     let mut snapshot = snapshot.clone();
     // Update the `intervals` field of each waypoint with the corresponding entry from `counts_vec`
@@ -124,23 +135,26 @@ fn update_control_interval_counts(snapshot: &Parameters<f64>, config: &RobotConf
     snapshot
 }
 
+pub fn preprocess(
+    snapshot:&Parameters<f64>,
+    config_snapshot: &RobotConfig<f64>
+) -> ChoreoResult<Parameters<f64>>{
+    let mut snapshot = set_initial_guess(snapshot);
+    snapshot = adjust_headings(snapshot)?;
+    snapshot = update_control_interval_counts(&snapshot, config_snapshot);
+    Ok(snapshot)
+}
+
 pub fn generate(
     chor: ProjectFile,
     trajectory_file: TrajectoryFile,
     handle: i64,
-) -> ChoreoResult<TrajectoryFile> {
-
-    let mut snapshot = set_initial_guess(&trajectory_file.params.snapshot());
-    snapshot = adjust_headings(snapshot)?;
-    snapshot = update_control_interval_counts(&snapshot, &chor.config.snapshot());
-
-
-    let mut gen = TrajectoryFileGenerator::new(chor, trajectory_file, snapshot, handle);
-
-    gen.add_omni_transformer::<IntervalCountSetter>();
-    gen.add_omni_transformer::<DrivetrainAndBumpersSetter>();
-    gen.add_omni_transformer::<ConstraintSetter>();
-    gen.add_omni_transformer::<CallbackSetter>();
-
+) -> ChoreoResult<TrajectoryFile> {   
+    let mut gen = TrajectoryFileGenerator::try_new(chor, trajectory_file, handle)?;
+    gen
+    .add_omni_transformer::<IntervalCountSetter>()
+    .add_omni_transformer::<DrivetrainAndBumpersSetter>()
+    .add_omni_transformer::<ConstraintSetter>()
+    .add_omni_transformer::<CallbackSetter>();
     gen.generate()
 }

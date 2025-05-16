@@ -15,6 +15,8 @@ use crate::{
     ChoreoResult,
 };
 
+use super::generate::preprocess;
+
 macro_rules! add_transformers (
     ($module:ident : $($transformer:ident),*) => {
         mod $module;
@@ -43,8 +45,18 @@ pub(super) struct TrajectoryFileGenerator {
 
 impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, snapshot: Parameters<f64>, handle: i64) -> Self {
-        Self {
+    /// 
+    /// Will fail immediately with a ChoreoError if parameter prechecks fail (i.e. constraint conflicts, etc)
+    pub fn try_new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> ChoreoResult<Self> {
+        // Adjustments and prechecks on the generation parameters:
+        // * heading constraint reconciliation and conflicts (can fail)
+        // * identification of initial guess points
+        // * guessing of control intervals (after headings adjusted)
+        let snapshot = preprocess(
+            &trajectory_file.params.snapshot(),
+            &project.config.snapshot()
+        )?;
+        Ok(Self {
             ctx: GenerationContext {
                 project,
                 params: snapshot,
@@ -53,11 +65,11 @@ impl TrajectoryFileGenerator {
             trajectory_file,
             swerve_transformers: HashMap::new(),
             differential_transformers: HashMap::new(),
-        }
+        })
     }
 
     /// Add a transformer to the generator that is only applied when generating a swerve trajectory
-    pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(&mut self) {
+    pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(&mut self) -> &mut Self {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
@@ -65,10 +77,11 @@ impl TrajectoryFileGenerator {
             .entry(feature)
             .or_default()
             .push(transformer);
+        self
     }
 
     /// Add a transformer to the generator that is only applied when generating a differential trajectory
-    pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) {
+    pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) -> &mut Self {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
@@ -76,6 +89,7 @@ impl TrajectoryFileGenerator {
             .entry(feature)
             .or_default()
             .push(transformer);
+        self
     }
 
     /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
@@ -83,9 +97,11 @@ impl TrajectoryFileGenerator {
         T: SwerveGenerationTransformer + DifferentialGenerationTransformer + 'static,
     >(
         &mut self,
-    ) {
-        self.add_swerve_transformer::<T>();
-        self.add_differential_transformer::<T>();
+    ) -> &mut Self {
+        self
+            .add_swerve_transformer::<T>()
+            .add_differential_transformer::<T>()
+        
     }
 
     fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
@@ -205,7 +221,7 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     }
 }
 
-/// All modification to the trajectory file itself should be in this function
+/// All modification to the trajectory or events section should be in this function
 fn postprocess(
     result: &[Sample],
     modified_snapshot: Parameters<f64>,
