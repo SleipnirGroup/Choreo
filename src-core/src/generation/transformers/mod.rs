@@ -230,6 +230,7 @@ fn postprocess(
             w.0 .1.intervals = w.1;
         });
     // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
+    // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
     let mut interval = 0;
     // `intervals` contains (
     //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
@@ -258,8 +259,8 @@ fn postprocess(
     // Calculate splits
     let splits = intervals
         .iter()
-        .filter(|a| a.0) // filter by split flag
-        .map(|a| a.1) // map to associate interval
+        .filter(|a| a.0) // filter by "start of split" flag
+        .map(|a| a.1) // map to associate an index in the samples array
         .collect::<Vec<usize>>();
     // copy the above into the TrajectoryFile
     path.trajectory.sample_type = Some(project.r#type);
