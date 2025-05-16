@@ -18,7 +18,8 @@ pub struct Waypoint<T: SnapshottableType> {
     /// The heading of the waypoint (blue origin).
     ///
     /// Units: radians
-    pub heading: T,
+    #[serde(rename="heading")]
+    pub original_heading: T,
     /// The number of control intervals to use between this waypoint and the next.
     pub intervals: usize,
     /// Whether to split the trajectory at this waypoint.
@@ -33,6 +34,15 @@ pub struct Waypoint<T: SnapshottableType> {
     /// completely invisible to the frontend.
     #[serde(skip, default)]
     pub is_initial_guess: bool,
+    #[serde(skip, default)]
+    pub adjusted_heading: Option<f64>
+}
+
+impl<T: SnapshottableType> Waypoint<T> {
+    pub fn get_heading(&self) -> f64 {
+        let heading = self.original_heading.snapshot();
+        self.adjusted_heading.unwrap_or(heading)
+    }
 }
 
 #[allow(missing_docs)]
@@ -41,13 +51,14 @@ impl<T: SnapshottableType> Waypoint<T> {
         Waypoint {
             x: self.x.snapshot(),
             y: self.y.snapshot(),
-            heading: self.heading.snapshot(),
+            original_heading: self.original_heading.snapshot(),
             intervals: self.intervals,
             split: self.split,
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
             override_intervals: self.override_intervals,
             is_initial_guess: self.is_initial_guess,
+            adjusted_heading: self.adjusted_heading
         }
     }
 }
@@ -502,13 +513,14 @@ mod tests {
             waypoints: vec![Waypoint::<Expr> {
                 x: Expr::fill_in_value(0.0, "m"),
                 y: Expr::fill_in_value(0.0, "m"),
-                heading: Expr::fill_in_value(0.0, "rad"),
+                original_heading: Expr::fill_in_value(0.0, "rad"),
                 intervals: 20,
                 split: false,
                 fix_translation: false,
                 fix_heading: false,
                 override_intervals: false,
                 is_initial_guess: false,
+                adjusted_heading: None
             }],
             constraints: vec![],
             target_dt: Expr::fill_in_value(0.05, "s"),

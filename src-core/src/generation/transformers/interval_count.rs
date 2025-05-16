@@ -1,19 +1,18 @@
 use trajoptlib::Pose2d;
 
-use crate::{generation::intervals::guess_control_interval_counts, spec::trajectory::Waypoint};
+
+use crate::spec::trajectory::Waypoint;
 
 use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 
 pub struct IntervalCountSetter {
-    counts: Vec<usize>,
     waypoints: Vec<Waypoint<f64>>
 }
 
 impl SwerveGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
             waypoints: context.params.waypoints.clone()
         })
     }
@@ -30,11 +29,11 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
                 let guess_point = Pose2d {
                     x: wpt.x,
                     y: wpt.y,
-                    heading: wpt.heading,
+                    heading: wpt.get_heading(),
                 };
                 guess_points_after_waypoint.push(guess_point);
                 if let Some(last) = control_interval_counts.last_mut() {
-                    *last += self.counts[i];
+                    *last += wpt.intervals;
                 }
             } else {
                 if wpt_cnt > 0 {
@@ -42,15 +41,15 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
                 }
                 guess_points_after_waypoint.clear();
                 if wpt.fix_heading && wpt.fix_translation {
-                    generator.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.get_heading());
                 } else if wpt.fix_translation {
-                    generator.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.get_heading());
                 } else {
-                    generator.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.get_heading());
                 }
                 wpt_cnt += 1;
                 if i != waypoints.len() - 1 {
-                    control_interval_counts.push(self.counts[i]);
+                    control_interval_counts.push(wpt.intervals);
                 }
             }
         }
@@ -62,7 +61,7 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
 impl DifferentialGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
+            
             waypoints: context.params.waypoints.clone()
         })
     }
@@ -79,11 +78,11 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
                 let guess_point = Pose2d {
                     x: wpt.x,
                     y: wpt.y,
-                    heading: wpt.heading,
+                    heading: wpt.get_heading(),
                 };
                 guess_points_after_waypoint.push(guess_point);
                 if let Some(last) = control_interval_counts.last_mut() {
-                    *last += self.counts[i];
+                    *last += wpt.intervals;
                 }
             } else {
                 if wpt_cnt > 0 {
@@ -91,15 +90,15 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
                 }
                 guess_points_after_waypoint.clear();
                 if wpt.fix_heading && wpt.fix_translation {
-                    generator.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.get_heading());
                 } else if wpt.fix_translation {
-                    generator.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.get_heading());
                 } else {
-                    generator.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.get_heading());
                 }
                 wpt_cnt += 1;
                 if i != waypoints.len() - 1 {
-                    control_interval_counts.push(self.counts[i]);
+                    control_interval_counts.push(wpt.intervals);
                 }
             }
         }

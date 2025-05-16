@@ -10,12 +10,10 @@ use trajoptlib::{
 use crate::{
     spec::{
         project::ProjectFile,
-        trajectory::{DriveType, Parameters, Sample, TrajectoryFile},
+        trajectory::{DriveType, EventMarker, EventMarkerData, Parameters, Sample, Trajectory, TrajectoryFile},
     },
     ChoreoResult,
 };
-
-use super::intervals::guess_control_interval_counts;
 
 macro_rules! add_transformers (
     ($module:ident : $($transformer:ident),*) => {
@@ -45,11 +43,11 @@ pub(super) struct TrajectoryFileGenerator {
 
 impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> Self {
+    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, snapshot: Parameters<f64>, handle: i64) -> Self {
         Self {
             ctx: GenerationContext {
                 project,
-                params: trajectory_file.params.snapshot(),
+                params: snapshot,
                 handle,
             },
             trajectory_file,
@@ -141,16 +139,11 @@ impl TrajectoryFileGenerator {
                 .collect(),
         };
 
-        let counts_vec = guess_control_interval_counts(
-            &self.ctx.project.config.snapshot(),
-            &self.trajectory_file.params.snapshot(),
-        )?;
-
         Ok(postprocess(
             &samples,
+            self.ctx.params, 
             self.trajectory_file,
-            self.ctx.project,
-            counts_vec,
+            self.ctx.project
         ))
     }
 }
@@ -212,32 +205,23 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     }
 }
 
+/// All modification to the trajectory file itself should be in this function
 fn postprocess(
     result: &[Sample],
-    mut path: TrajectoryFile,
-    project: ProjectFile,
-    counts_vec: Vec<usize>,
+    modified_snapshot: Parameters<f64>,
+    original_trajectory_file: TrajectoryFile,
+    project: ProjectFile
 ) -> TrajectoryFile {
-    let mut snapshot = path.params.snapshot();
-    // Update the `intervals` field of each waypoint with the corresponding entry from `counts_vec`
-    path.params
-        .waypoints
-        .iter_mut()
-        .zip(snapshot.waypoints.iter_mut())
-        .zip(counts_vec)
-        .for_each(|w| {
-            w.0 .0.intervals = w.1;
-            w.0 .1.intervals = w.1;
-        });
     // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
     // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
     let mut interval = 0;
     // `intervals` contains (
-    //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
-    //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
+    //    Was the waypoint either a non-ending split point or the start point (i.e. was it the beginning of a split segment)
+    //    The index of the interval the waypoint constrains,
     //    The timestamp of the sample indexed by the previous parameter
     // )
-    let intervals = snapshot
+    // Uses: .intervals and .split of each waypoint.
+    let intervals = modified_snapshot
         .waypoints
         .iter()
         .enumerate()
@@ -245,7 +229,7 @@ fn postprocess(
             let total_intervals = interval;
             interval += pt.1.intervals;
             (
-                pt.0 == 0 || (pt.1.split && pt.0 != snapshot.waypoints.len() - 1),
+                pt.0 == 0 || (pt.1.split && pt.0 != modified_snapshot.waypoints.len() - 1),
                 total_intervals,
                 result.get(total_intervals).map_or(0.0, |s| match s {
                     Sample::Swerve { t, .. } => *t,
@@ -262,19 +246,33 @@ fn postprocess(
         .filter(|a| a.0) // filter by "start of split" flag
         .map(|a| a.1) // map to associate an index in the samples array
         .collect::<Vec<usize>>();
-    // copy the above into the TrajectoryFile
-    path.trajectory.sample_type = Some(project.r#type);
-    path.trajectory.splits = splits;
-    path.trajectory.samples = result.to_vec();
-    path.trajectory.waypoints = waypoint_times;
-    path.snapshot = Some(snapshot);
-    // update event markers' target timestamps with the corresponding timestamp from trajectory.waypoints
-    // or None if the targeted index is None or out of bounds
-    path.events.iter_mut().for_each(|marker| {
-        marker.from.target_timestamp = marker
-            .from
-            .target
-            .and_then(|idx| path.trajectory.waypoints.get(idx).copied());
-    });
-    path
+    // We rebuild a TrajectoryFile from its parameters to be explicit about where each part comes from
+    TrajectoryFile {
+        name: original_trajectory_file.name,
+        version: original_trajectory_file.version,
+        snapshot: Some(modified_snapshot),
+        params: original_trajectory_file.params,
+        // events has to go first so it can borrow waypoint_times before that is moved into `trajectory`
+        events: original_trajectory_file.events.iter().map(|marker|
+            EventMarker {
+                name: marker.name.clone(),
+                from: EventMarkerData {
+                    target: marker.from.target,
+                    // updated timestamp based on waypoint times
+                    target_timestamp: marker
+                        .from
+                        .target
+                        .and_then(|idx| waypoint_times.get(idx).copied()),
+                    offset: marker.from.offset.clone()
+                },
+                event: marker.event.clone()
+            }
+        ).collect(),
+        trajectory: Trajectory {
+            sample_type: Some(project.r#type),
+            waypoints: waypoint_times,
+            samples: result.to_vec(),
+            splits,
+        }
+    }
 }
