@@ -28,11 +28,13 @@ mod generate {
         let test_chor: PathBuf = test_dir.join(format!("{drive_type}.chor"));
         let original_traj: PathBuf =
             format!("../test-jsons/trajectory/{version}/{drive_type}.traj").into();
+        let pre_traj: PathBuf = test_dir.join(format!("{drive_type}.pre.traj"));
         let test_traj: PathBuf = test_dir.join(format!("{drive_type}.traj"));
         let _ = fs::create_dir(test_dir.clone()).or_else(|_| fs::remove_dir(test_dir));
         // don't modify the original files
         fs::copy(original_chor.clone(), test_chor.clone()).unwrap();
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
+        fs::copy(original_traj.clone(), pre_traj.clone()).unwrap();
         let resources = WritingResources::new();
         // if this succeeds, modified generated .traj is written to test_traj
         generate_trajectories(&resources, &test_chor.clone(), vec![drive_type.to_string()]).await;
