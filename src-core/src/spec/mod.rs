@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize};
+use trajectory::GenerationEquivalent;
 
 pub mod project;
 pub mod project_schema_version;
@@ -63,6 +64,48 @@ impl SnapshottableType for Expr {
         Expr {
             exp: format!("{} {}", val, unit),
             val,
+        }
+    }
+}
+
+impl GenerationEquivalent for Expr {
+    fn equiv(&self, other: &Self)->bool {
+        self.val.equiv(&other.val)
+    }
+}
+impl GenerationEquivalent for f64 {
+    fn equiv(&self, other: &Self)->bool {
+        self == other
+    }
+}
+impl GenerationEquivalent for usize {
+    fn equiv(&self, other: &Self)->bool {
+        self == other
+    }
+}
+impl GenerationEquivalent for bool {
+    fn equiv(&self, other: &Self)->bool {
+        self == other
+    }
+}
+impl<T:GenerationEquivalent> GenerationEquivalent for Vec<T> {
+    fn equiv(&self, other: &Self)->bool {
+        self.len() == other.len() && 
+        self.iter().zip(other).all(|(a, b)|T::equiv(a,b))
+    }
+}
+impl<T:GenerationEquivalent> GenerationEquivalent for Option<T> {
+    fn equiv(&self, other: &Self)->bool {
+        if self.is_none() && other.is_none() {true}
+        else if let Some(this) = self {
+            if let Some(that) = other {
+                this.equiv(that)
+            } else {
+                false
+            }
+        }
+        else {
+            false
         }
     }
 }

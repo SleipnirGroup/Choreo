@@ -3,6 +3,10 @@ use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
 
+
+pub trait GenerationEquivalent {
+    fn equiv(&self, other: &Self)->bool;
+}
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 /// A waypoint parameter.
@@ -62,6 +66,21 @@ impl<T: SnapshottableType> Waypoint<T> {
         }
     }
 }
+impl <T: GenerationEquivalent+SnapshottableType> GenerationEquivalent for Waypoint<T> {
+    fn equiv(&self, other: &Waypoint<T>)->bool {
+        self.x.equiv(&other.x) &&
+        self.y.equiv(&other.y) &&
+        self.original_heading.equiv(&other.original_heading) &&
+        // if neither version overrides the intervals, the interval fields can differ
+        if self.override_intervals || other.override_intervals {
+            self.intervals.equiv(&other.intervals)
+        } else {true} &&
+        self.split.equiv(&other.split) &&
+        self.fix_translation.equiv(&other.fix_translation) && 
+        self.fix_heading.equiv(&other.fix_heading) &&
+        self.override_intervals.equiv(&other.override_intervals)
+    }
+}
 
 /// A waypoint identifier.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
@@ -105,6 +124,11 @@ impl WaypointID {
     }
 }
 
+impl GenerationEquivalent for WaypointID {
+    fn equiv(&self, other: &Self)->bool {
+        self == other
+    }
+}
 /// A marker for the scope of a constraint.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConstraintScope {
@@ -115,7 +139,11 @@ pub enum ConstraintScope {
     /// The constraint applies to both the waypoint and the segment.
     Both,
 }
-
+impl GenerationEquivalent for ConstraintScope {
+    fn equiv(&self, other: &Self)->bool {
+        self == other
+    }
+}
 /// A constraint on the robot's motion.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(tag = "type", content = "props")]
@@ -221,6 +249,12 @@ impl<T: SnapshottableType> ConstraintData<T> {
     }
 }
 
+impl <T:SnapshottableType+GenerationEquivalent+PartialEq> GenerationEquivalent for ConstraintData<T> {
+    fn equiv(&self, other: &Self)->bool {
+        self == other
+    }
+}
+
 /// A constraint on the robot's motion and where it applies.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct Constraint<T: SnapshottableType> {
@@ -244,6 +278,15 @@ impl<T: SnapshottableType> Constraint<T> {
             data: self.data.snapshot(),
             enabled: self.enabled,
         }
+    }
+}
+
+impl <T:SnapshottableType+GenerationEquivalent+PartialEq> GenerationEquivalent for Constraint<T> {
+    fn equiv(&self, other: &Self)->bool {
+        self.from.equiv(&other.from) &&
+        self.to.equiv(&other.to) &&
+        self.enabled.equiv(&other.enabled) &&
+        (if self.enabled||other.enabled {self.data.equiv(&other.data)} else {true})
     }
 }
 
@@ -456,10 +499,17 @@ impl TrajectoryFile {
     pub fn up_to_date(&self) -> bool {
         // Can't use is_some_and due to its move semantics.
         if let Some(snap) = &self.snapshot {
-            snap == &self.params.snapshot()
+            snap.equiv(&self.params.snapshot())
         } else {
             false
         }
+    }
+}
+impl<T:SnapshottableType+GenerationEquivalent+PartialEq> GenerationEquivalent for Parameters<T> {
+    fn equiv(&self, other: &Self)->bool {
+        self.waypoints.equiv(&other.waypoints)&&
+        self.constraints.equiv(&other.constraints) &&
+        self.target_dt.equiv(&other.target_dt)
     }
 }
 
@@ -544,6 +594,42 @@ mod tests {
         assert!(test_trajectory().up_to_date());
     }
 
+    #[test]
+    fn snapshot_equality_ignores_unoverridden_intervals() {
+        let mut trajectory = test_trajectory();
+        trajectory.params.waypoints[0].intervals = 10;
+        assert!(trajectory.up_to_date());
+        assert!(trajectory.params.waypoints[0].intervals != trajectory.snapshot.unwrap().waypoints[0].intervals);
+    }   
+
+    #[test]
+    fn snapshot_equality_catches_overridden_intervals() {
+        let mut trajectory = test_trajectory();
+        trajectory.params.waypoints[0].intervals = 10;
+        trajectory.params.waypoints[0].override_intervals = true;
+        assert!(!trajectory.up_to_date());
+        assert!(trajectory.params.waypoints[0].intervals != trajectory.snapshot.unwrap().waypoints[0].intervals);
+    }   
+
+    #[test]
+    fn snapshot_equality_ignores_disabled_constraints() {
+        let mut trajectory = test_trajectory();
+        trajectory.params.constraints.push(
+            Constraint { from:WaypointID::First, to: None,
+                data: ConstraintData::MaxVelocity { max: Expr::fill_in_value(0.0, "m/s") }, enabled: true });
+        trajectory.snapshot.as_mut().map(|s|s.constraints.push(
+            trajectory.params.constraints[0].snapshot()
+        ));
+        assert!(trajectory.up_to_date());
+        // changing params while still enabled = out of date
+        trajectory.params.constraints[0].data = ConstraintData::MaxVelocity { max: Expr::fill_in_value(3.0, "m/s") };
+        assert!(!trajectory.up_to_date());
+        // both versions disabled = any difference in data is fine
+        trajectory.params.constraints[0].enabled = false;
+        trajectory.snapshot.as_mut().map(|s|s.constraints[0].enabled = false);
+        assert!(trajectory.up_to_date());
+
+    }   
     #[test]
     fn snapshot_equality_through_serde() -> serde_json::Result<()> {
         use crate::file_management::formatter;
