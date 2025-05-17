@@ -10,7 +10,9 @@ use trajoptlib::{
 use crate::{
     spec::{
         project::ProjectFile,
-        trajectory::{DriveType, EventMarker, EventMarkerData, Parameters, Sample, Trajectory, TrajectoryFile},
+        trajectory::{
+            DriveType, EventMarker, EventMarkerData, Parameters, Sample, Trajectory, TrajectoryFile,
+        },
     },
     ChoreoResult,
 };
@@ -45,16 +47,20 @@ pub(super) struct TrajectoryFileGenerator {
 
 impl TrajectoryFileGenerator {
     /// Create a new generator
-    /// 
+    ///
     /// Will fail immediately with a ChoreoError if parameter prechecks fail (i.e. constraint conflicts, etc)
-    pub fn try_new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> ChoreoResult<Self> {
+    pub fn try_new(
+        project: ProjectFile,
+        trajectory_file: TrajectoryFile,
+        handle: i64,
+    ) -> ChoreoResult<Self> {
         // Adjustments and prechecks on the generation parameters:
         // * heading constraint reconciliation and conflicts (can fail)
         // * identification of initial guess points
         // * guessing of control intervals (after headings adjusted)
         let snapshot = preprocess(
             &trajectory_file.params.snapshot(),
-            &project.config.snapshot()
+            &project.config.snapshot(),
         )?;
         Ok(Self {
             ctx: GenerationContext {
@@ -69,7 +75,9 @@ impl TrajectoryFileGenerator {
     }
 
     /// Add a transformer to the generator that is only applied when generating a swerve trajectory
-    pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(&mut self) -> &mut Self {
+    pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(
+        &mut self,
+    ) -> &mut Self {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
@@ -81,7 +89,9 @@ impl TrajectoryFileGenerator {
     }
 
     /// Add a transformer to the generator that is only applied when generating a differential trajectory
-    pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) -> &mut Self {
+    pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(
+        &mut self,
+    ) -> &mut Self {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
@@ -98,10 +108,8 @@ impl TrajectoryFileGenerator {
     >(
         &mut self,
     ) -> &mut Self {
-        self
-            .add_swerve_transformer::<T>()
+        self.add_swerve_transformer::<T>()
             .add_differential_transformer::<T>()
-        
     }
 
     fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
@@ -157,9 +165,9 @@ impl TrajectoryFileGenerator {
 
         Ok(postprocess(
             &samples,
-            self.ctx.params, 
+            self.ctx.params,
             self.trajectory_file,
-            self.ctx.project
+            self.ctx.project,
         ))
     }
 }
@@ -226,7 +234,7 @@ fn postprocess(
     result: &[Sample],
     modified_snapshot: Parameters<f64>,
     original_trajectory_file: TrajectoryFile,
-    project: ProjectFile
+    project: ProjectFile,
 ) -> TrajectoryFile {
     // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
     // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
@@ -269,8 +277,10 @@ fn postprocess(
         snapshot: Some(modified_snapshot),
         params: original_trajectory_file.params,
         // events has to go first so it can borrow waypoint_times before that is moved into `trajectory`
-        events: original_trajectory_file.events.iter().map(|marker|
-            EventMarker {
+        events: original_trajectory_file
+            .events
+            .iter()
+            .map(|marker| EventMarker {
                 name: marker.name.clone(),
                 from: EventMarkerData {
                     target: marker.from.target,
@@ -279,16 +289,16 @@ fn postprocess(
                         .from
                         .target
                         .and_then(|idx| waypoint_times.get(idx).copied()),
-                    offset: marker.from.offset.clone()
+                    offset: marker.from.offset.clone(),
                 },
-                event: marker.event.clone()
-            }
-        ).collect(),
+                event: marker.event.clone(),
+            })
+            .collect(),
         trajectory: Trajectory {
             sample_type: Some(project.r#type),
             waypoints: waypoint_times,
             samples: result.to_vec(),
             splits,
-        }
+        },
     }
 }

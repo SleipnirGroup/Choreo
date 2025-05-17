@@ -283,9 +283,7 @@ pub fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
 }
 
 // This is duplicated in constraints::ConstraintSetter
-pub fn fix_constraint_indices(
-   snapshot: &Parameters<f64>
-) -> (Vec<usize>, Vec<ConstraintIDX<f64>>) {
+pub fn fix_constraint_indices(snapshot: &Parameters<f64>) -> (Vec<usize>, Vec<ConstraintIDX<f64>>) {
     let mut guess_points: Vec<usize> = Vec::new();
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
     let num_wpts = snapshot.waypoints.len();

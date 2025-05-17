@@ -61,7 +61,7 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
 impl DifferentialGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            
+
             waypoints: context.params.waypoints.clone()
         })
     }
