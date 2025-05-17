@@ -247,25 +247,42 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
                                   path.drivetrain.wheel_max_angular_velocity;
 
       // |v|₂² ≤ vₘₐₓ²
-      problem.subject_to(v_wheel_wrt_robot.squared_norm() <=
-                         max_wheel_velocity * max_wheel_velocity);
+      // problem.subject_to(v_wheel_wrt_robot.squared_norm() <=
+      //                    max_wheel_velocity * max_wheel_velocity);
 
+      // w.r.t. field, not robot
       Translation2v module_f{Fx.at(index).at(module_index),
                              Fy.at(index).at(module_index)};
+      auto F_wrt_robot = module_f.rotate_by(-θ_k);
+
+      auto Vmax = 12.0;
+      // TODO real values. 3 volts per m/s = 12 volts for 4 m/s
+      Translation2v v_volts_wrt_robot = v_wheel_wrt_robot * (Vmax/max_wheel_velocity);
+      // projection of F_wrt_robot onto v_wheel_wrt_robot
+      // signifies the force vector in the direction of current velocity
+      // This division is giving me "nonfinite cost or constraints"
+      auto proj_v_F = v_wheel_wrt_robot * (F_wrt_robot.dot(v_wheel_wrt_robot))/(v_wheel_wrt_robot.squared_norm());
 
       // τ = r x F
       // F = τ/r
       double max_wheel_force =
           path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
 
-      // friction = μmg
-      double max_friction_force =
-          path.drivetrain.wheel_cof * path.drivetrain.mass * 9.8;
+      double volts_per_newton = 12 / max_wheel_force;
+      Translation2v F_volts_wrt_robot = proj_v_F * volts_per_newton;
+      auto wheel_voltage_wrt_robot = v_volts_wrt_robot + F_volts_wrt_robot;
+      
+      problem.subject_to(wheel_voltage_wrt_robot.squared_norm() <= Vmax * Vmax);
 
-      double max_force = std::min(max_wheel_force, max_friction_force);
+      // removing traction limiting for now, unsure how it factors in
+      // // friction = μmg
+      // double max_friction_force =
+      //     path.drivetrain.wheel_cof * path.drivetrain.mass * 9.8;
 
-      // |F|₂² ≤ Fₘₐₓ²
-      problem.subject_to(module_f.squared_norm() <= max_force * max_force);
+      // double max_force = std::min(max_wheel_force, max_friction_force);
+
+      // // |F|₂² ≤ Fₘₐₓ²
+      // problem.subject_to(module_f.squared_norm() <= max_force * max_force);
     }
 
     // Apply dynamics constraints
