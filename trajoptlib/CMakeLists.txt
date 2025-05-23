@@ -63,6 +63,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS FALSE)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_PYTHON "Build Python" OFF)
 
 include(CompilerFlags)
 
@@ -234,15 +235,31 @@ if(BUILD_EXAMPLES)
     endforeach()
 endif()
 
-set(DEV_MODULE Development.Module)
 
-find_package(Python 3.8 COMPONENTS Interpreter ${DEV_MODULE} REQUIRED)
 
-# Detect the installed nanobind package and import it into CMake
-execute_process(
-    COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
-  OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE nanobind_ROOT)
-find_package(nanobind CONFIG REQUIRED)
+if (BUILD_PYTHON)
+    set(DEV_MODULE Development.Module)
+    find_package(Python 3.8 COMPONENTS Interpreter ${DEV_MODULE} REQUIRED)
 
-nanobind_add_module(trajoptlib_py py/main.cpp)
-target_link_libraries(trajoptlib_py PUBLIC TrajoptLib)
+    # nanobind dependency
+    fetchcontent_declare(
+        nanobind
+        GIT_REPOSITORY https://github.com/wjakob/nanobind.git
+        GIT_TAG v2.6.1
+    )
+    fetchcontent_makeavailable(nanobind)
+
+    # pybind11_mkdoc dependency
+    fetchcontent_declare(
+        pybind11_mkdoc
+        GIT_REPOSITORY https://github.com/pybind/pybind11_mkdoc.git
+        # master on 2023-02-08
+        GIT_TAG 42fbf377824185e255b06d68fa70f4efcd569e2d
+        GIT_SUBMODULES ""
+    )
+    fetchcontent_makeavailable(pybind11_mkdoc)
+    include(cmake/modules/Pybind11Mkdoc.cmake)
+
+    nanobind_add_module(trajoptlib_py py/main.cpp)
+    target_link_libraries(trajoptlib_py PUBLIC TrajoptLib)
+endif()
