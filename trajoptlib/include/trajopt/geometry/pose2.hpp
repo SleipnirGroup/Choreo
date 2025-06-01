@@ -85,11 +85,11 @@ class Pose2 {
   /**
    * Rotates the pose around the origin and returns the new pose.
    *
-   * @param other The rotation to transform the pose by.
+   * @param rotation The rotation to transform the pose by.
    * @return The rotated pose.
    */
-  constexpr Pose2<T> rotate_by(const Rotation2<T>& other) const {
-    return {m_translation.rotate_by(other), m_rotation.rotate_by(other)};
+  constexpr Pose2<T> rotate_by(const Rotation2<T>& rotation) const {
+    return {m_translation.rotate_by(rotation), m_rotation.rotate_by(rotation)};
   }
 
  private:
