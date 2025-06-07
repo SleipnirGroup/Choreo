@@ -104,7 +104,7 @@ fetchcontent_declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
     # main on 2025-06-06
-    GIT_TAG b21f2bc1d13d74a42791f186b7ff50a209409fd2
+    GIT_TAG 4e07c8835dc589e496a66d3320e0990668fea268
 )
 fetchcontent_makeavailable(Sleipnir)
 
