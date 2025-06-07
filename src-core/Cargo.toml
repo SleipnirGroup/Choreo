@@ -19,4 +19,4 @@ thiserror = "2.0.12"
 tokio = { version = "1", features = ["process", "macros", "rt", "fs", "sync", "io-util"] }
 tracing = "0.1.41"
 trajoptlib = { path = "../trajoptlib" }
-zip = { version = "3.0.0", default-features = false }
+zip = { version = "4.0.0", default-features = false }
