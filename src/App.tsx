@@ -27,10 +27,12 @@ function App() {
       marginInline: "0.3rem",
       boxSizing: "border-box",
       backgroundColor:
-        ownerState.color === "primary" && theme.palette.primary.main,
+        ownerState.color === "primary" ? theme.palette.primary.main : undefined,
       "&:hover": {
         backgroundColor:
-          ownerState.color === "primary" && theme.palette.secondary.main
+          ownerState.color === "primary"
+            ? theme.palette.secondary.main
+            : undefined
       }
     })
   };
@@ -51,10 +53,12 @@ function App() {
       marginInline: "0.3rem",
       boxSizing: "border-box",
       backgroundColor:
-        ownerState.color === "primary" && theme.palette.primary.main,
+        ownerState.color === "primary" ? theme.palette.primary.main : undefined,
       "&:hover": {
         backgroundColor:
-          ownerState.color === "primary" && theme.palette.secondary.main
+          ownerState.color === "primary"
+            ? theme.palette.secondary.main
+            : undefined
       }
     })
   };

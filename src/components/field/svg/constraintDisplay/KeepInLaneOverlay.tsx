@@ -18,7 +18,7 @@ type Props<K extends ConstraintKey> = {
   end?: IHolonomicWaypointStore;
 };
 class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
-  rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
+  rootRef: React.RefObject<SVGGElement | null> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
       const dragHandleDrag = d3

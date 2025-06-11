@@ -10,7 +10,7 @@
     "active": true,
     "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
     "macOS": {
-      "minimumSystemVersion": "13.3",
+      "minimumSystemVersion": "14.5",
       "signingIdentity": "-"
     },
     "shortDescription": "Choreo",
