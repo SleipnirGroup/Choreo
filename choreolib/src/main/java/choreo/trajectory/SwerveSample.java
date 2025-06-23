@@ -14,6 +14,9 @@ import java.util.Arrays;
 
 /** A single swerve robot sample in a Trajectory. */
 public class SwerveSample implements TrajectorySample<SwerveSample> {
+  /** The usage reporting identifier for loading a swerve trajectory. */
+  public static final String USAGE_REPORT = "ChoreoLib/SwerveTrajectory";
+
   private static final double[] EMPTY_MODULE_FORCES = new double[] {0, 0, 0, 0};
 
   /** The timestamp of this sample, relative to the beginning of the trajectory. */

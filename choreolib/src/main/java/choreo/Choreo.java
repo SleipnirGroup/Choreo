@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -171,12 +170,12 @@ public final class Choreo {
     }
     String sampleType = trajectoryObj.get("sampleType").getAsString();
     if (sampleType.equals("Swerve")) {
-      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
+      HAL.reportUsage(SwerveSample.USAGE_REPORT, 1, "");
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (sampleType.equals("Differential")) {
-      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
+      HAL.reportUsage(DifferentialSample.USAGE_REPORT, 1, "");
 
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);

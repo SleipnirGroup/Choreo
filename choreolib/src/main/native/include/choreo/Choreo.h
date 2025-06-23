@@ -12,7 +12,6 @@
 #include <frc/Errors.h>
 #include <frc/Filesystem.h>
 #include <frc2/command/Subsystem.h>
-#include <hal/FRCUsageReporting.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
@@ -21,6 +20,7 @@
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/TrajSchemaVersion.h"
+#include <hal/UsageReporting.h>
 
 namespace choreo {
 
@@ -85,9 +85,9 @@ class Choreo {
   static std::optional<Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     if constexpr (std::same_as<SampleType, SwerveSample>) {
-      HAL_Report(HALUsageReporting::kResourceType_ChoreoTrajectory, 1);
+      HAL_ReportUsage("ChoreoLib/SwerveTrajectory", 1, "");
     } else if constexpr (std::same_as<SampleType, DifferentialSample>) {
-      HAL_Report(HALUsageReporting::kResourceType_ChoreoTrajectory, 2);
+      HAL_ReportUsage("ChoreoLib/DifferentialTrajectory", 2, "");
     }
 
     wpi::json json = wpi::json::parse(trajectoryJsonString);

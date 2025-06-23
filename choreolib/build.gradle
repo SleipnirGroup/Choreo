@@ -11,8 +11,10 @@ plugins {
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '6.25.0'
     id 'jacoco'
+    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-1"
 }
 
+ext.wpilibVersion = "2027.0.0-alpha-1"
 ext.getCurrentArch = {
     return NativePlatforms.desktop
 }
@@ -23,7 +25,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
-
+wpilibRepositories.use2027Repos()
 repositories {
     mavenCentral()
 }
@@ -130,6 +132,7 @@ model {
                 }
             }
             nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
         }
     }
     testSuites {
@@ -141,6 +144,7 @@ model {
                 }
             }
 
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
 
             binaries.all {

@@ -12,6 +12,9 @@ import java.nio.ByteBuffer;
 
 /** A single differential drive robot sample in a Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
+  /** The usage reporting identifier for loading a differential trajectory. */
+  public static final String USAGE_REPORT = "ChoreoLib/DifferentialTrajectory";
+
   /** The timestamp of this sample relative to the beginning of the trajectory. */
   public final double t;
 
