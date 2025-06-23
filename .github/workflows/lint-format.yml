@@ -9,7 +9,7 @@ concurrency:
 jobs:
   format:
     name: "Format"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,6 +27,11 @@ jobs:
           distribution: "temurin"
           java-version: 21
 
+      - name: Make GCC 14 the default toolchain (Linux)
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -q
@@ -35,10 +40,10 @@ jobs:
             curl \
             file \
             libayatana-appindicator3-dev \
-            libgtk-3-dev \
             librsvg2-dev \
             libssl-dev \
-            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
             wget
 
       - uses: pnpm/action-setup@v4
@@ -50,13 +55,13 @@ jobs:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.4.2
+      - run: pnpm install prettier@3.5.3
 
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.51
+      - run: pip3 install wpiformat==2025.33
 
       - run: pnpm run fmt
 
@@ -123,7 +128,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.51
+      - run: pip3 install wpiformat==2025.33
 
       - name: Create compile_commands.json
         working-directory: choreolib
@@ -175,7 +180,7 @@ jobs:
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
-      - run: pip3 install wpiformat==2024.51
+      - run: pip3 install wpiformat==2025.33
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES

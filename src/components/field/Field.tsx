@@ -8,10 +8,7 @@ import WaypointPanel from "../config/WaypointConfigPanel";
 
 import { Close } from "@mui/icons-material";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
-import { CircularProgress, Tooltip } from "@mui/material";
-import Box from "@mui/material/Box/Box";
-import IconButton from "@mui/material/IconButton";
-import "react-toastify/dist/ReactToastify.min.css";
+import { Box, CircularProgress, IconButton, Tooltip } from "@mui/material";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";

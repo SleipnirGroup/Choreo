@@ -133,8 +133,15 @@ def releasesRepoUrl = "$buildDir/repos/releases"
 publishing {
     repositories {
         maven {
-
             url = releasesRepoUrl
+        }
+        maven {
+            name = "frcmaven"
+            url = "https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/"
+            credentials {
+                username = System.getenv("ARTIFACTORY_USERNAME")
+                password = System.getenv("ARTIFACTORY_PASSWORD")
+            }
         }
     }
 }

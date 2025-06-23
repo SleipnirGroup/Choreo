@@ -198,9 +198,9 @@ fn fill_string(left_aligned: bool, width: usize, mut s: String) -> String {
         return s;
     }
     if left_aligned {
-        s.extend(std::iter::repeat(' ').take(width - s.len()));
+        s.extend(std::iter::repeat_n(' ', width - s.len()));
     } else {
-        let spaces = std::iter::repeat(' ').take(width - s.len());
+        let spaces = std::iter::repeat_n(' ', width - s.len());
         s.insert_str(0, &spaces.collect::<String>());
     }
     s

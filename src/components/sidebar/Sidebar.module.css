@@ -99,6 +99,7 @@
 }
 .SidebarItem button.SidebarIcon {
   margin: 0;
+  padding: 0;
 }
 .SidebarItem .SidebarVerticalLine {
   border-left: solid gray 1px;

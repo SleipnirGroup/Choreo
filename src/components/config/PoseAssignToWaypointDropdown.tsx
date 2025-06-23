@@ -78,7 +78,6 @@ class PoseAssignToWaypointDropdown extends Component<Props, State> {
             !doc.variables.poses.has(poseName)
           ) {
             if (newValue.isAdd) {
-              console.log(newValue.variableName);
               this.props.onDefinePose(newValue.variableName);
             }
           }
