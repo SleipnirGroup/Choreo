@@ -12,6 +12,7 @@
 #include <frc/Errors.h>
 #include <frc/Filesystem.h>
 #include <frc2/command/Subsystem.h>
+#include <hal/UsageReporting.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
@@ -20,7 +21,6 @@
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/TrajSchemaVersion.h"
-#include <hal/UsageReporting.h>
 
 namespace choreo {
 

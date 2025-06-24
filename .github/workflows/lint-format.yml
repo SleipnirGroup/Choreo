@@ -137,7 +137,7 @@ jobs:
       - name: Install SystemCore Toolchain
         run: ./gradlew installSystemCoreToolchain
         working-directory: choreolib
-        
+
       - name: Create compile_commands.json
         working-directory: choreolib
         run: |
