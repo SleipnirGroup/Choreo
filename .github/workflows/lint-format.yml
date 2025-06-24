@@ -58,6 +58,10 @@ jobs:
 
       - run: pip3 install wpiformat==2024.51
 
+      - name: Install SystemCore Toolchain
+        run: ./gradlew installSystemCoreToolchain
+        working-directory: choreolib
+
       - run: pnpm run fmt
 
       - run: cargo clippy -- -D warnings
@@ -125,6 +129,10 @@ jobs:
 
       - run: pip3 install wpiformat==2024.51
 
+      - name: Install SystemCore Toolchain
+        run: ./gradlew installSystemCoreToolchain
+        working-directory: choreolib
+        
       - name: Create compile_commands.json
         working-directory: choreolib
         run: |
