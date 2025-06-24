@@ -14,10 +14,7 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows x86_64
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64"
-            os: windows-2022
-          - artifact-name: Windows aarch64
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=ARM64 -DBUILD_TESTING=OFF"
+            cmake-args:
             os: windows-2022
           - artifact-name: macOS universal
             cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
@@ -53,28 +50,50 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
-      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.9
         # sccache doesn't work with MSBuild
         if: ${{ !startsWith(matrix.os, 'windows') }}
 
       - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
+
       - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
         if: startsWith(matrix.os, 'windows')
         working-directory: trajoptlib
+
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
         env:
-          SCCACHE_GHA_ENABLED: "true"
+          SCCACHE_GHA_ENABLED: true
+
       - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
         working-directory: trajoptlib
+
       - run: cmake --install build --config RelWithDebInfo --prefix pkg
         working-directory: trajoptlib
+
+      - run: ./build/differential
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+        working-directory: trajoptlib
+
+      - run: ./build/swerve
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+        working-directory: trajoptlib
+
+      # FIXME: Returns exit code 1
+      # - run: ./build/RelWithDebInfo/differential
+      #   if: startsWith(matrix.os, 'windows')
+      #   working-directory: trajoptlib
+
+      # FIXME: Returns exit code 1
+      # - run: ./build/RelWithDebInfo/swerve
+      #   if: startsWith(matrix.os, 'windows')
+      #   working-directory: trajoptlib
 
       - uses: actions/upload-artifact@v4
         with:

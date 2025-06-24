@@ -1,7 +1,7 @@
 import { Add, Delete } from "@mui/icons-material";
 import { MenuItem, Select, SelectChangeEvent, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { doc } from "../../../document/DocumentManager";
 import {
   DimensionName,
@@ -16,28 +16,28 @@ import VariableRenamingInput from "./VariableRenamingInput";
 
 const VariablePanel = observer(
   (props: {
-    entry: [string, IExpressionStore];
+    name: string;
+    expression: IExpressionStore;
     setName: (name: string) => void;
-    actionButton: () => JSX.Element;
-    logo: () => JSX.Element;
+    actionButton: () => React.JSX.Element;
+    logo: () => React.JSX.Element;
     validateName: (name: string) => boolean;
   }) => {
-    const entry = props.entry;
     return (
       <>
         {props.logo()}
         <ExpressionInput
-          key={`${entry[0]}-expr`}
+          key={`${props.name}-expr`}
           enabled
           title={() => (
             <VariableRenamingInput
               validateName={(name) => props.validateName(name)}
               width="7ch"
-              name={entry[0]}
+              name={props.name}
               setName={(name) => props.setName(name)}
             ></VariableRenamingInput>
           )}
-          number={entry[1]}
+          number={props.expression}
         ></ExpressionInput>
         {props.actionButton()}
       </>
@@ -46,7 +46,7 @@ const VariablePanel = observer(
 );
 
 type AddVariablePanelProps = {
-  logo: () => JSX.Element;
+  logo: () => React.JSX.Element;
   name: string;
   setName: (name: string) => void;
   expr: IExpressionStore;
@@ -56,7 +56,8 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
   return (
     <VariablePanel
       logo={props.logo}
-      entry={[props.name, props.expr]}
+      name={props.name}
+      expression={props.expr}
       setName={(name) => props.setName(name)}
       validateName={(name) => doc.variables.validateName(name, "")}
       actionButton={() => (
@@ -147,22 +148,25 @@ const VariablesConfigPanel = observer(() => {
   doc.variables.expressions.keys();
   return (
     <>
-      {doc.variables.sortedExpressions.map((entry) => (
+      {doc.variables.sortedExpressions.map(([uuid, variable]) => (
         <VariablePanel
-          validateName={(name) => doc.variables.validateName(name, entry[0])}
+          validateName={(newName) =>
+            doc.variables.validateName(newName, variable.name)
+          }
           logo={() => (
             <Tooltip
               disableInteractive
-              title={DimensionsExt[entry[1].dimension].name}
+              title={DimensionsExt[variable.expr.dimension].name}
             >
-              {DimensionsExt[entry[1].dimension].icon()}
+              {DimensionsExt[variable.expr.dimension].icon()}
             </Tooltip>
           )}
-          entry={entry}
-          setName={(name) => doc.variables.renameExpression(entry[0], name)}
+          expression={variable.expr}
+          name={variable.name}
+          setName={variable.setName}
           actionButton={() => (
             <Delete
-              onClick={() => doc.variables.deleteExpression(entry[0])}
+              onClick={() => doc.variables.deleteExpression(uuid)}
             ></Delete>
           )}
         ></VariablePanel>

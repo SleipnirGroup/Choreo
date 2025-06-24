@@ -22,7 +22,7 @@ class KeepInRectangleOverlay extends Component<
   Props<"KeepInRectangle">,
   object
 > {
-  rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
+  rootRef: React.RefObject<SVGGElement | null> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
       // Theres probably a better way to do this

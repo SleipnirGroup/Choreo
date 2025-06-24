@@ -15,8 +15,6 @@ jobs:
         include:
           - artifact-name: Windows x86_64
             os: windows-2022
-          - artifact-name: Windows aarch64
-            os: windows-2022
           - artifact-name: macOS universal
             os: macOS-14
           - artifact-name: Linux x86_64
@@ -49,11 +47,11 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
-      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.9
         # sccache doesn't work with MSBuild
         if: ${{ !startsWith(matrix.os, 'windows') }}
 
@@ -61,19 +59,19 @@ jobs:
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
         env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: "sccache"
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
 
       - run: cargo build --example differential
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
         env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: "sccache"
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
 
       - run: cargo build --example swerve
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
         env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: "sccache"
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true

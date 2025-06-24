@@ -178,8 +178,6 @@ class SwerveSample {
   constexpr SwerveSample Interpolate(const SwerveSample& endValue,
                                      units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
-    frc::Pose2d interpolatedPose =
-        GetPose().Exp(GetPose().Log(endValue.GetPose()) * scale.value());
 
     std::array<units::newton_t, 4> interpolatedForcesX;
     std::array<units::newton_t, 4> interpolatedForcesY;
@@ -190,18 +188,38 @@ class SwerveSample {
           wpi::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
     }
 
-    return SwerveSample{wpi::Lerp(timestamp, endValue.timestamp, scale),
-                        interpolatedPose.X(),
-                        interpolatedPose.Y(),
-                        interpolatedPose.Rotation().Radians(),
-                        wpi::Lerp(vx, endValue.vx, scale),
-                        wpi::Lerp(vy, endValue.vy, scale),
-                        wpi::Lerp(omega, endValue.omega, scale),
-                        wpi::Lerp(ax, endValue.ax, scale),
-                        wpi::Lerp(ay, endValue.ay, scale),
-                        wpi::Lerp(alpha, endValue.alpha, scale),
-                        interpolatedForcesX,
-                        interpolatedForcesY};
+    // Integrate the acceleration to get the rest of the state, since linearly
+    // interpolating the state gives an inaccurate result if the accelerations
+    // are changing between states
+    //
+    //   Δt = tₖ₊₁ − tₖ
+    //   τ = timestamp − tₖ
+    //
+    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
+    //   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
+    //   a(τ) = aₖ + jₖτ
+    //
+    // where jₖ = (aₖ₊₁ − aₖ)/Δt
+    auto dt = endValue.timestamp - timestamp;
+    auto τ = t - timestamp;
+    auto τ2 = τ * τ;
+    auto τ3 = τ * τ * τ;
+    auto jx = (endValue.ax - ax) / dt;
+    auto jy = (endValue.ay - ay) / dt;
+    auto η = (endValue.alpha - alpha) / dt;
+    return SwerveSample{
+        wpi::Lerp(timestamp, endValue.timestamp, scale),
+        x + vx * τ + 0.5 * ax * τ2 + 1.0 / 6.0 * jx * τ3,
+        y + vy * τ + 0.5 * ay * τ2 + 1.0 / 6.0 * jy * τ3,
+        heading + omega * τ + 0.5 * alpha * τ2 + 1.0 / 6.0 * η * τ3,
+        vx + ax * τ + 0.5 * jx * τ2,
+        vy + ay * τ + 0.5 * jy * τ2,
+        omega + alpha * τ + 0.5 * η * τ2,
+        ax + jx * τ,
+        ay + jy * τ,
+        alpha + η * τ,
+        interpolatedForcesX,
+        interpolatedForcesY};
   }
 
   /**

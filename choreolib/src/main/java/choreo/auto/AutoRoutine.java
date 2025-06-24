@@ -94,7 +94,7 @@ public class AutoRoutine {
       return;
     }
     pollCount++;
-    cycleTimestamp = Timer.getFPGATimestamp();
+    cycleTimestamp = Timer.getTimestamp();
     loop.poll();
     isActive = true;
   }

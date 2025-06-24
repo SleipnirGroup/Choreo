@@ -219,6 +219,7 @@ fn postprocess(
     counts_vec: Vec<usize>,
 ) -> TrajectoryFile {
     let mut snapshot = path.params.snapshot();
+    // Update the `intervals` field of each waypoint with the corresponding entry from `counts_vec`
     path.params
         .waypoints
         .iter_mut()
@@ -228,9 +229,14 @@ fn postprocess(
             w.0 .0.intervals = w.1;
             w.0 .1.intervals = w.1;
         });
-    // convert the result from trajoptlib to a format matching the save file.
-    // Calculate the waypoint timing
+    // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
+    // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
     let mut interval = 0;
+    // `intervals` contains (
+    //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
+    //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
+    //    The timestamp of the sample indexed by the previous parameter
+    // )
     let intervals = snapshot
         .waypoints
         .iter()
@@ -253,13 +259,22 @@ fn postprocess(
     // Calculate splits
     let splits = intervals
         .iter()
-        .filter(|a| a.0) // filter by split flag
-        .map(|a| a.1) // map to associate interval
+        .filter(|a| a.0) // filter by "start of split" flag
+        .map(|a| a.1) // map to associate an index in the samples array
         .collect::<Vec<usize>>();
+    // copy the above into the TrajectoryFile
     path.trajectory.sample_type = Some(project.r#type);
     path.trajectory.splits = splits;
     path.trajectory.samples = result.to_vec();
     path.trajectory.waypoints = waypoint_times;
     path.snapshot = Some(snapshot);
+    // update event markers' target timestamps with the corresponding timestamp from trajectory.waypoints
+    // or None if the targeted index is None or out of bounds
+    path.events.iter_mut().for_each(|marker| {
+        marker.from.target_timestamp = marker
+            .from
+            .target
+            .and_then(|idx| path.trajectory.waypoints.get(idx).copied());
+    });
     path
 }

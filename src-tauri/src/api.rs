@@ -11,9 +11,10 @@ use choreo_core::{
         trajectory::TrajectoryFile,
         Expr, OpenFilePayload,
     },
-    ChoreoError,
+    ChoreoError, ChoreoResult,
 };
-use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
+use tauri::Manager;
+use tauri_plugin_dialog::{DialogExt, FilePath};
 
 macro_rules! debug_result (
     ($result:expr) => {
@@ -55,27 +56,33 @@ pub async fn open_in_explorer(path: String) -> TauriResult<()> {
 }
 
 #[tauri::command]
-pub async fn open_project_dialog() -> TauriResult<OpenFilePayload> {
-    FileDialogBuilder::new()
+pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<OpenFilePayload> {
+    app_handle
+        .dialog()
+        .file()
         .set_title("Open a .chor file")
         .add_filter("Choreo Save File", &["chor"])
-        .pick_file()
+        .blocking_pick_file()
         .ok_or(ChoreoError::FileNotFound(None))
-        .map(|file| {
-            Ok(OpenFilePayload {
-                dir: file
+        .map(|file| match file {
+            FilePath::Url(_) => Ok(OpenFilePayload {
+                dir: ChoreoError::FileNotFound(None).to_string(),
+                name: ChoreoError::FileNotFound(None).to_string(),
+            }),
+            FilePath::Path(path) => Ok(OpenFilePayload {
+                dir: path
                     .parent()
                     .ok_or(ChoreoError::FileNotFound(None))?
                     .to_str()
                     .ok_or(ChoreoError::FileNotFound(None))?
                     .to_string(),
-                name: file
+                name: path
                     .file_name()
                     .ok_or(ChoreoError::FileNotFound(None))?
                     .to_str()
                     .ok_or(ChoreoError::FileNotFound(None))?
                     .to_string(),
-            })
+            }),
         })?
 }
 
@@ -91,9 +98,9 @@ pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> TauriRe
 }
 
 #[tauri::command]
-pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) {
+pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_projectfile(&resources, project).await;
+    file_management::write_projectfile(&resources, project).await
 }
 
 #[tauri::command]
@@ -122,9 +129,12 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<Trajectory
 }
 
 #[tauri::command]
-pub async fn write_trajectory(app_handle: tauri::AppHandle, trajectory: TrajectoryFile) {
+pub async fn write_trajectory(
+    app_handle: tauri::AppHandle,
+    trajectory: TrajectoryFile,
+) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_trajectory_file(&resources, trajectory).await;
+    file_management::write_trajectory_file(&resources, trajectory).await
 }
 
 #[tauri::command]

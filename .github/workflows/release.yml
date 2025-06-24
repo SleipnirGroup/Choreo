@@ -11,7 +11,7 @@ on:
 jobs:
   update-version:
     name: "Update Version"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
       - name: Generate a token
@@ -39,7 +39,7 @@ jobs:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.3.3
+      - run: pnpm install prettier@3.5.3
       - name: Update version
         run: |
           ./update_version.py ${{ github.event.inputs.tag }}
