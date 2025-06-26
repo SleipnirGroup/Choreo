@@ -24,7 +24,7 @@
     "externalBin": ["../target/choreo-cli"]
   },
   "productName": "Choreo",
-  "version": "2025.0.3",
+  "version": "2027.0.0-alpha-1",
   "identifier": "org.sleipnirgroup",
   "plugins": {},
   "app": {
@@ -33,7 +33,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2025.0.3",
+        "title": "Choreo v2027.0.0-alpha-1",
         "width": 1200,
         "height": 800
       }

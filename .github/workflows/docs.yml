@@ -16,6 +16,10 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
+      - name: Install SystemCore Toolchain
+        run: ./gradlew installSystemCoreToolchain
+        working-directory: choreolib
+
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
