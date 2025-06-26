@@ -36,7 +36,7 @@ jobs:
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
 
       - name: Set version (release)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
         working-directory: choreolib
         run: sed -i "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
 
@@ -45,8 +45,17 @@ jobs:
         working-directory: choreolib
 
       - name: Build with Gradle
+        if: github.repository_owner != 'SleipnirGroup'
         working-directory: choreolib
         run: ./gradlew build ${{ matrix.build-options }}
+
+      - name: Build with Gradle (release)
+        if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
+        working-directory: choreolib
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+        run: ./gradlew publish ${{ matrix.build-options }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -95,14 +104,14 @@ jobs:
           java-version: 17
 
       - name: Set version (Windows release)
-        if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
+        if: github.repository_owner == 'SleipnirGroup' && startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
         run: |
           sed -i "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
           ./gradlew spotlessApply  # Undo line ending changes from sed
         working-directory: choreolib
 
       - name: Set version (macOS release)
-        if: startsWith(matrix.os, 'macOS') && startsWith(github.ref, 'refs/tags/v')
+        if: github.repository_owner == 'SleipnirGroup' && startsWith(matrix.os, 'macOS') && startsWith(github.ref, 'refs/tags/v')
         run: sed -i '' "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
         working-directory: choreolib
 
@@ -111,8 +120,17 @@ jobs:
         working-directory: choreolib
 
       - name: Build with Gradle
+        if: github.repository_owner != 'SleipnirGroup'
         working-directory: choreolib
         run: ./gradlew build ${{ matrix.build-options }}
+
+      - name: Build with Gradle (release)
+        if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
+        working-directory: choreolib
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+        run: ./gradlew publish ${{ matrix.build-options }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -132,43 +150,6 @@ jobs:
         with:
           name: ChoreoLib-json
           path: choreolib/ChoreoLib2025.json
-
-  combine:
-    name: Combine
-    needs: [build-docker, build-host]
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: wpilibsuite/build-tools
-      - uses: actions/download-artifact@v4
-        with:
-          path: combiner/products/build/allOutputs
-      - name: Flatten Artifacts
-        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
-      - uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: 17
-      - name: Combine
-        if: |
-          !startsWith(github.ref, 'refs/tags/v')
-        run: ./gradlew publish -Pthirdparty
-        working-directory: combiner
-      - name: Combine (Release)
-        if: |
-          github.repository_owner == 'SleipnirGroup' &&
-          startsWith(github.ref, 'refs/tags/v')
-        run: |
-          ./gradlew publish -PreleaseMode
-        working-directory: combiner
-        env:
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ChoreoLib-Maven
-          path: ~/releases
 
   build-python:
     name: "Build Python"
