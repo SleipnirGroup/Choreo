@@ -45,7 +45,6 @@ jobs:
         working-directory: choreolib
 
       - name: Build with Gradle
-        if: github.repository_owner != 'SleipnirGroup'
         working-directory: choreolib
         run: ./gradlew build ${{ matrix.build-options }}
 
@@ -120,7 +119,6 @@ jobs:
         working-directory: choreolib
 
       - name: Build with Gradle
-        if: github.repository_owner != 'SleipnirGroup'
         working-directory: choreolib
         run: ./gradlew build ${{ matrix.build-options }}
 
