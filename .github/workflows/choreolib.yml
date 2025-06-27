@@ -194,6 +194,8 @@ jobs:
 
       - run: mypy --pretty --show-column-numbers choreolib/py
 
+  # Removed until 2027 Python WPILib is available.
+  
   # pypi-publish:
   #   name: Upload release to PyPI
   #   runs-on: ubuntu-24.04
