@@ -73,9 +73,6 @@ jobs:
           - os: windows-2022
             artifact-name: Windows-x86_64
             build-options:
-            defaults:
-              run:
-                shell: bash
 
           # FIXME: Link failure on commands library
           # - os: windows-2022
@@ -115,12 +112,13 @@ jobs:
         run: echo "ref=${GITHUB_REF}, github.ref=${{ github.ref }}"
       
       - name: Set version (Windows release)
-        if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
+        if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'windows') #&& startsWith(github.ref, 'refs/tags/v')
         run: |
           tag="${{ github.ref }}"
           sed -i "s/0.0.0/${tag##*v}/g" publish.gradle
           head publish.gradle
           ./gradlew spotlessApply  # Undo line ending changes from sed
+        shell: bash
         working-directory: choreolib
 
       - name: Set version (macOS release)
