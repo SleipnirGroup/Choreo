@@ -73,7 +73,9 @@ jobs:
           - os: windows-2022
             artifact-name: Windows-x86_64
             build-options:
-            shell: bash
+            defaults:
+              run:
+                shell: bash
 
           # FIXME: Link failure on commands library
           # - os: windows-2022
