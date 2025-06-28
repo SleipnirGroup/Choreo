@@ -1,0 +1,47 @@
+var hierarchy =
+[
+    [ "trajopt::AngularVelocityMaxMagnitudeConstraint", "classtrajopt_1_1AngularVelocityMaxMagnitudeConstraint.html", null ],
+    [ "trajopt::Spline< Degree >::ControlVector", "structtrajopt_1_1Spline_1_1ControlVector.html", null ],
+    [ "trajopt::CubicHermiteSpline1d", "classtrajopt_1_1CubicHermiteSpline1d.html", null ],
+    [ "trajopt::DifferentialDrivetrain", "structtrajopt_1_1DifferentialDrivetrain.html", null ],
+    [ "trajopt::DifferentialSolution", "structtrajopt_1_1DifferentialSolution.html", null ],
+    [ "trajopt::DifferentialTrajectory", "classtrajopt_1_1DifferentialTrajectory.html", null ],
+    [ "trajopt::DifferentialTrajectoryGenerator", "classtrajopt_1_1DifferentialTrajectoryGenerator.html", null ],
+    [ "trajopt::DifferentialTrajectorySample", "classtrajopt_1_1DifferentialTrajectorySample.html", null ],
+    [ "trajopt::KeepOutRegion", "structtrajopt_1_1KeepOutRegion.html", null ],
+    [ "trajopt::LaneConstraint", "classtrajopt_1_1LaneConstraint.html", null ],
+    [ "trajopt::LinearAccelerationMaxMagnitudeConstraint", "classtrajopt_1_1LinearAccelerationMaxMagnitudeConstraint.html", null ],
+    [ "trajopt::LinearVelocityDirectionConstraint", "classtrajopt_1_1LinearVelocityDirectionConstraint.html", null ],
+    [ "trajopt::LinearVelocityMaxMagnitudeConstraint", "classtrajopt_1_1LinearVelocityMaxMagnitudeConstraint.html", null ],
+    [ "trajopt::LinePointConstraint", "classtrajopt_1_1LinePointConstraint.html", null ],
+    [ "trajopt::Path< Drivetrain, Solution >", "structtrajopt_1_1Path.html", null ],
+    [ "trajopt::Path< DifferentialDrivetrain, DifferentialSolution >", "structtrajopt_1_1Path.html", null ],
+    [ "trajopt::Path< SwerveDrivetrain, SwerveSolution >", "structtrajopt_1_1Path.html", null ],
+    [ "trajopt::PathBuilder< Drivetrain, Solution >", "classtrajopt_1_1PathBuilder.html", null ],
+    [ "trajopt::PointAtConstraint", "classtrajopt_1_1PointAtConstraint.html", null ],
+    [ "trajopt::PointLineConstraint", "classtrajopt_1_1PointLineConstraint.html", null ],
+    [ "trajopt::PointLineRegionConstraint", "classtrajopt_1_1PointLineRegionConstraint.html", null ],
+    [ "trajopt::PointPointMaxConstraint", "classtrajopt_1_1PointPointMaxConstraint.html", null ],
+    [ "trajopt::PointPointMinConstraint", "classtrajopt_1_1PointPointMinConstraint.html", null ],
+    [ "trajopt::Pose2< T >", "classtrajopt_1_1Pose2.html", null ],
+    [ "trajopt::Pose2< double >", "classtrajopt_1_1Pose2.html", null ],
+    [ "trajopt::PoseEqualityConstraint", "classtrajopt_1_1PoseEqualityConstraint.html", null ],
+    [ "trajopt::Rotation2< T >", "classtrajopt_1_1Rotation2.html", null ],
+    [ "trajopt::Rotation2< double >", "classtrajopt_1_1Rotation2.html", null ],
+    [ "trajopt::Spline< Degree >", "classtrajopt_1_1Spline.html", null ],
+    [ "trajopt::Spline< 3 >", "classtrajopt_1_1Spline.html", [
+      [ "trajopt::CubicHermiteSpline", "classtrajopt_1_1CubicHermiteSpline.html", [
+        [ "trajopt::CubicHermitePoseSplineHolonomic", "classtrajopt_1_1CubicHermitePoseSplineHolonomic.html", null ]
+      ] ]
+    ] ],
+    [ "trajopt::SplineHelper", "classtrajopt_1_1SplineHelper.html", null ],
+    [ "trajopt::SwerveDrivetrain", "structtrajopt_1_1SwerveDrivetrain.html", null ],
+    [ "trajopt::SwerveSolution", "structtrajopt_1_1SwerveSolution.html", null ],
+    [ "trajopt::SwerveTrajectory", "classtrajopt_1_1SwerveTrajectory.html", null ],
+    [ "trajopt::SwerveTrajectoryGenerator", "classtrajopt_1_1SwerveTrajectoryGenerator.html", null ],
+    [ "trajopt::SwerveTrajectorySample", "classtrajopt_1_1SwerveTrajectorySample.html", null ],
+    [ "trajopt::Translation2< T >", "classtrajopt_1_1Translation2.html", null ],
+    [ "trajopt::Translation2< double >", "classtrajopt_1_1Translation2.html", null ],
+    [ "trajopt::TranslationEqualityConstraint", "classtrajopt_1_1TranslationEqualityConstraint.html", null ],
+    [ "trajopt::Waypoint", "structtrajopt_1_1Waypoint.html", null ]
+];
