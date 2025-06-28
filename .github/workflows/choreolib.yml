@@ -107,12 +107,12 @@ jobs:
         working-directory: choreolib
 
       - name: View GITHUB_REF
-        run: echo "ref=${GITHUB_REF}"
+        run: echo "ref=${GITHUB_REF}, github.ref=${{ github.ref }}"
       
       - name: Set version (Windows release)
         if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
         run: |
-          sed -i "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
+          sed -i "s/0.0.0/${${{ github.ref }}##*v}/g" publish.gradle
           head publish.gradle
           ./gradlew spotlessApply  # Undo line ending changes from sed
         working-directory: choreolib
@@ -120,7 +120,7 @@ jobs:
       - name: Set version (macOS release)
         if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'macOS') && startsWith(github.ref, 'refs/tags/v')
         run: |
-          sed -i '' "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
+          sed -i '' "s/0.0.0/${${{ github.ref }}##*v}/g" publish.gradle
           head publish.gradle
         working-directory: choreolib
 
