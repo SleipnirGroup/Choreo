@@ -1,14 +1,13 @@
 {
-  "fileName": "ChoreoLib2025.json",
+  "fileName": "ChoreoLib2027Alpha.json",
   "name": "ChoreoLib",
   "version": "2027.0.0-alpha-1",
   "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
   "frcYear": "2027_alpha1",
   "mavenUrls": [
-    "https://lib.choreo.autos/dep",
-    "https://repo1.maven.org/maven2"
+    "https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/"
   ],
-  "jsonUrl": "https://lib.choreo.autos/dep/ChoreoLib2025.json",
+  "jsonUrl": "https://choreo.autos/lib/ChoreoLib2027Alpha.json",
   "javaDependencies": [
     {
       "groupId": "choreo",
@@ -35,7 +34,6 @@
         "windowsx86-64",
         "linuxx86-64",
         "osxuniversal",
-        "linuxathena",
         "linuxarm32",
         "linuxarm64"
       ]
