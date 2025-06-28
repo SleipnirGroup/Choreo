@@ -42,9 +42,7 @@ jobs:
       - name: Set version (release)
         if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
         working-directory: choreolib
-        run: |
-          tag="${{ github.ref }}"
-          sed -i "s/0.0.0/${tag##*v}/g" publish.gradle
+        run: sed -i "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
 
       - name: Build with Gradle
         working-directory: choreolib
@@ -108,25 +106,18 @@ jobs:
         run: ./gradlew installSystemCoreToolchain
         working-directory: choreolib
 
-      - name: View GITHUB_REF
-        run: echo "ref=${GITHUB_REF}, github.ref=${{ github.ref }}"
-      
       - name: Set version (Windows release)
-        if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'windows') #&& startsWith(github.ref, 'refs/tags/v')
+        if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
         run: |
           tag="${{ github.ref }}"
           sed -i "s/0.0.0/${tag##*v}/g" publish.gradle
-          head publish.gradle
           ./gradlew spotlessApply  # Undo line ending changes from sed
         shell: bash
         working-directory: choreolib
 
       - name: Set version (macOS release)
         if: github.repository_owner == 'shueja' && startsWith(matrix.os, 'macOS') && startsWith(github.ref, 'refs/tags/v')
-        run: |
-          tag="${{ github.ref }}"
-          sed -i '' "s/0.0.0/${tag##*v}/g" publish.gradle
-          head publish.gradle
+        run: sed -i '' "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
         working-directory: choreolib
 
       - name: Build with Gradle
@@ -205,23 +196,21 @@ jobs:
 
       - run: mypy --pretty --show-column-numbers choreolib/py
 
-  # Removed until 2027 Python WPILib is available.
-
-  # pypi-publish:
-  #   name: Upload release to PyPI
-  #   runs-on: ubuntu-24.04
-  #   needs: [build-python]
-  #   if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/p/sleipnirgroup-choreolib
-  #   permissions:
-  #     id-token: write
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         path: dist
-  #         pattern: "Python"
-  #         merge-multiple: true
-  #     - name: Publish package distributions to PyPI
-  #       uses: pypa/gh-action-pypi-publish@release/v1
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-24.04
+    needs: [build-python]
+    if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sleipnirgroup-choreolib
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "Python"
+          merge-multiple: true
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
