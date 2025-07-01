@@ -78,11 +78,11 @@ target = "<target>"
 
 ### Application
 
-- ⚛️ [React](https://react.dev/): Frontend UI framework (TypeScript)
-- ⚡️ [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
-- 🖥️ [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
-- 🚗 [TrajoptLib](https://github.com/SleipnirGroup/Choreo/tree/main/trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
-- 📈 [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
+- [React](https://react.dev/): Frontend UI framework (TypeScript)
+- [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
+- [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
+- [TrajoptLib](https://github.com/SleipnirGroup/Choreo/tree/main/trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
+- [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
 
 ### Formatters/linters
 
