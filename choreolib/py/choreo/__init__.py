@@ -1,6 +1,7 @@
 import json
 import os
 
+import hal
 from choreo.trajectory import (
     DifferentialSample,
     DifferentialTrajectory,
@@ -26,6 +27,9 @@ def load_differential_trajectory_string(
     Parameter ``trajectory_json_string``:
         The JSON string.
     """
+    # Usage report
+    hal.report(hal.tResourceType.kResourceType_ChoreoTrajectory, 2)
+
     data = json.loads(trajectory_json_string)
     name = data["name"]
     try:
@@ -90,6 +94,9 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     Parameter ``trajectory_json_string``:
         The JSON string.
     """
+    # Usage report
+    hal.report(hal.tResourceType.kResourceType_ChoreoTrajectory, 1)
+
     data = json.loads(trajectory_json_string)
     name = data["name"]
     try:
