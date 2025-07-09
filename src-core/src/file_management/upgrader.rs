@@ -86,10 +86,9 @@ impl Editor {
         value: impl Into<JsonValue>,
     ) -> ChoreoResult<()> {
         let mut jdata = &mut self.jdata;
-        let keys = path.try_as_json_path().ok_or(ChoreoError::Json(format!(
-            "Invalid JSON path of {:?}",
-            path
-        )))?;
+        let keys = path
+            .try_as_json_path()
+            .ok_or(ChoreoError::Json(format!("Invalid JSON path of {path:?}")))?;
         if keys.is_empty() {
             return Err(ChoreoError::Json("Empty JSON path".to_string()));
         }
@@ -100,8 +99,7 @@ impl Editor {
                     .or_insert(JsonValue::Object(Default::default()));
             } else {
                 return Err(ChoreoError::Json(format!(
-                    "Invalid JSON path of {:?}, {:?} is already assigned to a non object value",
-                    path, key
+                    "Invalid JSON path of {path:?}, {key:?} is already assigned to a non object value"
                 )));
             }
         }
@@ -109,8 +107,7 @@ impl Editor {
             obj.insert(keys.last().unwrap().to_string(), value.into());
         } else {
             return Err(ChoreoError::Json(format!(
-                "Invalid JSON path of {:?}, {:?} is already assigned to a non object value",
-                path,
+                "Invalid JSON path of {path:?}, {:?} is already assigned to a non object value",
                 keys.last().unwrap()
             )));
         }
