@@ -52,16 +52,16 @@ jobs:
           version: 10
 
       - name: Make GCC 14 the default toolchain (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: |
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
       - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: startsWith(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
 
       - name: Install Linux dependencies
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update -q
           sudo apt-get install -y \
@@ -88,7 +88,7 @@ jobs:
         run: rustup target add x86_64-apple-darwin
 
       - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: startsWith(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
