@@ -31,46 +31,46 @@ jobs:
 
       - name: Install dependencies (Windows)
         uses: lukka/get-cmake@v3.29.3
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
 
       - name: Install dependencies (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
 
       - name: Install dependencies (macOS)
         run: brew install ninja
-        if: startsWith(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
 
       - name: Make GCC 14 the default toolchain (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: |
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
       - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: startsWith(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
         # sccache doesn't work with MSBuild
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
 
       - run: cargo build
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
         working-directory: trajoptlib
         env:
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
 
       - run: cargo build --example differential
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
         working-directory: trajoptlib
         env:
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
 
       - run: cargo build --example swerve
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
         working-directory: trajoptlib
         env:
           RUSTC_WRAPPER: sccache
