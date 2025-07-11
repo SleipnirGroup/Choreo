@@ -34,36 +34,36 @@ jobs:
 
       - name: Install dependencies (Windows)
         uses: lukka/get-cmake@v3.29.3
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
 
       - name: Install dependencies (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
 
       - name: Install dependencies (macOS)
         run: brew install ninja
-        if: startsWith(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
 
       - name: Make GCC 14 the default toolchain (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: |
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
       - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: startsWith(matrix.os, 'macOS')
+        if: runner.os == 'macOS'
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
         # sccache doesn't work with MSBuild
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
 
       - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
         working-directory: trajoptlib
 
       - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
         working-directory: trajoptlib
 
       - run: cmake --build build --config RelWithDebInfo --parallel 4
@@ -78,21 +78,21 @@ jobs:
         working-directory: trajoptlib
 
       - run: ./build/differential
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
         working-directory: trajoptlib
 
       - run: ./build/swerve
-        if: ${{ !startsWith(matrix.os, 'windows') }}
+        if: runner.os != 'Windows'
         working-directory: trajoptlib
 
       # FIXME: Returns exit code 1
       # - run: ./build/RelWithDebInfo/differential
-      #   if: startsWith(matrix.os, 'windows')
+      #   if: runner.os == 'Windows'
       #   working-directory: trajoptlib
 
       # FIXME: Returns exit code 1
       # - run: ./build/RelWithDebInfo/swerve
-      #   if: startsWith(matrix.os, 'windows')
+      #   if: runner.os == 'Windows'
       #   working-directory: trajoptlib
 
       - uses: actions/upload-artifact@v4
