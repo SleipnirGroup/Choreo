@@ -16,7 +16,7 @@
 
 - [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - GCC ≥ 14 via `sudo apt install g++-14`
-- Tauri dependencies (see [here](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux)).
+- Tauri dependencies (see [here](https://v2.tauri.app/start/prerequisites/#linux)).
 
 ## Recommended IDE for Tauri
 
