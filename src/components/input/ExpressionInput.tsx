@@ -21,6 +21,8 @@ export type ExpressionInputProps = {
   titleTooltip?: string;
   /** Maximum width of the number input, in monospace characters */
   maxWidthCharacters?: number;
+  /** A function to verify the validity of an input. */
+  valid?: ((thing: IExpressionStore) => boolean);
 };
 
 type State = {
@@ -137,7 +139,11 @@ class Input extends Component<ExpressionInputProps, State> {
           className={
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "") +
-            (this.getValid() ? " " : " " + styles.Invalid)
+            (this.getValid() &&
+            (this.props.valid == undefined ||
+              this.props.valid(this.props.number))
+              ? " "
+              : " " + styles.Invalid)
           }
           style={{
             minWidth: `${characters}ch`,
