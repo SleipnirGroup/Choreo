@@ -146,7 +146,7 @@ pub enum ConstraintData<T: SnapshottableType> {
     /// A constraint to contain the bumpers within a circlular region of the field
     KeepInCircle { x: T, y: T, r: T },
     /// A constraint to contain the bumpers within a rectangular region of the field
-    KeepInRectangle { x: T, y: T, w: T, h: T },
+    KeepInRectangle { x: T, y: T, w: T, h: T, rotation: T },
     /// A constraint to contain the bumpers within two line
     KeepInLane { tolerance: T },
     /// A constraint to contain the bumpers outside a circlular region of the field
@@ -192,11 +192,12 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 y: y.snapshot(),
                 r: r.snapshot(),
             },
-            ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
+            ConstraintData::KeepInRectangle { x, y, w, h, rotation } => ConstraintData::KeepInRectangle {
                 x: x.snapshot(),
                 y: y.snapshot(),
                 w: w.snapshot(),
                 h: h.snapshot(),
+                rotation: rotation.snapshot(),
             },
             ConstraintData::KeepInLane { tolerance } => ConstraintData::KeepInLane {
                 tolerance: tolerance.snapshot(),
