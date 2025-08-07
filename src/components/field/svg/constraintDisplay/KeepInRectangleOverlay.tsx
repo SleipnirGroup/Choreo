@@ -140,10 +140,10 @@ class KeepInRectangleOverlay extends Component<
   startRotation(event: any) {
     const data = this.props.data;
     this.initialRotation = data.serialize.props.rotation.val;
-    
+
     const centerX = data.serialize.props.x.val + data.serialize.props.w.val / 2;
     const centerY = data.serialize.props.y.val + data.serialize.props.h.val / 2;
-    
+
     // Store initial mouse angle relative to center
     const mouseX = event.x - centerX;
     const mouseY = event.y - centerY;
@@ -154,17 +154,17 @@ class KeepInRectangleOverlay extends Component<
     const data = this.props.data;
     const centerX = data.serialize.props.x.val + data.serialize.props.w.val / 2;
     const centerY = data.serialize.props.y.val + data.serialize.props.h.val / 2;
-    
+
     // Get current mouse position relative to center
     const mouseX = event.x - centerX;
     const mouseY = event.y - centerY;
-    
+
     // Calculate current mouse angle
     const currentMouseAngle = Math.atan2(mouseY, mouseX);
-    
+
     // Calculate the change in angle from initial mouse position
     const angleDelta = currentMouseAngle - this.initialMouseAngle;
-    
+
     // Set the rotation as initial rotation plus the change
     data.rotation.set(this.initialRotation + angleDelta);
   }
@@ -194,35 +194,37 @@ class KeepInRectangleOverlay extends Component<
     const w = data.props.w.val;
     const h = data.props.h.val;
     const rotation = data.props.rotation.val;
-    
+
     // Calculate center and rotated corners
     const centerX = x + w / 2;
     const centerY = y + h / 2;
     const cos_r = Math.cos(rotation);
     const sin_r = Math.sin(rotation);
-    
+
     // Original corner points relative to bottom-left origin
     const corners = [
-      [x, y],         // bottom-left
-      [x + w, y],     // bottom-right  
+      [x, y], // bottom-left
+      [x + w, y], // bottom-right
       [x + w, y + h], // top-right
-      [x, y + h],     // top-left
+      [x, y + h] // top-left
     ];
-    
+
     // Apply rotation around center
     const rotatedCorners = corners.map(([corner_x, corner_y]) => {
       const rel_x = corner_x - centerX;
       const rel_y = corner_y - centerY;
-      
+
       const rotated_x = rel_x * cos_r - rel_y * sin_r;
       const rotated_y = rel_x * sin_r + rel_y * cos_r;
-      
+
       return [centerX + rotated_x, centerY + rotated_y];
     });
-    
+
     // Create SVG polygon path
-    const polygonPoints = rotatedCorners.map(corner => corner.join(",")).join(" ");
-    
+    const polygonPoints = rotatedCorners
+      .map((corner) => corner.join(","))
+      .join(" ");
+
     return (
       <g ref={this.rootRef}>
         {/* Fill Polygon*/}
@@ -250,10 +252,15 @@ class KeepInRectangleOverlay extends Component<
             r={DOT}
             fill={"green"}
             fillOpacity={1.0}
-            id={index === 0 ? "dragTarget-keepInRectangle" : 
-                index === 1 ? "dragTarget-keepInRectangleW" :
-                index === 2 ? "dragTarget-keepInRectangleWH" : 
-                "dragTarget-keepInRectangleH"}
+            id={
+              index === 0
+                ? "dragTarget-keepInRectangle"
+                : index === 1
+                  ? "dragTarget-keepInRectangleW"
+                  : index === 2
+                    ? "dragTarget-keepInRectangleWH"
+                    : "dragTarget-keepInRectangleH"
+            }
           />
         ))}
         {/* Rotation Handle - show as a line from center to top-right */}

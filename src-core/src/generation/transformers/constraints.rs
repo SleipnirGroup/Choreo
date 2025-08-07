@@ -135,36 +135,36 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     // Calculate the center of the rectangle
                     let center_x = x + w / 2.0;
                     let center_y = y + h / 2.0;
-                    
+
                     // Original corner points relative to bottom-left origin
                     let corners = vec![
                         (x, y),         // bottom-left
-                        (x + w, y),     // bottom-right  
+                        (x + w, y),     // bottom-right
                         (x + w, y + h), // top-right
                         (x, y + h),     // top-left
                     ];
-                    
+
                     // Apply rotation around center
                     let cos_r = rotation.cos();
                     let sin_r = rotation.sin();
-                    
+
                     let mut xs = Vec::new();
                     let mut ys = Vec::new();
-                    
+
                     for (corner_x, corner_y) in corners {
                         // Translate to origin (center of rectangle)
                         let rel_x = corner_x - center_x;
                         let rel_y = corner_y - center_y;
-                        
+
                         // Apply rotation
                         let rotated_x = rel_x * cos_r - rel_y * sin_r;
                         let rotated_y = rel_x * sin_r + rel_y * cos_r;
-                        
+
                         // Translate back
                         xs.push(center_x + rotated_x);
                         ys.push(center_y + rotated_y);
                     }
-                    
+
                     match to_opt {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
@@ -244,36 +244,36 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     // Calculate the center of the rectangle
                     let center_x = x + w / 2.0;
                     let center_y = y + h / 2.0;
-                    
+
                     // Original corner points relative to bottom-left origin
                     let corners = vec![
                         (x, y),         // bottom-left
-                        (x + w, y),     // bottom-right  
+                        (x + w, y),     // bottom-right
                         (x + w, y + h), // top-right
                         (x, y + h),     // top-left
                     ];
-                    
+
                     // Apply rotation around center
                     let cos_r = rotation.cos();
                     let sin_r = rotation.sin();
-                    
+
                     let mut xs = Vec::new();
                     let mut ys = Vec::new();
-                    
+
                     for (corner_x, corner_y) in corners {
                         // Translate to origin (center of rectangle)
                         let rel_x = corner_x - center_x;
                         let rel_y = corner_y - center_y;
-                        
+
                         // Apply rotation
                         let rotated_x = rel_x * cos_r - rel_y * sin_r;
                         let rotated_y = rel_x * sin_r + rel_y * cos_r;
-                        
+
                         // Translate back
                         xs.push(center_x + rotated_x);
                         ys.push(center_y + rotated_y);
                     }
-                    
+
                     match to_opt {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),

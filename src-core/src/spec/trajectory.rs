@@ -192,7 +192,13 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 y: y.snapshot(),
                 r: r.snapshot(),
             },
-            ConstraintData::KeepInRectangle { x, y, w, h, rotation } => ConstraintData::KeepInRectangle {
+            ConstraintData::KeepInRectangle {
+                x,
+                y,
+                w,
+                h,
+                rotation,
+            } => ConstraintData::KeepInRectangle {
                 x: x.snapshot(),
                 y: y.snapshot(),
                 w: w.snapshot(),
