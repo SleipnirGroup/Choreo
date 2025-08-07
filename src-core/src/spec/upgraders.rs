@@ -17,6 +17,7 @@ mod traj_file {
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
+        upgrader.add_version_action(up_1_2);
         // Ensure the new upgrader is added here
         upgrader
     }
@@ -32,6 +33,61 @@ mod traj_file {
                 splits: vec![],
             },
         )
+    }
+
+    fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        use crate::spec::Expr;
+        use serde_json::Value as JsonValue;
+
+        // Add rotation field to all KeepInRectangle constraints in both snapshot and params
+
+        // Handle snapshot constraints
+        if editor.has_path("snapshot.constraints") {
+            let snapshot_constraints: Vec<JsonValue> = editor.get_path("snapshot.constraints")?;
+            let mut updated_constraints = Vec::new();
+
+            for mut constraint in snapshot_constraints {
+                if let Some(data_type) = constraint["data"]["type"].as_str() {
+                    if data_type == "KeepInRectangle" {
+                        // Add rotation field to props
+                        if let Some(props) = constraint["data"]["props"].as_object_mut() {
+                            props.insert(
+                                "rotation".to_string(),
+                                JsonValue::Number(serde_json::Number::from_f64(0.0).unwrap()),
+                            );
+                        }
+                    }
+                }
+                updated_constraints.push(constraint);
+            }
+
+            editor.set_path_serialize("snapshot.constraints", updated_constraints)?;
+        }
+
+        // Handle params constraints
+        if editor.has_path("params.constraints") {
+            let params_constraints: Vec<JsonValue> = editor.get_path("params.constraints")?;
+            let mut updated_constraints = Vec::new();
+
+            for mut constraint in params_constraints {
+                if let Some(data_type) = constraint["data"]["type"].as_str() {
+                    if data_type == "KeepInRectangle" {
+                        // Add rotation field to props
+                        if let Some(props) = constraint["data"]["props"].as_object_mut() {
+                            props.insert(
+                                "rotation".to_string(),
+                                serde_json::to_value(Expr::new("0 deg", 0.0))?,
+                            );
+                        }
+                    }
+                }
+                updated_constraints.push(constraint);
+            }
+
+            editor.set_path_serialize("params.constraints", updated_constraints)?;
+        }
+
+        Ok(())
     }
 
     #[cfg(test)]
