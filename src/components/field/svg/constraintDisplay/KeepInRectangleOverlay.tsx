@@ -122,12 +122,82 @@ class KeepInRectangleOverlay extends Component<
 
   dragPointTranslate(event: any, xOffset: boolean, yOffset: boolean) {
     const data = this.props.data;
-    console.log(xOffset, yOffset);
-    data.x.set(data.serialize.props.x.val + event.dx * (xOffset ? 0.0 : 1.0));
-    data.y.set(data.serialize.props.y.val + event.dy * (yOffset ? 0.0 : 1.0));
-
-    data.w.set(data.serialize.props.w.val - event.dx * (xOffset ? -1.0 : 1.0));
-    data.h.set(data.serialize.props.h.val - event.dy * (yOffset ? -1.0 : 1.0));
+    const rotation = data.serialize.props.rotation.val;
+    const centerX = data.serialize.props.x.val; // x,y are now center coordinates
+    const centerY = data.serialize.props.y.val;
+    const w = data.serialize.props.w.val;
+    const h = data.serialize.props.h.val;
+    
+    const center: [number, number] = [centerX, centerY];
+    
+    // Calculate current rotated corners in world coordinates
+    const corners: [number, number][] = [
+      [centerX - w / 2, centerY - h / 2], // bottom-left (index 0)
+      [centerX + w / 2, centerY - h / 2], // bottom-right (index 1) 
+      [centerX + w / 2, centerY + h / 2], // top-right (index 2)
+      [centerX - w / 2, centerY + h / 2]  // top-left (index 3)
+    ];
+    const rotatedCorners = corners.map((corner) => this.rotate_around(corner, center, rotation));
+    
+    // Determine which corner we're dragging and which should stay fixed
+    let draggedCornerIndex: number;
+    let fixedCornerIndex: number;
+    
+    if (!xOffset && !yOffset) {
+      // bottom-left corner drag
+      draggedCornerIndex = 0;
+      fixedCornerIndex = 2; // top-right stays fixed
+    } else if (xOffset && !yOffset) {
+      // bottom-right corner drag  
+      draggedCornerIndex = 1;
+      fixedCornerIndex = 3; // top-left stays fixed
+    } else if (xOffset && yOffset) {
+      // top-right corner drag
+      draggedCornerIndex = 2; 
+      fixedCornerIndex = 0; // bottom-left stays fixed
+    } else {
+      // top-left corner drag
+      draggedCornerIndex = 3;
+      fixedCornerIndex = 1; // bottom-right stays fixed
+    }
+    
+    // Move the dragged corner by the drag delta
+    const newDraggedCorner: [number, number] = [
+      rotatedCorners[draggedCornerIndex][0] + event.dx,
+      rotatedCorners[draggedCornerIndex][1] + event.dy
+    ];
+    
+    // Fixed corner stays in place
+    const fixedCorner = rotatedCorners[fixedCornerIndex];
+    
+    // Calculate new center and dimensions from the diagonal corners
+    const newCenterX = (newDraggedCorner[0] + fixedCorner[0]) / 2;
+    const newCenterY = (newDraggedCorner[1] + fixedCorner[1]) / 2;
+    
+    // Calculate dimensions by transforming corners to the rectangle's local coordinate system
+    const cos_r = Math.cos(-rotation);
+    const sin_r = Math.sin(-rotation);
+    
+    // Transform both corners to local coordinates relative to new center
+    const draggedRelX = newDraggedCorner[0] - newCenterX;
+    const draggedRelY = newDraggedCorner[1] - newCenterY;
+    const fixedRelX = fixedCorner[0] - newCenterX;
+    const fixedRelY = fixedCorner[1] - newCenterY;
+    
+    const draggedLocalX = draggedRelX * cos_r - draggedRelY * sin_r;
+    const draggedLocalY = draggedRelX * sin_r + draggedRelY * cos_r;
+    const fixedLocalX = fixedRelX * cos_r - fixedRelY * sin_r;
+    const fixedLocalY = fixedRelX * sin_r + fixedRelY * cos_r;
+    
+    // Calculate new width and height
+    const newW = Math.abs(draggedLocalX - fixedLocalX);
+    const newH = Math.abs(draggedLocalY - fixedLocalY);
+    
+    // Update rectangle parameters (center-based)
+    data.x.set(newCenterX);
+    data.y.set(newCenterY);
+    data.w.set(newW);
+    data.h.set(newH);
   }
 
   dragRegionTranslate(event: any) {
@@ -141,8 +211,8 @@ class KeepInRectangleOverlay extends Component<
     const data = this.props.data;
     this.initialRotation = data.serialize.props.rotation.val;
 
-    const centerX = data.serialize.props.x.val + data.serialize.props.w.val / 2;
-    const centerY = data.serialize.props.y.val + data.serialize.props.h.val / 2;
+    const centerX = data.serialize.props.x.val; // x,y are now center coordinates
+    const centerY = data.serialize.props.y.val;
 
     // Store initial mouse angle relative to center
     const mouseX = event.x - centerX;
@@ -152,8 +222,8 @@ class KeepInRectangleOverlay extends Component<
 
   dragRotation(event: any) {
     const data = this.props.data;
-    const centerX = data.serialize.props.x.val + data.serialize.props.w.val / 2;
-    const centerY = data.serialize.props.y.val + data.serialize.props.h.val / 2;
+    const centerX = data.serialize.props.x.val; // x,y are now center coordinates
+    const centerY = data.serialize.props.y.val;
 
     // Get current mouse position relative to center
     const mouseX = event.x - centerX;
@@ -170,55 +240,49 @@ class KeepInRectangleOverlay extends Component<
   }
 
   fixWidthHeight() {
+    // With center-based coordinates, just ensure width and height are positive
     if (this.props.data.serialize.props.w.val < 0.0) {
-      this.props.data.x.set(
-        this.props.data.serialize.props.x.val +
-          this.props.data.serialize.props.w.val
-      );
       this.props.data.w.set(-this.props.data.serialize.props.w.val);
     }
 
     if (this.props.data.serialize.props.h.val < 0.0) {
-      this.props.data.y.set(
-        this.props.data.serialize.props.y.val +
-          this.props.data.serialize.props.h.val
-      );
       this.props.data.h.set(-this.props.data.serialize.props.h.val);
     }
   }
 
+  rotate_around(point: [number, number], center: [number, number], angle: number): [number, number] {
+    const cos_r = Math.cos(angle);
+    const sin_r = Math.sin(angle);
+    
+    const rel_x = point[0] - center[0];
+    const rel_y = point[1] - center[1];
+    
+    const rotated_x = rel_x * cos_r - rel_y * sin_r;
+    const rotated_y = rel_x * sin_r + rel_y * cos_r;
+    
+    return [center[0] + rotated_x, center[1] + rotated_y];
+  }
+
   render() {
     const data = this.props.data.serialize as DataMap["KeepInRectangle"];
-    const x = data.props.x.val;
-    const y = data.props.y.val;
+    const centerX = data.props.x.val; // x,y now represent center
+    const centerY = data.props.y.val;
     const w = data.props.w.val;
     const h = data.props.h.val;
     const rotation = data.props.rotation.val;
 
-    // Calculate center and rotated corners
-    const centerX = x + w / 2;
-    const centerY = y + h / 2;
-    const cos_r = Math.cos(rotation);
-    const sin_r = Math.sin(rotation);
+    const center: [number, number] = [centerX, centerY];
 
-    // Original corner points relative to bottom-left origin
-    const corners = [
-      [x, y], // bottom-left
-      [x + w, y], // bottom-right
-      [x + w, y + h], // top-right
-      [x, y + h] // top-left
+    // Original corner points relative to center
+    const corners: [number, number][] = [
+      [centerX - w / 2, centerY - h / 2], // bottom-left
+      [centerX + w / 2, centerY - h / 2], // bottom-right
+      [centerX + w / 2, centerY + h / 2], // top-right
+      [centerX - w / 2, centerY + h / 2] // top-left
     ];
 
-    // Apply rotation around center
-    const rotatedCorners = corners.map(([corner_x, corner_y]) => {
-      const rel_x = corner_x - centerX;
-      const rel_y = corner_y - centerY;
-
-      const rotated_x = rel_x * cos_r - rel_y * sin_r;
-      const rotated_y = rel_x * sin_r + rel_y * cos_r;
-
-      return [centerX + rotated_x, centerY + rotated_y];
-    });
+    // Apply rotation around center using rotate_around method
+    const rotatedCorners = corners.map((corner) => this.rotate_around(corner, center, rotation));
 
     // Create SVG polygon path
     const polygonPoints = rotatedCorners
@@ -263,24 +327,35 @@ class KeepInRectangleOverlay extends Component<
             }
           />
         ))}
-        {/* Rotation Handle - show as a line from center to top-right */}
-        <line
-          x1={centerX}
-          y1={centerY}
-          x2={rotatedCorners[2][0]}
-          y2={rotatedCorners[2][1]}
-          stroke={"blue"}
-          strokeWidth={STROKE * 0.5}
-          strokeOpacity={0.8}
-        />
-        <circle
-          cx={rotatedCorners[2][0]}
-          cy={rotatedCorners[2][1]}
-          r={DOT * 1.5}
-          fill={"blue"}
-          fillOpacity={0.8}
-          id="dragTarget-keepInRectangleRotation"
-        />
+        {/* Rotation Handle - triangle at center of top edge */}
+        {(() => {
+          // Calculate center of top edge
+          const topLeftCorner = rotatedCorners[3];
+          const topRightCorner = rotatedCorners[2];
+          const topEdgeCenterX = (topLeftCorner[0] + topRightCorner[0]) / 2;
+          const topEdgeCenterY = (topLeftCorner[1] + topRightCorner[1]) / 2;
+          
+          // Triangle dimensions (matching waypoint style)
+          const triangleSize = DOT * 3;
+          const triangleHeight = triangleSize * 0.866; // √3/2 for equilateral triangle
+          
+          // Calculate angle for the triangle rotation (perpendicular to edge)
+          const edgeVectorX = topRightCorner[0] - topLeftCorner[0];
+          const edgeVectorY = topRightCorner[1] - topLeftCorner[1];
+          const edgeAngle = Math.atan2(edgeVectorY, edgeVectorX);
+          const triangleAngle = edgeAngle + Math.PI / 2; // perpendicular to edge
+          
+          return (
+            <polygon
+              transform={`translate(${topEdgeCenterX}, ${topEdgeCenterY}) rotate(${(triangleAngle * 180) / Math.PI}) translate(${0}, ${0})`}
+              fill={"green"}
+              stroke={"black"}
+              strokeWidth={DOT / 3}
+              points={`${-triangleHeight / 2},${triangleSize / 2} ${-triangleHeight / 2},${-triangleSize / 2} ${triangleHeight / 2},${0}`}
+              id="dragTarget-keepInRectangleRotation"
+            />
+          );
+        })()}
       </g>
     );
   }

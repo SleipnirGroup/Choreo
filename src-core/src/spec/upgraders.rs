@@ -49,8 +49,23 @@ mod traj_file {
             for mut constraint in snapshot_constraints {
                 if let Some(data_type) = constraint["data"]["type"].as_str() {
                     if data_type == "KeepInRectangle" {
-                        // Add rotation field to props
+                        // Add rotation field and convert coordinates from bottom-left to center
                         if let Some(props) = constraint["data"]["props"].as_object_mut() {
+                            // Get existing values
+                            let x = props.get("x").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                            let y = props.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                            let w = props.get("w").and_then(|v| v.as_f64()).unwrap_or(1.0);
+                            let h = props.get("h").and_then(|v| v.as_f64()).unwrap_or(1.0);
+                            
+                            // Convert from bottom-left to center coordinates
+                            let center_x = x + w / 2.0;
+                            let center_y = y + h / 2.0;
+                            
+                            // Update x,y to be center coordinates
+                            props.insert("x".to_string(), JsonValue::Number(serde_json::Number::from_f64(center_x).unwrap()));
+                            props.insert("y".to_string(), JsonValue::Number(serde_json::Number::from_f64(center_y).unwrap()));
+                            
+                            // Add rotation field
                             props.insert(
                                 "rotation".to_string(),
                                 JsonValue::Number(serde_json::Number::from_f64(0.0).unwrap()),
@@ -72,8 +87,45 @@ mod traj_file {
             for mut constraint in params_constraints {
                 if let Some(data_type) = constraint["data"]["type"].as_str() {
                     if data_type == "KeepInRectangle" {
-                        // Add rotation field to props
+                        // Add rotation field and convert coordinates from bottom-left to center
                         if let Some(props) = constraint["data"]["props"].as_object_mut() {
+                            // Get existing values from Expr objects
+                            let x_val = props.get("x")
+                                .and_then(|v| v.get("val"))
+                                .and_then(|v| v.as_f64())
+                                .unwrap_or(0.0);
+                            let y_val = props.get("y")
+                                .and_then(|v| v.get("val"))
+                                .and_then(|v| v.as_f64())
+                                .unwrap_or(0.0);
+                            let w_val = props.get("w")
+                                .and_then(|v| v.get("val"))
+                                .and_then(|v| v.as_f64())
+                                .unwrap_or(1.0);
+                            let h_val = props.get("h")
+                                .and_then(|v| v.get("val"))
+                                .and_then(|v| v.as_f64())
+                                .unwrap_or(1.0);
+                            
+                            // Convert from bottom-left to center coordinates
+                            let center_x = x_val + w_val / 2.0;
+                            let center_y = y_val + h_val / 2.0;
+                            
+                            // Update x,y to be center coordinates (preserve expression strings but update values)
+                            if let Some(x_expr) = props.get_mut("x") {
+                                if let Some(x_obj) = x_expr.as_object_mut() {
+                                    x_obj.insert("val".to_string(), JsonValue::Number(serde_json::Number::from_f64(center_x).unwrap()));
+                                    x_obj.insert("exp".to_string(), JsonValue::String(format!("{} m", center_x)));
+                                }
+                            }
+                            if let Some(y_expr) = props.get_mut("y") {
+                                if let Some(y_obj) = y_expr.as_object_mut() {
+                                    y_obj.insert("val".to_string(), JsonValue::Number(serde_json::Number::from_f64(center_y).unwrap()));
+                                    y_obj.insert("exp".to_string(), JsonValue::String(format!("{} m", center_y)));
+                                }
+                            }
+                            
+                            // Add rotation field
                             props.insert(
                                 "rotation".to_string(),
                                 serde_json::to_value(Expr::new("0 deg", 0.0))?,

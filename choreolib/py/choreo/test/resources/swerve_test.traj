@@ -8,7 +8,7 @@
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":0.0, "y":0.0, "w":16.54, "h":8.21, "rotation":0.0}}, "enabled":true}],
+    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":8.27, "y":4.105, "w":16.54, "h":8.21, "rotation":0.0}}, "enabled":true}],
   "targetDt":0.05
  },
  "params":{
@@ -18,7 +18,7 @@
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"16.54 m", "val":16.54}, "h":{"exp":"8.21 m", "val":8.21}, "rotation":{"exp":"0 deg", "val":0.0}}}, "enabled":true}],
+    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"8.27 m", "val":8.27}, "y":{"exp":"4.105 m", "val":4.105}, "w":{"exp":"16.54 m", "val":16.54}, "h":{"exp":"8.21 m", "val":8.21}, "rotation":{"exp":"0 deg", "val":0.0}}}, "enabled":true}],
   "targetDt":{
    "exp":"0.05 s",
    "val":0.05

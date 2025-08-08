@@ -132,16 +132,16 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
                 },
                 ConstraintData::KeepInRectangle { x, y, w, h, rotation } => {
-                    // Calculate the center of the rectangle
-                    let center_x = x + w / 2.0;
-                    let center_y = y + h / 2.0;
+                    // x, y now represent the center of the rectangle
+                    let center_x = x;
+                    let center_y = y;
 
-                    // Original corner points relative to bottom-left origin
+                    // Original corner points relative to center
                     let corners = vec![
-                        (x, y),         // bottom-left
-                        (x + w, y),     // bottom-right
-                        (x + w, y + h), // top-right
-                        (x, y + h),     // top-left
+                        (center_x - w / 2.0, center_y - h / 2.0), // bottom-left
+                        (center_x + w / 2.0, center_y - h / 2.0), // bottom-right
+                        (center_x + w / 2.0, center_y + h / 2.0), // top-right
+                        (center_x - w / 2.0, center_y + h / 2.0), // top-left
                     ];
 
                     // Apply rotation around center
@@ -241,16 +241,16 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
                 },
                 ConstraintData::KeepInRectangle { x, y, w, h, rotation } => {
-                    // Calculate the center of the rectangle
-                    let center_x = x + w / 2.0;
-                    let center_y = y + h / 2.0;
+                    // x, y now represent the center of the rectangle
+                    let center_x = x;
+                    let center_y = y;
 
-                    // Original corner points relative to bottom-left origin
+                    // Original corner points relative to center
                     let corners = vec![
-                        (x, y),         // bottom-left
-                        (x + w, y),     // bottom-right
-                        (x + w, y + h), // top-right
-                        (x, y + h),     // top-left
+                        (center_x - w / 2.0, center_y - h / 2.0), // bottom-left
+                        (center_x + w / 2.0, center_y - h / 2.0), // bottom-right
+                        (center_x + w / 2.0, center_y + h / 2.0), // top-right
+                        (center_x - w / 2.0, center_y + h / 2.0), // top-left
                     ];
 
                     // Apply rotation around center

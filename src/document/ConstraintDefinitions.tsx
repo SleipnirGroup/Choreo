@@ -223,14 +223,14 @@ export const ConstraintDefinitions: defs = {
       x: {
         name: "X",
         description:
-          "The x coordinate of the bottom left of the keep-in region",
+          "The x coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
         description:
-          "The y coordinate of the bottom left of the keep-in region",
+          "The y coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
@@ -247,7 +247,7 @@ export const ConstraintDefinitions: defs = {
         defaultVal: { exp: "1 m", val: 1 }
       },
       rotation: {
-        name: "Rotation",
+        name: "R",
         description: "The rotation angle of the rectangle around its center",
         dimension: Dimensions.Angle,
         defaultVal: { exp: "0 deg", val: 0 }
