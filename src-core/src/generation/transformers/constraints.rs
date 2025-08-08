@@ -15,6 +15,36 @@ fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
     idx - to_subtract
 }
 
+/// Rotates a point around another point in 2D space.
+///
+/// ```text
+/// [x_new]   [rot.cos, -rot.sin][x - other.x]   [other.x]
+/// [y_new] = [rot.sin,  rot.cos][y - other.y] + [other.y]
+/// ```
+///
+/// # Arguments
+/// * `point` - The point to rotate as (x, y)
+/// * `center` - The center point to rotate around as (x, y)
+/// * `rotation` - The rotation angle in radians
+///
+/// # Returns
+/// The new rotated point as (x, y)
+fn rotate_around(point: (f64, f64), center: (f64, f64), rotation: f64) -> (f64, f64) {
+    let cos_r = rotation.cos();
+    let sin_r = rotation.sin();
+
+    // Translate to origin (center of rotation)
+    let rel_x = point.0 - center.0;
+    let rel_y = point.1 - center.1;
+
+    // Apply rotation
+    let rotated_x = rel_x * cos_r - rel_y * sin_r;
+    let rotated_y = rel_x * sin_r + rel_y * cos_r;
+
+    // Translate back
+    (center.0 + rotated_x, center.1 + rotated_y)
+}
+
 pub struct ConstraintSetter {
     guess_points: Vec<usize>,
     constraint_idx: Vec<ConstraintIDX<f64>>,
@@ -133,36 +163,23 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                 },
                 ConstraintData::KeepInRectangle { x, y, w, h, rotation } => {
                     // x, y now represent the center of the rectangle
-                    let center_x = x;
-                    let center_y = y;
+                    let center = (x, y);
 
                     // Original corner points relative to center
                     let corners = vec![
-                        (center_x - w / 2.0, center_y - h / 2.0), // bottom-left
-                        (center_x + w / 2.0, center_y - h / 2.0), // bottom-right
-                        (center_x + w / 2.0, center_y + h / 2.0), // top-right
-                        (center_x - w / 2.0, center_y + h / 2.0), // top-left
+                        (x - w / 2.0, y - h / 2.0), // bottom-left
+                        (x + w / 2.0, y - h / 2.0), // bottom-right
+                        (x + w / 2.0, y + h / 2.0), // top-right
+                        (x - w / 2.0, y + h / 2.0), // top-left
                     ];
-
-                    // Apply rotation around center
-                    let cos_r = rotation.cos();
-                    let sin_r = rotation.sin();
 
                     let mut xs = Vec::new();
                     let mut ys = Vec::new();
 
-                    for (corner_x, corner_y) in corners {
-                        // Translate to origin (center of rectangle)
-                        let rel_x = corner_x - center_x;
-                        let rel_y = corner_y - center_y;
-
-                        // Apply rotation
-                        let rotated_x = rel_x * cos_r - rel_y * sin_r;
-                        let rotated_y = rel_x * sin_r + rel_y * cos_r;
-
-                        // Translate back
-                        xs.push(center_x + rotated_x);
-                        ys.push(center_y + rotated_y);
+                    for corner in corners {
+                        let (rotated_x, rotated_y) = rotate_around(corner, center, rotation);
+                        xs.push(rotated_x);
+                        ys.push(rotated_y);
                     }
 
                     match to_opt {
@@ -242,36 +259,23 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                 },
                 ConstraintData::KeepInRectangle { x, y, w, h, rotation } => {
                     // x, y now represent the center of the rectangle
-                    let center_x = x;
-                    let center_y = y;
+                    let center = (x, y);
 
                     // Original corner points relative to center
                     let corners = vec![
-                        (center_x - w / 2.0, center_y - h / 2.0), // bottom-left
-                        (center_x + w / 2.0, center_y - h / 2.0), // bottom-right
-                        (center_x + w / 2.0, center_y + h / 2.0), // top-right
-                        (center_x - w / 2.0, center_y + h / 2.0), // top-left
+                        (x - w / 2.0, y - h / 2.0), // bottom-left
+                        (x + w / 2.0, y - h / 2.0), // bottom-right
+                        (x + w / 2.0, y + h / 2.0), // top-right
+                        (x - w / 2.0, y + h / 2.0), // top-left
                     ];
-
-                    // Apply rotation around center
-                    let cos_r = rotation.cos();
-                    let sin_r = rotation.sin();
 
                     let mut xs = Vec::new();
                     let mut ys = Vec::new();
 
-                    for (corner_x, corner_y) in corners {
-                        // Translate to origin (center of rectangle)
-                        let rel_x = corner_x - center_x;
-                        let rel_y = corner_y - center_y;
-
-                        // Apply rotation
-                        let rotated_x = rel_x * cos_r - rel_y * sin_r;
-                        let rotated_y = rel_x * sin_r + rel_y * cos_r;
-
-                        // Translate back
-                        xs.push(center_x + rotated_x);
-                        ys.push(center_y + rotated_y);
+                    for corner in corners {
+                        let (rotated_x, rotated_y) = rotate_around(corner, center, rotation);
+                        xs.push(rotated_x);
+                        ys.push(rotated_y);
                     }
 
                     match to_opt {
