@@ -222,15 +222,13 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description:
-          "The x coordinate of the center of the keep-in region",
+        description: "The x coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description:
-          "The y coordinate of the center of the keep-in region",
+        description: "The y coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
