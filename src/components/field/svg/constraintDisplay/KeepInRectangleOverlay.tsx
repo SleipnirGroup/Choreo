@@ -217,21 +217,23 @@ class KeepInRectangleOverlay extends Component<
       const constrainedFixedLocalY =
         ((fixedLocalY >= 0 ? 1 : -1) * constrainedH) / 2;
 
-      // Transform the fixed corner position in constrained rectangle back to world coords
-      const cos_r = Math.cos(rotation);
-      const sin_r = Math.sin(rotation);
+      // Calculate where the center should be to keep the fixed corner in place
+      // The center is at a local offset from the fixed corner
+      const localCenterOffset: [number, number] = [
+        -constrainedFixedLocalX,
+        -constrainedFixedLocalY
+      ];
 
-      // Calculate center position that keeps the fixed corner in its original position
-      const fixedWorldX = fixedCorner[0];
-      const fixedWorldY = fixedCorner[1];
+      // Rotate this offset by the rectangle's rotation to get world coordinates
+      const worldCenterOffset = this.rotate_around(
+        localCenterOffset,
+        [0, 0],
+        rotation
+      );
 
-      // The center is offset from the fixed corner by the local coordinates
-      finalCenterX =
-        fixedWorldX -
-        (constrainedFixedLocalX * cos_r - constrainedFixedLocalY * sin_r);
-      finalCenterY =
-        fixedWorldY -
-        (constrainedFixedLocalX * sin_r + constrainedFixedLocalY * cos_r);
+      // Calculate the final center position
+      finalCenterX = fixedCorner[0] + worldCenterOffset[0];
+      finalCenterY = fixedCorner[1] + worldCenterOffset[1];
     }
 
     // Update rectangle parameters (center-based)
