@@ -208,25 +208,30 @@ class KeepInRectangleOverlay extends Component<
     let finalCenterY = newCenterY;
 
     if (constrainedW !== newW || constrainedH !== newH) {
-      // Convert constrained dimensions back to local coordinates for the dragged corner
-      const constrainedDraggedLocalX =
-        ((draggedLocalX >= 0 ? 1 : -1) * constrainedW) / 2;
-      const constrainedDraggedLocalY =
-        ((draggedLocalY >= 0 ? 1 : -1) * constrainedH) / 2;
+      // When dimensions are constrained, keep the fixed corner in place
+      // and calculate the center position based on the constrained dimensions
 
-      // Transform constrained dragged corner back to world coordinates using rotate_around
-      const constrainedDraggedWorld = this.rotate_around(
-        [
-          centerX + constrainedDraggedLocalX,
-          centerY + constrainedDraggedLocalY
-        ],
-        center,
-        rotation
-      );
+      // Determine the local coordinates for the fixed corner in the constrained rectangle
+      const constrainedFixedLocalX =
+        ((fixedLocalX >= 0 ? 1 : -1) * constrainedW) / 2;
+      const constrainedFixedLocalY =
+        ((fixedLocalY >= 0 ? 1 : -1) * constrainedH) / 2;
 
-      // Recalculate center with constrained dragged corner and original fixed corner
-      finalCenterX = (constrainedDraggedWorld[0] + fixedCorner[0]) / 2;
-      finalCenterY = (constrainedDraggedWorld[1] + fixedCorner[1]) / 2;
+      // Transform the fixed corner position in constrained rectangle back to world coords
+      const cos_r = Math.cos(rotation);
+      const sin_r = Math.sin(rotation);
+
+      // Calculate center position that keeps the fixed corner in its original position
+      const fixedWorldX = fixedCorner[0];
+      const fixedWorldY = fixedCorner[1];
+
+      // The center is offset from the fixed corner by the local coordinates
+      finalCenterX =
+        fixedWorldX -
+        (constrainedFixedLocalX * cos_r - constrainedFixedLocalY * sin_r);
+      finalCenterY =
+        fixedWorldY -
+        (constrainedFixedLocalX * sin_r + constrainedFixedLocalY * cos_r);
     }
 
     // Update rectangle parameters (center-based)
