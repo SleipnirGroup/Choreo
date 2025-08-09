@@ -195,11 +195,45 @@ class KeepInRectangleOverlay extends Component<
     const newW = Math.abs(draggedLocalX - fixedLocalX);
     const newH = Math.abs(draggedLocalY - fixedLocalY);
 
+    // Get robot dimensions (with bumpers) as minimum size
+    const minWidth = doc.robotConfig.bumper.length;
+    const minHeight = doc.robotConfig.bumper.width;
+
+    // Apply minimum size constraints
+    const constrainedW = Math.max(newW, minWidth);
+    const constrainedH = Math.max(newH, minHeight);
+
+    // If dimensions were constrained, recalculate center to keep fixed corner in place
+    let finalCenterX = newCenterX;
+    let finalCenterY = newCenterY;
+
+    if (constrainedW !== newW || constrainedH !== newH) {
+      // Convert constrained dimensions back to local coordinates for the dragged corner
+      const constrainedDraggedLocalX =
+        ((draggedLocalX >= 0 ? 1 : -1) * constrainedW) / 2;
+      const constrainedDraggedLocalY =
+        ((draggedLocalY >= 0 ? 1 : -1) * constrainedH) / 2;
+
+      // Transform constrained dragged corner back to world coordinates using rotate_around
+      const constrainedDraggedWorld = this.rotate_around(
+        [
+          centerX + constrainedDraggedLocalX,
+          centerY + constrainedDraggedLocalY
+        ],
+        center,
+        rotation
+      );
+
+      // Recalculate center with constrained dragged corner and original fixed corner
+      finalCenterX = (constrainedDraggedWorld[0] + fixedCorner[0]) / 2;
+      finalCenterY = (constrainedDraggedWorld[1] + fixedCorner[1]) / 2;
+    }
+
     // Update rectangle parameters (center-based)
-    data.x.set(newCenterX);
-    data.y.set(newCenterY);
-    data.w.set(newW);
-    data.h.set(newH);
+    data.x.set(finalCenterX);
+    data.y.set(finalCenterY);
+    data.w.set(constrainedW);
+    data.h.set(constrainedH);
   }
 
   dragRegionTranslate(event: any) {
@@ -242,14 +276,27 @@ class KeepInRectangleOverlay extends Component<
   }
 
   fixWidthHeight() {
-    // With center-based coordinates, just ensure width and height are positive
-    if (this.props.data.serialize.props.w.val < 0.0) {
-      this.props.data.w.set(-this.props.data.serialize.props.w.val);
+    // Get robot dimensions (with bumpers) as minimum size
+    const minWidth = doc.robotConfig.bumper.length;
+    const minHeight = doc.robotConfig.bumper.width;
+
+    // Ensure width and height are positive and meet minimum requirements
+    let width = this.props.data.serialize.props.w.val;
+    let height = this.props.data.serialize.props.h.val;
+
+    if (width < 0.0) {
+      width = -width;
+    }
+    if (height < 0.0) {
+      height = -height;
     }
 
-    if (this.props.data.serialize.props.h.val < 0.0) {
-      this.props.data.h.set(-this.props.data.serialize.props.h.val);
-    }
+    // Apply minimum size constraints
+    width = Math.max(width, minWidth);
+    height = Math.max(height, minHeight);
+
+    this.props.data.w.set(width);
+    this.props.data.h.set(height);
   }
 
   rotate_around(
