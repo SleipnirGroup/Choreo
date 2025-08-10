@@ -163,10 +163,10 @@ class KeepInRectangleOverlay extends Component<
       fixedCornerIndex = 1; // bottom-right stays fixed
     }
 
-    // Move the dragged corner by the drag delta
+    // Position the dragged corner at the absolute cursor position
     const newDraggedCorner: [number, number] = [
-      rotatedCorners[draggedCornerIndex][0] + event.dx,
-      rotatedCorners[draggedCornerIndex][1] + event.dy
+      event.x,
+      event.y
     ];
 
     // Fixed corner stays in place
