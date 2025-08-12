@@ -159,32 +159,23 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     // interpolating the state gives an inaccurate result if the accelerations are changing between
     // states
     //
-    //   Δt = tₖ₊₁ − tₖ
     //   τ = timestamp − tₖ
     //
-    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
-    //   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
-    //   a(τ) = aₖ + jₖτ
-    //
-    // where jₖ = (aₖ₊₁ − aₖ)/Δt
-    double dt = endValue.t - this.t;
+    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ²
+    //   v(τ) = vₖ + aₖτ
     double τ = timestamp - this.t;
     double τ2 = τ * τ;
-    double τ3 = τ * τ * τ;
-    double jx = (endValue.ax - this.ax) / dt;
-    double jy = (endValue.ay - this.ay) / dt;
-    double η = (endValue.alpha - this.alpha) / dt;
     return new SwerveSample(
         timestamp,
-        this.x + this.vx * τ + 0.5 * this.ax * τ2 + 1.0 / 6.0 * jx * τ3,
-        this.y + this.vy * τ + 0.5 * this.ay * τ2 + 1.0 / 6.0 * jy * τ3,
-        this.heading + this.omega * τ + 0.5 * this.alpha * τ2 + 1.0 / 6.0 * η * τ3,
-        this.vx + this.ax * τ + 0.5 * jx * τ2,
-        this.vy + this.ay * τ + 0.5 * jy * τ2,
-        this.omega + this.alpha * τ + 0.5 * η * τ2,
-        this.ax + jx * τ,
-        this.ay + jy * τ,
-        this.alpha + η * τ,
+        this.x + this.vx * τ + 0.5 * this.ax * τ2,
+        this.y + this.vy * τ + 0.5 * this.ay * τ2,
+        this.heading + this.omega * τ + 0.5 * this.alpha * τ2,
+        this.vx + this.ax * τ,
+        this.vy + this.ay * τ,
+        this.omega + this.alpha * τ,
+        this.ax,
+        this.ay,
+        this.alpha,
         interp_fx,
         interp_fy);
   }

@@ -169,10 +169,6 @@ class DifferentialSample {
     auto sample =
         frc::RKDP(f, initialState, Eigen::Vector<double, 2>(al, ar), τ);
 
-    auto dt = endValue.timestamp - timestamp;
-    auto jl = (endValue.al - al) / dt;
-    auto jr = (endValue.ar - ar) / dt;
-
     return DifferentialSample{
         wpi::Lerp(timestamp, endValue.timestamp, scale),
         units::meter_t{sample(0, 0)},
@@ -181,8 +177,8 @@ class DifferentialSample {
         units::meters_per_second_t{sample(3, 0)},
         units::meters_per_second_t{sample(4, 0)},
         units::radians_per_second_t{sample(5, 0)},
-        al + jl * τ,
-        ar + jr * τ,
+        al,
+        ar,
         wpi::Lerp(fl, endValue.fl, scale),
         wpi::Lerp(fr, endValue.fr, scale),
     };
