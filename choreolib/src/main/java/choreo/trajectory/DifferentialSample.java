@@ -152,10 +152,6 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     double τ = timestamp - this.t;
     var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar), τ);
 
-    double dt = endValue.t - this.t;
-    double jl = (endValue.al - this.al) / dt;
-    double jr = (endValue.ar - this.ar) / dt;
-
     return new DifferentialSample(
         MathUtil.interpolate(this.t, endValue.t, scale),
         sample.get(0, 0),
@@ -164,8 +160,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         sample.get(3, 0),
         sample.get(4, 0),
         sample.get(5, 0),
-        this.al + jl * τ,
-        this.ar + jr * τ,
+        this.al,
+        this.ar,
         MathUtil.interpolate(this.fl, endValue.fl, scale),
         MathUtil.interpolate(this.fr, endValue.fr, scale));
   }
