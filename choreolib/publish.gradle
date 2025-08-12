@@ -28,7 +28,7 @@ task libraryBuild() {}
 build.dependsOn outputVersions
 
 task copyAllOutputs(type: Copy) {
-    destinationDir file("$buildDir/allOutputs")
+    destinationDir = file("$buildDir/allOutputs")
     from versionFile
     dependsOn outputVersions
 }
@@ -165,8 +165,8 @@ model {
                 artifact cppSourceZip
 
                 artifactId = "${baseArtifactId}-cpp"
-                groupId artifactGroupId
-                version pubVersion
+                groupId = artifactGroupId
+                version = pubVersion
             }
 
             java(MavenPublication) {
@@ -175,8 +175,8 @@ model {
                 artifact javadocJar
 
                 artifactId = "${baseArtifactId}-java"
-                groupId artifactGroupId
-                version pubVersion
+                groupId = artifactGroupId
+                version = pubVersion
             }
         }
     }
