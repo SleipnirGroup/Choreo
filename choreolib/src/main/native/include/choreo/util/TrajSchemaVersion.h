@@ -9,7 +9,7 @@
 namespace choreo {
 
 [[deprecated("Use kTrajSchemaVersion.")]]
-inline constexpr uint32_t kTrajSpecVersion = 1;
-inline constexpr uint32_t kTrajSchemaVersion = 1;
+inline constexpr uint32_t kTrajSpecVersion = 2;
+inline constexpr uint32_t kTrajSchemaVersion = 2;
 
 }  // namespace choreo
