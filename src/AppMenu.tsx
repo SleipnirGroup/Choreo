@@ -208,16 +208,18 @@ class AppMenu extends Component<Props, State> {
                 <ListItemText primary="Choose Codegen Folder"></ListItemText>
               </ListItemButton>
             </Tooltip>
-            {codegenEnabled() && <ListItemButton
-              onClick={async () => {
-                disableCodegen();
-              }}
-            >
-              <ListItemIcon>
-                <RemoveCircle />
-              </ListItemIcon>
-              <ListItemText primary="Disable Codegen"></ListItemText>
-            </ListItemButton>}
+            {codegenEnabled() && (
+              <ListItemButton
+                onClick={async () => {
+                  disableCodegen();
+                }}
+              >
+                <ListItemIcon>
+                  <RemoveCircle />
+                </ListItemIcon>
+                <ListItemText primary="Disable Codegen"></ListItemText>
+              </ListItemButton>
+            )}
             <Divider orientation="horizontal"></Divider>
             {/* Info about save locations */}
             <ListItem>

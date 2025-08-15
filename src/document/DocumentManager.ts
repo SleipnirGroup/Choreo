@@ -708,7 +708,7 @@ export async function newProject(promptForCodegen: boolean = true) {
   uiState.setProjectSavingTime(new Date());
   doc.history.clear();
   if (!promptForCodegen) {
-    return
+    return;
   }
   const msg = codegenEnabled()
     ? `
@@ -719,7 +719,7 @@ export async function newProject(promptForCodegen: boolean = true) {
     Choreo can now output java files
     containing variables and constants defined in the GUI.
     Select a folder to enable this feature?
-    `
+    `;
   if (await ask(msg, { title: "Choreo", kind: "warning" })) {
     await codeGenDialog();
   }
@@ -795,24 +795,32 @@ export async function writeAllTrajectories() {
 }
 
 export function codegenEnabled() {
-  return localStorage.getItem(LocalStorageKeys.JAVA_ROOT) != null
+  return localStorage.getItem(LocalStorageKeys.JAVA_ROOT) != null;
 }
 
 export async function saveProject() {
   if (await canSave()) {
     try {
-      const data = doc.serializeChor()
-      const javaRoot = localStorage.getItem(LocalStorageKeys.JAVA_ROOT)
-      const packageName = localStorage.getItem(LocalStorageKeys.CODE_GEN_PACKAGE)
-      let tasks = [Commands.writeProject(data)]
+      const data = doc.serializeChor();
+      const javaRoot = localStorage.getItem(LocalStorageKeys.JAVA_ROOT);
+      const packageName = localStorage.getItem(
+        LocalStorageKeys.CODE_GEN_PACKAGE
+      );
+      let tasks = [Commands.writeProject(data)];
       if (javaRoot && packageName) {
-        const constsFile = genConstsFile(data, packageName)
-        const varsFile = genVarsFile(data, packageName)
+        const constsFile = genConstsFile(data, packageName);
+        const varsFile = genVarsFile(data, packageName);
         tasks = [
           ...tasks,
-          Commands.writeRawFile(constsFile, javaRoot + packageName + "/ChoreoConsts.java"),
-          Commands.writeRawFile(varsFile, javaRoot + packageName + "/ChoreoVars.java")
-        ]
+          Commands.writeRawFile(
+            constsFile,
+            javaRoot + packageName + "/ChoreoConsts.java"
+          ),
+          Commands.writeRawFile(
+            varsFile,
+            javaRoot + packageName + "/ChoreoVars.java"
+          )
+        ];
       }
       await toast.promise(Promise.all(tasks), {
         error: {
@@ -834,19 +842,21 @@ export async function saveProject() {
 
 export async function codeGenDialog() {
   const filePath = await Commands.selectCodegenFolder();
-  const splitPath = filePath.split(path.sep() + "java" + path.sep())
+  const splitPath = filePath.split(path.sep() + "java" + path.sep());
   if (splitPath.length === 1) {
-    toast.error("Invalid path: make sure your code generation root points to a java directory.")
-    return
+    toast.error(
+      "Invalid path: make sure your code generation root points to a java directory."
+    );
+    return;
   }
-  localStorage.setItem(LocalStorageKeys.JAVA_ROOT, splitPath[0] + "/java/")
-  localStorage.setItem(LocalStorageKeys.CODE_GEN_PACKAGE, splitPath[1])
+  localStorage.setItem(LocalStorageKeys.JAVA_ROOT, splitPath[0] + "/java/");
+  localStorage.setItem(LocalStorageKeys.CODE_GEN_PACKAGE, splitPath[1]);
 }
 
 export async function disableCodegen() {
-  localStorage.removeItem(LocalStorageKeys.JAVA_ROOT)
-  localStorage.removeItem(LocalStorageKeys.CODE_GEN_PACKAGE)
-  toast.info("Choreo Codegen was disabled.")
+  localStorage.removeItem(LocalStorageKeys.JAVA_ROOT);
+  localStorage.removeItem(LocalStorageKeys.CODE_GEN_PACKAGE);
+  toast.info("Choreo Codegen was disabled.");
 }
 
 export async function saveProjectDialog() {

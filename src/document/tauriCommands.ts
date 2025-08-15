@@ -146,11 +146,11 @@ export const Commands = {
   /**
    * Writes raw file content to a specified path.
    */
-  writeRawFile: (content: string, filePath: string) => 
+  writeRawFile: (content: string, filePath: string) =>
     invoke<void>("write_raw_file", { content, filePath }),
 
   /**
-   * Sets the directory path to push generated java files to. 
+   * Sets the directory path to push generated java files to.
    */
   selectCodegenFolder: () => invoke<string>("select_codegen_folder")
 };
