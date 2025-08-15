@@ -1,6 +1,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use std::path::PathBuf;
+use std::fs;
 
 use crate::tauri::TauriResult;
 use choreo_core::{
@@ -56,6 +57,23 @@ pub async fn open_in_explorer(path: String) -> TauriResult<()> {
 }
 
 #[tauri::command]
+pub async fn select_codegen_folder(app_handle: tauri::AppHandle) -> TauriResult<String> {
+  Ok(
+    app_handle
+      .dialog()
+      .file()
+      .set_title("Select a folder to output generated java files")
+      .blocking_pick_folder()
+      .ok_or(ChoreoError::FileNotFound(None))?
+      .as_path()
+      .ok_or(ChoreoError::FileNotFound(None))?
+      .to_str()
+      .ok_or(ChoreoError::FileNotFound(None))?
+      .to_string()
+  )
+}
+
+#[tauri::command]
 pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<OpenFilePayload> {
     app_handle
         .dialog()
@@ -84,6 +102,12 @@ pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<Op
                     .to_string(),
             }),
         })?
+}
+
+#[tauri::command]
+pub fn write_raw_file(content: String, file_path: String) -> ChoreoResult<()> {
+    fs::write(file_path, content.as_bytes())?;
+    Ok(())
 }
 
 #[tauri::command]

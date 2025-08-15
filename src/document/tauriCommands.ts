@@ -141,5 +141,16 @@ export const Commands = {
    * Opens the platforms file explorer to the directory holding a newly generated diagnostic zip file.
    */
   openDiagnosticZip: (project: Project, trajectories: Trajectory[]) =>
-    invoke<void>("open_diagnostic_file", { project, trajectories })
+    invoke<void>("open_diagnostic_file", { project, trajectories }),
+
+  /**
+   * Writes raw file content to a specified path.
+   */
+  writeRawFile: (content: string, filePath: string) => 
+    invoke<void>("write_raw_file", { content, filePath }),
+
+  /**
+   * Sets the directory path to push generated java files to. 
+   */
+  selectCodegenFolder: () => invoke<string>("select_codegen_folder")
 };
