@@ -10,14 +10,13 @@ import {
   TableContainer,
   TableRow
 } from "@mui/material";
-import { type } from "@tauri-apps/plugin-os";
 import { Component } from "react";
 
 type Props = object;
 
 type State = object;
 
-const isMac = type() == "macos";
+const isMac = navigator.userAgent.includes("Mac OS");
 // These default to the Mac ⌘ key because it's easier to replace with Ctrl than vice versa
 // All descriptions should be like "Rotate" or "Select", not "Selects"
 const shortcuts = {

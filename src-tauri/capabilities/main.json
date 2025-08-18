@@ -17,7 +17,6 @@
     "dialog:allow-ask",
     "dialog:allow-confirm",
     "dialog:allow-open",
-    "dialog:allow-save",
-    "os:allow-os-type"
+    "dialog:allow-save"
   ]
 }
