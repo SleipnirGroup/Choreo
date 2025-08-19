@@ -141,25 +141,20 @@ class KeepInRectangleOverlay extends Component<
       this.rotate_around(corner, center, rotation)
     );
 
-    // Determine which corner we're dragging and which should stay fixed
-    let draggedCornerIndex: number;
+    // Determine which corner should stay fixed
     let fixedCornerIndex: number;
 
     if (!xOffset && !yOffset) {
       // bottom-left corner drag
-      draggedCornerIndex = 0;
       fixedCornerIndex = 2; // top-right stays fixed
     } else if (xOffset && !yOffset) {
       // bottom-right corner drag
-      draggedCornerIndex = 1;
       fixedCornerIndex = 3; // top-left stays fixed
     } else if (xOffset && yOffset) {
       // top-right corner drag
-      draggedCornerIndex = 2;
       fixedCornerIndex = 0; // bottom-left stays fixed
     } else {
       // top-left corner drag
-      draggedCornerIndex = 3;
       fixedCornerIndex = 1; // bottom-right stays fixed
     }
 
@@ -236,11 +231,39 @@ class KeepInRectangleOverlay extends Component<
       finalCenterY = fixedCorner[1] + worldCenterOffset[1];
     }
 
-    // Update rectangle parameters (center-based)
-    data.x.set(finalCenterX);
-    data.y.set(finalCenterY);
-    data.w.set(constrainedW);
-    data.h.set(constrainedH);
+    // Calculate all new corner positions with the proposed center and dimensions
+    const newCorners: [number, number][] = [
+      [finalCenterX - constrainedW / 2, finalCenterY - constrainedH / 2], // bottom-left
+      [finalCenterX + constrainedW / 2, finalCenterY - constrainedH / 2], // bottom-right
+      [finalCenterX + constrainedW / 2, finalCenterY + constrainedH / 2], // top-right
+      [finalCenterX - constrainedW / 2, finalCenterY + constrainedH / 2]  // top-left
+    ];
+    
+    // Rotate all corners to world coordinates
+    const newRotatedCorners = newCorners.map((corner) =>
+      this.rotate_around(corner, [finalCenterX, finalCenterY], rotation)
+    );
+    
+    // Check if any corner (except the fixed corner itself) is nearly at the same spot as the fixed corner
+    const hasCornerCollision = newRotatedCorners.some((corner, index) => {
+      // Skip the fixed corner itself
+      if (index === fixedCornerIndex) return false;
+      
+      const distance = Math.sqrt(
+        Math.pow(corner[0] - fixedCorner[0], 2) +
+        Math.pow(corner[1] - fixedCorner[1], 2)
+      );
+      return distance < 0.1; // tolerance for corner collision
+    });
+    
+    // Only update if no corner would collapse to the fixed corner position
+    if (!hasCornerCollision) {
+      // Update rectangle parameters (center-based)
+      data.x.set(finalCenterX);
+      data.y.set(finalCenterY);
+      data.w.set(constrainedW);
+      data.h.set(constrainedH);
+    }
   }
 
   dragRegionTranslate(event: any) {
