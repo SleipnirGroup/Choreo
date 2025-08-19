@@ -159,10 +159,7 @@ class KeepInRectangleOverlay extends Component<
     }
 
     // Position the dragged corner at the absolute cursor position
-    const newDraggedCorner: [number, number] = [
-      event.x,
-      event.y
-    ];
+    const newDraggedCorner: [number, number] = [event.x, event.y];
 
     // Fixed corner stays in place
     const fixedCorner = rotatedCorners[fixedCornerIndex];
@@ -236,26 +233,26 @@ class KeepInRectangleOverlay extends Component<
       [finalCenterX - constrainedW / 2, finalCenterY - constrainedH / 2], // bottom-left
       [finalCenterX + constrainedW / 2, finalCenterY - constrainedH / 2], // bottom-right
       [finalCenterX + constrainedW / 2, finalCenterY + constrainedH / 2], // top-right
-      [finalCenterX - constrainedW / 2, finalCenterY + constrainedH / 2]  // top-left
+      [finalCenterX - constrainedW / 2, finalCenterY + constrainedH / 2] // top-left
     ];
-    
+
     // Rotate all corners to world coordinates
     const newRotatedCorners = newCorners.map((corner) =>
       this.rotate_around(corner, [finalCenterX, finalCenterY], rotation)
     );
-    
+
     // Check if any corner (except the fixed corner itself) is nearly at the same spot as the fixed corner
     const hasCornerCollision = newRotatedCorners.some((corner, index) => {
       // Skip the fixed corner itself
       if (index === fixedCornerIndex) return false;
-      
+
       const distance = Math.sqrt(
         Math.pow(corner[0] - fixedCorner[0], 2) +
-        Math.pow(corner[1] - fixedCorner[1], 2)
+          Math.pow(corner[1] - fixedCorner[1], 2)
       );
       return distance < 0.1; // tolerance for corner collision
     });
-    
+
     // Only update if no corner would collapse to the fixed corner position
     if (!hasCornerCollision) {
       // Update rectangle parameters (center-based)
