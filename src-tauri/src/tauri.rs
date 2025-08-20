@@ -183,7 +183,6 @@ pub fn run_tauri(project: Option<PathBuf>) {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_os::init())
         .setup(move |app| {
             app.app_handle().manage(writing_resources);
             app.app_handle().manage(remote_resources);
