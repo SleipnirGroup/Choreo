@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N6;
 import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.util.struct.Struct;
@@ -46,6 +46,9 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   /** The acceleration of the right side in m/s². */
   public final double ar;
 
+  /** The chassis angular acceleration in rad/s². */
+  public final double alpha;
+
   /** The force of the left side in Newtons. */
   public final double fl;
 
@@ -64,6 +67,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * @param omega The chassis angular velocity in rad/s.
    * @param al The acceleration of the left side in m/s².
    * @param ar The acceleration of the right side in m/s².
+   * @param alpha The chassis angular acceleration in rad/s².
    * @param fl The force of the left side in Newtons.
    * @param fr The force of the right side in Newtons.
    */
@@ -77,6 +81,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       double omega,
       double al,
       double ar,
+      double alpha,
       double fl,
       double fr) {
     this.t = timestamp;
@@ -88,6 +93,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     this.omega = omega;
     this.al = al;
     this.ar = ar;
+    this.alpha = alpha;
     this.fl = fl;
     this.fr = fr;
   }
@@ -122,15 +128,12 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     // states
     Matrix<N6, N1> initialState = VecBuilder.fill(x, y, heading, vl, vr, omega);
 
-    double width = (vr - vl) / omega;
-    BiFunction<Matrix<N6, N1>, Matrix<N2, N1>, Matrix<N6, N1>> f =
+    BiFunction<Matrix<N6, N1>, Matrix<N3, N1>, Matrix<N6, N1>> f =
         (state, input) -> {
           //  state =  [x, y, θ, vₗ, vᵣ, ω]
-          //  input =  [aₗ, aᵣ]
+          //  input =  [aₗ, aᵣ, α]
           //
           //  v = (vₗ + vᵣ)/2
-          //  ω = (vᵣ − vₗ)/width
-          //  α = (aᵣ − aₗ)/width
           //
           //  ẋ = v cosθ
           //  ẏ = v sinθ
@@ -144,13 +147,13 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           var ω = state.get(5, 0);
           var al = input.get(0, 0);
           var ar = input.get(1, 0);
+          var α = input.get(2, 0);
           var v = (vl + vr) / 2;
-          var α = (ar - al) / width;
           return VecBuilder.fill(v * Math.cos(θ), v * Math.sin(θ), ω, al, ar, α);
         };
 
     double τ = timestamp - this.t;
-    var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar), τ);
+    var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar, alpha), τ);
 
     return new DifferentialSample(
         MathUtil.interpolate(this.t, endValue.t, scale),
@@ -162,6 +165,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         sample.get(5, 0),
         this.al,
         this.ar,
+        this.alpha,
         MathUtil.interpolate(this.fl, endValue.fl, scale),
         MathUtil.interpolate(this.fr, endValue.fr, scale));
   }
@@ -179,6 +183,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
               -omega,
               ar,
               al,
+              -alpha,
               fr,
               fl);
       case ROTATE_AROUND ->
@@ -192,6 +197,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
               omega,
               al,
               ar,
+              alpha,
               fl,
               fr);
     };
@@ -199,7 +205,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
   public DifferentialSample offsetBy(double timestampOffset) {
     return new DifferentialSample(
-        t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr);
+        t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, alpha, fl, fr);
   }
 
   /** The struct for the DifferentialSample class. */
@@ -230,6 +236,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           + "double omega;"
           + "double al;"
           + "double ar;"
+          + "double alpha;"
           + "double fl;"
           + "double fr;";
     }
@@ -242,6 +249,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     @Override
     public DifferentialSample unpack(ByteBuffer bb) {
       return new DifferentialSample(
+          bb.getDouble(),
           bb.getDouble(),
           bb.getDouble(),
           bb.getDouble(),
@@ -266,6 +274,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       bb.putDouble(value.omega);
       bb.putDouble(value.al);
       bb.putDouble(value.ar);
+      bb.putDouble(value.alpha);
       bb.putDouble(value.fl);
       bb.putDouble(value.fr);
     }
@@ -287,6 +296,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         && this.omega == other.omega
         && this.al == other.al
         && this.ar == other.ar
+        && this.alpha == other.alpha
         && this.fl == other.fl
         && this.fr == other.fr;
   }
