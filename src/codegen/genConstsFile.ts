@@ -10,7 +10,7 @@ import edu.wpi.first.units.measure.*;
 import static edu.wpi.first.units.Units.*;
 
 /**
- * Generated file containing document settings for your choreo project.
+ * Generated file containing document settings for your Choreo project.
  * This allows for modifying constants in choreo while keeping your robot code up-to-date.
  * DO NOT MODIFY this file yourself, as it is auto-generated.
  */

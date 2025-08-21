@@ -195,7 +195,7 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <Tooltip
               disableInteractive
-              title="Choreo can now output java files containing variables and constants defined in the GUI."
+              title="Output Java files containing variables and constants defined in the GUI."
             >
               <ListItemButton
                 onClick={async () => {

@@ -13,7 +13,7 @@ import edu.wpi.first.units.measure.*;
 import static edu.wpi.first.units.Units.*;
 
 /**
- * Generated file containing variables defined in choreo.
+ * Generated file containing variables defined in Choreo.
  * DO NOT MODIFY THIS YOURSELF; instead, change these values
  * in the choreo GUI.
  */

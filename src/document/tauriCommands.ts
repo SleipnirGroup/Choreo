@@ -150,7 +150,7 @@ export const Commands = {
     invoke<void>("write_raw_file", { content, filePath }),
 
   /**
-   * Sets the directory path to push generated java files to.
+   * Sets the directory path to push generated Java files to.
    */
   selectCodegenFolder: () => invoke<string>("select_codegen_folder")
 };
