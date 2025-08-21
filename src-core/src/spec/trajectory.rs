@@ -281,6 +281,7 @@ pub enum Sample {
         omega: f64,
         al: f64,
         ar: f64,
+        alpha: f64,
         fl: f64,
         fr: f64,
     },
@@ -341,6 +342,7 @@ impl From<&DifferentialTrajectorySample> for Sample {
             omega: round(differential_sample.angular_velocity),
             al: round(differential_sample.acceleration_l),
             ar: round(differential_sample.acceleration_r),
+            alpha: round(differential_sample.angular_acceleration),
             fl: round(differential_sample.force_l),
             fr: round(differential_sample.force_r),
         }
