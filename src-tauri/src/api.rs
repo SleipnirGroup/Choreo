@@ -61,7 +61,7 @@ pub async fn select_codegen_folder(app_handle: tauri::AppHandle) -> TauriResult<
     Ok(app_handle
         .dialog()
         .file()
-        .set_title("Select a folder to output generated java files")
+        .set_title("Select a folder to output generated Java files")
         .blocking_pick_folder()
         .ok_or(ChoreoError::FileNotFound(None))?
         .as_path()

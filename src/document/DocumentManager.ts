@@ -716,7 +716,7 @@ export async function newProject(promptForCodegen: boolean = true) {
     (Do this if you're switching to a new codebase)
     `
     : `
-    Choreo can now output java files
+    Choreo can now output Java files
     containing variables and constants defined in the GUI.
     Select a folder to enable this feature?
     `;
