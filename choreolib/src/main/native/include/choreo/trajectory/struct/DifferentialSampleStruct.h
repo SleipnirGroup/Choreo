@@ -12,10 +12,11 @@ struct wpi::Struct<choreo::DifferentialSample> {
   static constexpr std::string_view GetTypeName() {
     return "DifferentialSample";
   }
-  static constexpr size_t GetSize() { return 80; }
+  static constexpr size_t GetSize() { return 96; }
   static constexpr std::string_view GetSchema() {
     return "double timestamp;double x;double y;double heading;double vl;double "
-           "vr;double al;double ar;double fl;double fr;";
+           "vr;double omega;double al;double ar;double alpha;double fl;double "
+           "fr;";
   }
 
   static choreo::DifferentialSample Unpack(std::span<const uint8_t> data);
