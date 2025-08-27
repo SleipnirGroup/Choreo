@@ -66,6 +66,7 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     w: Expr;
     h: Expr;
+    rotation: Expr;
   };
   KeepInLane: {
     tolerance: Expr;
@@ -221,15 +222,13 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description:
-          "The x coordinate of the bottom left of the keep-in region",
+        description: "The x coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description:
-          "The y coordinate of the bottom left of the keep-in region",
+        description: "The y coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
@@ -244,6 +243,12 @@ export const ConstraintDefinitions: defs = {
         description: "The height of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
+      },
+      rotation: {
+        name: "R",
+        description: "The rotation angle of the rectangle around its center",
+        dimension: Dimensions.Angle,
+        defaultVal: { exp: "0 deg", val: 0 }
       }
     },
     wptScope: true,
