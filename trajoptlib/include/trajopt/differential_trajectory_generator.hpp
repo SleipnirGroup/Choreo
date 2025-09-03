@@ -67,7 +67,7 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   std::vector<double> vr;
 
   /// The chassis angular velocity, which can be derived as ω = (vᵣ −
-  /// vₗ)/trackwidth
+  /// vₗ)/trackwidth.
   std::vector<double> angular_velocity;
 
   /// The left accelerations.
@@ -75,6 +75,10 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
 
   /// The right acceleration.
   std::vector<double> ar;
+
+  /// The chassis angular acceleration, which can be derived as α = (aᵣ −
+  /// aₗ)/trackwidth.
+  std::vector<double> angular_acceleration;
 
   /// The force of the left driverail wheels.
   std::vector<double> Fl;
@@ -115,6 +119,9 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   /// The right wheel acceleration.
   double acceleration_r = 0.0;
 
+  /// The chassis angular acceleration.
+  double angular_acceleration = 0.0;
+
   /// The left wheel force.
   double force_l = 0.0;
 
@@ -134,6 +141,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    * @param angular_velocity The chassis angular velocity.
    * @param acceleration_l The left wheel acceleration.
    * @param acceleration_r The right wheel acceleration.
+   * @param angular_acceleration The chassis angular acceleration.
    * @param force_l The left wheel force.
    * @param force_r The right wheel force.
    */
@@ -141,7 +149,8 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
                                double heading, double velocity_l,
                                double velocity_r, double angular_velocity,
                                double acceleration_l, double acceleration_r,
-                               double force_l, double force_r)
+                               double angular_acceleration, double force_l,
+                               double force_r)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -151,6 +160,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
         angular_velocity{angular_velocity},
         acceleration_l{acceleration_l},
         acceleration_r{acceleration_r},
+        angular_acceleration{angular_acceleration},
         force_l{force_l},
         force_r{force_r} {}
 };
@@ -186,7 +196,8 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
           ts, solution.x[sample], solution.y[sample], solution.heading[sample],
           solution.vl[sample], solution.vr[sample],
           solution.angular_velocity[sample], solution.al[sample],
-          solution.ar[sample], solution.Fl[sample], solution.Fr[sample]);
+          solution.ar[sample], solution.angular_acceleration[sample],
+          solution.Fl[sample], solution.Fr[sample]);
       ts += solution.dt[sample];
     }
   }
