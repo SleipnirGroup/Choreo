@@ -67,6 +67,7 @@ mod ffi {
         angular_velocity: f64,
         acceleration_l: f64,
         acceleration_r: f64,
+        angular_acceleration: f64,
         force_l: f64,
         force_r: f64,
     }
