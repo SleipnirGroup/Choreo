@@ -42,11 +42,10 @@ mod traj_file {
     fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         clear_generation_result(editor)
     }
-    
+
     fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
         clear_generation_result(editor)
     }
-
 
     #[cfg(test)]
     mod tests {
@@ -81,7 +80,7 @@ mod traj_file {
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_trajectory("1", "swerve")
         }
-        
+
         #[test]
         pub fn test_2_differential() -> ChoreoResult<()> {
             test_trajectory("2", "differential")
