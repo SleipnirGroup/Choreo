@@ -4,7 +4,6 @@ use crate::ChoreoResult;
 
 mod traj_file {
     use crate::spec::trajectory::Trajectory;
-    #[allow(unused_imports)] // Remove when an upgrader function is added
     use crate::{
         file_management::upgrader::{Editor, Upgrader},
         spec::TRAJ_SCHEMA_VERSION,
@@ -17,11 +16,17 @@ mod traj_file {
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
+        upgrader.add_version_action(up_1_2);
         // Ensure the new upgrader is added here
         upgrader
     }
-
-    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+    /// To devs adding new schema versions:
+    /// If the change adds/exposes a new field in the trajectory sample,
+    /// the upgrade process includes calling this function, which deletes the generation output.
+    /// The new field likely can't be derived from other .traj contents, so the upgrader does
+    /// not have enough information to autopopulate it without regenerating.
+    /// No other upgrader work is needed to accommodate new sample fields.
+    fn clear_generation_result(editor: &mut Editor) -> ChoreoResult<()> {
         // Clear generated output
         editor.set_path_serialize(
             "trajectory",
@@ -33,6 +38,15 @@ mod traj_file {
             },
         )
     }
+
+    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+    
+    fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+
 
     #[cfg(test)]
     mod tests {
@@ -66,6 +80,15 @@ mod traj_file {
         #[test]
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_trajectory("1", "swerve")
+        }
+        
+        #[test]
+        pub fn test_2_differential() -> ChoreoResult<()> {
+            test_trajectory("2", "differential")
+        }
+        #[test]
+        pub fn test_2_swerve() -> ChoreoResult<()> {
+            test_trajectory("2", "swerve")
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
