@@ -85,13 +85,13 @@ include(FetchContent)
 
 if(BUILD_TESTING)
     # Catch2 dependency
-    fetchcontent_declare(
+    FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.8.0
+        GIT_TAG v3.10.0
         CMAKE_ARGS
     )
-    fetchcontent_makeavailable(Catch2)
+    FetchContent_MakeAvailable(Catch2)
 endif()
 
 set(BUILD_TESTING_SAVE ${BUILD_TESTING})
@@ -100,13 +100,13 @@ set(BUILD_EXAMPLES_SAVE ${BUILD_EXAMPLES})
 set(BUILD_TESTING OFF)
 set(BUILD_EXAMPLES OFF)
 
-fetchcontent_declare(
+FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    # main on 2025-05-15
-    GIT_TAG bf616f440cda14685be58b98f16fa40fbc3ff548
+    # main on 2025-09-22
+    GIT_TAG dc54cb79c6de4f51f12083b49d08dd443b0c017e
 )
-fetchcontent_makeavailable(Sleipnir)
+FetchContent_MakeAvailable(Sleipnir)
 
 set(BUILD_TESTING ${BUILD_TESTING_SAVE})
 set(BUILD_EXAMPLES ${BUILD_EXAMPLES_SAVE})
@@ -123,12 +123,9 @@ target_include_directories(
 install(
     TARGETS TrajoptLib
     EXPORT TrajoptLibTargets
-    LIBRARY
-    DESTINATION lib
-    ARCHIVE
-    DESTINATION lib
-    RUNTIME
-    DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
 )
 export(TARGETS TrajoptLib FILE TrajoptLib.cmake NAMESPACE TrajoptLib::)

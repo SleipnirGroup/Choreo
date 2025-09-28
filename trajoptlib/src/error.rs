@@ -1,12 +1,16 @@
 use thiserror::Error;
 
+// Error messages and codes from:
+// https://github.com/SleipnirGroup/Sleipnir/blob/4e07c8835dc589e496a66d3320e0990668fea268/include/sleipnir/optimization/solver/exit_status.hpp
+
 #[derive(Debug, Error)]
-// messages taken from https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/solver/exit_status.hpp#L52-L71
 pub enum TrajoptError {
     #[error("Too few degrees of freedom")]
     TooFewDOFs,
     #[error("Locally infeasible")]
     LocallyInfeasible,
+    #[error("Globally infeasible")]
+    GloballyInfeasible,
     #[error("Factorization failed")]
     FactorizationFailed,
     #[error("Line search failed")]
@@ -30,12 +34,13 @@ impl From<i8> for TrajoptError {
         match value {
             -1 => Self::TooFewDOFs,
             -2 => Self::LocallyInfeasible,
-            -3 => Self::FactorizationFailed,
-            -4 => Self::LineSearchFailed,
-            -5 => Self::NonfiniteInitialCostOrConstraints,
-            -6 => Self::DivergingIterates,
-            -7 => Self::MaxIterationsExceeded,
-            -8 => Self::Timeout,
+            -3 => Self::GloballyInfeasible,
+            -4 => Self::FactorizationFailed,
+            -5 => Self::LineSearchFailed,
+            -6 => Self::NonfiniteInitialCostOrConstraints,
+            -7 => Self::DivergingIterates,
+            -8 => Self::MaxIterationsExceeded,
+            -9 => Self::Timeout,
             _ => Self::Unknown(value),
         }
     }

@@ -133,14 +133,14 @@ class Translation2 {
   /**
    * Applies a rotation to the translation in 2D space.
    *
-   * @param other The rotation to rotate the translation by.
+   * @param rotation The rotation to rotate the translation by.
    * @return The new rotated translation.
    */
   template <typename U>
-  constexpr auto rotate_by(const Rotation2<U>& other) const {
+  constexpr auto rotate_by(const Rotation2<U>& rotation) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return Translation2<R>{m_x * other.cos() - m_y * other.sin(),
-                           m_x * other.sin() + m_y * other.cos()};
+    return Translation2<R>{m_x * rotation.cos() - m_y * rotation.sin(),
+                           m_x * rotation.sin() + m_y * rotation.cos()};
   }
 
   /**
