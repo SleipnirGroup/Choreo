@@ -90,6 +90,9 @@ class DifferentialSample:
     Parameter ``ar``:
         The right linear acceleration of the state in m/s².
 
+    Parameter ``alpha``:
+        The chassis angular acceleration of the state in rad/s².
+
     Parameter ``fl``:
         The left force on the swerve modules in Newtons.
 
@@ -107,6 +110,7 @@ class DifferentialSample:
     omega: float
     al: float
     ar: float
+    alpha: float
     fl: float
     fr: float
 
@@ -146,11 +150,9 @@ class DifferentialSample:
 
         def f(state, input):
             #  state =  [x, y, θ, vₗ, vᵣ, ω]
-            #  input =  [aₗ, aᵣ]
+            #  input =  [aₗ, aᵣ, α]
             #
             #  v = (vₗ + vᵣ)/2
-            #  ω = (vᵣ − vₗ)/width
-            #  α = (aᵣ − aₗ)/width
             #
             #  ẋ = v cosθ
             #  ẏ = v sinθ
@@ -164,8 +166,8 @@ class DifferentialSample:
             ω = state[5, 0]
             al = input[0, 0]
             ar = input[1, 0]
+            α = input[2, 0]
             v = (vl + vr) / 2
-            α = (ar - al) / width
             return [v * cos(θ), v * sin(θ), ω, al, ar, α]
 
         sample = solve_ivp(f, (self.timestamp, t), initial_state).y
@@ -180,6 +182,7 @@ class DifferentialSample:
             sample[5, 0],
             self.al,
             self.ar,
+            self.alpha,
             lerp(self.fl, end_value.fl, scale),
             lerp(self.fr, end_value.fr, scale),
         )
@@ -203,6 +206,7 @@ class DifferentialSample:
                 -self.omega,
                 self.ar,
                 self.al,
+                -self.alpha,
                 self.fr,
                 self.fl,
             )
@@ -217,6 +221,7 @@ class DifferentialSample:
                 self.omega,
                 self.al,
                 self.ar,
+                self.alpha,
                 self.fl,
                 self.fr,
             )

@@ -367,6 +367,10 @@ DifferentialTrajectoryGenerator::construct_differential_solution() {
   for (size_t sample = 0; sample < vl.size(); ++sample) {
     ω.push_back((vr.at(sample).value() - vl.at(sample).value()) / trackwidth);
   }
+  std::vector<double> α;
+  for (size_t sample = 0; sample < al.size(); ++sample) {
+    α.push_back((ar.at(sample).value() - al.at(sample).value()) / trackwidth);
+  }
   return DifferentialSolution{
       vector_value(dts),
       vector_value(x),
@@ -377,6 +381,7 @@ DifferentialTrajectoryGenerator::construct_differential_solution() {
       ω,
       vector_value(al),
       vector_value(ar),
+      α,
       vector_value(Fl),
       vector_value(Fr),
   };
