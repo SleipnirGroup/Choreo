@@ -11,12 +11,12 @@ license = "BSD-3-Clause"
 dashmap = "6.1.0"
 fastrand = "2.3.0"
 futures-util = "0.3.31"
-ipc-channel = { version = "0.20.0", features = ["async"] }
+ipc-channel = { version = "0.20.2", features = ["async"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tempfile = "3.20.0"
-thiserror = "2.0.12"
+tempfile = "3.23.0"
+thiserror = "2.0.17"
 tokio = { version = "1", features = ["process", "macros", "rt", "fs", "sync", "io-util"] }
 tracing = "0.1.41"
 trajoptlib = { path = "../trajoptlib" }
-zip = { version = "4.0.0", default-features = false }
+zip = { version = "5.1.1", default-features = false }
