@@ -6,12 +6,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "" FORCE)
 endif()
 
-project(TrajoptLib LANGUAGES CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Generate compile_commands.json by default
-if(NOT CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_EXPORT_COMPILE_COMMANDS "YES" CACHE STRING "" FORCE)
-endif()
+project(TrajoptLib LANGUAGES CXX)
 
 include(CMakePackageConfigHelpers)
 include(CTest)
@@ -64,8 +61,8 @@ set(BUILD_EXAMPLES OFF)
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    # main on 2025-10-13
-    GIT_TAG 0aea767fe81df1d61fe789e0cab7db0ab28aac9c
+    # main on 2025-10-14
+    GIT_TAG 2eacdde898f7765fcaafb7e3ae936999ff6f5056
 )
 FetchContent_MakeAvailable(Sleipnir)
 
