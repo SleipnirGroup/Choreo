@@ -121,10 +121,7 @@ if(BUILD_TESTING)
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     )
-    target_link_libraries(
-        trajoptlib_test
-        PRIVATE TrajoptLib Catch2::Catch2WithMain
-    )
+    target_link_libraries(trajoptlib_test TrajoptLib Catch2::Catch2WithMain)
     catch_discover_tests(
         trajoptlib_test
         DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
@@ -144,7 +141,7 @@ if(BUILD_EXAMPLES)
             ${example}
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/include
         )
-        target_link_libraries(${example} PRIVATE TrajoptLib)
+        target_link_libraries(${example} TrajoptLib)
 
         # Build example test if files exist for it
         if(
@@ -167,7 +164,8 @@ if(BUILD_EXAMPLES)
             )
             target_link_libraries(
                 ${example}_test
-                PRIVATE TrajoptLib Catch2::Catch2WithMain
+                TrajoptLib
+                Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
                 catch_discover_tests(
