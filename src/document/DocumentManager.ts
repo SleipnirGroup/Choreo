@@ -845,7 +845,7 @@ export async function codeGenDialog() {
   const splitPath = filePath.split(path.sep() + "java" + path.sep());
   if (splitPath.length === 1) {
     toast.error(
-      "Invalid path: make sure your code generation root points to a \"java\" directory."
+      'Invalid path: make sure your code generation root points to a "java" directory.'
     );
     return;
   }
