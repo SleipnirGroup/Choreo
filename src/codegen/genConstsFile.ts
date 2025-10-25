@@ -14,7 +14,7 @@ import static edu.wpi.first.units.Units.*;
  * This allows for modifying constants in choreo while keeping your robot code up-to-date.
  * DO NOT MODIFY this file yourself, as it is auto-generated.
  */
-public final class ChoreoConsts {`);
+public final class ChoreoRobotConfig {`);
 
   const config = project.config;
   const maxLinearVel =
@@ -61,7 +61,7 @@ public final class ChoreoConsts {`);
   out.push(writeConst(maxLinearVel, "maxLinearVel", "LinVel"));
   out.push(writeConst(maxLinearAccel, "maxLinearAccel", "LinAcc"));
   out.push("");
-  out.push("    private ChoreoConsts() {}");
+  out.push("    private ChoreoRobotConfig() {}");
   out.push("}");
   return out.join("\n");
 }
