@@ -4,6 +4,7 @@ import {
   ToggleButtonGroup,
   Tooltip
 } from "@mui/material";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -31,7 +32,18 @@ import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import FieldImage2025 from "./fields/FieldImage2025";
-import * as FieldDimensions from "./fields/FieldDimensions";
+import FieldImageDecode from "./fields/FieldImageDecode";
+import {
+  CUSTOM_FIELD_ID,
+  FIELD_PRESETS,
+  FieldPresetId,
+  getPresetById
+} from "../../../document/FieldSettingsStore";
+
+const BUILTIN_FIELD_COMPONENTS: Record<FieldPresetId, React.ComponentType> = {
+  reefscape2025: FieldImage2025,
+  decode: FieldImageDecode
+};
 
 type Props = object;
 
@@ -204,11 +216,55 @@ class FieldOverlayRoot extends Component<Props, State> {
     });
   }
   render() {
-    this.canvasHeightMeters = FieldDimensions.FIELD_WIDTH + 1;
-    this.canvasWidthMeters = FieldDimensions.FIELD_LENGTH + 1;
+    const fieldSettings = uiState.fieldSettings;
+    const fieldLength = fieldSettings.fieldLength;
+    const fieldWidth = fieldSettings.fieldWidth;
+    this.canvasHeightMeters = fieldWidth + 1;
+    this.canvasWidthMeters = fieldLength + 1;
     const layers = uiState.layers;
     const constraintSelected = uiState.isConstraintSelected();
     const eventMarkerSelected = uiState.isEventMarkerSelected();
+    const selectedPresetId = fieldSettings.selectedPresetId;
+    const preset = getPresetById(selectedPresetId);
+    const defaultBackground = (
+      <g transform={`scale(1, -1) translate(0,${-fieldWidth})`}>
+        <rect width={fieldLength} height={fieldWidth} fill="#1f1f1f" />
+      </g>
+    );
+    let fieldBackground: React.ReactNode = defaultBackground;
+    if (selectedPresetId === CUSTOM_FIELD_ID) {
+      if (fieldSettings.customImagePath) {
+        const imageSrc = convertFileSrc(fieldSettings.customImagePath);
+        fieldBackground = (
+          <g transform={`scale(1, -1) translate(0,${-fieldWidth})`}>
+            <image
+              href={imageSrc}
+              width={fieldLength}
+              height={fieldWidth}
+              preserveAspectRatio="none"
+            />
+          </g>
+        );
+      }
+    } else if (preset) {
+      const component = BUILTIN_FIELD_COMPONENTS[
+        preset.id as FieldPresetId
+      ];
+      if (component) {
+        const scaleX =
+          preset.defaultLength > 0
+            ? fieldLength / preset.defaultLength
+            : 1;
+        const scaleY =
+          preset.defaultWidth > 0 ? fieldWidth / preset.defaultWidth : 1;
+        const FieldComponent = component;
+        fieldBackground = (
+          <g transform={`scale(${scaleX} ${scaleY})`}>
+            <FieldComponent />
+          </g>
+        );
+      }
+    }
 
     return (
       <svg
@@ -238,11 +294,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           >
             <FieldAxisLines></FieldAxisLines>
             {/* Background */}
-            {layers[ViewLayers.Field] && (
-              <>
-                <FieldImage2025 />
-              </>
-            )}
+            {layers[ViewLayers.Field] && fieldBackground}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
             {/* Waypoint mouse capture*/}
 

@@ -8,6 +8,13 @@ import {
 import LocalStorageKeys from "../util/LocalStorageKeys";
 import { ConstraintKey } from "./ConstraintDefinitions";
 import {
+  CUSTOM_FIELD_ID,
+  DEFAULT_FIELD_SETTINGS,
+  FieldSettingsStore,
+  SerializedFieldSettings,
+  getPresetById
+} from "./FieldSettingsStore";
+import {
   NUM_SETTINGS_TABS,
   NavbarData,
   NavbarItemSectionEnds,
@@ -55,6 +62,7 @@ export const UIStateStore = types
       types.array(types.boolean),
       (arr) => arr?.length == ViewItemData.length
     ),
+    fieldSettings: FieldSettingsStore,
     selectedNavbarItem: NavbarLabels.FullWaypoint,
     selectedPathGradient: types.maybe(
       types.union(
@@ -193,6 +201,67 @@ export const UIStateStore = types
       self.selectedPathGradient =
         localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
         PathGradients.LinearVelocity.name;
+    },
+    selectFieldPreset(presetId: string) {
+      if (presetId === CUSTOM_FIELD_ID || getPresetById(presetId) !== undefined) {
+        self.fieldSettings.selectPreset(presetId);
+        this._saveFieldSettingsToLocalStorage();
+      }
+    },
+    setFieldDimensions(length: number, width: number) {
+      if (Number.isFinite(length) && Number.isFinite(width) && length > 0 && width > 0) {
+        self.fieldSettings.setDimensions(length, width);
+        this._saveFieldSettingsToLocalStorage();
+      }
+    },
+    setPreviewGridSpacing(spacing: number) {
+      if (Number.isFinite(spacing) && spacing > 0) {
+        self.fieldSettings.setPreviewGridSpacing(spacing);
+        this._saveFieldSettingsToLocalStorage();
+      }
+    },
+    setCustomFieldImage(path: string | undefined) {
+      self.fieldSettings.setCustomImagePath(path);
+      this._saveFieldSettingsToLocalStorage();
+    },
+    resetFieldDimensionsToDefault() {
+      self.fieldSettings.resetToPresetDefaults();
+      this._saveFieldSettingsToLocalStorage();
+    },
+    loadFieldSettingsFromLocalStorage() {
+      const stored = localStorage.getItem(LocalStorageKeys.FIELD_SETTINGS);
+      if (!stored) {
+        self.fieldSettings.hydrate(DEFAULT_FIELD_SETTINGS);
+        return;
+      }
+      try {
+        const parsed = JSON.parse(stored) as SerializedFieldSettings;
+        const targetPreset =
+          parsed.selectedPresetId === CUSTOM_FIELD_ID ||
+          getPresetById(parsed.selectedPresetId)
+            ? parsed.selectedPresetId
+            : DEFAULT_FIELD_SETTINGS.selectedPresetId;
+        self.fieldSettings.selectPreset(targetPreset);
+        if (parsed.fieldLength && parsed.fieldWidth) {
+          self.fieldSettings.setDimensions(parsed.fieldLength, parsed.fieldWidth);
+        }
+        if (parsed.previewGridSpacing !== undefined && parsed.previewGridSpacing > 0) {
+          self.fieldSettings.setPreviewGridSpacing(parsed.previewGridSpacing);
+        }
+        if (targetPreset === CUSTOM_FIELD_ID) {
+          self.fieldSettings.setCustomImagePath(parsed.customImagePath);
+        }
+      } catch (err) {
+        console.error("Failed to load field settings", err);
+        self.fieldSettings.hydrate(DEFAULT_FIELD_SETTINGS);
+      }
+    },
+    _saveFieldSettingsToLocalStorage() {
+      const serialized = self.fieldSettings.serialize;
+      localStorage.setItem(
+        LocalStorageKeys.FIELD_SETTINGS,
+        JSON.stringify(serialized)
+      );
     },
     setContextMenuSelectedWaypoint(waypointIndex: number | undefined) {
       self.contextMenuSelectedWaypoint = waypointIndex;

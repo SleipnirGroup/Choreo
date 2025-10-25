@@ -1,4 +1,4 @@
-import { Divider, FormHelperText, Switch } from "@mui/material";
+import { Autocomplete, Divider, FormHelperText, Switch, TextField } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import inputStyles from "../../input/InputList.module.css";
@@ -8,6 +8,7 @@ import TheoreticalPanel from "./TheoreticalPanel";
 import { doc } from "../../../document/DocumentManager";
 import DifferentialConfigPanel from "./DifferentialConfigPanel";
 import SwerveConfigPanel from "./SwerveConfigPanel";
+import MecanumConfigPanel from "./MecanumConfigPanel";
 
 type Props = object;
 
@@ -50,44 +51,37 @@ class RobotConfigPanel extends Component<Props, State> {
             gridRow: 1
           }}
         >
-          <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
+          <Divider sx={{ color: "gray", }}>
             DRIVE TYPE
           </Divider>
           <div
             style={{
-              height: 24,
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-evenly",
+              height: `${this.rowGap*2}`,
+              flex: 1,
               marginBottom: `${this.rowGap}px`
             }}
           >
-            <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-              Swerve
-            </span>
-
-            <Switch
+            <Autocomplete 
               size="small"
-              sx={{
-                gridColumn: 2,
-                ".MuiSwitch-track": { backgroundColor: "black" },
-                ".Mui-checked+.MuiSwitch-track": { backgroundColor: "black" }
-              }}
-              checked={doc.type === "Differential"}
-              onChange={(_e, checked) =>
-                doc.setType(checked ? "Differential" : "Swerve")
+              value={doc.type}
+              onChange={(_e, new_value) =>
+                doc.setType(new_value as "Differential" | "Mecanum" | "Swerve")
               }
-            ></Switch>
-            <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-              Differential
-            </span>
+              options={["Swerve","Mecanum","Differential"]}
+              disableClearable={true}
+              renderInput={(params) => <TextField {...params} label="" />}
+            ></Autocomplete>
           </div>
           {doc.type === "Differential" ? (
             <DifferentialConfigPanel
               rowGap={this.rowGap}
             ></DifferentialConfigPanel>
+          ) : doc.type === "Swerve" ? (
+            <SwerveConfigPanel
+              rowGap={this.rowGap}
+            ></SwerveConfigPanel>
           ) : (
-            <SwerveConfigPanel rowGap={this.rowGap}></SwerveConfigPanel>
+            <MecanumConfigPanel rowGap={this.rowGap}></MecanumConfigPanel>
           )}
         </div>
         {/* Theoreticals */}
