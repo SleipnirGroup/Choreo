@@ -52,50 +52,9 @@ struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
    */
   double wheel_cof;
 
-  /**
-   * Width of the drivebase in [m]
-   */
-  double width;
-
-  /**
-   * Length of the drivebase in [m]
-   */
-  double length;
-
   /// Translation of each wheel from the origin of the robot coordinate
   /// system to the center of the wheel (m). 
   std::vector<Translation2d> wheels;
-};
-
-/**
- * A model of a tire
- */
-class TireModel {
- public:
-  /**
-   * @param slipRatio The slip ratio of the wheel
-   * @param normal The normal expression of the wheel
-   *
-   * @return The longitudial force in Newtons applied on the wheel
-   */
-  double longitudial(double slipRatio, double normal);
-
-  /**
-   * @param slipAngle The slip angle of the wheel in radians.
-   * @param normal The normal expression of the wheel.
-   *
-   * @return The lateral force applied to the wheel in Newtons.
-   */
-  double lateral(double slipAngle, double normal);
-
-  /**
-   * @param slipAngle The slip angle of the wheel in radians.
-   * @param normal The normal expression of the wheel.
-   *
-   * @return The output of the expression that finds aligning movement to the
-   * plane the wheel sits on.
-   */
-  double aligningMovement(double slipAngle, double expression);
 };
 
 /**
@@ -318,7 +277,7 @@ class TRAJOPT_DLLEXPORT MecanumTrajectoryGenerator {
 
   void apply_initial_guess(const MecanumSolution& solution);
 
-  MecanumSolution construct_swerve_solution();
+  MecanumSolution construct_mecanum_solution();
 };
 
 }  // namespace trajopt

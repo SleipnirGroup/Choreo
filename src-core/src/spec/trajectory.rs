@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
+use trajoptlib::{DifferentialTrajectorySample, MecanumTrajectorySample, SwerveTrajectorySample};
 
 use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
 
@@ -284,6 +284,20 @@ pub enum Sample {
         fl: f64,
         fr: f64,
     },
+    /// A sample for a mecanum drive.
+    Mecanum {
+        t: f64,
+        x: f64,
+        y: f64,
+        heading: f64,
+        vx: f64,
+        vy: f64,
+        omega: f64,
+        ax: f64,
+        ay: f64,
+        alpha: f64,
+        f: [f64; 4],
+    },
 }
 fn round(input: f64) -> f64 {
     let factor = 100_000.0;
@@ -352,6 +366,34 @@ impl From<DifferentialTrajectorySample> for Sample {
     }
 }
 
+impl From<&MecanumTrajectorySample> for Sample {
+    fn from(swerve_sample: &MecanumTrajectorySample) -> Self {
+        Sample::Mecanum {
+            t: round(swerve_sample.timestamp),
+            x: round(swerve_sample.x),
+            y: round(swerve_sample.y),
+            vx: round(swerve_sample.velocity_x),
+            vy: round(swerve_sample.velocity_y),
+            heading: round(swerve_sample.heading),
+            omega: round(swerve_sample.angular_velocity),
+            ax: round(swerve_sample.acceleration_x),
+            ay: round(swerve_sample.acceleration_y),
+            alpha: round(swerve_sample.angular_acceleration),
+            f: [
+                round(swerve_sample.wheel_forces[0]),
+                round(swerve_sample.wheel_forces[1]),
+                round(swerve_sample.wheel_forces[2]),
+                round(swerve_sample.wheel_forces[3]),
+            ],
+        }
+    }
+}
+impl From<MecanumTrajectorySample> for Sample {
+    fn from(value: MecanumTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
+
 /// The type of samples in a trajectory.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub enum DriveType {
@@ -360,6 +402,8 @@ pub enum DriveType {
     Swerve,
     /// The variant for [`Sample::DifferentialDrive`].
     Differential,
+    /// The variant for [`Sample::Mecanum`].
+    Mecanum,
 }
 
 /// The parameters used for generating a trajectory.

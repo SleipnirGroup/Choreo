@@ -29,6 +29,17 @@ mod ffi {
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    struct MecanumDrivetrain {
+        mass: f64,
+        moi: f64,
+        wheel_radius: f64,
+        wheel_max_angular_velocity: f64,
+        wheel_max_torque: f64,
+        wheel_cof: f64,
+        modules: Vec<Translation2d>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     struct Pose2d {
         x: f64,
         y: f64,
@@ -74,6 +85,26 @@ mod ffi {
     #[derive(Debug, Deserialize, Serialize, Clone)]
     struct DifferentialTrajectory {
         samples: Vec<DifferentialTrajectorySample>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    struct MecanumTrajectorySample {
+        timestamp: f64,
+        x: f64,
+        y: f64,
+        heading: f64,
+        velocity_x: f64,
+        velocity_y: f64,
+        angular_velocity: f64,
+        acceleration_x: f64,
+        acceleration_y: f64,
+        angular_acceleration: f64,
+        wheel_forces: Vec<f64>,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    struct MecanumTrajectory {
+        samples: Vec<MecanumTrajectorySample>,
     }
 
     unsafe extern "C++" {
@@ -499,6 +530,218 @@ mod ffi {
         // Cancel all generators
 
         fn cancel_all();
+
+        type MecanumTrajectoryGenerator;
+
+        fn mecanum_trajectory_generator_new() -> UniquePtr<MecanumTrajectoryGenerator>;
+
+        fn set_drivetrain(self: Pin<&mut MecanumTrajectoryGenerator>, drivetrain: &MecanumDrivetrain);
+
+        fn set_bumpers(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            front: f64,
+            left: f64,
+            right: f64,
+            back: f64,
+        );
+
+        fn set_control_interval_counts(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            counts: Vec<usize>,
+        );
+
+        // Pose constraints
+
+        fn pose_wpt(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            x: f64,
+            y: f64,
+            heading: f64,
+        );
+
+        fn translation_wpt(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            x: f64,
+            y: f64,
+            heading_guess: f64,
+        );
+
+        fn empty_wpt(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            x_guess: f64,
+            y_guess: f64,
+            heading_guess: f64,
+        );
+
+        // Segment initial guess points setter
+
+        fn sgmt_initial_guess_points(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            guess_points: &Vec<Pose2d>,
+        );
+
+        // Constraints with waypoint scope
+
+        fn wpt_linear_velocity_direction(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            angle: f64,
+        );
+
+        fn wpt_linear_velocity_max_magnitude(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            magnitude: f64,
+        );
+
+        fn wpt_angular_velocity_max_magnitude(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            angular_velocity: f64,
+        );
+
+        fn wpt_linear_acceleration_max_magnitude(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            magnitude: f64,
+        );
+
+        fn wpt_point_at(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            heading_tolerance: f64,
+            flip: bool,
+        );
+
+        fn wpt_keep_in_circle(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
+
+        fn wpt_keep_in_polygon(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            field_points_x: Vec<f64>,
+            field_points_y: Vec<f64>,
+        );
+
+        fn wpt_keep_in_lane(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            center_line_start_x: f64,
+            center_line_start_y: f64,
+            center_line_end_x: f64,
+            center_line_end_y: f64,
+            tolerance: f64,
+        );
+
+        fn wpt_keep_out_circle(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
+
+        // Constraints with segment scope
+
+        fn sgmt_linear_velocity_direction(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            angle: f64,
+        );
+
+        fn sgmt_linear_velocity_max_magnitude(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            magnitude: f64,
+        );
+
+        fn sgmt_angular_velocity_max_magnitude(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            angular_velocity: f64,
+        );
+
+        fn sgmt_linear_acceleration_max_magnitude(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            magnitude: f64,
+        );
+
+        fn sgmt_point_at(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            heading_tolerance: f64,
+            flip: bool,
+        );
+
+        fn sgmt_keep_in_circle(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
+
+        fn sgmt_keep_in_polygon(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            field_points_x: Vec<f64>,
+            field_points_y: Vec<f64>,
+        );
+
+        #[allow(clippy::too_many_arguments)]
+        fn sgmt_keep_in_lane(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            center_line_start_x: f64,
+            center_line_start_y: f64,
+            center_line_end_x: f64,
+            center_line_end_y: f64,
+            tolerance: f64,
+        );
+
+        fn sgmt_keep_out_circle(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            x: f64,
+            y: f64,
+            radius: f64,
+        );
+
+        // Trajectory generator functions
+
+        fn add_callback(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            callback: fn(MecanumTrajectory, i64),
+        );
+
+        fn generate(
+            self: &MecanumTrajectoryGenerator,
+            diagnostics: bool,
+            uuid: i64,
+        ) -> Result<MecanumTrajectory>;
     }
 }
 
@@ -1281,6 +1524,403 @@ impl DifferentialTrajectoryGenerator {
     }
 }
 
+
+pub struct MecanumTrajectoryGenerator {
+    generator: cxx::UniquePtr<crate::ffi::MecanumTrajectoryGenerator>,
+}
+
+impl Default for MecanumTrajectoryGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl MecanumTrajectoryGenerator {
+    pub fn new() -> MecanumTrajectoryGenerator {
+        MecanumTrajectoryGenerator {
+            generator: crate::ffi::mecanum_trajectory_generator_new(),
+        }
+    }
+
+    pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::MecanumDrivetrain) {
+        crate::ffi::MecanumTrajectoryGenerator::set_drivetrain(self.generator.pin_mut(), drivetrain);
+    }
+
+    pub fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::set_bumpers(
+            self.generator.pin_mut(),
+            front,
+            left,
+            right,
+            back,
+        );
+    }
+
+    pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
+        crate::ffi::MecanumTrajectoryGenerator::set_control_interval_counts(
+            self.generator.pin_mut(),
+            counts,
+        );
+    }
+
+    // Constraints with waypoint scope
+
+    pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::pose_wpt(
+            self.generator.pin_mut(),
+            index,
+            x,
+            y,
+            heading,
+        );
+    }
+
+    pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::translation_wpt(
+            self.generator.pin_mut(),
+            index,
+            x,
+            y,
+            heading_guess,
+        );
+    }
+
+    pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::empty_wpt(
+            self.generator.pin_mut(),
+            index,
+            x_guess,
+            y_guess,
+            heading_guess,
+        );
+    }
+
+    // Segment initial guess points setter
+
+    pub fn sgmt_initial_guess_points(
+        &mut self,
+        from_index: usize,
+        guess_points: &Vec<crate::ffi::Pose2d>,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_initial_guess_points(
+            self.generator.pin_mut(),
+            from_index,
+            guess_points,
+        );
+    }
+
+    // Constraints with waypoint scope
+
+    pub fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_linear_velocity_direction(
+            self.generator.pin_mut(),
+            index,
+            angle,
+        );
+    }
+
+    pub fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_linear_velocity_max_magnitude(
+            self.generator.pin_mut(),
+            index,
+            magnitude,
+        );
+    }
+
+    pub fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_angular_velocity_max_magnitude(
+            self.generator.pin_mut(),
+            index,
+            angular_velocity,
+        );
+    }
+
+    pub fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
+            self.generator.pin_mut(),
+            index,
+            magnitude,
+        );
+    }
+
+    pub fn wpt_point_at(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        heading_tolerance: f64,
+        flip: bool,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_point_at(
+            self.generator.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            heading_tolerance,
+            flip,
+        )
+    }
+
+    pub fn wpt_keep_in_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_keep_in_circle(
+            self.generator.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
+    }
+
+    pub fn wpt_keep_in_polygon(
+        &mut self,
+        index: usize,
+        field_points_x: Vec<f64>,
+        field_points_y: Vec<f64>,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_keep_in_polygon(
+            self.generator.pin_mut(),
+            index,
+            field_points_x,
+            field_points_y,
+        );
+    }
+
+    pub fn wpt_keep_in_lane(
+        &mut self,
+        index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_keep_in_lane(
+            self.generator.pin_mut(),
+            index,
+            center_line_start_x,
+            center_line_start_y,
+            center_line_end_x,
+            center_line_end_y,
+            tolerance,
+        );
+    }
+
+    pub fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::wpt_keep_out_circle(
+            self.generator.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
+    }
+
+    // Constraints with segment scope
+
+    pub fn sgmt_linear_velocity_direction(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        angle: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_linear_velocity_direction(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            angle,
+        );
+    }
+
+    pub fn sgmt_linear_velocity_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        magnitude: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_linear_velocity_max_magnitude(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            magnitude,
+        );
+    }
+
+    pub fn sgmt_angular_velocity_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        angular_velocity: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_angular_velocity_max_magnitude(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            angular_velocity,
+        );
+    }
+
+    pub fn sgmt_linear_acceleration_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        magnitude: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_linear_acceleration_max_magnitude(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            magnitude,
+        );
+    }
+
+    pub fn sgmt_keep_in_circle(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_keep_in_circle(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
+    }
+
+    pub fn sgmt_keep_in_polygon(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_points_x: Vec<f64>,
+        field_points_y: Vec<f64>,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_keep_in_polygon(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            field_points_x,
+            field_points_y,
+        );
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn sgmt_keep_in_lane(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_keep_in_lane(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            center_line_start_x,
+            center_line_start_y,
+            center_line_end_x,
+            center_line_end_y,
+            tolerance,
+        )
+    }
+
+    pub fn sgmt_keep_out_circle(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        x: f64,
+        y: f64,
+        radius: f64,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_keep_out_circle(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            x,
+            y,
+            radius,
+        );
+    }
+
+    pub fn sgmt_point_at(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        heading_tolerance: f64,
+        flip: bool,
+    ) {
+        crate::ffi::MecanumTrajectoryGenerator::sgmt_point_at(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            field_point_x,
+            field_point_y,
+            heading_tolerance,
+            flip,
+        )
+    }
+
+    ///
+    /// Add a callback that will be called on each iteration of the solver.
+    ///
+    /// * callback: a `fn` (not a closure) to be executed. The callback's first
+    ///   parameter will be a `trajopt::MecanumTrajectory`, and the second
+    ///   parameter will be an `i64` equal to the handle passed in `generate()`
+    ///
+    /// This function can be called multiple times to add multiple callbacks.
+    pub fn add_callback(&mut self, callback: fn(MecanumTrajectory, i64)) {
+        crate::ffi::MecanumTrajectoryGenerator::add_callback(self.generator.pin_mut(), callback);
+    }
+
+    ///
+    /// Generate the trajectory;
+    ///
+    /// * diagnostics: If true, prints per-iteration details of the solver to
+    ///   stdout.
+    /// * handle: A number used to identify results from this generation in the
+    ///   `add_callback` callback. If `add_callback` has not been called, this
+    ///   value has no significance.
+    ///
+    /// Returns a result with either the final `trajopt::MecanumTrajectory`,
+    /// or a TrajoptError if generation failed.
+    pub fn generate(
+        &self,
+        diagnostics: bool,
+        handle: i64,
+    ) -> Result<MecanumTrajectory, TrajoptError> {
+        match self.generator.generate(diagnostics, handle) {
+            Ok(trajectory) => Ok(trajectory),
+            Err(msg) => {
+                let what = msg.what();
+                Err(TrajoptError::from(
+                    what.parse::<i8>()
+                        .map_err(|_| TrajoptError::Unparsable(Box::from(what)))?,
+                ))
+            }
+        }
+    }
+}
+
 pub fn cancel_all() {
     crate::ffi::cancel_all();
 }
@@ -1293,6 +1933,9 @@ pub use ffi::Pose2d;
 pub use ffi::SwerveDrivetrain;
 pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;
+pub use ffi::MecanumDrivetrain;
+pub use ffi::MecanumTrajectory;
+pub use ffi::MecanumTrajectorySample;
 pub use ffi::Translation2d;
 
 pub mod error;

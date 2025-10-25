@@ -53,7 +53,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
         last_frame_time = now;
 
-        auto soln = construct_swerve_solution();
+        auto soln = construct_mecanum_solution();
         for (auto& callback : this->path.callbacks) {
           callback(soln, handle);
         }
@@ -102,15 +102,6 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     }
 
     dts.emplace_back(problem.decision_variable());
-  }
-
-  double min_width = INFINITY;
-  for (size_t i = 0; i < path.drivetrain.wheels.size(); ++i) {
-    auto mod_a = path.drivetrain.wheels.at(i);
-    size_t mod_b_idx = i == 0 ? path.drivetrain.wheels.size() - 1 : i - 1;
-    auto mod_b = path.drivetrain.wheels.at(mod_b_idx);
-    min_width = std::min(
-        min_width, std::hypot(mod_a.x() - mod_b.x(), mod_a.y() - mod_b.y()));
   }
 
   // Minimize total time
@@ -211,13 +202,16 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   }
 
 
-  auto s = 1.0/std::sqrt(2.0);
+  auto s = 1.0 / std::sqrt(2.0);
   std::vector<double> fx_forward = {s, s, s, s};
-  std::vector<double> fy_forward = {-s, s, s, -s};
+  std::vector<double> fy_forward = {-s, s, -s, s};
 
   std::vector<double> vx_inverse = {1,1,1,1};
-  std::vector<double> vy_inverse = {-1,1,1,-1};
-  std::vector<double> ω_inverse = {-1,1,1,-1};
+  std::vector<double> vy_inverse = {-1,1,-1,1};
+  std::vector<double> ω_inverse = {-1,-1,1,1};
+  //
+  // const auto strafe_ratio = std::max(path.drivetrain.strafe_ratio, 1e-3);
+  // const auto inverse_strafe_ratio = 1.0 / strafe_ratio;
 
   for (size_t index = 0; index < samp_tot; ++index) {
     Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
@@ -255,16 +249,16 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
          ++module_index) {
       const auto& translation = path.drivetrain.wheels.at(module_index);
 
-      auto v_wheel_wrt_robot = 
-        v_wrt_robot.x()*vx_inverse.at(module_index) +
-        v_wrt_robot.y()*vy_inverse.at(module_index) +
-        (translation.x()+translation.y())*ω_inverse.at(module_index);
+      auto v_wheel = 
+          v_wrt_robot.x()*vx_inverse.at(module_index) +
+          v_wrt_robot.y()*vy_inverse.at(module_index) +
+          (std::fabs(translation.x())+std::fabs(translation.y()))*ω_inverse.at(module_index)*ω.at(index);
 
       double max_wheel_velocity = path.drivetrain.wheel_radius *
                                   path.drivetrain.wheel_max_angular_velocity;
 
       // v² ≤ vₘₐₓ²
-      problem.subject_to(v_wheel_wrt_robot * v_wheel_wrt_robot <=
+      problem.subject_to(v_wheel * v_wheel <=
                          max_wheel_velocity * max_wheel_velocity);
 
       Translation2v module_f{Fx.at(module_index),
@@ -281,8 +275,10 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
       double max_force = std::min(max_wheel_force, max_friction_force);
 
+      auto f = F.at(index).at(module_index);
+
       // |F|₂² ≤ Fₘₐₓ²
-      problem.subject_to(module_f.squared_norm() <= max_force * max_force);
+      problem.subject_to(f * f <= max_force * max_force);
     }
 
     // Apply dynamics constraints
@@ -346,7 +342,7 @@ MecanumTrajectoryGenerator::generate(bool diagnostics) {
       status == slp::ExitStatus::CALLBACK_REQUESTED_STOP) {
     return std::unexpected{status};
   } else {
-    return construct_swerve_solution();
+    return construct_mecanum_solution();
   }
 }
 
@@ -397,7 +393,7 @@ void MecanumTrajectoryGenerator::apply_initial_guess(
   }
 }
 
-MecanumSolution MecanumTrajectoryGenerator::construct_swerve_solution() {
+MecanumSolution MecanumTrajectoryGenerator::construct_mecanum_solution() {
   auto get_value = [](auto& var) { return var.value(); };
 
   auto vector_value = [&](std::vector<slp::Variable>& row) {
