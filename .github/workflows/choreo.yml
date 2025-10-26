@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -145,14 +145,14 @@ jobs:
           zip -j ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/choreo target/aarch64-unknown-linux-gnu/release/choreo-cli
           zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact-name }}-cargo-timing.html
           path: target/cargo-timings/cargo-timing.html
 
       # Zipping manually works around upload-artifact stripping execute
       # permissions from files
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-name }}.zip
@@ -167,7 +167,7 @@ jobs:
 
     steps:
       - name: Download prebuilt binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: pkg
           pattern: "!*-cargo-timing.html"
