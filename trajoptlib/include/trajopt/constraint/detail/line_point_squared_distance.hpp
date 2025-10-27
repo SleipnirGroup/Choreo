@@ -28,7 +28,7 @@ decltype(auto) line_point_squared_distance(const Translation2<T>& line_start,
   Translation2<R> v{point.x() - line_start.x(), point.y() - line_start.y()};
 
   auto t = v.dot(l) / l.squared_norm();
-  auto t_bounded = max(min(t, 1), 0);  // NOLINT
+  auto t_bounded = max(min(t, 1), 0);  // NOLINT(build/include_what_you_use)
 
   Translation2<R> i{lerp(line_start.x(), line_end.x(), t_bounded),
                     lerp(line_start.y(), line_end.y(), t_bounded)};
