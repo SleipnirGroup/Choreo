@@ -71,8 +71,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
         {1.0 / m - r_b * r_b / J, 1.0 / m + r_b * r_b / J}};
 
     auto v = (x[3] + x[4]) / 2.0;
-    xdot[0] = v * cos(x[2]);  // NOLINT
-    xdot[1] = v * sin(x[2]);  // NOLINT
+    xdot[0] = v * cos(x[2]);
+    xdot[1] = v * sin(x[2]);
     xdot[2] = (x[4] - x[3]) / path.drivetrain.trackwidth;
     xdot.segment(3, 2) = B * u;
 
