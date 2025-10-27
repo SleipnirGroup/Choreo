@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2025.34
+      - run: pip3 install wpiformat==2025.36
 
       - run: pnpm run fmt
 
@@ -128,7 +128,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2025.34
+      - run: pip3 install wpiformat==2025.36
 
       - name: Create compile_commands.json
         working-directory: choreolib
@@ -169,18 +169,18 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install LLVM 18
+      - name: Install LLVM 20
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 18 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 200
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 200
+          sudo ./llvm.sh 20 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 200
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 200
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
-      - run: pip3 install wpiformat==2025.34
+      - run: pip3 install wpiformat==2025.36
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES

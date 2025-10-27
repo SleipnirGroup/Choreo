@@ -180,7 +180,7 @@ class Translation2 {
    *
    * @return The norm of the translation.
    */
-  constexpr auto norm() const { return hypot(m_x, m_y); }  // NOLINT
+  constexpr auto norm() const { return hypot(m_x, m_y); }
 
   /**
    * Returns the squared norm of the translation. This is the sum of squares of
@@ -200,7 +200,7 @@ class Translation2 {
    */
   template <typename U>
   constexpr auto distance(const Translation2<U>& other) const {
-    return hypot(other.x() - m_x, other.y() - m_y);  // NOLINT
+    return hypot(other.x() - m_x, other.y() - m_y);
   }
 
  private:
