@@ -47,7 +47,6 @@ if(BUILD_TESTING)
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
         GIT_TAG v3.11.0
-        CMAKE_ARGS
     )
     FetchContent_MakeAvailable(Catch2)
 endif()
