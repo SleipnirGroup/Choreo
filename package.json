@@ -35,7 +35,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@tauri-apps/api": "2.9.0",
-    "@tauri-apps/plugin-dialog": "2.4.0",
+    "@tauri-apps/plugin-dialog": "2.4.2",
     "d3": "^7.9.0",
     "hotkeys-js": "^3.13.15",
     "mathjs": "^15.0.0",
@@ -51,14 +51,14 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.38.0",
-    "@tauri-apps/cli": "2.9.1",
+    "@tauri-apps/cli": "2.9.2",
     "@types/d3": "^7.4.3",
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.9.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^9.38.0",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-promise": "^7.2.1",
@@ -68,6 +68,6 @@
     "globals": "^16.4.0",
     "prettier": "3.6.2",
     "typescript": "^5.9.3",
-    "vite": "^7.1.11"
+    "vite": "^7.1.12"
   }
 }
