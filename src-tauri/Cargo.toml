@@ -14,7 +14,7 @@ license = "BSD-3-Clause"
 
 [build-dependencies]
 built = { version = "0.8.0", features = ["chrono"] }
-tauri-build = { version = "2.5.0", features = [] }
+tauri-build = { version = "2.5.1", features = [] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
@@ -25,9 +25,9 @@ open = "5.3.2"
 regex = "1.12.2"
 serde = "1.0"
 serde_json = "1.0"
-tauri = { version = "2.9.0", features = [ "devtools"] }
-tauri-plugin-dialog = "2.4.0"
-tauri-plugin-fs = "2.4.2"
+tauri = { version = "2.9.2", features = [ "devtools"] }
+tauri-plugin-dialog = "2.4.2"
+tauri-plugin-fs = "2.4.4"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.20", features = ["ansi", "fmt", "std"] }
