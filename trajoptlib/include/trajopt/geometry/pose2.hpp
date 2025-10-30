@@ -3,6 +3,7 @@
 #pragma once
 
 #include <concepts>
+#include <type_traits>
 #include <utility>
 
 #include <sleipnir/autodiff/variable.hpp>
@@ -98,13 +99,38 @@ class Pose2 {
 };
 
 using Pose2d = Pose2<double>;
-using Pose2v = Pose2<slp::Variable>;
 
-template <typename T, typename U>
-  requires std::convertible_to<T, U> || std::convertible_to<U, T>
-slp::EqualityConstraints operator==(const Pose2<T>& lhs, const Pose2<U>& rhs) {
-  return {{lhs.translation() == rhs.translation(),
-           lhs.rotation() == rhs.rotation()}};
+template <typename Scalar>
+using Pose2v = Pose2<slp::Variable<Scalar>>;
+
+template <typename LHS, typename RHS>
+  requires slp::SleipnirType<LHS> && (!slp::SleipnirType<RHS>)
+auto operator==(const Pose2<LHS>& lhs, const Pose2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<LHS>::Scalar;
+
+  return slp::EqualityConstraints<Scalar>{
+      {lhs.translation() == rhs.translation(),
+       lhs.rotation() == rhs.rotation()}};
+}
+
+template <typename LHS, typename RHS>
+  requires(!slp::SleipnirType<LHS>) && slp::SleipnirType<RHS>
+auto operator==(const Pose2<LHS>& lhs, const Pose2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<RHS>::Scalar;
+
+  return slp::EqualityConstraints<Scalar>{
+      {lhs.translation() == rhs.translation(),
+       lhs.rotation() == rhs.rotation()}};
+}
+
+template <typename LHS, typename RHS>
+  requires slp::SleipnirType<LHS> && slp::SleipnirType<RHS>
+auto operator==(const Pose2<LHS>& lhs, const Pose2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<LHS>::Scalar;
+
+  return slp::EqualityConstraints<Scalar>{
+      {lhs.translation() == rhs.translation(),
+       lhs.rotation() == rhs.rotation()}};
 }
 
 }  // namespace trajopt

@@ -248,28 +248,28 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   SwervePath path;
 
   /// State Variables
-  std::vector<slp::Variable> x;
-  std::vector<slp::Variable> y;
-  std::vector<slp::Variable> cosθ;
-  std::vector<slp::Variable> sinθ;
-  std::vector<slp::Variable> vx;
-  std::vector<slp::Variable> vy;
-  std::vector<slp::Variable> ω;
-  std::vector<slp::Variable> ax;
-  std::vector<slp::Variable> ay;
-  std::vector<slp::Variable> α;
+  std::vector<slp::Variable<double>> x;
+  std::vector<slp::Variable<double>> y;
+  std::vector<slp::Variable<double>> cosθ;
+  std::vector<slp::Variable<double>> sinθ;
+  std::vector<slp::Variable<double>> vx;
+  std::vector<slp::Variable<double>> vy;
+  std::vector<slp::Variable<double>> ω;
+  std::vector<slp::Variable<double>> ax;
+  std::vector<slp::Variable<double>> ay;
+  std::vector<slp::Variable<double>> α;
 
   /// Input Variables
-  std::vector<std::vector<slp::Variable>> Fx;
-  std::vector<std::vector<slp::Variable>> Fy;
+  std::vector<std::vector<slp::Variable<double>>> Fx;
+  std::vector<std::vector<slp::Variable<double>>> Fy;
 
   /// Time Variables
-  std::vector<slp::Variable> dts;
+  std::vector<slp::Variable<double>> dts;
 
   /// Discretization Constants
   std::vector<size_t> Ns;
 
-  slp::Problem problem;
+  slp::Problem<double> problem;
 
   void apply_initial_guess(const SwerveSolution& solution);
 
