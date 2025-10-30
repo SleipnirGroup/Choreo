@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include <cmath>
 #include <expected>
 #include <utility>
 #include <vector>
@@ -248,25 +247,25 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
   DifferentialPath path;
 
   /// State Variables
-  std::vector<slp::Variable> x;
-  std::vector<slp::Variable> y;
-  std::vector<slp::Variable> θ;
-  std::vector<slp::Variable> vl;
-  std::vector<slp::Variable> vr;
-  std::vector<slp::Variable> al;
-  std::vector<slp::Variable> ar;
+  std::vector<slp::Variable<double>> x;
+  std::vector<slp::Variable<double>> y;
+  std::vector<slp::Variable<double>> θ;
+  std::vector<slp::Variable<double>> vl;
+  std::vector<slp::Variable<double>> vr;
+  std::vector<slp::Variable<double>> al;
+  std::vector<slp::Variable<double>> ar;
 
   /// Input Variables
-  std::vector<slp::Variable> Fl;
-  std::vector<slp::Variable> Fr;
+  std::vector<slp::Variable<double>> Fl;
+  std::vector<slp::Variable<double>> Fr;
 
   /// Time Variables
-  std::vector<slp::Variable> dts;
+  std::vector<slp::Variable<double>> dts;
 
   /// Discretization Constants
   std::vector<size_t> Ns;
 
-  slp::Problem problem;
+  slp::Problem<double> problem;
 
   void apply_initial_guess(const DifferentialSolution& solution);
 

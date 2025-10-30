@@ -49,11 +49,12 @@ class TRAJOPT_DLLEXPORT PointPointMaxConstraint {
    * @param linear_acceleration The robot's linear acceleration.
    * @param angular_acceleration The robot's angular acceleration.
    */
-  void apply(slp::Problem& problem, const Pose2v& pose,
-             [[maybe_unused]] const Translation2v& linear_velocity,
-             [[maybe_unused]] const slp::Variable& angular_velocity,
-             [[maybe_unused]] const Translation2v& linear_acceleration,
-             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+  void apply(
+      slp::Problem<double>& problem, const Pose2v<double>& pose,
+      [[maybe_unused]] const Translation2v<double>& linear_velocity,
+      [[maybe_unused]] const slp::Variable<double>& angular_velocity,
+      [[maybe_unused]] const Translation2v<double>& linear_acceleration,
+      [[maybe_unused]] const slp::Variable<double>& angular_acceleration) {
     auto bumper_corner =
         pose.translation() + m_robot_point.rotate_by(pose.rotation());
     auto dx = m_field_point.x() - bumper_corner.x();
