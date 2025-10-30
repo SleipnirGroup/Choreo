@@ -3,8 +3,8 @@
 #pragma once
 
 #include <cmath>
-#include <concepts>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include <sleipnir/autodiff/variable.hpp>
@@ -204,8 +204,8 @@ class Translation2 {
   }
 
  private:
-  T m_x = 0.0;
-  T m_y = 0.0;
+  T m_x{0};
+  T m_y{0};
 };
 
 template <size_t I, typename T>
@@ -218,14 +218,35 @@ constexpr decltype(auto) get(const trajopt::Translation2<T>& translation) {
 }
 
 using Translation2d = Translation2<double>;
-using Translation2v = Translation2<slp::Variable>;
 
-template <typename T, typename U>
-  requires std::same_as<T, slp::Variable> || std::same_as<U, slp::Variable>
-slp::EqualityConstraints operator==(const Translation2<T>& lhs,
-                                    const Translation2<U>& rhs) {
-  return slp::VariableMatrix{{lhs.x()}, {lhs.y()}} ==
-         slp::VariableMatrix{{rhs.x()}, {rhs.y()}};
+template <typename Scalar>
+using Translation2v = Translation2<slp::Variable<Scalar>>;
+
+template <typename LHS, typename RHS>
+  requires slp::SleipnirType<LHS> && (!slp::SleipnirType<RHS>)
+auto operator==(const Translation2<LHS>& lhs, const Translation2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<LHS>::Scalar;
+
+  return slp::VariableMatrix<Scalar>{{lhs.x()}, {lhs.y()}} ==
+         slp::VariableMatrix<Scalar>{{rhs.x()}, {rhs.y()}};
+}
+
+template <typename LHS, typename RHS>
+  requires(!slp::SleipnirType<LHS>) || slp::SleipnirType<RHS>
+auto operator==(const Translation2<LHS>& lhs, const Translation2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<RHS>::Scalar;
+
+  return slp::VariableMatrix<Scalar>{{lhs.x()}, {lhs.y()}} ==
+         slp::VariableMatrix<Scalar>{{rhs.x()}, {rhs.y()}};
+}
+
+template <typename LHS, typename RHS>
+  requires slp::SleipnirType<LHS> && slp::SleipnirType<RHS>
+auto operator==(const Translation2<LHS>& lhs, const Translation2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<LHS>::Scalar;
+
+  return slp::VariableMatrix<Scalar>{{lhs.x()}, {lhs.y()}} ==
+         slp::VariableMatrix<Scalar>{{rhs.x()}, {rhs.y()}};
 }
 
 inline bool operator==(const Translation2d& lhs, const Translation2d& rhs) {

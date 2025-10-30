@@ -39,11 +39,13 @@ class TRAJOPT_DLLEXPORT LinearVelocityMaxMagnitudeConstraint {
    * @param linear_acceleration The robot's linear acceleration.
    * @param angular_acceleration The robot's angular acceleration.
    */
-  void apply(slp::Problem& problem, [[maybe_unused]] const Pose2v& pose,
-             const Translation2v& linear_velocity,
-             [[maybe_unused]] const slp::Variable& angular_velocity,
-             [[maybe_unused]] const Translation2v& linear_acceleration,
-             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+  void apply(
+      slp::Problem<double>& problem,
+      [[maybe_unused]] const Pose2v<double>& pose,
+      const Translation2v<double>& linear_velocity,
+      [[maybe_unused]] const slp::Variable<double>& angular_velocity,
+      [[maybe_unused]] const Translation2v<double>& linear_acceleration,
+      [[maybe_unused]] const slp::Variable<double>& angular_acceleration) {
     if (m_max_magnitude == 0.0) {
       problem.subject_to(linear_velocity.x() == 0.0);
       problem.subject_to(linear_velocity.y() == 0.0);
