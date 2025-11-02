@@ -129,7 +129,7 @@ jobs:
 
   vendordep:
     name: Upload vendordep JSON
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v5
         with:
@@ -168,7 +168,7 @@ jobs:
 
   build-python:
     name: "Build Python"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v5
         with:
@@ -195,7 +195,7 @@ jobs:
           path: ./choreolib/py/dist
   lint-python:
     name: "Lint Python"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v5
         with:
