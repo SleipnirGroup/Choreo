@@ -14,9 +14,9 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows x86_64
-            os: windows-2022
+            os: windows-2025
           - artifact-name: macOS universal
-            os: macOS-14
+            os: macos-15
           - artifact-name: Linux x86_64
             os: ubuntu-24.04
 
