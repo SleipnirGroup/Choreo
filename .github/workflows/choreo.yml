@@ -57,9 +57,6 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
-      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: runner.os == 'macOS'
-
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
@@ -86,9 +83,6 @@ jobs:
       - name: Set up macOS x86_64 Rust compiler
         if: matrix.artifact-name == 'macOS-x86_64'
         run: rustup target add x86_64-apple-darwin
-
-      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: runner.os == 'macOS'
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
