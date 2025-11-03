@@ -1,4 +1,4 @@
-name: Choreo / Build
+name: Choreo
 
 on: [pull_request, push]
 
@@ -38,7 +38,7 @@ jobs:
             os: ubuntu-24.04-arm
             tauri-build-flags: --target aarch64-unknown-linux-gnu -v -- --workspace --timings
 
-    name: "${{ matrix.artifact-name }}"
+    name: ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
 
     steps:
