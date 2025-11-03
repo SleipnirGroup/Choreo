@@ -24,7 +24,7 @@ jobs:
             artifact-name: Linux-x86_64
             build-options:
 
-    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
+    name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
@@ -83,7 +83,7 @@ jobs:
             artifact-name: macOS-arm64
             build-options:
 
-    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
+    name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -167,7 +167,7 @@ jobs:
           path: ~/releases
 
   build-python:
-    name: "Build Python"
+    name: Python
     runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v5
@@ -180,7 +180,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install build wheel pytest
+      - run: pip3 install build mypy numpy pytest scipy scipy-stubs wheel wpilib
 
       - run: python3 -m build
         working-directory: ./choreolib/py
@@ -188,28 +188,12 @@ jobs:
         working-directory: ./choreolib/py
       - run: pytest
         working-directory: ./choreolib/py
+      - run: mypy --pretty --show-column-numbers choreolib/py
 
       - uses: actions/upload-artifact@v5
         with:
           name: Python
           path: ./choreolib/py/dist
-  lint-python:
-    name: "Lint Python"
-    runs-on: ubuntu-slim
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-          token: ${{secrets.GITHUB_TOKEN}}
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: 3.12
-
-      - run: pip3 install mypy wpilib scipy scipy-stubs numpy
-
-      - run: mypy --pretty --show-column-numbers choreolib/py
 
   pypi-publish:
     name: Upload release to PyPI
