@@ -15,10 +15,10 @@ jobs:
         include:
           - artifact-name: Windows x86_64
             cmake-args:
-            os: windows-2022
+            os: windows-2025
           - artifact-name: macOS universal
             cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
-            os: macOS-14
+            os: macos-15
           - artifact-name: Linux x86_64
             cmake-args:
             os: ubuntu-24.04
