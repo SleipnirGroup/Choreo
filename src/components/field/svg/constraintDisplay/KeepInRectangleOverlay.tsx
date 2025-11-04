@@ -246,7 +246,10 @@ class KeepInRectangleOverlay extends Component<
       // Skip the fixed corner itself
       if (index === fixedCornerIndex) return false;
 
-      const distance = Math.hypot(corner[0] - fixedCorner[0], corner[1] - fixedCorner[1]);
+      const distance = Math.hypot(
+        corner[0] - fixedCorner[0],
+        corner[1] - fixedCorner[1]
+      );
       return distance < 0.1; // tolerance for corner collision
     });
 
