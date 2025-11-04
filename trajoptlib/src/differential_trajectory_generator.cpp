@@ -35,9 +35,9 @@ inline Translation2d wheel_to_chassis_speeds(double vl, double vr) {
   return Translation2d{(vl + vr) / 2, 0.0};
 }
 
-inline Translation2v wheel_to_chassis_speeds(slp::Variable vl,
-                                             slp::Variable vr) {
-  return Translation2v{(vl + vr) / 2, 0.0};
+inline Translation2v<double> wheel_to_chassis_speeds(slp::Variable<double> vl,
+                                                     slp::Variable<double> vr) {
+  return Translation2v<double>{(vl + vr) / 2, 0.0};
 }
 
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
@@ -58,9 +58,11 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   //   v = (vₗ + vᵣ) / 2
   //   ω = (vᵣ - vₗ) / (2r_b)
 
-  auto f = [this](const slp::VariableMatrix& x,
-                  const slp::VariableMatrix& u) -> slp::VariableMatrix {
-    slp::VariableMatrix xdot{5};
+  auto f =
+      [this](
+          const slp::VariableMatrix<double>& x,
+          const slp::VariableMatrix<double>& u) -> slp::VariableMatrix<double> {
+    slp::VariableMatrix<double> xdot{5};
 
     const auto& m = path.drivetrain.mass;
     double r_b = path.drivetrain.trackwidth / 2;
@@ -71,8 +73,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
         {1.0 / m - r_b * r_b / J, 1.0 / m + r_b * r_b / J}};
 
     auto v = (x[3] + x[4]) / 2.0;
-    xdot[0] = v * cos(x[2]);  // NOLINT
-    xdot[1] = v * sin(x[2]);  // NOLINT
+    xdot[0] = v * cos(x[2]);
+    xdot[1] = v * sin(x[2]);
     xdot[2] = (x[4] - x[3]) / path.drivetrain.trackwidth;
     xdot.segment(3, 2) = B * u;
 
@@ -82,7 +84,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   auto initial_guess = path_builder.calculate_spline_initial_guess();
 
   problem.add_callback(
-      [this, handle = handle](const slp::IterationInfo&) -> bool {
+      [this, handle = handle](const slp::IterationInfo<double>&) -> bool {
         constexpr int fps = 60;
         constexpr std::chrono::duration<double> time_per_frame{1.0 / fps};
 
@@ -265,10 +267,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     // First index of next wpt - 1
     size_t index = get_index(Ns, wpt_index, 0);
 
-    Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-    Translation2v v_k = wheel_to_chassis_speeds(vl.at(index), vr.at(index));
+    Pose2v<double> pose_k{x.at(index), y.at(index), {θ.at(index)}};
+    Translation2v<double> v_k =
+        wheel_to_chassis_speeds(vl.at(index), vr.at(index));
     auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-    Translation2v a_k = wheel_to_chassis_speeds(al.at(index), ar.at(index));
+    Translation2v<double> a_k =
+        wheel_to_chassis_speeds(al.at(index), ar.at(index));
     auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
     for (auto& constraint : path.waypoints.at(wpt_index).waypoint_constraints) {
@@ -283,10 +287,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     size_t end_index = get_index(Ns, sgmt_index + 1, 0);
 
     for (size_t index = start_index; index < end_index; ++index) {
-      Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-      Translation2v v_k = wheel_to_chassis_speeds(vl.at(index), vr.at(index));
+      Pose2v<double> pose_k{x.at(index), y.at(index), {θ.at(index)}};
+      Translation2v<double> v_k =
+          wheel_to_chassis_speeds(vl.at(index), vr.at(index));
       auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-      Translation2v a_k = wheel_to_chassis_speeds(al.at(index), ar.at(index));
+      Translation2v<double> a_k =
+          wheel_to_chassis_speeds(al.at(index), ar.at(index));
       auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
       for (auto& constraint :
@@ -358,7 +364,7 @@ DifferentialSolution
 DifferentialTrajectoryGenerator::construct_differential_solution() {
   auto get_value = [](auto& var) { return var.value(); };
 
-  auto vector_value = [&](std::vector<slp::Variable>& row) {
+  auto vector_value = [&](std::vector<slp::Variable<double>>& row) {
     return row | std::views::transform(get_value) |
            std::ranges::to<std::vector>();
   };
@@ -366,6 +372,10 @@ DifferentialTrajectoryGenerator::construct_differential_solution() {
   std::vector<double> ω;
   for (size_t sample = 0; sample < vl.size(); ++sample) {
     ω.push_back((vr.at(sample).value() - vl.at(sample).value()) / trackwidth);
+  }
+  std::vector<double> α;
+  for (size_t sample = 0; sample < al.size(); ++sample) {
+    α.push_back((ar.at(sample).value() - al.at(sample).value()) / trackwidth);
   }
   return DifferentialSolution{
       vector_value(dts),
@@ -377,6 +387,7 @@ DifferentialTrajectoryGenerator::construct_differential_solution() {
       ω,
       vector_value(al),
       vector_value(ar),
+      α,
       vector_value(Fl),
       vector_value(Fr),
   };

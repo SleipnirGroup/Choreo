@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 public class ChoreoTests {
   public static final String TRAJECTORY =
-      """
+"""
 {
  "name":"New Path",
  "version":2,

@@ -113,6 +113,7 @@ export interface DifferentialSample {
   omega: number;
   al: number;
   ar: number;
+  alpha: number;
   fl: number;
   fr: number;
 }
