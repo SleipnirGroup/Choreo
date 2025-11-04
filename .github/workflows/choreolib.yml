@@ -75,12 +75,8 @@ jobs:
           #   artifact-name: Windows-aarch64
           #   build-options: -Pbuildwinarm64 -Ponlywindowsarm64
 
-          - os: macos-13
-            artifact-name: macOS-x86_64
-            build-options:
-
           - os: macos-15
-            artifact-name: macOS-arm64
+            artifact-name: macOS-universal
             build-options:
 
     name: C++ and Java - ${{ matrix.artifact-name }}
