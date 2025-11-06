@@ -7,12 +7,6 @@ import defaultFieldImage from "./oregon-bunnybots-2025-field.png";
 
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 
-// Bundle all PNGs in this folder and map filename -> bundled URL.
-const __images = import.meta.glob("./*.png", { query: "?url", import: "default", eager: true }) as Record<string, string>;
-const imageMap: Record<string, string> = Object.fromEntries(
-  Object.entries(__images).map(([k, v]) => [k.split("/").pop()!, v])
-);
-
 type Props = {
   opacity: number;
 
@@ -56,37 +50,7 @@ function converter(unit: "meter" | "foot" | "inch"): (value: number) => number {
 }
 
 export default class CustomFieldImage extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    const fieldJSON = props.fieldJSON || defaultFieldJSON;
-    const imageFile = fieldJSON["field-image"];
-    const initial = imageFile && imageMap[imageFile]
-      ? imageMap[imageFile]
-      : defaultFieldImage;
-
-    this.state = {
-      imageSrc: initial
-    };
-  }
-
-  componentDidUpdate(prevProps: Props) {
-    if (this.props.fieldJSON !== prevProps.fieldJSON) {
-      const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
-      const imageFile = fieldJSON["field-image"];
-      const next = imageFile && imageMap[imageFile]
-        ? imageMap[imageFile]
-        : defaultFieldImage;
-      if (next !== this.state.imageSrc) this.setState({ imageSrc: next });
-    }
-  }
-
-  // Hacky fix to force the bundler to ship the image.
-  handleImageError = () => {
-    if (this.state.imageSrc !== defaultFieldImage) {
-      this.setState({ imageSrc: defaultFieldImage });
-    }
-  };
-
+  
   render() {
     const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
     const conversion = converter(
@@ -113,8 +77,7 @@ export default class CustomFieldImage extends Component<Props, State> {
           y={-bottomM}
           width={fullLengthM}
           height={fullWidthM}
-          xlinkHref={this.state.imageSrc}
-          onError={this.handleImageError}
+          xlinkHref={defaultFieldImage}
           style={{ opacity: `${this.props.opacity}%` }}
         />
       </g>
