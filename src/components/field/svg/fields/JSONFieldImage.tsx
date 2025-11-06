@@ -7,6 +7,12 @@ import defaultFieldImage from "./oregon-bunnybots-2025-field.png";
 
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 
+// Bundle all PNGs in this folder and map filename -> bundled URL.
+const __images = import.meta.glob("./*.png", { query: "?url", import: "default", eager: true }) as Record<string, string>;
+const imageMap: Record<string, string> = Object.fromEntries(
+  Object.entries(__images).map(([k, v]) => [k.split("/").pop()!, v])
+);
+
 type Props = {
   opacity: number;
 
@@ -54,8 +60,8 @@ export default class CustomFieldImage extends Component<Props, State> {
     super(props);
     const fieldJSON = props.fieldJSON || defaultFieldJSON;
     const imageFile = fieldJSON["field-image"];
-    const initial = imageFile
-      ? `/src/components/field/svg/fields/${imageFile}`
+    const initial = imageFile && imageMap[imageFile]
+      ? imageMap[imageFile]
       : defaultFieldImage;
 
     this.state = {
@@ -67,8 +73,8 @@ export default class CustomFieldImage extends Component<Props, State> {
     if (this.props.fieldJSON !== prevProps.fieldJSON) {
       const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
       const imageFile = fieldJSON["field-image"];
-      const next = imageFile
-        ? `/src/components/field/svg/fields/${imageFile}`
+      const next = imageFile && imageMap[imageFile]
+        ? imageMap[imageFile]
         : defaultFieldImage;
       if (next !== this.state.imageSrc) this.setState({ imageSrc: next });
     }
