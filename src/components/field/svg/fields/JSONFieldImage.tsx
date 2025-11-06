@@ -3,6 +3,7 @@ import { Component } from "react";
 import { FtToM, InToM } from "../../../../util/UnitConversions";
 
 import defaultFieldJSON from "./OregonBunnybotsField2025.json";
+import defaultFieldImage from "./oregon-bunnybots-2025-field.png";
 
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 
@@ -16,7 +17,9 @@ type Props = {
   fieldJSON?: FieldJSON;
 };
 
-type State = object;
+type State = {
+  imageSrc: string;
+};
 
 export const WIDTH_M = FIELD_WIDTH;
 
@@ -47,7 +50,36 @@ function converter(unit: "meter" | "foot" | "inch"): (value: number) => number {
 }
 
 export default class CustomFieldImage extends Component<Props, State> {
-  state = {};
+  constructor(props: Props) {
+    super(props);
+    const fieldJSON = props.fieldJSON || defaultFieldJSON;
+    const imageFile = fieldJSON["field-image"];
+    const initial = imageFile
+      ? `/src/components/field/svg/fields/${imageFile}`
+      : defaultFieldImage;
+
+    this.state = {
+      imageSrc: initial
+    };
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.fieldJSON !== prevProps.fieldJSON) {
+      const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
+      const imageFile = fieldJSON["field-image"];
+      const next = imageFile
+        ? `/src/components/field/svg/fields/${imageFile}`
+        : defaultFieldImage;
+      if (next !== this.state.imageSrc) this.setState({ imageSrc: next });
+    }
+  }
+
+  // Hacky fix to force the bundler to ship the image.
+  handleImageError = () => {
+    if (this.state.imageSrc !== defaultFieldImage) {
+      this.setState({ imageSrc: defaultFieldImage });
+    }
+  };
 
   render() {
     const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
@@ -75,7 +107,8 @@ export default class CustomFieldImage extends Component<Props, State> {
           y={-bottomM}
           width={fullLengthM}
           height={fullWidthM}
-          xlinkHref={`/src/components/field/svg/fields/${fieldJSON["field-image"]}`}
+          xlinkHref={this.state.imageSrc}
+          onError={this.handleImageError}
           style={{ opacity: `${this.props.opacity}%` }}
         />
       </g>
