@@ -145,7 +145,6 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   @Override
   public SwerveSample interpolate(SwerveSample endValue, double timestamp) {
     double scale = (timestamp - this.t) / (endValue.t - this.t);
-    var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
@@ -156,17 +155,27 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
           MathUtil.interpolate(this.moduleForcesY()[i], endValue.moduleForcesY()[i], scale);
     }
 
+    // Integrate the acceleration to get the rest of the state, since linearly
+    // interpolating the state gives an inaccurate result if the accelerations are changing between
+    // states
+    //
+    //   τ = timestamp − tₖ
+    //
+    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ²
+    //   v(τ) = vₖ + aₖτ
+    double τ = timestamp - this.t;
+    double τ2 = τ * τ;
     return new SwerveSample(
-        MathUtil.interpolate(this.t, endValue.t, scale),
-        interp_pose.getX(),
-        interp_pose.getY(),
-        interp_pose.getRotation().getRadians(),
-        MathUtil.interpolate(this.vx, endValue.vx, scale),
-        MathUtil.interpolate(this.vy, endValue.vy, scale),
-        MathUtil.interpolate(this.omega, endValue.omega, scale),
-        MathUtil.interpolate(this.ax, endValue.ax, scale),
-        MathUtil.interpolate(this.ay, endValue.ay, scale),
-        MathUtil.interpolate(this.alpha, endValue.alpha, scale),
+        timestamp,
+        this.x + this.vx * τ + 0.5 * this.ax * τ2,
+        this.y + this.vy * τ + 0.5 * this.ay * τ2,
+        this.heading + this.omega * τ + 0.5 * this.alpha * τ2,
+        this.vx + this.ax * τ,
+        this.vy + this.ay * τ,
+        this.omega + this.alpha * τ,
+        this.ax,
+        this.ay,
+        this.alpha,
         interp_fx,
         interp_fy);
   }

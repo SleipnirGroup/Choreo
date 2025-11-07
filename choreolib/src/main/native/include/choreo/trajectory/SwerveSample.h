@@ -105,7 +105,7 @@ class SwerveSample {
    * @tparam Year The field year.
    * @return SwerveSample that is flipped based on the field layout.
    */
-  template <int Year>
+  template <int Year = util::kDefaultYear>
   constexpr SwerveSample Flipped() const {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
@@ -178,8 +178,6 @@ class SwerveSample {
   constexpr SwerveSample Interpolate(const SwerveSample& endValue,
                                      units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
-    frc::Pose2d interpolatedPose =
-        GetPose().Exp(GetPose().Log(endValue.GetPose()) * scale.value());
 
     std::array<units::newton_t, 4> interpolatedForcesX;
     std::array<units::newton_t, 4> interpolatedForcesY;
@@ -190,16 +188,26 @@ class SwerveSample {
           wpi::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
     }
 
+    // Integrate the acceleration to get the rest of the state, since linearly
+    // interpolating the state gives an inaccurate result if the accelerations
+    // are changing between states
+    //
+    //   τ = timestamp − tₖ
+    //
+    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ²
+    //   v(τ) = vₖ + aₖτ
+    auto τ = t - timestamp;
+    auto τ2 = τ * τ;
     return SwerveSample{wpi::Lerp(timestamp, endValue.timestamp, scale),
-                        interpolatedPose.X(),
-                        interpolatedPose.Y(),
-                        interpolatedPose.Rotation().Radians(),
-                        wpi::Lerp(vx, endValue.vx, scale),
-                        wpi::Lerp(vy, endValue.vy, scale),
-                        wpi::Lerp(omega, endValue.omega, scale),
-                        wpi::Lerp(ax, endValue.ax, scale),
-                        wpi::Lerp(ay, endValue.ay, scale),
-                        wpi::Lerp(alpha, endValue.alpha, scale),
+                        x + vx * τ + 0.5 * ax * τ2,
+                        y + vy * τ + 0.5 * ay * τ2,
+                        heading + omega * τ + 0.5 * alpha * τ2,
+                        vx + ax * τ,
+                        vy + ay * τ,
+                        omega + alpha * τ,
+                        ax,
+                        ay,
+                        alpha,
                         interpolatedForcesX,
                         interpolatedForcesY};
   }

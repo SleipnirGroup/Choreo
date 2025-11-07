@@ -1,8 +1,9 @@
 import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
-
-export const TRAJ_SCHEMA_VERSION = 1;
-export const PROJECT_SCHEMA_VERSION = 1;
+export { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion";
+import { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion";
+export { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion";
+import { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion";
 export type Expr = { exp: string; val: number };
 
 export function isExpr(arg: any): arg is Expr {
@@ -112,6 +113,7 @@ export interface DifferentialSample {
   omega: number;
   al: number;
   ar: number;
+  alpha: number;
   fl: number;
   fr: number;
 }

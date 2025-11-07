@@ -1,17 +1,17 @@
-import { dialog, path, window as tauriWindow } from "@tauri-apps/api";
+import { path, window as tauriWindow } from "@tauri-apps/api";
+import { ask, confirm, save } from "@tauri-apps/plugin-dialog";
 import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
-import { reaction } from "mobx";
+import { getDebugName, reaction } from "mobx";
 import {
   applySnapshot,
-  castToReferenceSnapshot,
+  castToSnapshot,
   getSnapshot,
   walk
 } from "mobx-state-tree";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
+import { toast, ToastContentProps } from "react-toastify";
 import LocalStorageKeys from "../util/LocalStorageKeys";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
@@ -60,9 +60,9 @@ import {
   RobotConfigStore
 } from "./RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
-import { UIStateStore } from "./UIStateStore";
+import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
-import { Commands } from "./tauriCommands";
+import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
 export type OpenFilePayload = {
@@ -72,7 +72,8 @@ export type OpenFilePayload = {
 
 export const uiState = UIStateStore.create({
   settingsTab: 0,
-
+  projectSavingState: SavingState.NO_LOCATION,
+  projectSaveTime: new Date(),
   layers: ViewLayerDefaults
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
@@ -235,13 +236,7 @@ const env = {
   history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
-  exporter: (uuid: string) => {
-    try {
-      writeTrajectory(uuid);
-    } catch (e) {
-      tracing.error(e);
-    }
-  },
+  exporter: async (uuid: string) => writeTrajectory(uuid).catch(tracing.error),
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -255,8 +250,7 @@ export const doc = DocumentStore.create(
       defaultPath: undefined
     },
     name: "Untitled",
-    //@ts-expect-error this is recommended, not sure why it doesn't work
-    variables: castToReferenceSnapshot(variables),
+    variables: castToSnapshot(variables),
     selectedSidebarItem: undefined
   },
   env
@@ -273,7 +267,7 @@ function stopGroup() {
 }
 function renameVariable(find: string, replace: string) {
   walk(doc, (node) => {
-    if (node["expr"] !== undefined) {
+    if (getDebugName(node) === "ExpressionStore") {
       (node as IExpressionStore).findReplaceVariable(find, replace);
     }
   });
@@ -296,7 +290,7 @@ export async function openProjectFile() {
 
   if (cliRequestedProject) {
     const fileDirectory: OpenFilePayload = cliRequestedProject;
-    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
     tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
       tracing.error(
@@ -310,7 +304,7 @@ export async function openProjectFile() {
     const fileDirectory: OpenFilePayload = JSON.parse(
       lastOpenedFileEventPayload
     );
-    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
     tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
       tracing.error(
@@ -382,13 +376,13 @@ export async function setupEventListeners() {
 
   // Save files on closing
   tauriWindow
-    .getCurrent()
+    .getCurrentWindow()
     .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       if (!(await canSave())) {
         if (
-          await dialog.ask("Save project?", {
+          await ask("Save project?", {
             title: "Choreo",
-            type: "warning"
+            kind: "warning"
           })
         ) {
           if (!(await saveProjectDialog())) {
@@ -396,19 +390,25 @@ export async function setupEventListeners() {
           }
         }
       }
-      await tauriWindow.getCurrent().close();
+      await tauriWindow.getCurrentWindow().destroy();
     })
     .then((unlisten) => {
       window.addEventListener("unload", () => {
         unlisten();
       });
     });
+  let autoSaveDebounce: NodeJS.Timeout | undefined = undefined;
+  const performAutoSave = () => {
+    if (uiState.hasSaveLocation) {
+      uiState.setProjectSavingState(SavingState.SAVING);
+      saveProject();
+    }
+  };
   const autoSaveUnlisten = reaction(
     () => doc.serializeChor(),
     () => {
-      if (uiState.hasSaveLocation) {
-        saveProject();
-      }
+      clearTimeout(autoSaveDebounce);
+      autoSaveDebounce = setTimeout(performAutoSave, 50);
     }
   );
   const updateTitleUnlisten = reaction(
@@ -430,18 +430,7 @@ export async function setupEventListeners() {
     uiState.setSelectedNavbarItem(-1);
   });
   hotkeys("ctrl+o,command+o", () => {
-    dialog
-      .confirm("You may lose unsaved or not generated changes. Continue?", {
-        title: "Choreo",
-        type: "warning"
-      })
-      .then((proceed) => {
-        if (proceed) {
-          Commands.openProjectDialog().then((filepath) =>
-            openProject(filepath)
-          );
-        }
-      });
+    openProjectSelectFeedback();
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, _handler) {
     event.preventDefault();
@@ -587,6 +576,24 @@ export async function setupEventListeners() {
   });
 }
 
+export async function openProjectSelectFeedback() {
+  confirm("You may lose unsaved or not generated changes. Continue?", {
+    title: "Choreo",
+    kind: "warning"
+  }).then((proceed) => {
+    if (proceed) {
+      Commands.openProjectDialog().then((filepath) =>
+        openProject(filepath).catch((err) => {
+          tracing.error(
+            `Failed to open Choreo file '${filepath.name}': ${err}`
+          );
+          toast.error(`Failed to open Choreo file '${filepath.name}': ${err}`);
+        })
+      );
+    }
+  });
+}
+
 export async function openProject(projectPath: OpenFilePayload) {
   // Capture the state prior to the deserialization
   const originalRoot = await Commands.getDeployRoot();
@@ -631,6 +638,8 @@ export async function openProject(projectPath: OpenFilePayload) {
       JSON.stringify({ dir, name })
     );
     doc.history.clear();
+    uiState.setProjectSavingState(SavingState.SAVED);
+    uiState.setProjectSavingTime(new Date());
   } catch (e) {
     await Commands.setDeployRoot(originalRoot);
     if (originalLastOpenedItem != null) {
@@ -684,7 +693,8 @@ function getSelectedConstraint() {
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,
-    layers: ViewLayerDefaults
+    layers: ViewLayerDefaults,
+    projectSavingState: SavingState.NO_LOCATION
   });
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
@@ -692,6 +702,8 @@ export async function newProject() {
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
+  uiState.setProjectSavingState(SavingState.NO_LOCATION);
+  uiState.setProjectSavingTime(new Date());
   doc.history.clear();
 }
 export function select(item: SelectableItemTypes) {
@@ -766,14 +778,27 @@ export async function writeAllTrajectories() {
 
 export async function saveProject() {
   if (await canSave()) {
-    await Commands.writeProject(doc.serializeChor());
+    try {
+      await toast.promise(Commands.writeProject(doc.serializeChor()), {
+        error: {
+          render(toastProps: ToastContentProps<ChoreoError>) {
+            return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+          }
+        }
+      });
+      uiState.setProjectSavingState(SavingState.SAVED);
+      uiState.setProjectSavingTime(new Date());
+    } catch {
+      uiState.setProjectSavingState(SavingState.ERROR);
+    }
   } else {
     tracing.warn("Can't save project, skipping");
+    uiState.setProjectSavingState(SavingState.NO_LOCATION);
   }
 }
 
 export async function saveProjectDialog() {
-  const filePath = await dialog.save({
+  const filePath = await save({
     title: "Save Document",
     filters: [
       {

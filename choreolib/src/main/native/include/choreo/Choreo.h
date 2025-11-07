@@ -20,10 +20,9 @@
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
+#include "choreo/util/TrajSchemaVersion.h"
 
 namespace choreo {
-
-inline constexpr uint32_t kTrajSpecVersion = 0;
 
 /**
  * A class that handles loading choreo and caching choreo trajectories.
@@ -93,9 +92,9 @@ class Choreo {
 
     wpi::json json = wpi::json::parse(trajectoryJsonString);
     uint32_t version = json["version"];
-    if (version != kTrajSpecVersion) {
+    if (version != kTrajSchemaVersion) {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",
-                        trajectoryName, version, kTrajSpecVersion);
+                        trajectoryName, version, kTrajSchemaVersion);
     }
     Trajectory<SampleType> trajectory;
     from_json(json, trajectory);

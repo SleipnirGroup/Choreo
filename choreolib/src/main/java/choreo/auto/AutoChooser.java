@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -176,7 +175,7 @@ public class AutoChooser implements Sendable {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.defer(() -> selectedCommand().asProxy(), Set.of());
+    return Commands.deferredProxy(() -> selectedCommand());
   }
 
   /**

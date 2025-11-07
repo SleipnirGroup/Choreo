@@ -50,8 +50,11 @@ export function interpolate(p1: Pose, p2: Pose, frac: number) {
 export function sample(
   timeSeconds: number,
   m_states: Array<SwerveSample> | Array<DifferentialSample>
-): Pose {
-  if (timeSeconds <= m_states[0].t) {
+): Pose | undefined {
+  if (m_states.length == 0) {
+    return undefined;
+  }
+  if (m_states.length == 1 || timeSeconds <= m_states[0].t) {
     return storeToPose(m_states[0]);
   }
   if (timeSeconds >= m_states[m_states.length - 1].t) {

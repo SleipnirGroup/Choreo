@@ -1,3 +1,4 @@
+import React from "react";
 import {
   KeyboardArrowRight,
   KeyboardDoubleArrowRight,
@@ -22,7 +23,7 @@ import {
   isUnit
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
-import { Instance, detach, getEnv, types } from "mobx-state-tree";
+import { Instance, getEnv, types } from "mobx-state-tree";
 import Angle from "../assets/Angle";
 import Mass from "../assets/Mass";
 import MoI from "../assets/MoI";
@@ -100,7 +101,7 @@ export type Dimension<T> = {
   type: T;
   name: string;
   unit?: Unit;
-  icon: () => JSX.Element;
+  icon: () => React.JSX.Element;
 };
 export const Dimensions = {
   Number: {
@@ -191,7 +192,8 @@ type Evaluator = (arg: MathNode) => Evaluated;
 export const ExpressionStore = types
   .model("ExpressionStore", {
     expr: types.frozen<MathNode>(),
-    dimension: types.frozen<DimensionName>()
+    dimension: types.frozen<DimensionName>(),
+    uuid: types.identifier
   })
   .volatile((self) => ({
     tempDisableRecalc: false,
@@ -260,40 +262,41 @@ export const ExpressionStore = types
     }
   }))
   .views((self) => ({
-    evaluator(node: MathNode): MathType {
-      // TODO investigate whether this should be untracked
-      const scope: Map<string, any> =
-        self.getScope() ??
-        ((() => {
-          tracing.error("Evaluating without variables!");
-          return undefined;
-        }) as Evaluator);
-      // Depend on the keys list of the scope, to re-evaluate when the variables list changes
-      scope.keys();
-      // turn symbol variables into function variables if they're found in scope
-      const transformed = node.transform((innerNode, path, parent) => {
-        // Match standalone symbols, turn them into FunctionNode(symbol)
-        if (
-          isSymbolNode(innerNode) && // Match symbols (string literals in the expression),
-          //that are names of functions in our scope (just the standalone variables)
-          typeof scope.get(innerNode.name) === "function" &&
-          // The below avoids transforming `variable()` to `variable()()`
-          !(
-            // ...and ignoring those symbol nodes
-            (
-              parent !== null && // with a non-null parent
-              isFunctionNode(parent) && // that is a function node
-              path == "fn"
-            ) // where the symbol is already the name of the function
-          )
-        ) {
-          return new math.FunctionNode(innerNode, []);
-        }
+    evaluator(node: MathNode): MathType | undefined {
+      try {
+        // TODO investigate whether this should be untracked
+        const scope: Map<string, any> =
+          self.getScope() ??
+          ((() => {
+            tracing.error("Evaluating without variables!");
+            return undefined;
+          }) as Evaluator);
+        // Depend on the keys list of the scope, to re-evaluate when the variables list changes
+        scope.keys();
+        // turn symbol variables into function variables if they're found in scope
+        const transformed = node.transform((innerNode, path, parent) => {
+          // Match standalone symbols, turn them into FunctionNode(symbol)
+          if (
+            isSymbolNode(innerNode) && // Match symbols (string literals in the expression),
+            //that are names of functions in our scope (just the standalone variables)
+            typeof scope.get(innerNode.name) === "function" &&
+            // The below avoids transforming `variable()` to `variable()()`
+            !(
+              // ...and ignoring those symbol nodes
+              (
+                parent !== null && // with a non-null parent
+                isFunctionNode(parent) && // that is a function node
+                path == "fn"
+              ) // where the symbol is already the name of the function
+            )
+          ) {
+            return new math.FunctionNode(innerNode, []);
+          }
 
-        // Replace [pose].x (and .y, .heading) with [pose].x(), etc
-        // This works for other objects in scope with children that are functions
+          // Replace [pose].x (and .y, .heading) with [pose].x(), etc
+          // This works for other objects in scope with children that are functions
 
-        /*
+          /*
           Replace [pose].x (and .y, .heading) with [pose].x(), etc
           This works for other objects in scope with children that are functions
           "[objectName].[childName]" parses to
@@ -318,36 +321,40 @@ export const ExpressionStore = types
             So if we match [objectName].[childName], but it's already within a function node, don't transform it
           */
 
-        if (isAccessorNode(innerNode)) {
-          // filter out accessors within function nodes.
-          if (!(parent !== null && isFunctionNode(parent) && path == "fn")) {
-            const accessorNode = innerNode;
-            const { object, index } = accessorNode;
-            if (isSymbolNode(object) && index.isIndexNode) {
-              const symbol = object as SymbolNode;
-              const idx = index as IndexNode;
-              if (
-                idx.dimensions[0] !== undefined &&
-                isConstantNode(idx.dimensions[0])
-              ) {
-                const constant = idx.dimensions[0];
-                // We now know that innerNode was [symbol.name].[constant.value]
+          if (isAccessorNode(innerNode)) {
+            // filter out accessors within function nodes.
+            if (!(parent !== null && isFunctionNode(parent) && path == "fn")) {
+              const accessorNode = innerNode;
+              const { object, index } = accessorNode;
+              if (isSymbolNode(object) && index.isIndexNode) {
+                const symbol = object as SymbolNode;
+                const idx = index as IndexNode;
                 if (
-                  typeof scope.get(symbol.name) === "object" &&
-                  typeof scope.get(symbol.name)?.[constant.value] === "function"
+                  idx.dimensions[0] !== undefined &&
+                  isConstantNode(idx.dimensions[0])
                 ) {
-                  // if the symbols are in fact things in our scope, replace `innerNode` with `innerNode()`
-                  return new FunctionNode(innerNode, []);
+                  const constant = idx.dimensions[0];
+                  // We now know that innerNode was [symbol.name].[constant.value]
+                  if (
+                    typeof scope.get(symbol.name) === "object" &&
+                    typeof scope.get(symbol.name)?.[constant.value] ===
+                      "function"
+                  ) {
+                    // if the symbols are in fact things in our scope, replace `innerNode` with `innerNode()`
+                    return new FunctionNode(innerNode, []);
+                  }
                 }
               }
             }
           }
-        }
-        return innerNode;
-      });
-      const result = transformed.evaluate(scope) ?? undefined;
+          return innerNode;
+        });
+        const result = transformed.evaluate(scope) ?? undefined;
 
-      return result;
+        return result;
+      } catch {
+        return undefined;
+      }
     },
     get serialize(): Expr {
       return {
@@ -357,21 +364,24 @@ export const ExpressionStore = types
     }
   }))
   .views((self) => ({
-    get evaluate(): MathType {
+    get evaluate(): MathType | undefined {
       const result = self.evaluator(self.expr);
       return result;
     }
   }))
   .views((self) => ({
-    get asScope() {
+    get asScope(): () => MathType | undefined {
       return () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         self.value;
-
-        const expr = untracked(() => {
-          return self.evaluate;
-        });
-        return expr;
+        try {
+          const expr = untracked(() => {
+            return self.evaluate;
+          });
+          return expr;
+        } catch {
+          return undefined;
+        }
       };
     },
     get toDefaultUnit(): Unit | number | undefined {
@@ -415,7 +425,7 @@ export const ExpressionStore = types
     },
     validate(newNode: MathNode): MathNode | undefined {
       // number | BigNumber | bigint | Fraction | Complex | Unit
-      let newNumber: MathType;
+      let newNumber: MathType | undefined | null;
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
@@ -522,7 +532,19 @@ export const ExpressionStore = types
     };
   });
 export type IExpressionStore = Instance<typeof ExpressionStore>;
-
+const ExpressionVariable = types
+  .model({
+    expr: ExpressionStore,
+    name: types.string,
+    uuid: types.identifier
+  })
+  .actions((self) => ({
+    setName(name: string) {
+      getEnv<Env>(self).renameVariable(self.name, name);
+      self.name = name;
+    }
+  }));
+export type IExpressionVariable = Instance<typeof ExpressionVariable>;
 const ExprPose = types
   .model({
     x: ExpressionStore,
@@ -556,10 +578,23 @@ const ExprPose = types
   }));
 export type IExprPose = Instance<typeof ExprPose>;
 type Pose = { x: number; y: number; heading: number };
+const PoseVariable = types
+  .model({
+    pose: ExprPose,
+    name: types.string,
+    uuid: types.identifier
+  })
+  .actions((self) => ({
+    setName(name: string) {
+      getEnv<Env>(self).renameVariable(self.name, name);
+      self.name = name;
+    }
+  }));
+export type IPoseVariable = Instance<typeof PoseVariable>;
 export const Variables = types
   .model("Variables", {
-    expressions: types.map(ExpressionStore),
-    poses: types.map(ExprPose)
+    expressions: types.map(ExpressionVariable),
+    poses: types.map(PoseVariable)
   })
   .views((self) => ({
     get serialize(): DocVariables {
@@ -567,28 +602,53 @@ export const Variables = types
         expressions: {},
         poses: {}
       };
-      for (const entry of self.expressions.entries()) {
-        out.expressions[entry[0]] = {
-          dimension: entry[1].dimension,
-          var: (entry[1] as IExpressionStore).serialize
+      for (const [_varUUID, { name, expr }] of self.expressions.entries()) {
+        out.expressions[name] = {
+          dimension: expr.dimension,
+          var: (expr as IExpressionStore).serialize
         };
       }
 
-      for (const entry of self.poses.entries()) {
-        out.poses[entry[0]] = entry[1].serialize;
+      for (const [_varUUID, { name, pose }] of self.poses.entries()) {
+        out.poses[name] = pose.serialize;
       }
       return out;
     },
     get scope() {
       const vars: Map<string, any> = new Map();
       //vars.set("m", math.unit("m"));
-      for (const [key, val] of self.expressions.entries()) {
-        vars.set(key, val.asScope);
+      for (const [_varUUID, { name, expr }] of self.expressions.entries()) {
+        vars.set(name, expr.asScope);
       }
-      for (const [key, val] of self.poses.entries()) {
-        vars.set(key, val.asScope);
+      for (const [_varUUID, { name, pose }] of self.poses.entries()) {
+        vars.set(name, pose.asScope);
       }
       return vars;
+    },
+    get sortedExpressions(): Array<[string, IExpressionVariable]> {
+      return Array.from(self.expressions.entries()).sort(
+        ([_varUUIDA, { name: nameA }], [_varUUIDB, { name: nameB }]) =>
+          nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
+      );
+    },
+    get sortedPoses(): Array<[string, IPoseVariable]> {
+      return Array.from(self.poses.entries()).sort(
+        ([_varUUIDA, { name: nameA }], [_varUUIDB, { name: nameB }]) =>
+          nameA.toLocaleUpperCase() > nameB.toLocaleUpperCase() ? 1 : -1
+      );
+    },
+    get sortedPoseNames(): Array<string> {
+      return this.sortedPoses.map(([_varUUID, { name }]) => name);
+    },
+    hasName(name: string) {
+      return (
+        Array.from(self.expressions).some(
+          ([_varUUID, exprVar]) => exprVar.name === name
+        ) ||
+        Array.from(self.poses).some(
+          ([_varUUID, poseVar]) => poseVar.name === name
+        )
+      );
     }
   }))
   .actions((self) => ({
@@ -602,7 +662,8 @@ export const Variables = types
         if (dimension === "Number") {
           store = ExpressionStore.create({
             expr: new ConstantNode(expr),
-            dimension
+            dimension,
+            uuid: crypto.randomUUID()
           });
         } else {
           store = ExpressionStore.create({
@@ -610,21 +671,24 @@ export const Variables = types
               new math.ConstantNode(expr),
               Dimensions[dimension]?.unit.toString()
             ),
-            dimension
+            dimension,
+            uuid: crypto.randomUUID()
           });
         }
       } else if (isExpr(expr)) {
         // deserialize Expr
         store = ExpressionStore.create({
           expr: math.parse(expr.exp),
-          dimension
+          dimension,
+          uuid: crypto.randomUUID()
         });
         store.deserialize(expr);
       } else {
         // handle string exprs
         store = ExpressionStore.create({
           expr: math.parse(expr),
-          dimension
+          dimension,
+          uuid: crypto.randomUUID()
         });
       }
 
@@ -648,9 +712,7 @@ export const Variables = types
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
     validateName(name: string, selfName: string): boolean {
-      const notAlreadyExists =
-        name === selfName ||
-        (!self.poses.has(name) && !self.expressions.has(name));
+      const notAlreadyExists = name === selfName || !self.hasName(name);
       return (
         notAlreadyExists &&
         name.length != 0 &&
@@ -667,40 +729,44 @@ export const Variables = types
     }
   }))
   .actions((self) => ({
-    deletePose(key: string) {
-      self.poses.delete(key);
+    deletePose(varUUID: string) {
+      self.poses.delete(varUUID);
     },
-    deleteExpression(key: string) {
-      self.expressions.delete(key);
+    deleteExpression(varUUID: string) {
+      self.expressions.delete(varUUID);
     },
-    renameExpression(cur: string, next: string) {
-      const current = self.expressions.get(cur);
-      if (current === undefined) return;
-      getEnv<Env>(self).renameVariable(cur, next);
-      self.expressions.set(next, detach(current));
+    addPose(name: string, pose?: Pose | { x: Expr; y: Expr; heading: Expr }) {
+      const poseStore = self.createPose(pose);
+      self.poses.put(
+        PoseVariable.create({
+          pose: poseStore,
+          name,
+          uuid: crypto.randomUUID()
+        })
+      );
     },
-    renamePose(cur: string, next: string) {
-      const current = self.poses.get(cur);
-      if (current === undefined) return;
-      getEnv<Env>(self).renameVariable(cur, next);
-      self.poses.set(next, detach(current));
-    },
-    addPose(key: string, pose?: Pose | { x: Expr; y: Expr; heading: Expr }) {
-      const store = self.createPose(pose);
-      self.poses.set(key, store);
-    },
-    add(key: string, expr: string | number | Expr, defaultUnit: DimensionName) {
-      self.expressions.set(key, self.createExpression(expr, defaultUnit));
+    add(
+      name: string,
+      expr: string | number | Expr,
+      defaultUnit: DimensionName
+    ) {
+      self.expressions.put(
+        ExpressionVariable.create({
+          expr: self.createExpression(expr, defaultUnit),
+          name: name,
+          uuid: crypto.randomUUID()
+        })
+      );
     },
     deserialize(vars: DocVariables) {
       self.expressions.clear();
       self.poses.clear();
-      for (const entry of Object.entries(vars.expressions)) {
-        this.add(entry[0], entry[1].var, entry[1].dimension);
+      for (const [name, expr] of Object.entries(vars.expressions)) {
+        this.add(name, expr.var, expr.dimension);
       }
 
-      for (const entry of Object.entries(vars.poses)) {
-        this.addPose(entry[0], entry[1]);
+      for (const [name, pose] of Object.entries(vars.poses)) {
+        this.addPose(name, pose);
       }
     }
   }));

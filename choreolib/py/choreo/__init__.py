@@ -1,5 +1,7 @@
 import json
+import os
 
+import hal
 from choreo.trajectory import (
     DifferentialSample,
     DifferentialTrajectory,
@@ -7,9 +9,14 @@ from choreo.trajectory import (
     SwerveSample,
     SwerveTrajectory,
     load_event_marker,
+    marker_is_not_none,
 )
+from choreo.util.traj_schema_version import (
+    TRAJ_SCHEMA_VERSION as generated_TRAJ_SCHEMA_VERSION,
+)
+from wpilib import getDeployDirectory
 
-TRAJ_SCHEMA_VERSION = 1
+TRAJ_SCHEMA_VERSION = generated_TRAJ_SCHEMA_VERSION
 
 
 def load_differential_trajectory_string(
@@ -20,6 +27,9 @@ def load_differential_trajectory_string(
     Parameter ``trajectory_json_string``:
         The JSON string.
     """
+    # Usage report
+    hal.report(hal.tResourceType.kResourceType_ChoreoTrajectory, 2)
+
     data = json.loads(trajectory_json_string)
     name = data["name"]
     try:
@@ -43,8 +53,9 @@ def load_differential_trajectory_string(
             float(sample["omega"]),
             float(sample["al"]),
             float(sample["ar"]),
-            [float(x) for x in sample["fl"]],
-            [float(y) for y in sample["fr"]],
+            float(sample["alpha"]),
+            float(sample["fl"]),
+            float(sample["fr"]),
         )
         for sample in data["trajectory"]["samples"]
     ]
@@ -52,9 +63,9 @@ def load_differential_trajectory_string(
     # Add 0 as the first split index
     if len(splits) == 0 or splits[0] != 0:
         splits.insert(0, 0)
-    events = list(
+    events = list[EventMarker](
         filter(
-            lambda marker: marker is not None,
+            marker_is_not_none,
             [load_event_marker(event) for event in data["events"]],
         )
     )
@@ -69,7 +80,11 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
         The path name in Choreo, which matches the file name in the deploy
         directory. Do not include ".traj" here.
     """
-    with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
+    with open(
+        os.path.join(getDeployDirectory(), "choreo", trajectory_name + ".traj"),
+        "r",
+        encoding="utf-8",
+    ) as trajectory_file:
         data = trajectory_file.read()
     return load_differential_trajectory_string(data)
 
@@ -80,6 +95,9 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     Parameter ``trajectory_json_string``:
         The JSON string.
     """
+    # Usage report
+    hal.report(hal.tResourceType.kResourceType_ChoreoTrajectory, 1)
+
     data = json.loads(trajectory_json_string)
     name = data["name"]
     try:
@@ -113,9 +131,9 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     # Add 0 as the first split index
     if len(splits) == 0 or splits[0] != 0:
         splits.insert(0, 0)
-    events = list(
+    events = list[EventMarker](
         filter(
-            lambda marker: marker is not None,
+            marker_is_not_none,
             [load_event_marker(event) for event in data["events"]],
         )
     )
@@ -130,6 +148,10 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
         The path name in Choreo, which matches the file name in the deploy
         directory. Do not include ".traj" here.
     """
-    with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
+    with open(
+        os.path.join(getDeployDirectory(), "choreo", trajectory_name + ".traj"),
+        "r",
+        encoding="utf-8",
+    ) as trajectory_file:
         data = trajectory_file.read()
     return load_swerve_trajectory_string(data)

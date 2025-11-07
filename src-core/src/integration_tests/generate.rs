@@ -77,7 +77,7 @@ mod generate {
         .await
         .expect("Failed to read project file");
         // ADDED: Cli doesn't write the upgraded project, but we want to test the project file writing
-        file_management::write_projectfile(&resources, project.clone()).await;
+        let _ = file_management::write_projectfile(&resources, project.clone()).await;
 
         // generate trajectories
         {

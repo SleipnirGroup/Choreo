@@ -2,7 +2,6 @@ import { Event, UnlistenFn, listen } from "@tauri-apps/api/event";
 import { Instance, getParent, types } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 import {
   DifferentialSample,
   ProgressUpdate,
@@ -31,12 +30,10 @@ export type SelectableItemTypes =
   | undefined;
 export const SelectableItem = types.union(
   {
-    dispatcher: (snapshot) => {
-      if (snapshot.mass) return RobotConfigStore;
-      if (snapshot.target) return EventMarkerStore;
-      if (snapshot.from) {
-        return ConstraintStore;
-      }
+    dispatcher: (snapshot): any => {
+      if (Object.hasOwn(snapshot, "mass")) return RobotConfigStore;
+      if (Object.hasOwn(snapshot, "target")) return EventMarkerStore;
+      if (Object.hasOwn(snapshot, "from")) return ConstraintStore;
       return HolonomicWaypointStore;
     }
   },
@@ -163,6 +160,23 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
+    async generateAll() {
+      const uuidsToGenerate: string[] = [];
+      self.pathlist.paths.forEach((pathStore) => {
+        uuidsToGenerate.push(pathStore.uuid);
+      });
+      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    },
+    async generateAllOutdated() {
+      const uuidsToGenerate: string[] = [];
+      self.pathlist.paths.forEach((pathStore) => {
+        if (!pathStore.ui.upToDate) {
+          uuidsToGenerate.push(pathStore.uuid);
+        }
+      });
+      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    },
+
     async generatePath(uuid: string) {
       const pathStore = self.pathlist.paths.get(uuid);
       if (pathStore === undefined) {

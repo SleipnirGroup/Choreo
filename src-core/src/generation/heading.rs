@@ -43,7 +43,7 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
         let from = constraint.from;
         let to_opt = constraint.to;
         match constraint.data {
-            MaxAngularVelocity { max } if max == 0.0 => {
+            MaxAngularVelocity { max: 0.0 } => {
                 if let Some(to) = to_opt {
                     wpt_has_0_ang_vel[from..=to]
                         .iter_mut()

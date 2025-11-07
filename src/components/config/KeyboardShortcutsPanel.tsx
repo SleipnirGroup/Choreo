@@ -1,24 +1,22 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer/TableContainer";
-import TableRow from "@mui/material/TableRow/TableRow";
-import { type } from "@tauri-apps/api/os";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow
+} from "@mui/material";
 import { Component } from "react";
 
 type Props = object;
 
 type State = object;
 
-let isMac = false;
-// We don't want to block during the imports stage, especially
-// if type() somehow fails.
-type().then((type) => {
-  isMac = type == "Darwin";
-});
+const isMac = navigator.userAgent.includes("Mac OS");
 // These default to the Mac ⌘ key because it's easier to replace with Ctrl than vice versa
 // All descriptions should be like "Rotate" or "Select", not "Selects"
 const shortcuts = {

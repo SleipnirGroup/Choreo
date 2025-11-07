@@ -131,7 +131,7 @@ class PathGradientFunctions {
 
     // Divide by 10 to scale linear acceleration to [0, 1], invert range, then
     // scale to red-green hue [0, 100]
-    return `hsl(${100 * (1 - acceleration / 10)}, 100%, 50%)`;
+    return `hsl(${(100 * acceleration) / 10}, 100%, 50%)`;
   }
 
   /**
