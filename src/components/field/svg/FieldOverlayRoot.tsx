@@ -241,7 +241,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                {<JSONFieldImage opacity={50} imageHeightPx={520} imageWidthPx={1060}></JSONFieldImage>}
+                {<JSONFieldImage opacity={100} imageHeightPx={520} imageWidthPx={1060}></JSONFieldImage>}
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}

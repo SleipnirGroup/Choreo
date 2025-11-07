@@ -2,8 +2,8 @@
   "game": "Carrot Chaos",
   "field-image": "oregon-bunnybots-2025-field.png",
   "field-corners": {
-    "top-left": [18, 12],
-    "bottom-right": [1043, 504]
+    "top-left": [16, 15],
+    "bottom-right": [1042, 508]
   },
   "field-size": [54.86, 26.333],
   "field-unit": "foot"
