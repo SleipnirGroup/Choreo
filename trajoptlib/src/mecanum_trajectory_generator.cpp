@@ -290,9 +290,16 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       double max_force = std::min(max_wheel_force, max_static_friction_force);
 
       auto f = F.at(index).at(module_index);
+
+      // |F|₂² <= F_max^2
       problem.subject_to(f * f <= max_force * max_force);
     }
 
+    // Apply dynamics constraints
+    //
+    //   ΣF_xₖ = ma_xₖ
+    //   ΣF_yₖ = ma_yₖ
+    //   Στₖ = Jαₖ
     problem.subject_to(Fx_net == path.drivetrain.mass * ax.at(index));
     problem.subject_to(Fy_net == path.drivetrain.mass * ay.at(index));
     problem.subject_to(τ_net == path.drivetrain.moi * α.at(index));
