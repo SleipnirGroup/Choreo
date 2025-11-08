@@ -87,6 +87,8 @@ impl MecanumGenerationTransformer for DrivetrainAndBumpersSetter {
             wheel_max_angular_velocity: config.vmax / config.gearing,
             wheel_max_torque: config.tmax * config.gearing,
             wheel_cof: config.cof,
+            static_friction_coefficient: 0.0,
+            strafe_efficiency: 0.9,
             modules: config
                 .module_translations(),
         };

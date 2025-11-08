@@ -36,6 +36,8 @@ mod ffi {
         wheel_max_angular_velocity: f64,
         wheel_max_torque: f64,
         wheel_cof: f64,
+        static_friction_coefficient: f64,
+        strafe_efficiency: f64,
         modules: Vec<Translation2d>,
     }
 

@@ -48,9 +48,19 @@ struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
   double wheel_max_torque;
 
   /**
-   * The Coefficient of Friction (CoF) of the wheels.
+   * The Coefficient of Friction (CoF) of the wheels (kinetic friction).
    */
   double wheel_cof;
+
+  /**
+   * Static friction coefficient. Prevents wheel slip. Force cannot exceed static_friction_coefficient * normal_force per wheel.
+   */
+  double static_friction_coefficient = 0.0;
+
+  /**
+   * Strafing efficiency [0 -> 1] penalizes strafing by a certain %.
+   */
+  double strafe_efficiency = 0.75;
 
   /// Translation of each wheel from the origin of the robot coordinate
   /// system to the center of the wheel (m). 
@@ -253,27 +263,27 @@ class TRAJOPT_DLLEXPORT MecanumTrajectoryGenerator {
   MecanumPath path;
 
   /// State Variables
-  std::vector<slp::Variable> x;
-  std::vector<slp::Variable> y;
-  std::vector<slp::Variable> cosθ;
-  std::vector<slp::Variable> sinθ;
-  std::vector<slp::Variable> vx;
-  std::vector<slp::Variable> vy;
-  std::vector<slp::Variable> ω;
-  std::vector<slp::Variable> ax;
-  std::vector<slp::Variable> ay;
-  std::vector<slp::Variable> α;
+  std::vector<slp::Variable<double>> x;
+  std::vector<slp::Variable<double>> y;
+  std::vector<slp::Variable<double>> cosθ;
+  std::vector<slp::Variable<double>> sinθ;
+  std::vector<slp::Variable<double>> vx;
+  std::vector<slp::Variable<double>> vy;
+  std::vector<slp::Variable<double>> ω;
+  std::vector<slp::Variable<double>> ax;
+  std::vector<slp::Variable<double>> ay;
+  std::vector<slp::Variable<double>> α;
 
   /// Input Variables
-  std::vector<std::vector<slp::Variable>> F;
+  std::vector<std::vector<slp::Variable<double>>> F;
 
   /// Time Variables
-  std::vector<slp::Variable> dts;
+  std::vector<slp::Variable<double>> dts;
 
   /// Discretization Constants
   std::vector<size_t> Ns;
 
-  slp::Problem problem;
+  slp::Problem<double> problem;
 
   void apply_initial_guess(const MecanumSolution& solution);
 

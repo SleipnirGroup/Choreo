@@ -40,7 +40,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   auto initial_guess = path_builder.calculate_linear_initial_guess();
 
   problem.add_callback(
-      [this, handle = handle](const slp::IterationInfo&) -> bool {
+      [this, handle = handle](const slp::IterationInfo<double>&) -> bool {
         constexpr int fps = 60;
         constexpr std::chrono::duration<double> time_per_frame{1.0 / fps};
 
@@ -104,9 +104,10 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     dts.emplace_back(problem.decision_variable());
   }
 
-  // Minimize total time
+  // minimize total time
+  const double s_init = 1.0 / std::sqrt(2.0);
   const double max_force =
-      path.drivetrain.wheel_max_torque * 4 / path.drivetrain.wheel_radius;
+      path.drivetrain.wheel_max_torque * 4 / path.drivetrain.wheel_radius * s_init;
   const auto max_accel = max_force / path.drivetrain.mass;
   const double max_drivetrain_velocity =
       path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
@@ -127,7 +128,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
         dts.at(index).set_value(0.0);
       }
     } else {
-      // Use initial_guess and Ns to find the dx, dy, dθ between wpts
+      // use initial_guess and Ns to find the dx, dy, dθ between wpts
       const auto dx =
           initial_guess.x.at(sgmt_end) - initial_guess.x.at(sgmt_start);
       const auto dy =
@@ -157,29 +158,37 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       }
     }
   }
-  problem.minimize(std::accumulate(dts.begin(), dts.end(), slp::Variable{0.0}));
+  slp::Variable<double> total_time = std::accumulate(dts.begin(), dts.end(), slp::Variable<double>{0.0});
+  
+  const double rotation_penalty_weight = 0.1;
+  slp::Variable<double> rotation_penalty = 0.0;
+  for (size_t index = 0; index < samp_tot; ++index) {
+    rotation_penalty += ω.at(index) * ω.at(index) * dts.at(index);
+  }
+  
+  problem.minimize(total_time + rotation_penalty_weight * rotation_penalty);
 
-  // Apply kinematics constraints
+  // apply kinematics constraints
   for (size_t wpt_index = 0; wpt_index < wpt_cnt - 1; ++wpt_index) {
     size_t N_sgmt = Ns.at(wpt_index);
 
     for (size_t sample_index = 0; sample_index < N_sgmt; ++sample_index) {
       size_t index = get_index(Ns, wpt_index, sample_index);
 
-      Translation2v x_k{x.at(index), y.at(index)};
-      Translation2v x_k_1{x.at(index + 1), y.at(index + 1)};
+      Translation2v<double> x_k{x.at(index), y.at(index)};
+      Translation2v<double> x_k_1{x.at(index + 1), y.at(index + 1)};
 
-      Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
-      Rotation2v θ_k_1{cosθ.at(index + 1), sinθ.at(index + 1)};
+      Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
+      Rotation2v<double> θ_k_1{cosθ.at(index + 1), sinθ.at(index + 1)};
 
-      Translation2v v_k{vx.at(index), vy.at(index)};
-      Translation2v v_k_1{vx.at(index + 1), vy.at(index + 1)};
+      Translation2v<double> v_k{vx.at(index), vy.at(index)};
+      Translation2v<double> v_k_1{vx.at(index + 1), vy.at(index + 1)};
 
       auto ω_k = ω.at(index);
       auto ω_k_1 = ω.at(index + 1);
 
-      Translation2v a_k{ax.at(index), ay.at(index)};
-      Translation2v a_k_1{ax.at(index + 1), ay.at(index + 1)};
+      Translation2v<double> a_k{ax.at(index), ay.at(index)};
+      Translation2v<double> a_k_1{ax.at(index + 1), ay.at(index + 1)};
 
       auto α_k = α.at(index);
       auto α_k_1 = α.at(index + 1);
@@ -195,101 +204,95 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
       problem.subject_to(x_k_1 == x_k + v_k * dt_k + a_k * 0.5 * dt_k * dt_k);
-      problem.subject_to((θ_k_1 - θ_k) == Rotation2v{ω_k * dt_k});
+      problem.subject_to((θ_k_1 - θ_k) == Rotation2v<double>{ω_k * dt_k});
       problem.subject_to(v_k_1 == v_k + a_k * dt_k);
       problem.subject_to(ω_k_1 == ω_k + α_k * dt_k);
     }
   }
-
-
-  auto s = 1.0 / std::sqrt(2.0);
-  std::vector<double> fx_forward = {s, s, s, s};
-  std::vector<double> fy_forward = {-s, s, -s, s};
-
-  std::vector<double> vx_inverse = {1,1,1,1};
-  std::vector<double> vy_inverse = {-1,1,-1,1};
-  std::vector<double> ω_inverse = {-1,-1,1,1};
-  //
-  // const auto strafe_ratio = std::max(path.drivetrain.strafe_ratio, 1e-3);
-  // const auto inverse_strafe_ratio = 1.0 / strafe_ratio;
+  
+  const double s = 1.0 / std::sqrt(2.0);
+  
+  const double strafe_eff = path.drivetrain.strafe_efficiency;
+  std::vector<double> fx_coeff = {s, s, s, s};
+  std::vector<double> fy_coeff = {-s * strafe_eff, -s * strafe_eff, s * strafe_eff, s * strafe_eff};  // Strafing penalized
 
   for (size_t index = 0; index < samp_tot; ++index) {
-    Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
-    Translation2v v_k{vx.at(index), vy.at(index)};
+    Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
+    Translation2v<double> v_k{vx.at(index), vy.at(index)};
 
-    // Solve for net force
-    std::vector<slp::Variable> Fx;
-    Fx.reserve(fx_forward.size());
-    for (size_t i = 0; i < fx_forward.size(); ++i) {
-      Fx.push_back(fx_forward[i] * F.at(index)[i]);
+    std::vector<slp::Variable<double>> Fx_body;
+    Fx_body.reserve(path.drivetrain.wheels.size());
+    std::vector<slp::Variable<double>> Fy_body;
+    Fy_body.reserve(path.drivetrain.wheels.size());
+    
+    for (size_t i = 0; i < path.drivetrain.wheels.size(); ++i) {
+      Fx_body.push_back(fx_coeff[i] * F.at(index)[i]);
+      Fy_body.push_back(fy_coeff[i] * F.at(index)[i]);
     }
 
-    std::vector<slp::Variable> Fy;
-    Fy.reserve(fy_forward.size());
-    for (size_t i = 0; i < fy_forward.size(); ++i) {
-      Fy.push_back(fy_forward[i] * F.at(index)[i]);
-    }
+    // sum forces to get net body force
+    auto Fx_net = std::accumulate(Fx_body.begin(), Fx_body.end(), slp::Variable<double>{0.0});
+    auto Fy_net = std::accumulate(Fy_body.begin(), Fy_body.end(), slp::Variable<double>{0.0});
 
-    auto Fx_net = std::accumulate(Fx.begin(),Fx.end(),slp::Variable{0.0});
-    auto Fy_net = std::accumulate(Fy.begin(),Fy.end(),slp::Variable{0.0});
-
-    // Solve for net torque
-    slp::Variable τ_net = 0.0;
+    // solve for net torque
+    slp::Variable<double> τ_net = 0.0;
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
-      const auto& translation = path.drivetrain.wheels.at(module_index);
-      auto r = translation.rotate_by(θ_k);
-      Translation2v F{Fx.at(module_index),
-                      Fy.at(module_index)};
-
-      τ_net += r.cross(F);
+      const auto& wheel_pos = path.drivetrain.wheels.at(module_index);
+      // force vector in body frame
+      Translation2v<double> F_body{Fx_body.at(module_index), Fy_body.at(module_index)};
+      
+      // torque = r * F
+      // computed in body frame: r_body * F_body
+      τ_net += wheel_pos.cross(F_body);
     }
 
-    // could simulate roller friction here by adding a resistive term onto Fx_net for every module proportional to how fast rollers are moving.
-
-    // Apply module power constraints
+    // power constraint
     auto v_wrt_robot = v_k.rotate_by(-θ_k);
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
-      const auto& translation = path.drivetrain.wheels.at(module_index);
+      const auto& wheel_pos = path.drivetrain.wheels.at(module_index);
 
-      auto v_wheel = 
-          v_wrt_robot.x()*vx_inverse.at(module_index) +
-          v_wrt_robot.y()*vy_inverse.at(module_index) +
-          (std::fabs(translation.x())+std::fabs(translation.y()))*ω_inverse.at(module_index)*ω.at(index);
+      double sign = (module_index == 2 || module_index == 3) ? 1.0 : -1.0;
+      
+      // v_active_trans = vx * cos(45°) - vy * sin(45°) * sign
+      // = (vx - vy * sign) / sqrt(2)
+      auto v_active_from_translation = 
+          (v_wrt_robot.x() - v_wrt_robot.y() * sign) * s;
+      
+      //   v_active_rot = v_rot_x*cos(45°) - v_rot_y*sin(45°)*sign
+      //   = (-ω*y)*cos(45°) - (ω*x)*sin(45°)*sign
+      //   = -ω*(y*cos(45°) + x*sin(45°)*sign)
+      //   = -ω*(y + x*sign) / sqrt(2)
+      auto v_active_from_rotation = 
+          -ω.at(index) * (wheel_pos.y() + wheel_pos.x() * sign) * s;
+      
+      auto v_wheel = v_active_from_translation + v_active_from_rotation;
 
       double max_wheel_velocity = path.drivetrain.wheel_radius *
                                   path.drivetrain.wheel_max_angular_velocity;
 
-      // v² ≤ vₘₐₓ²
+      // v^2 <= vmax^2
       problem.subject_to(v_wheel * v_wheel <=
                          max_wheel_velocity * max_wheel_velocity);
 
-      Translation2v module_f{Fx.at(module_index),
-                             Fy.at(module_index)};
-
-      // τ = r x F
-      // F = τ/r
       double max_wheel_force =
-          path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
+          (path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius) * s;
 
-      // friction = μmg
-      double max_friction_force =
-          path.drivetrain.wheel_cof * path.drivetrain.mass / 4.0 * 9.8;
+      // static force constraint prevents wheel slip
+      double normal_force_per_wheel = path.drivetrain.mass / 4.0 * 9.8;
+      double static_friction_coef = (path.drivetrain.static_friction_coefficient > 0.0) 
+          ? path.drivetrain.static_friction_coefficient 
+          : path.drivetrain.wheel_cof * 1.2;
+      double max_static_friction_force = static_friction_coef * normal_force_per_wheel;
 
-      double max_force = std::min(max_wheel_force, max_friction_force);
+      // max force is limited by motor torque & static friction
+      double max_force = std::min(max_wheel_force, max_static_friction_force);
 
       auto f = F.at(index).at(module_index);
-
-      // |F|₂² ≤ Fₘₐₓ²
       problem.subject_to(f * f <= max_force * max_force);
     }
 
-    // Apply dynamics constraints
-    //
-    //   ΣF_xₖ = ma_xₖ
-    //   ΣF_yₖ = ma_yₖ
-    //   Στₖ = Jαₖ
     problem.subject_to(Fx_net == path.drivetrain.mass * ax.at(index));
     problem.subject_to(Fy_net == path.drivetrain.mass * ay.at(index));
     problem.subject_to(τ_net == path.drivetrain.moi * α.at(index));
@@ -299,10 +302,10 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     // First index of next wpt - 1
     size_t index = get_index(Ns, wpt_index, 0);
 
-    Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-    Translation2v v_k{vx.at(index), vy.at(index)};
+    Pose2v<double> pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+    Translation2v<double> v_k{vx.at(index), vy.at(index)};
     auto ω_k = ω.at(index);
-    Translation2v a_k{ax.at(index), ay.at(index)};
+    Translation2v<double> a_k{ax.at(index), ay.at(index)};
     auto α_k = α.at(index);
 
     for (auto& constraint : path.waypoints.at(wpt_index).waypoint_constraints) {
@@ -317,10 +320,10 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     size_t end_index = get_index(Ns, sgmt_index + 1, 0);
 
     for (size_t index = start_index; index < end_index; ++index) {
-      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-      Translation2v v_k{vx.at(index), vy.at(index)};
+      Pose2v<double> pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+      Translation2v<double> v_k{vx.at(index), vy.at(index)};
       auto ω_k = ω.at(index);
-      Translation2v a_k{ax.at(index), ay.at(index)};
+      Translation2v<double> a_k{ax.at(index), ay.at(index)};
       auto α_k = α.at(index);
 
       for (auto& constraint :
@@ -400,12 +403,12 @@ void MecanumTrajectoryGenerator::apply_initial_guess(
 MecanumSolution MecanumTrajectoryGenerator::construct_mecanum_solution() {
   auto get_value = [](auto& var) { return var.value(); };
 
-  auto vector_value = [&](std::vector<slp::Variable>& row) {
+  auto vector_value = [&](std::vector<slp::Variable<double>>& row) {
     return row | std::views::transform(get_value) |
            std::ranges::to<std::vector>();
   };
 
-  auto matrix_value = [&](std::vector<std::vector<slp::Variable>>& mat) {
+  auto matrix_value = [&](std::vector<std::vector<slp::Variable<double>>>& mat) {
     return mat | std::views::transform([&](auto& v) {
              return v | std::views::transform(get_value) |
                     std::ranges::to<std::vector>();

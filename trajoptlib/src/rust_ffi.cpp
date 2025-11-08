@@ -706,7 +706,8 @@ void MecanumTrajectoryGenerator::set_drivetrain(
   path_builder.set_drivetrain(trajopt::MecanumDrivetrain{
       drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
       drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
-      drivetrain.wheel_cof, std::move(cpp_modules)});
+      drivetrain.wheel_cof, drivetrain.static_friction_coefficient,
+      drivetrain.strafe_efficiency, std::move(cpp_modules)});
 }
 
 void MecanumTrajectoryGenerator::set_bumpers(double front, double left,
