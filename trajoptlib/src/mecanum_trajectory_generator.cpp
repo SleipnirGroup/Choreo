@@ -218,13 +218,17 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     Translation2v v_k{vx.at(index), vy.at(index)};
 
     // Solve for net force
-    auto Fx = std::ranges::to<std::vector>(
-        std::views::zip_transform([](auto x, auto y) { return x * y; }, fx_forward, F.at(index))
-    );
+    std::vector<slp::Variable> Fx;
+    Fx.reserve(fx_forward.size());
+    for (size_t i = 0; i < fx_forward.size(); ++i) {
+      Fx.push_back(fx_forward[i] * F.at(index)[i]);
+    }
 
-    auto Fy = std::ranges::to<std::vector>(
-        std::views::zip_transform([](auto x, auto y) { return x * y; }, fy_forward, F.at(index))
-    );
+    std::vector<slp::Variable> Fy;
+    Fy.reserve(fy_forward.size());
+    for (size_t i = 0; i < fy_forward.size(); ++i) {
+      Fy.push_back(fy_forward[i] * F.at(index)[i]);
+    }
 
     auto Fx_net = std::accumulate(Fx.begin(),Fx.end(),slp::Variable{0.0});
     auto Fy_net = std::accumulate(Fy.begin(),Fy.end(),slp::Variable{0.0});
