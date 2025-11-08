@@ -162,6 +162,13 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
+    async generateAll() {
+      const uuidsToGenerate: string[] = [];
+      self.pathlist.paths.forEach((pathStore) => {
+        uuidsToGenerate.push(pathStore.uuid);
+      });
+      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    },
     async generateAllOutdated() {
       const uuidsToGenerate: string[] = [];
       self.pathlist.paths.forEach((pathStore) => {

@@ -15,8 +15,8 @@
 ### Requirements for Linux
 
 - [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
-- GCC ≥ 14 via `sudo apt install gcc`
-- Tauri dependencies (see [here](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux)).
+- GCC ≥ 14 via `sudo apt install g++-14`
+- Tauri dependencies (see [here](https://v2.tauri.app/start/prerequisites/#linux)).
 
 ## Recommended IDE for Tauri
 
@@ -78,11 +78,11 @@ target = "<target>"
 
 ### Application
 
-- ⚛️ [React](https://react.dev/): Frontend UI framework (TypeScript)
-- ⚡️ [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
-- 🖥️ [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
-- 🚗 [TrajoptLib](https://github.com/SleipnirGroup/Choreo/tree/main/trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
-- 📈 [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
+- [React](https://react.dev/): Frontend UI framework (TypeScript)
+- [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
+- [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
+- [TrajoptLib](https://github.com/SleipnirGroup/Choreo/tree/main/trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
+- [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
 
 ### Formatters/linters
 

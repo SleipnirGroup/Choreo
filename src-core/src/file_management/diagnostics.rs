@@ -85,7 +85,7 @@ pub fn get_log_lines(log_dir: Option<PathBuf>) -> Vec<String> {
                             String::new()
                         })
                         .lines()
-                        .map(|line| format!("{:}\n", line))
+                        .map(|line| format!("{line}\n"))
                         .collect::<Vec<String>>(),
                     Err(e) => {
                         tracing::error!("{e}");

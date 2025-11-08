@@ -90,6 +90,9 @@ class DifferentialSample:
     Parameter ``ar``:
         The right linear acceleration of the state in m/s².
 
+    Parameter ``alpha``:
+        The chassis angular acceleration of the state in rad/s².
+
     Parameter ``fl``:
         The left force on the swerve modules in Newtons.
 
@@ -107,6 +110,7 @@ class DifferentialSample:
     omega: float
     al: float
     ar: float
+    alpha: float
     fl: float
     fr: float
 
@@ -146,11 +150,9 @@ class DifferentialSample:
 
         def f(state, input):
             #  state =  [x, y, θ, vₗ, vᵣ, ω]
-            #  input =  [aₗ, aᵣ]
+            #  input =  [aₗ, aᵣ, α]
             #
             #  v = (vₗ + vᵣ)/2
-            #  ω = (vᵣ − vₗ)/width
-            #  α = (aᵣ − aₗ)/width
             #
             #  ẋ = v cosθ
             #  ẏ = v sinθ
@@ -164,16 +166,11 @@ class DifferentialSample:
             ω = state[5, 0]
             al = input[0, 0]
             ar = input[1, 0]
+            α = input[2, 0]
             v = (vl + vr) / 2
-            α = (ar - al) / width
             return [v * cos(θ), v * sin(θ), ω, al, ar, α]
 
-        τ = t - self.timestamp
         sample = solve_ivp(f, (self.timestamp, t), initial_state).y
-
-        dt = end_value.timestamp - self.timestamp
-        jl = (end_value.al - self.al) / dt
-        jr = (end_value.ar - self.ar) / dt
 
         return DifferentialSample(
             t,
@@ -183,8 +180,9 @@ class DifferentialSample:
             sample[3, 0],
             sample[4, 0],
             sample[5, 0],
-            self.al + jl * τ,
-            self.ar + jr * τ,
+            self.al,
+            self.ar,
+            self.alpha,
             lerp(self.fl, end_value.fl, scale),
             lerp(self.fr, end_value.fr, scale),
         )
@@ -208,6 +206,7 @@ class DifferentialSample:
                 -self.omega,
                 self.ar,
                 self.al,
+                -self.alpha,
                 self.fr,
                 self.fl,
             )
@@ -222,6 +221,7 @@ class DifferentialSample:
                 self.omega,
                 self.al,
                 self.ar,
+                self.alpha,
                 self.fl,
                 self.fr,
             )
@@ -460,33 +460,24 @@ class SwerveSample:
         # interpolating the state gives an inaccurate result if the accelerations
         # are changing between states
         #
-        #   Δt = tₖ₊₁ − tₖ
         #   τ = timestamp − tₖ
         #
-        #   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
-        #   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
-        #   a(τ) = aₖ + jₖτ
-        #
-        # where jₖ = (aₖ₊₁ − aₖ)/Δt
-        dt = end_value.timestamp - t
+        #   x(τ) = xₖ + vₖτ + 1/2 aₖτ²
+        #   v(τ) = vₖ + aₖτ
         τ = t - self.timestamp
         τ2 = τ * τ
-        τ3 = τ * τ * τ
-        jx = (end_value.ax - self.ax) / dt
-        jy = (end_value.ay - self.ay) / dt
-        η = (end_value.alpha - self.alpha) / dt
 
         return SwerveSample(
             t,
-            self.x + self.vx * τ + 0.5 * self.ax * τ2 + 1.0 / 6.0 * jx * τ3,
-            self.y + self.vy * τ + 0.5 * self.ay * τ2 + 1.0 / 6.0 * jy * τ3,
-            self.heading + self.omega * τ + 0.5 * self.alpha * τ2 + 1.0 / 6.0 * η * τ3,
-            self.vx + self.ax * τ + 0.5 * jx * τ2,
-            self.vy + self.ay * τ + 0.5 * jy * τ2,
-            self.omega + self.alpha * τ + 0.5 * η * τ2,
-            self.ax + jx * τ,
-            self.ay + jy * τ,
-            self.alpha + η * τ,
+            self.x + self.vx * τ + 0.5 * self.ax * τ2,
+            self.y + self.vy * τ + 0.5 * self.ay * τ2,
+            self.heading + self.omega * τ + 0.5 * self.alpha * τ2,
+            self.vx + self.ax * τ,
+            self.vy + self.ay * τ,
+            self.omega + self.alpha * τ,
+            self.ax,
+            self.ay,
+            self.alpha,
             [lerp(self.fx[i], end_value.fx[i], scale) for i in range(len(self.fx))],
             [lerp(self.fy[i], end_value.fy[i], scale) for i in range(len(self.fy))],
         )

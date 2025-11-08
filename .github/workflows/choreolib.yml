@@ -24,11 +24,11 @@ jobs:
             artifact-name: Linux-x86_64
             build-options:
 
-    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
+    name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           fetch-depth: 0
@@ -54,7 +54,7 @@ jobs:
         working-directory: choreolib
         run: ./gradlew publish ${{ matrix.build-options }} -PreleaseMode
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -66,27 +66,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2022
+          - os: windows-2025
             artifact-name: Windows-x86_64
             build-options:
 
           # FIXME: Link failure on commands library
-          # - os: windows-2022
+          # - os: windows-2025
           #   artifact-name: Windows-aarch64
           #   build-options: -Pbuildwinarm64 -Ponlywindowsarm64
 
-          - os: macOS-13
-            artifact-name: macOS-x86_64
+          - os: macos-15
+            artifact-name: macOS-universal
             build-options:
 
-          - os: macOS-14
-            artifact-name: macOS-arm64
-            build-options:
-
-    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
+    name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           persist-credentials: false
@@ -101,14 +97,14 @@ jobs:
           java-version: 17
 
       - name: Set version (Windows release)
-        if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
+        if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/v')
         run: |
           sed -i "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
           ./gradlew spotlessApply  # Undo line ending changes from sed
         working-directory: choreolib
 
       - name: Set version (macOS release)
-        if: startsWith(matrix.os, 'macOS') && startsWith(github.ref, 'refs/tags/v')
+        if: runner.os == 'macOS' && startsWith(github.ref, 'refs/tags/v')
         run: sed -i '' "s/0.0.0/${GITHUB_REF##*v}/g" publish.gradle
         working-directory: choreolib
 
@@ -122,21 +118,21 @@ jobs:
         working-directory: choreolib
         run: ./gradlew publish ${{ matrix.build-options }} -PreleaseMode
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
 
   vendordep:
     name: Upload vendordep JSON
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ChoreoLib-json
           path: choreolib/ChoreoLib2025.json
@@ -146,10 +142,10 @@ jobs:
     needs: [build-docker, build-host]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: wpilibsuite/build-tools
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           path: combiner/products/build/allOutputs
       - name: Flatten Artifacts
@@ -161,26 +157,26 @@ jobs:
       - name: Combine
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ChoreoLib-Maven
           path: ~/releases
 
   build-python:
-    name: "Build Python"
-    runs-on: ubuntu-24.04
+    name: Python
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
-      - run: pip3 install build wheel pytest
+      - run: pip3 install build mypy numpy pytest scipy scipy-stubs wheel wpilib
 
       - run: python3 -m build
         working-directory: ./choreolib/py
@@ -188,28 +184,12 @@ jobs:
         working-directory: ./choreolib/py
       - run: pytest
         working-directory: ./choreolib/py
+      - run: mypy --pretty --show-column-numbers choreolib/py
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: Python
           path: ./choreolib/py/dist
-  lint-python:
-    name: "Lint Python"
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-          token: ${{secrets.GITHUB_TOKEN}}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-
-      - run: pip3 install mypy wpilib scipy scipy-stubs numpy
-
-      - run: mypy --pretty --show-column-numbers choreolib/py
 
   pypi-publish:
     name: Upload release to PyPI
@@ -222,7 +202,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           path: dist
           pattern: "Python"
