@@ -142,13 +142,10 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
       auto max_linear_vel = max_drivetrain_velocity;
 
-      const auto angular_time =
-          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel);
-      max_linear_vel = std::min(max_linear_vel, dist / angular_time);
-
-      const auto linear_time =
-          calculate_trapezoidal_time(dist, max_linear_vel, max_accel);
-      const double sgmt_time = angular_time + linear_time;
+      const auto combined_time = std::max(
+          calculate_trapezoidal_time(dist, max_linear_vel, max_accel),
+          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel));
+      const double sgmt_time = combined_time;
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
         auto& dt = dts.at(index);
@@ -160,13 +157,31 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   }
   slp::Variable<double> total_time = std::accumulate(dts.begin(), dts.end(), slp::Variable<double>{0.0});
   
-  const double rotation_penalty_weight = 0.1;
+  // Penalty: ∫(v²ω²)dt 
+  const double separation_penalty_weight = 0.0;
+  slp::Variable<double> separation_penalty = 0.0;
+  
+  for (size_t index = 0; index < samp_tot; ++index) {
+    auto v_trans_sq = vx.at(index) * vx.at(index) + vy.at(index) * vy.at(index);
+    auto omega_sq = ω.at(index) * ω.at(index);
+    separation_penalty += v_trans_sq * omega_sq * dts.at(index);
+  }
+  
+  // Penalty: ∫ω²dt
+  const double rotation_penalty_weight = 0.0; // todo
   slp::Variable<double> rotation_penalty = 0.0;
   for (size_t index = 0; index < samp_tot; ++index) {
     rotation_penalty += ω.at(index) * ω.at(index) * dts.at(index);
   }
   
-  problem.minimize(total_time + rotation_penalty_weight * rotation_penalty);
+  slp::Variable<double> objective = total_time;
+  if (separation_penalty_weight > 0.0) {
+    objective += separation_penalty_weight * separation_penalty;
+  }
+  if (rotation_penalty_weight > 0.0) {
+    objective += rotation_penalty_weight * rotation_penalty;
+  }
+  problem.minimize(objective);
 
   // apply kinematics constraints
   for (size_t wpt_index = 0; wpt_index < wpt_cnt - 1; ++wpt_index) {
@@ -214,7 +229,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   
   const double strafe_eff = path.drivetrain.strafe_efficiency;
   std::vector<double> fx_coeff = {s, s, s, s};
-  std::vector<double> fy_coeff = {-s * strafe_eff, -s * strafe_eff, s * strafe_eff, s * strafe_eff};  // Strafing penalized
+  std::vector<double> fy_coeff = {-s * strafe_eff, -s * strafe_eff, s * strafe_eff, s * strafe_eff};
 
   for (size_t index = 0; index < samp_tot; ++index) {
     Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
