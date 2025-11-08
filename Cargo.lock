@@ -456,7 +456,7 @@ dependencies = [
 
 [[package]]
 name = "choreo-cli"
-version = "2025.0.3-carrotchaos"
+version = "2025.0.3"
 dependencies = [
  "choreo-core",
  "clap",
@@ -466,7 +466,7 @@ dependencies = [
 
 [[package]]
 name = "choreo-core"
-version = "2025.0.3-carrotchaos"
+version = "2025.0.3"
 dependencies = [
  "dashmap",
  "fastrand",
