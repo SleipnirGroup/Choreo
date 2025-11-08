@@ -61,7 +61,7 @@ impl SnapshottableType for Expr {
     #[inline]
     fn fill_in_value(val: f64, unit: &'static str) -> Self {
         Expr {
-            exp: format!("{} {}", val, unit),
+            exp: format!("{val} {unit}"),
             val,
         }
     }

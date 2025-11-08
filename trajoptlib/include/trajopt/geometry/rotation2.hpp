@@ -5,6 +5,7 @@
 #include <cmath>
 #include <concepts>
 #include <numbers>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -29,12 +30,13 @@ class Rotation2 {
    *
    * @param angle The angle in radians.
    */
-  constexpr Rotation2(const T& angle) {  // NOLINT
+  // NOLINTNEXTLINE (google-explicit-constructor)
+  constexpr Rotation2(const T& angle) {
     using std::cos;
     using std::sin;
 
-    m_cos = cos(angle);  // NOLINT
-    m_sin = sin(angle);  // NOLINT
+    m_cos = cos(angle);
+    m_sin = sin(angle);
   }
 
   /**
@@ -117,8 +119,8 @@ class Rotation2 {
   template <typename U>
   constexpr Rotation2<U> rotate_by(const Rotation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return Rotation2<R>{cos() * other.cos() - sin() * other.sin(),   // NOLINT
-                        cos() * other.sin() + sin() * other.cos()};  // NOLINT
+    return Rotation2<R>{cos() * other.cos() - sin() * other.sin(),
+                        cos() * other.sin() + sin() * other.cos()};
   }
 
   /**
@@ -126,7 +128,7 @@ class Rotation2 {
    *
    * @return The Euler angle in radians.
    */
-  constexpr T radians() const { return atan2(m_sin, m_cos); }  // NOLINT
+  constexpr T radians() const { return atan2(m_sin, m_cos); }
 
   /**
    * Returns the rotation as an Euler angle in degrees.
@@ -134,7 +136,7 @@ class Rotation2 {
    * @return The Euler angle in degrees.
    */
   constexpr T degrees() const {
-    return atan2(m_sin, m_cos) / std::numbers::pi * 180.0;  // NOLINT
+    return atan2(m_sin, m_cos) / std::numbers::pi * 180.0;
   }
 
   /**
@@ -142,55 +144,116 @@ class Rotation2 {
    *
    * @return The cosine of the rotation.
    */
-  constexpr const T& cos() const { return m_cos; }  // NOLINT
+  constexpr const T& cos() const { return m_cos; }
 
   /**
    * Returns the sine of the rotation.
    *
    * @return The sine of the rotation.
    */
-  constexpr const T& sin() const { return m_sin; }  // NOLINT
+  constexpr const T& sin() const { return m_sin; }
 
  private:
-  T m_cos = 1.0;
-  T m_sin = 0.0;
+  T m_cos{1};
+  T m_sin{0};
 };
 
 using Rotation2d = Rotation2<double>;
-using Rotation2v = Rotation2<slp::Variable>;
 
-template <typename T, typename U>
-  requires std::same_as<T, slp::Variable> || std::same_as<U, slp::Variable>
-slp::EqualityConstraints operator==(const Rotation2<T>& lhs,
-                                    const Rotation2<U>& rhs) {
-  std::vector<slp::EqualityConstraints> constraints;
+template <typename Scalar>
+using Rotation2v = Rotation2<slp::Variable<Scalar>>;
+
+template <typename LHS, typename RHS>
+  requires slp::SleipnirType<LHS> && (!slp::SleipnirType<RHS>)
+auto operator==(const Rotation2<LHS>& lhs, const Rotation2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<LHS>::Scalar;
+
+  std::vector<slp::EqualityConstraints<Scalar>> constraints;
 
   // Constrain angle equality on manifold.
   //
-  // Let lhs = <cos(a), sin(a)>.  NOLINT
-  // Let rhs = <cos(b), sin(b)>.  NOLINT
+  // Let lhs = <cos(a), sin(a)>.
+  // Let rhs = <cos(b), sin(b)>.
   //
   // If the angles are equal, the angle between the unit vectors should be
   // zero.
   //
-  //   lhs x rhs = ‖lhs‖ ‖rhs‖ sin(angleBetween)  NOLINT
+  //   lhs x rhs = ‖lhs‖ ‖rhs‖ sin(angleBetween)
   //         = 1 * 1 * 0
   //         = 0
   //
   // NOTE: angleBetween = π rad would be another solution
   constraints.emplace_back(lhs.cos() * rhs.sin() - lhs.sin() * rhs.cos() ==
-                           0.0);
+                           Scalar(0));
 
   // Require that lhs and rhs are unit vectors if they contain autodiff
   // variables, since their values can change.
-  if constexpr (std::same_as<T, slp::Variable>) {
-    constraints.emplace_back(lhs.cos() * lhs.cos() + lhs.sin() * lhs.sin() ==
-                             1.0);
-  }
-  if constexpr (std::same_as<U, slp::Variable>) {
-    constraints.emplace_back(rhs.cos() * rhs.cos() + rhs.sin() * rhs.sin() ==
-                             1.0);
-  }
+  constraints.emplace_back(lhs.cos() * lhs.cos() + lhs.sin() * lhs.sin() ==
+                           Scalar(1));
+
+  return slp::EqualityConstraints{constraints};
+}
+
+template <typename LHS, typename RHS>
+  requires(!slp::SleipnirType<LHS>) && slp::SleipnirType<RHS>
+auto operator==(const Rotation2<LHS>& lhs, const Rotation2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<RHS>::Scalar;
+
+  std::vector<slp::EqualityConstraints<Scalar>> constraints;
+
+  // Constrain angle equality on manifold.
+  //
+  // Let lhs = <cos(a), sin(a)>.
+  // Let rhs = <cos(b), sin(b)>.
+  //
+  // If the angles are equal, the angle between the unit vectors should be
+  // zero.
+  //
+  //   lhs x rhs = ‖lhs‖ ‖rhs‖ sin(angleBetween)
+  //         = 1 * 1 * 0
+  //         = 0
+  //
+  // NOTE: angleBetween = π rad would be another solution
+  constraints.emplace_back(lhs.cos() * rhs.sin() - lhs.sin() * rhs.cos() ==
+                           Scalar(0));
+
+  // Require that lhs and rhs are unit vectors if they contain autodiff
+  // variables, since their values can change.
+  constraints.emplace_back(rhs.cos() * rhs.cos() + rhs.sin() * rhs.sin() ==
+                           Scalar(1));
+
+  return slp::EqualityConstraints{constraints};
+}
+
+template <typename LHS, typename RHS>
+  requires slp::SleipnirType<LHS> && slp::SleipnirType<RHS>
+auto operator==(const Rotation2<LHS>& lhs, const Rotation2<RHS>& rhs) {
+  using Scalar = typename std::decay_t<LHS>::Scalar;
+
+  std::vector<slp::EqualityConstraints<Scalar>> constraints;
+
+  // Constrain angle equality on manifold.
+  //
+  // Let lhs = <cos(a), sin(a)>.
+  // Let rhs = <cos(b), sin(b)>.
+  //
+  // If the angles are equal, the angle between the unit vectors should be
+  // zero.
+  //
+  //   lhs x rhs = ‖lhs‖ ‖rhs‖ sin(angleBetween)
+  //         = 1 * 1 * 0
+  //         = 0
+  //
+  // NOTE: angleBetween = π rad would be another solution
+  constraints.emplace_back(lhs.cos() * rhs.sin() - lhs.sin() * rhs.cos() ==
+                           Scalar(0));
+
+  // Require that lhs and rhs are unit vectors if they contain autodiff
+  // variables, since their values can change.
+  constraints.emplace_back(lhs.cos() * lhs.cos() + lhs.sin() * lhs.sin() ==
+                           Scalar(1));
+  constraints.emplace_back(rhs.cos() * rhs.cos() + rhs.sin() * rhs.sin() ==
+                           Scalar(1));
 
   return slp::EqualityConstraints{constraints};
 }

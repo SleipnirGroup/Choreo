@@ -38,7 +38,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   auto initial_guess = path_builder.calculate_linear_initial_guess();
 
   problem.add_callback(
-      [this, handle = handle](const slp::IterationInfo&) -> bool {
+      [this, handle = handle](const slp::IterationInfo<double>&) -> bool {
         constexpr int fps = 60;
         constexpr std::chrono::duration<double> time_per_frame{1.0 / fps};
 
@@ -177,20 +177,20 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     for (size_t sample_index = 0; sample_index < N_sgmt; ++sample_index) {
       size_t index = get_index(Ns, wpt_index, sample_index);
 
-      Translation2v x_k{x.at(index), y.at(index)};
-      Translation2v x_k_1{x.at(index + 1), y.at(index + 1)};
+      Translation2v<double> x_k{x.at(index), y.at(index)};
+      Translation2v<double> x_k_1{x.at(index + 1), y.at(index + 1)};
 
-      Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
-      Rotation2v θ_k_1{cosθ.at(index + 1), sinθ.at(index + 1)};
+      Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
+      Rotation2v<double> θ_k_1{cosθ.at(index + 1), sinθ.at(index + 1)};
 
-      Translation2v v_k{vx.at(index), vy.at(index)};
-      Translation2v v_k_1{vx.at(index + 1), vy.at(index + 1)};
+      Translation2v<double> v_k{vx.at(index), vy.at(index)};
+      Translation2v<double> v_k_1{vx.at(index + 1), vy.at(index + 1)};
 
       auto ω_k = ω.at(index);
       auto ω_k_1 = ω.at(index + 1);
 
-      Translation2v a_k{ax.at(index), ay.at(index)};
-      Translation2v a_k_1{ax.at(index + 1), ay.at(index + 1)};
+      Translation2v<double> a_k{ax.at(index), ay.at(index)};
+      Translation2v<double> a_k_1{ax.at(index + 1), ay.at(index + 1)};
 
       auto α_k = α.at(index);
       auto α_k_1 = α.at(index + 1);
@@ -206,15 +206,15 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
       problem.subject_to(x_k_1 == x_k + v_k * dt_k + a_k * 0.5 * dt_k * dt_k);
-      problem.subject_to((θ_k_1 - θ_k) == Rotation2v{ω_k * dt_k});
+      problem.subject_to((θ_k_1 - θ_k) == Rotation2v<double>{ω_k * dt_k});
       problem.subject_to(v_k_1 == v_k + a_k * dt_k);
       problem.subject_to(ω_k_1 == ω_k + α_k * dt_k);
     }
   }
 
   for (size_t index = 0; index < samp_tot; ++index) {
-    Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
-    Translation2v v_k{vx.at(index), vy.at(index)};
+    Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
+    Translation2v<double> v_k{vx.at(index), vy.at(index)};
 
     // Solve for net force
     auto Fx_net = std::accumulate(Fx.at(index).begin(), Fx.at(index).end(),
@@ -228,8 +228,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
          ++module_index) {
       const auto& translation = path.drivetrain.modules.at(module_index);
       auto r = translation.rotate_by(θ_k);
-      Translation2v F{Fx.at(index).at(module_index),
-                      Fy.at(index).at(module_index)};
+      Translation2v<double> F{Fx.at(index).at(module_index),
+                              Fy.at(index).at(module_index)};
 
       τ_net += r.cross(F);
     }
@@ -240,7 +240,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
          ++module_index) {
       const auto& translation = path.drivetrain.modules.at(module_index);
 
-      Translation2v v_wheel_wrt_robot{
+      Translation2v<double> v_wheel_wrt_robot{
           v_wrt_robot.x() - translation.y() * ω.at(index),
           v_wrt_robot.y() + translation.x() * ω.at(index)};
       double max_wheel_velocity = path.drivetrain.wheel_radius *
@@ -250,8 +250,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       problem.subject_to(v_wheel_wrt_robot.squared_norm() <=
                          max_wheel_velocity * max_wheel_velocity);
 
-      Translation2v module_f{Fx.at(index).at(module_index),
-                             Fy.at(index).at(module_index)};
+      Translation2v<double> module_f{Fx.at(index).at(module_index),
+                                     Fy.at(index).at(module_index)};
 
       // τ = r x F
       // F = τ/r
@@ -282,10 +282,11 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     // First index of next wpt - 1
     size_t index = get_index(Ns, wpt_index, 0);
 
-    Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-    Translation2v v_k{vx.at(index), vy.at(index)};
+    Pose2v<double> pose_k{
+        x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+    Translation2v<double> v_k{vx.at(index), vy.at(index)};
     auto ω_k = ω.at(index);
-    Translation2v a_k{ax.at(index), ay.at(index)};
+    Translation2v<double> a_k{ax.at(index), ay.at(index)};
     auto α_k = α.at(index);
 
     for (auto& constraint : path.waypoints.at(wpt_index).waypoint_constraints) {
@@ -300,10 +301,11 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     size_t end_index = get_index(Ns, sgmt_index + 1, 0);
 
     for (size_t index = start_index; index < end_index; ++index) {
-      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-      Translation2v v_k{vx.at(index), vy.at(index)};
+      Pose2v<double> pose_k{
+          x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+      Translation2v<double> v_k{vx.at(index), vy.at(index)};
       auto ω_k = ω.at(index);
-      Translation2v a_k{ax.at(index), ay.at(index)};
+      Translation2v<double> a_k{ax.at(index), ay.at(index)};
       auto α_k = α.at(index);
 
       for (auto& constraint :
@@ -383,18 +385,19 @@ void SwerveTrajectoryGenerator::apply_initial_guess(
 SwerveSolution SwerveTrajectoryGenerator::construct_swerve_solution() {
   auto get_value = [](auto& var) { return var.value(); };
 
-  auto vector_value = [&](std::vector<slp::Variable>& row) {
+  auto vector_value = [&](std::vector<slp::Variable<double>>& row) {
     return row | std::views::transform(get_value) |
            std::ranges::to<std::vector>();
   };
 
-  auto matrix_value = [&](std::vector<std::vector<slp::Variable>>& mat) {
-    return mat | std::views::transform([&](auto& v) {
-             return v | std::views::transform(get_value) |
-                    std::ranges::to<std::vector>();
-           }) |
-           std::ranges::to<std::vector>();
-  };
+  auto matrix_value =
+      [&](std::vector<std::vector<slp::Variable<double>>>& mat) {
+        return mat | std::views::transform([&](auto& v) {
+                 return v | std::views::transform(get_value) |
+                        std::ranges::to<std::vector>();
+               }) |
+               std::ranges::to<std::vector>();
+      };
 
   return SwerveSolution{
       vector_value(dts),  vector_value(x),    vector_value(y),

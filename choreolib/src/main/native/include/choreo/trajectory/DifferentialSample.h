@@ -47,6 +47,7 @@ class DifferentialSample {
    * @param omega The chassis angular velocity
    * @param al The acceleration of the left wheels
    * @param ar The acceleration of the left wheels
+   * @param alpha The chassis angular acceleration
    * @param fl The force of the left wheels
    * @param fr The force of the right wheels
    */
@@ -57,6 +58,7 @@ class DifferentialSample {
                                units::radians_per_second_t omega,
                                units::meters_per_second_squared_t al,
                                units::meters_per_second_squared_t ar,
+                               units::radians_per_second_squared_t alpha,
                                units::newton_t fl, units::newton_t fr)
       : timestamp{timestamp},
         x{x},
@@ -67,6 +69,7 @@ class DifferentialSample {
         omega{omega},
         al{al},
         ar{ar},
+        alpha{alpha},
         fl{fl},
         fr{fr} {}
 
@@ -111,6 +114,7 @@ class DifferentialSample {
                               omega,
                               al,
                               ar,
+                              alpha,
                               fl,
                               fr};
   }
@@ -133,19 +137,14 @@ class DifferentialSample {
                                           heading.value(), vl.value(),
                                           vr.value(),      omega.value()};
 
-    auto width = (vr - vl) / omega;
-
     // FIXME: this means the function cant be constexpr without c++23
     std::function<Eigen::Vector<double, 6>(Eigen::Vector<double, 6>,
-                                           Eigen::Vector<double, 2>)>
-        f = [width](Eigen::Vector<double, 6> state,
-                    Eigen::Vector<double, 2> input) {
+                                           Eigen::Vector<double, 3>)>
+        f = [](Eigen::Vector<double, 6> state, Eigen::Vector<double, 3> input) {
           //  state =  [x, y, θ, vₗ, vᵣ, ω]
-          //  input =  [aₗ, aᵣ]
+          //  input =  [aₗ, aᵣ, α]
           //
           //  v = (vₗ + vᵣ)/2
-          //  ω = (vᵣ − vₗ)/width
-          //  α = (aᵣ − aₗ)/width
           //
           //  ẋ = v cosθ
           //  ẏ = v sinθ
@@ -159,19 +158,16 @@ class DifferentialSample {
           auto ω = state(5, 0);
           auto al = input(0, 0);
           auto ar = input(1, 0);
+          auto α = input(2, 0);
           auto v = (vl + vr) / 2;
-          auto α = (ar - al) / width.value();
           return Eigen::Vector<double, 6>{
               v * std::cos(θ), v * std::sin(θ), ω, al, ar, α};
         };
 
     units::second_t τ = t - timestamp;
-    auto sample =
-        frc::RKDP(f, initialState, Eigen::Vector<double, 2>(al, ar), τ);
-
-    auto dt = endValue.timestamp - timestamp;
-    auto jl = (endValue.al - al) / dt;
-    auto jr = (endValue.ar - ar) / dt;
+    auto sample = frc::RKDP(
+        f, initialState,
+        Eigen::Vector<double, 3>(al.value(), ar.value(), alpha.value()), τ);
 
     return DifferentialSample{
         wpi::Lerp(timestamp, endValue.timestamp, scale),
@@ -181,8 +177,9 @@ class DifferentialSample {
         units::meters_per_second_t{sample(3, 0)},
         units::meters_per_second_t{sample(4, 0)},
         units::radians_per_second_t{sample(5, 0)},
-        al + jl * τ,
-        ar + jr * τ,
+        al,
+        ar,
+        alpha,
         wpi::Lerp(fl, endValue.fl, scale),
         wpi::Lerp(fr, endValue.fr, scale),
     };
@@ -200,11 +197,11 @@ class DifferentialSample {
     if constexpr (flipper.isMirrored) {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
                                 flipper.FlipHeading(heading), vr, vl, -omega,
-                                ar, al, fr, fl);
+                                ar, al, -alpha, fr, fl);
     } else {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
                                 flipper.FlipHeading(heading), vl, vr, omega, al,
-                                ar, fl, fr);
+                                ar, alpha, fl, fr);
     }
   }
 
@@ -228,8 +225,8 @@ class DifferentialSample {
            compare_units(heading, other.heading) &&
            compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
            compare_units(omega, other.omega) && compare_units(al, other.al) &&
-           compare_units(ar, other.ar) && compare_units(fl, other.fl) &&
-           compare_units(fr, other.fr);
+           compare_units(ar, other.ar) && compare_units(alpha, other.alpha) &&
+           compare_units(fl, other.fl) && compare_units(fr, other.fr);
   }
 
   /// The timestamp of this sample relative to the beginning of the trajectory.
@@ -250,7 +247,7 @@ class DifferentialSample {
   /// The velocity of the right wheels.
   units::meters_per_second_t vr = 0_mps;
 
-  /// The chassis angular velocity
+  /// The chassis angular velocity.
   units::radians_per_second_t omega = 0_rad_per_s;
 
   /// The acceleration of the left wheels.
@@ -258,6 +255,9 @@ class DifferentialSample {
 
   /// The acceleration of the right wheels.
   units::meters_per_second_squared_t ar = 0_mps_sq;
+
+  /// The chassis angular acceleration.
+  units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
 
   /// The force of the left wheels.
   units::newton_t fl = 0_N;

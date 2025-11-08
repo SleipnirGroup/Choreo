@@ -6,7 +6,13 @@ import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
-import { ContentCopy, Redo, ShapeLine, Undo } from "@mui/icons-material";
+import {
+  ContentCopy,
+  Redo,
+  ShapeLine,
+  Polyline,
+  Undo
+} from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarEventMarker from "./SidebarEventMarker";
@@ -86,9 +92,24 @@ class Sidebar extends Component<Props, State> {
         </div>
         <div
           className={styles.SidebarHeading}
-          style={{ gridTemplateColumns: "auto 33.6px 33.6px 33.6px" }}
+          style={{ gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px" }}
         >
           PATHS
+          <Tooltip disableInteractive title="Generate All">
+            <span>
+              <IconButton
+                size="small"
+                color="default"
+                style={{
+                  float: "right"
+                }}
+                disabled={Object.keys(doc.pathlist.paths).length == 0}
+                onClick={() => doc.generateAll()}
+              >
+                <Polyline fontSize="small"></Polyline>
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip disableInteractive title="Generate All Outdated">
             <span>
               <IconButton

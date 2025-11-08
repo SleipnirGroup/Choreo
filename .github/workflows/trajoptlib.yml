@@ -1,0 +1,164 @@
+name: TrajoptLib
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cpp:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact-name: Windows x86_64
+            cmake-args:
+            os: windows-2025
+          - artifact-name: macOS universal
+            cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            os: macos-15
+          - artifact-name: Linux x86_64
+            cmake-args:
+            os: ubuntu-24.04
+
+    name: C++ - ${{ matrix.artifact-name }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Install dependencies (Windows)
+        uses: lukka/get-cmake@v3.29.3
+        if: runner.os == 'Windows'
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install dependencies (macOS)
+        run: brew install ninja
+        if: runner.os == 'macOS'
+
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+        # sccache doesn't work with MSBuild
+        if: runner.os != 'Windows'
+
+      - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
+        if: runner.os != 'Windows'
+        working-directory: trajoptlib
+
+      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+        if: runner.os == 'Windows'
+        working-directory: trajoptlib
+
+      - run: cmake --build build --config RelWithDebInfo --parallel 4
+        working-directory: trajoptlib
+        env:
+          SCCACHE_GHA_ENABLED: true
+
+      - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
+        working-directory: trajoptlib
+
+      - run: cmake --install build --config RelWithDebInfo --prefix pkg
+        working-directory: trajoptlib
+
+      - run: ./build/differential
+        if: runner.os != 'Windows'
+        working-directory: trajoptlib
+
+      - run: ./build/swerve
+        if: runner.os != 'Windows'
+        working-directory: trajoptlib
+
+      # FIXME: Returns exit code 1
+      # - run: ./build/RelWithDebInfo/differential
+      #   if: runner.os == 'Windows'
+      #   working-directory: trajoptlib
+
+      # FIXME: Returns exit code 1
+      # - run: ./build/RelWithDebInfo/swerve
+      #   if: runner.os == 'Windows'
+      #   working-directory: trajoptlib
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: trajoptlib/pkg
+
+  rust:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact-name: Windows x86_64
+            os: windows-2025
+          - artifact-name: macOS universal
+            os: macos-15
+          - artifact-name: Linux x86_64
+            os: ubuntu-24.04
+
+    name: Rust - ${{ matrix.artifact-name }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Install dependencies (Windows)
+        uses: lukka/get-cmake@v3.29.3
+        if: runner.os == 'Windows'
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install dependencies (macOS)
+        run: brew install ninja
+        if: runner.os == 'macOS'
+
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+        # sccache doesn't work with MSBuild
+        if: runner.os != 'Windows'
+
+      - run: cargo build
+        if: runner.os != 'Windows'
+        working-directory: trajoptlib
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
+
+      - run: cargo build --example differential
+        if: runner.os != 'Windows'
+        working-directory: trajoptlib
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
+
+      - run: cargo build --example swerve
+        if: runner.os != 'Windows'
+        working-directory: trajoptlib
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
