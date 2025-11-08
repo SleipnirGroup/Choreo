@@ -2,14 +2,19 @@ import { open } from "@tauri-apps/plugin-dialog";
 import {
   Box,
   Button,
-  Divider,
+  Card,
+  CardContent,
+  Chip,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   Stack,
   TextField,
-  Typography
+  Typography,
+  Paper,
+  Tooltip,
+  IconButton
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import { observer } from "mobx-react";
@@ -40,107 +45,169 @@ const FieldPreview = observer(() => {
   const aspectRatio = fieldLength / fieldWidth;
   const verticalCount = Math.floor(fieldLength / spacing);
   const horizontalCount = Math.floor(fieldWidth / spacing);
-  const verticalPositions = Array.from({ length: Math.max(verticalCount - 1, 0) }, (_, idx) =>
-    (idx + 1) * spacing
+  const verticalPositions = Array.from(
+    { length: Math.max(verticalCount - 1, 0) },
+    (_, idx) => (idx + 1) * spacing
   );
-  const horizontalPositions = Array.from({ length: Math.max(horizontalCount - 1, 0) }, (_, idx) =>
-    (idx + 1) * spacing
+  const horizontalPositions = Array.from(
+    { length: Math.max(horizontalCount - 1, 0) },
+    (_, idx) => (idx + 1) * spacing
   );
-  const FieldComponent = preset ? BUILTIN_FIELD_COMPONENTS[preset.id as FieldPresetId] : undefined;
+  const FieldComponent = preset
+    ? BUILTIN_FIELD_COMPONENTS[preset.id as FieldPresetId]
+    : undefined;
   const showCustomImage =
-    selectedPresetId === CUSTOM_FIELD_ID && fieldSettings.customImagePath !== undefined;
+    selectedPresetId === CUSTOM_FIELD_ID &&
+    fieldSettings.customImagePath !== undefined;
   const imageHref = showCustomImage
     ? convertFileSrc(fieldSettings.customImagePath as string)
     : undefined;
 
   return (
-    <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-      <Box>
-        <Typography variant="h5" gutterBottom>
-          Preview
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Rendering uses the current dimensions and selected image with a meter grid overlay.
-        </Typography>
-      </Box>
-      <Box
+    <Card
+      elevation={0}
+      sx={{
+        flex: 1,
+        minWidth: 400,
+        border: 1,
+        borderColor: "divider",
+        background:
+          "linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.01))"
+      }}
+    >
+      <CardContent
         sx={{
-          border: 1,
-          borderColor: "divider",
-          borderRadius: 1,
-          overflow: "hidden",
-          backgroundColor: "background.default",
-          padding: 1,
-          flexGrow: 1,
-          display: "flex"
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          height: "100%"
         }}
       >
-        <Box
-          component="svg"
+        <Box>
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            Live Preview
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontSize: "0.813rem" }}
+          >
+            Real-time rendering with meter grid overlay
+          </Typography>
+        </Box>
+
+        <Paper
+          elevation={0}
           sx={{
-            width: "100%",
-            aspectRatio,
+            border: 1,
+            borderColor: "divider",
+            borderRadius: 2,
+            overflow: "hidden",
+            backgroundColor: "#0a0a0a",
+            padding: 2,
             flexGrow: 1,
-            alignSelf: "center",
-            backgroundColor: "#1f1f1f"
+            display: "flex",
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "1px",
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)"
+            }
           }}
-          viewBox={`0 0 ${fieldLength} ${fieldWidth}`}
-          preserveAspectRatio="xMidYMid meet"
         >
-          <rect width={fieldLength} height={fieldWidth} fill="#1f1f1f" />
-          {imageHref && (
-            <image
-              href={imageHref}
+          <Box
+            component="svg"
+            sx={{
+              width: "100%",
+              aspectRatio,
+              flexGrow: 1,
+              alignSelf: "center",
+              backgroundColor: "#1a1a1a",
+              borderRadius: 1,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.3)"
+            }}
+            viewBox={`0 0 ${fieldLength} ${fieldWidth}`}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <rect width={fieldLength} height={fieldWidth} fill="#1a1a1a" />
+            {imageHref && (
+              <image
+                href={imageHref}
+                width={fieldLength}
+                height={fieldWidth}
+                preserveAspectRatio="none"
+              />
+            )}
+            {!imageHref && FieldComponent && preset && (
+              <g
+                transform={`scale(${fieldLength / preset.defaultLength} ${
+                  fieldWidth / preset.defaultWidth
+                })`}
+              >
+                <FieldComponent />
+              </g>
+            )}
+            {/* Grid */}
+            {verticalPositions.map((x) => (
+              <line
+                key={`v-${x.toFixed(3)}`}
+                x1={x}
+                y1={0}
+                x2={x}
+                y2={fieldWidth}
+                stroke="rgba(100,150,255,0.25)"
+                strokeWidth={0.015}
+              />
+            ))}
+            {horizontalPositions.map((y) => (
+              <line
+                key={`h-${y.toFixed(3)}`}
+                x1={0}
+                y1={y}
+                x2={fieldLength}
+                y2={y}
+                stroke="rgba(100,150,255,0.25)"
+                strokeWidth={0.015}
+              />
+            ))}
+            <rect
               width={fieldLength}
               height={fieldWidth}
-              preserveAspectRatio="none"
+              fill="none"
+              stroke="rgba(100,150,255,0.5)"
+              strokeWidth={0.04}
             />
-          )}
-          {!imageHref && FieldComponent && preset && (
-            <g
-              transform={`scale(${fieldLength / preset.defaultLength} ${
-                fieldWidth / preset.defaultWidth
-              })`}
-            >
-              <FieldComponent />
-            </g>
-          )}
-          {/* Grid */}
-          {verticalPositions.map((x) => (
-            <line
-              key={`v-${x.toFixed(3)}`}
-              x1={x}
-              y1={0}
-              x2={x}
-              y2={fieldWidth}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={0.02}
-            />
-          ))}
-          {horizontalPositions.map((y) => (
-            <line
-              key={`h-${y.toFixed(3)}`}
-              x1={0}
-              y1={y}
-              x2={fieldLength}
-              y2={y}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={0.02}
-            />
-          ))}
-          <rect
-            width={fieldLength}
-            height={fieldWidth}
-            fill="none"
-            stroke="rgba(255,255,255,0.4)"
-            strokeWidth={0.05}
+          </Box>
+        </Paper>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+            justifyContent: "center"
+          }}
+        >
+          <Chip
+            label={`${fieldLength.toFixed(3)} m × ${fieldWidth.toFixed(3)} m`}
+            size="small"
+            variant="outlined"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
+          />
+          <Chip
+            label={`Grid: ${spacing.toFixed(3)} m`}
+            size="small"
+            variant="outlined"
+            sx={{ fontVariantNumeric: "tabular-nums" }}
           />
         </Box>
-      </Box>
-      <Typography variant="caption" color="text.secondary">
-        Field size: {fieldLength.toFixed(3)} m × {fieldWidth.toFixed(3)} m · Grid spacing: {spacing.toFixed(3)} m
-      </Typography>
-    </Box>
+      </CardContent>
+    </Card>
   );
 });
 
@@ -151,9 +218,7 @@ const FieldSettingsPanel = () => {
 
   const handlePresetChange = useCallback((event: SelectChangeEvent) => {
     uiState.selectFieldPreset(event.target.value as string);
-    },
-    []
-  );
+  }, []);
 
   const handleLengthChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,12 +240,15 @@ const FieldSettingsPanel = () => {
     [fieldSettings.fieldLength]
   );
 
-  const handleGridSpacingChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const next = parseFloat(event.target.value);
-    if (!Number.isNaN(next) && next > 0) {
-      uiState.setPreviewGridSpacing(next);
-    }
-  }, []);
+  const handleGridSpacingChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const next = parseFloat(event.target.value);
+      if (!Number.isNaN(next) && next > 0) {
+        uiState.setPreviewGridSpacing(next);
+      }
+    },
+    []
+  );
 
   const handleChooseCustomImage = useCallback(async () => {
     const result = await open({
@@ -208,112 +276,293 @@ const FieldSettingsPanel = () => {
     selectedPresetId === CUSTOM_FIELD_ID && fieldSettings.customImagePath;
 
   return (
-    <Stack
-      spacing={3}
-      sx={{ padding: 3 }}
-      direction={{ xs: "column", lg: "row" }}
-      alignItems="stretch"
+    <Box
+      sx={{
+        padding: 3,
+        height: "100%",
+        overflow: "auto",
+        maxWidth: "100%"
+      }}
     >
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-        <Box>
-          <Typography variant="h5" gutterBottom>
-            Field Image
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Select a bundled diagram or supply your own image, then fine-tune the field size.
-          </Typography>
-        </Box>
-
-        <FormControl fullWidth size="small">
-          <InputLabel id="field-image-select-label">Available images</InputLabel>
-          <Select
-            labelId="field-image-select-label"
-            label="Available images"
-            value={selectedPresetId}
-            onChange={handlePresetChange}
+      <Stack
+        spacing={3}
+        direction={{ xs: "column", lg: "row" }}
+        alignItems="stretch"
+        sx={{
+          height: "100%",
+          maxWidth: "2000px",
+          margin: "0 auto"
+        }}
+      >
+        <Card
+          elevation={0}
+          sx={{
+            flex: 1,
+            minWidth: 400,
+            border: 1,
+            borderColor: "divider",
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.01))"
+          }}
+        >
+          <CardContent
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
-            {FIELD_PRESETS.map((preset) => (
-              <MenuItem key={preset.id} value={preset.id}>
-                {preset.label}
-              </MenuItem>
-            ))}
-            <MenuItem value={CUSTOM_FIELD_ID}>Custom image…</MenuItem>
-          </Select>
-        </FormControl>
-        {selectedPreset && selectedPresetId !== CUSTOM_FIELD_ID && (
-          <Typography variant="caption" color="text.secondary">
-            Defaults: {selectedPreset.defaultLength.toFixed(3)} m × {" "}
-            {selectedPreset.defaultWidth.toFixed(3)} m
-          </Typography>
-        )}
+            <Box>
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 0.5 }}
+              >
+                Field Configuration
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: "0.813rem" }}
+              >
+                Configure your field image and dimensions
+              </Typography>
+            </Box>
 
-        <Divider textAlign="left">Dimensions (meters)</Divider>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="flex-end">
-          <TextField
-            label="Field length"
-            size="small"
-            type="number"
-            inputProps={{ min: 0, step: 0.001 }}
-            value={fieldSettings.fieldLength}
-            onChange={handleLengthChange}
-          />
-          <TextField
-            label="Field width"
-            size="small"
-            type="number"
-            inputProps={{ min: 0, step: 0.001 }}
-            value={fieldSettings.fieldWidth}
-            onChange={handleWidthChange}
-          />
-          <Button
-            variant="outlined"
-            onClick={() => uiState.resetFieldDimensionsToDefault()}
-            disabled={
-              selectedPresetId === CUSTOM_FIELD_ID || selectedPreset === undefined
-            }
-          >
-            Use defaults
-          </Button>
-        </Stack>
-
-        <Divider textAlign="left">Preview grid</Divider>
-        <TextField
-          label="Grid spacing (m)"
-          size="small"
-          type="number"
-          inputProps={{ min: 0.01, step: 0.1 }}
-          value={fieldSettings.previewGridSpacing}
-          onChange={handleGridSpacingChange}
-        />
-
-        {selectedPresetId === CUSTOM_FIELD_ID && (
-          <Fragment>
-            <Divider textAlign="left">Custom image</Divider>
-            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-              <Button variant="contained" onClick={handleChooseCustomImage}>
-                Choose image…
-              </Button>
-              {hasCustomImage && (
-                <Button variant="text" color="inherit" onClick={handleClearCustomImage}>
-                  Clear
-                </Button>
+            <Box>
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  letterSpacing: 0.5,
+                  color: "text.secondary",
+                  mb: 1,
+                  display: "block"
+                }}
+              >
+                Image Source
+              </Typography>
+              <FormControl fullWidth size="small">
+                <InputLabel id="field-image-select-label">
+                  Select field image
+                </InputLabel>
+                <Select
+                  labelId="field-image-select-label"
+                  label="Select field image"
+                  value={selectedPresetId}
+                  onChange={handlePresetChange}
+                  sx={{
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderWidth: 1.5
+                    }
+                  }}
+                >
+                  {FIELD_PRESETS.map((preset) => (
+                    <MenuItem key={preset.id} value={preset.id}>
+                      {preset.label}
+                    </MenuItem>
+                  ))}
+                  <MenuItem value={CUSTOM_FIELD_ID}>
+                    <Box component="span" sx={{ fontStyle: "italic" }}>
+                      Custom image…
+                    </Box>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              {selectedPreset && selectedPresetId !== CUSTOM_FIELD_ID && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 1, display: "block" }}
+                >
+                  Default: {selectedPreset.defaultLength.toFixed(3)} m ×{" "}
+                  {selectedPreset.defaultWidth.toFixed(3)} m
+                </Typography>
               )}
-            </Stack>
-            <Typography variant="caption" color="text.secondary">
-              {hasCustomImage
-                ? fieldSettings.customImagePath
-                : "No image selected."}
-            </Typography>
-          </Fragment>
-        )}
+            </Box>
 
-        <Typography variant="caption" color="text.secondary">
-          Dimensions drive coordinate scaling, default constraints, and overlays throughout the app.
-        </Typography>
-      </Box>
+            <Box>
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  letterSpacing: 0.5,
+                  color: "text.secondary",
+                  mb: 1,
+                  display: "block"
+                }}
+              >
+                Dimensions (meters)
+              </Typography>
+              <Stack spacing={2}>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <TextField
+                    label="Length"
+                    size="small"
+                    type="number"
+                    fullWidth
+                    inputProps={{ min: 0, step: 0.001 }}
+                    value={fieldSettings.fieldLength}
+                    onChange={handleLengthChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderWidth: 1.5 }
+                      }
+                    }}
+                  />
+                  <TextField
+                    label="Width"
+                    size="small"
+                    type="number"
+                    fullWidth
+                    inputProps={{ min: 0, step: 0.001 }}
+                    value={fieldSettings.fieldWidth}
+                    onChange={handleWidthChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderWidth: 1.5 }
+                      }
+                    }}
+                  />
+                </Stack>
+                <Button
+                  variant="outlined"
+                  onClick={() => uiState.resetFieldDimensionsToDefault()}
+                  disabled={
+                    selectedPresetId === CUSTOM_FIELD_ID ||
+                    selectedPreset === undefined
+                  }
+                  sx={{
+                    borderWidth: 1.5,
+                    "&:hover": { borderWidth: 1.5 }
+                  }}
+                >
+                  Reset to Defaults
+                </Button>
+              </Stack>
+            </Box>
 
-      <FieldPreview />
-    </Stack>
+            <Box>
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  letterSpacing: 0.5,
+                  color: "text.secondary",
+                  mb: 1,
+                  display: "block"
+                }}
+              >
+                Preview Grid
+              </Typography>
+              <TextField
+                label="Grid spacing"
+                size="small"
+                type="number"
+                fullWidth
+                inputProps={{ min: 0.01, step: 0.1 }}
+                value={fieldSettings.previewGridSpacing}
+                onChange={handleGridSpacingChange}
+                helperText="Distance between grid lines in meters"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderWidth: 1.5 }
+                  }
+                }}
+              />
+            </Box>
+
+            {selectedPresetId === CUSTOM_FIELD_ID && (
+              <Box>
+                <Typography
+                  variant="overline"
+                  sx={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    letterSpacing: 0.5,
+                    color: "text.secondary",
+                    mb: 1,
+                    display: "block"
+                  }}
+                >
+                  Custom Image
+                </Typography>
+                <Stack spacing={2}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Button
+                      variant="contained"
+                      onClick={handleChooseCustomImage}
+                      sx={{
+                        fontWeight: 600,
+                        px: 3
+                      }}
+                    >
+                      Choose Image
+                    </Button>
+                    {hasCustomImage && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={handleClearCustomImage}
+                        sx={{
+                          borderWidth: 1.5,
+                          "&:hover": { borderWidth: 1.5 }
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </Stack>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      bgcolor: "action.hover",
+                      borderStyle: "dashed",
+                      borderWidth: 1.5
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        wordBreak: "break-all",
+                        fontFamily: "monospace",
+                        fontSize: "0.75rem"
+                      }}
+                    >
+                      {hasCustomImage
+                        ? fieldSettings.customImagePath
+                        : "No custom image selected"}
+                    </Typography>
+                  </Paper>
+                </Stack>
+              </Box>
+            )}
+
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 2,
+                bgcolor: "info.main",
+                color: "info.contrastText",
+                borderColor: "info.dark"
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{ fontSize: "0.75rem", lineHeight: 1.5 }}
+              >
+                Field dimensions affect coordinate scaling, constraints, and
+                overlays throughout the application.
+              </Typography>
+            </Paper>
+          </CardContent>
+        </Card>
+
+        <FieldPreview />
+      </Stack>
+    </Box>
   );
 };
 

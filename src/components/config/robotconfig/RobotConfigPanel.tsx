@@ -1,4 +1,10 @@
-import { Autocomplete, Divider, FormHelperText, Switch, TextField } from "@mui/material";
+import {
+  Autocomplete,
+  Divider,
+  FormHelperText,
+  Switch,
+  TextField
+} from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import inputStyles from "../../input/InputList.module.css";
@@ -51,23 +57,21 @@ class RobotConfigPanel extends Component<Props, State> {
             gridRow: 1
           }}
         >
-          <Divider sx={{ color: "gray", }}>
-            DRIVE TYPE
-          </Divider>
+          <Divider sx={{ color: "gray" }}>DRIVE TYPE</Divider>
           <div
             style={{
-              height: `${this.rowGap*2}`,
+              height: `${this.rowGap * 2}`,
               flex: 1,
               marginBottom: `${this.rowGap}px`
             }}
           >
-            <Autocomplete 
+            <Autocomplete
               size="small"
               value={doc.type}
               onChange={(_e, new_value) =>
                 doc.setType(new_value as "Differential" | "Mecanum" | "Swerve")
               }
-              options={["Swerve","Mecanum","Differential"]}
+              options={["Swerve", "Mecanum", "Differential"]}
               disableClearable={true}
               renderInput={(params) => <TextField {...params} label="" />}
             ></Autocomplete>
@@ -77,9 +81,7 @@ class RobotConfigPanel extends Component<Props, State> {
               rowGap={this.rowGap}
             ></DifferentialConfigPanel>
           ) : doc.type === "Swerve" ? (
-            <SwerveConfigPanel
-              rowGap={this.rowGap}
-            ></SwerveConfigPanel>
+            <SwerveConfigPanel rowGap={this.rowGap}></SwerveConfigPanel>
           ) : (
             <MecanumConfigPanel rowGap={this.rowGap}></MecanumConfigPanel>
           )}

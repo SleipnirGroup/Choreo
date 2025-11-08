@@ -203,13 +203,21 @@ export const UIStateStore = types
         PathGradients.LinearVelocity.name;
     },
     selectFieldPreset(presetId: string) {
-      if (presetId === CUSTOM_FIELD_ID || getPresetById(presetId) !== undefined) {
+      if (
+        presetId === CUSTOM_FIELD_ID ||
+        getPresetById(presetId) !== undefined
+      ) {
         self.fieldSettings.selectPreset(presetId);
         this._saveFieldSettingsToLocalStorage();
       }
     },
     setFieldDimensions(length: number, width: number) {
-      if (Number.isFinite(length) && Number.isFinite(width) && length > 0 && width > 0) {
+      if (
+        Number.isFinite(length) &&
+        Number.isFinite(width) &&
+        length > 0 &&
+        width > 0
+      ) {
         self.fieldSettings.setDimensions(length, width);
         this._saveFieldSettingsToLocalStorage();
       }
@@ -243,9 +251,15 @@ export const UIStateStore = types
             : DEFAULT_FIELD_SETTINGS.selectedPresetId;
         self.fieldSettings.selectPreset(targetPreset);
         if (parsed.fieldLength && parsed.fieldWidth) {
-          self.fieldSettings.setDimensions(parsed.fieldLength, parsed.fieldWidth);
+          self.fieldSettings.setDimensions(
+            parsed.fieldLength,
+            parsed.fieldWidth
+          );
         }
-        if (parsed.previewGridSpacing !== undefined && parsed.previewGridSpacing > 0) {
+        if (
+          parsed.previewGridSpacing !== undefined &&
+          parsed.previewGridSpacing > 0
+        ) {
           self.fieldSettings.setPreviewGridSpacing(parsed.previewGridSpacing);
         }
         if (targetPreset === CUSTOM_FIELD_ID) {

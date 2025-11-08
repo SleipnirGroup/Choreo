@@ -247,14 +247,10 @@ class FieldOverlayRoot extends Component<Props, State> {
         );
       }
     } else if (preset) {
-      const component = BUILTIN_FIELD_COMPONENTS[
-        preset.id as FieldPresetId
-      ];
+      const component = BUILTIN_FIELD_COMPONENTS[preset.id as FieldPresetId];
       if (component) {
         const scaleX =
-          preset.defaultLength > 0
-            ? fieldLength / preset.defaultLength
-            : 1;
+          preset.defaultLength > 0 ? fieldLength / preset.defaultLength : 1;
         const scaleY =
           preset.defaultWidth > 0 ? fieldWidth / preset.defaultWidth : 1;
         const FieldComponent = component;
