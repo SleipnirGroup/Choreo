@@ -367,23 +367,23 @@ impl From<DifferentialTrajectorySample> for Sample {
 }
 
 impl From<&MecanumTrajectorySample> for Sample {
-    fn from(swerve_sample: &MecanumTrajectorySample) -> Self {
+    fn from(mecanum_sample: &MecanumTrajectorySample) -> Self {
         Sample::Mecanum {
-            t: round(swerve_sample.timestamp),
-            x: round(swerve_sample.x),
-            y: round(swerve_sample.y),
-            vx: round(swerve_sample.velocity_x),
-            vy: round(swerve_sample.velocity_y),
-            heading: round(swerve_sample.heading),
-            omega: round(swerve_sample.angular_velocity),
-            ax: round(swerve_sample.acceleration_x),
-            ay: round(swerve_sample.acceleration_y),
-            alpha: round(swerve_sample.angular_acceleration),
+            t: round(mecanum_sample.timestamp),
+            x: round(mecanum_sample.x),
+            y: round(mecanum_sample.y),
+            vx: round(mecanum_sample.velocity_x),
+            vy: round(mecanum_sample.velocity_y),
+            heading: round(mecanum_sample.heading),
+            omega: round(mecanum_sample.angular_velocity),
+            ax: round(mecanum_sample.acceleration_x),
+            ay: round(mecanum_sample.acceleration_y),
+            alpha: round(mecanum_sample.angular_acceleration),
             f: [
-                round(swerve_sample.wheel_forces[0]),
-                round(swerve_sample.wheel_forces[1]),
-                round(swerve_sample.wheel_forces[2]),
-                round(swerve_sample.wheel_forces[3]),
+                round(mecanum_sample.wheel_forces[0]),
+                round(mecanum_sample.wheel_forces[1]),
+                round(mecanum_sample.wheel_forces[2]),
+                round(mecanum_sample.wheel_forces[3]),
             ],
         }
     }
