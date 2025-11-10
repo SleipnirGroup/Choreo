@@ -83,13 +83,14 @@ jobs:
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.5
+        if: false
       - name: Cargo test
         run: cargo test
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
           RUSTC_WRAPPER: sccache
-          SCCACHE_GHA_ENABLED: true
+          SCCACHE_GHA_ENABLED: "false"
 
       - name: Package artifacts (Windows x86_64)
         if: matrix.artifact-name == 'Windows-x86_64'
