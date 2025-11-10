@@ -50,7 +50,6 @@ function converter(unit: "meter" | "foot" | "inch"): (value: number) => number {
 }
 
 export default class CustomFieldImage extends Component<Props, State> {
-  
   render() {
     const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
     const conversion = converter(

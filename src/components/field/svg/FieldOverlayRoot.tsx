@@ -30,7 +30,6 @@ import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
-import FieldImage2025 from "./fields/FieldImage2025";
 import * as FieldDimensions from "./fields/FieldDimensions";
 import JSONFieldImage from "./fields/JSONFieldImage";
 
@@ -241,7 +240,13 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                {<JSONFieldImage opacity={100} imageHeightPx={520} imageWidthPx={1060}></JSONFieldImage>}
+                {
+                  <JSONFieldImage
+                    opacity={100}
+                    imageHeightPx={520}
+                    imageWidthPx={1060}
+                  ></JSONFieldImage>
+                }
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
