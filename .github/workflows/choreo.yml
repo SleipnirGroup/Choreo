@@ -89,7 +89,6 @@ jobs:
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
-          RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: "false"
 
       - name: Package artifacts (Windows x86_64)

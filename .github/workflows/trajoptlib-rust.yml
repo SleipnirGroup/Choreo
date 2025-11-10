@@ -62,18 +62,18 @@ jobs:
         working-directory: trajoptlib
         env:
           SCCACHE_GHA_ENABLED: "false"
-          RUSTC_WRAPPER: "sccache"
+          
 
       - run: cargo build --example differential
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
         env:
           SCCACHE_GHA_ENABLED: "false"
-          RUSTC_WRAPPER: "sccache"
+          
 
       - run: cargo build --example swerve
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
         env:
           SCCACHE_GHA_ENABLED: "false"
-          RUSTC_WRAPPER: "sccache"
+          
