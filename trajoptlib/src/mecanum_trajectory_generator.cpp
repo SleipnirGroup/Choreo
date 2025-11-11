@@ -306,7 +306,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
       auto f = F.at(index).at(module_index);
 
-      // |F|₂² <= F_max^2
+      // |F|₂² <= Fₘₐₓ²
       problem.subject_to(f * f <= max_force * max_force);
     }
 
