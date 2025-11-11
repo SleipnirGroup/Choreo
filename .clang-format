@@ -51,6 +51,9 @@ AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
+AttributeMacros:
+  - EXPORT_TEMPLATE_DECLARE
+  - EXPORT_TEMPLATE_DEFINE
 BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: Both
@@ -96,25 +99,28 @@ EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
-IncludeBlocks:   Regroup
+IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex:           '^<ext/.*\.h>'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^<.*\.h>'
-    Priority:        1
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^<.*'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '.*'
-    Priority:        3
-    SortPriority:    0
-    CaseSensitive:   false
-IncludeIsMainRegex: '([-_](test|unittest))?$'
+  # C standard library headers
+  #
+  # https://en.cppreference.com/w/cpp/header:
+  #  * C compatibility headers
+  #  * Special C compatibility headers
+  #  * Empty C headers
+  #  * Meaningless C headers
+  #  * Unsupported C headers
+  - Regex:        '^<(assert\.h|ctype\.h|errno\.h|fenv\.h|float\.h|inttypes\.h|limits\.h|locale\.h|math\.h|setjmp\.h|signal\.h|stdarg\.h|stddef\.h|stdint\.h|stdio\.h|stdlib\.h|string\.h|time\.h|uchar\.h|wchar\.h|wctype\.h|stdatomic\.h|ccomplex|complex\.h|ctgmath|tgmath\.h|ciso646|cstdalign|cstdbool|iso646\.h|stdalign\.h|stdbool\.h|stdatomic\.h|stdnoreturn\.h|threads\.h)>'
+    Priority:     1
+  # C++ standard library headers (lowercase and underscores with no .h suffix)
+  - Regex:        '^<[a-z_]+>'
+    Priority:     2
+  # Other library headers (angle brackets)
+  - Regex:        '^<.*'
+    Priority:     3
+  # Project headers (double quotes)
+  - Regex:        '^".*'
+    Priority:     4
+IncludeIsMainRegex: '(Test|_test)?$'
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false
 IndentCaseBlocks: false
@@ -203,7 +209,7 @@ RequiresClausePosition: OwnLine
 RequiresExpressionIndentation: OuterScope
 SeparateDefinitionBlocks: Leave
 ShortNamespaceLines: 1
-SortIncludes:    false
+SortIncludes: true
 SortJavaStaticImport: Before
 SortUsingDeclarations: LexicographicNumeric
 SpaceAfterCStyleCast: false
