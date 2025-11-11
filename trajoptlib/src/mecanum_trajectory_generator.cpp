@@ -156,32 +156,32 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     }
   }
   slp::Variable<double> total_time = std::accumulate(dts.begin(), dts.end(), slp::Variable<double>{0.0});
-  
-  // Penalty: ∫(v²ω²)dt 
+
+  // Penalty: ∫(v²ω²)dt
   const double separation_penalty_weight = 0.0;
   slp::Variable<double> separation_penalty = 0.0;
-  
+
   for (size_t index = 0; index < samp_tot; ++index) {
     auto v_trans_sq = vx.at(index) * vx.at(index) + vy.at(index) * vy.at(index);
     auto omega_sq = ω.at(index) * ω.at(index);
     separation_penalty += v_trans_sq * omega_sq * dts.at(index);
   }
-  
+
   // Penalty: ∫ω²dt
   const double rotation_penalty_weight = 0.0; // todo
   slp::Variable<double> rotation_penalty = 0.0;
   for (size_t index = 0; index < samp_tot; ++index) {
     rotation_penalty += ω.at(index) * ω.at(index) * dts.at(index);
   }
-  
-  slp::Variable<double> objective = total_time;
+
+  slp::Variable<double> cost = total_time;
   if (separation_penalty_weight > 0.0) {
-    objective += separation_penalty_weight * separation_penalty;
+    cost += separation_penalty_weight * separation_penalty;
   }
   if (rotation_penalty_weight > 0.0) {
-    objective += rotation_penalty_weight * rotation_penalty;
+    cost += rotation_penalty_weight * rotation_penalty;
   }
-  problem.minimize(objective);
+  problem.minimize(cost);
 
   // apply kinematics constraints
   for (size_t wpt_index = 0; wpt_index < wpt_cnt - 1; ++wpt_index) {
@@ -224,9 +224,9 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       problem.subject_to(ω_k_1 == ω_k + α_k * dt_k);
     }
   }
-  
+
   const double s = 1.0 / std::sqrt(2.0);
-  
+
   const double strafe_eff = path.drivetrain.strafe_efficiency;
   std::vector<double> fx_coeff = {s, s, s, s};
   std::vector<double> fy_coeff = {-s * strafe_eff, -s * strafe_eff, s * strafe_eff, s * strafe_eff};
@@ -239,7 +239,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     Fx_body.reserve(path.drivetrain.wheels.size());
     std::vector<slp::Variable<double>> Fy_body;
     Fy_body.reserve(path.drivetrain.wheels.size());
-    
+
     for (size_t i = 0; i < path.drivetrain.wheels.size(); ++i) {
       Fx_body.push_back(fx_coeff[i] * F.at(index)[i]);
       Fy_body.push_back(fy_coeff[i] * F.at(index)[i]);
@@ -256,7 +256,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       const auto& wheel_pos = path.drivetrain.wheels.at(module_index);
       // force vector in body frame
       Translation2v<double> F_body{Fx_body.at(module_index), Fy_body.at(module_index)};
-      
+
       // torque = r * F
       // computed in body frame: r_body * F_body
       τ_net += wheel_pos.cross(F_body);
@@ -269,19 +269,19 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       const auto& wheel_pos = path.drivetrain.wheels.at(module_index);
 
       double sign = (module_index == 2 || module_index == 3) ? 1.0 : -1.0;
-      
+
       // v_active_trans = vx * cos(45°) - vy * sin(45°) * sign
       // = (vx - vy * sign) / sqrt(2)
-      auto v_active_from_translation = 
+      auto v_active_from_translation =
           (v_wrt_robot.x() - v_wrt_robot.y() * sign) * s;
-      
+
       //   v_active_rot = v_rot_x*cos(45°) - v_rot_y*sin(45°)*sign
       //   = (-ω*y)*cos(45°) - (ω*x)*sin(45°)*sign
       //   = -ω*(y*cos(45°) + x*sin(45°)*sign)
       //   = -ω*(y + x*sign) / sqrt(2)
-      auto v_active_from_rotation = 
+      auto v_active_from_rotation =
           -ω.at(index) * (wheel_pos.y() + wheel_pos.x() * sign) * s;
-      
+
       auto v_wheel = v_active_from_translation + v_active_from_rotation;
 
       double max_wheel_velocity = path.drivetrain.wheel_radius *
@@ -296,8 +296,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
       // static force constraint prevents wheel slip
       double normal_force_per_wheel = path.drivetrain.mass / 4.0 * 9.8;
-      double static_friction_coef = (path.drivetrain.static_friction_coefficient > 0.0) 
-          ? path.drivetrain.static_friction_coefficient 
+      double static_friction_coef = (path.drivetrain.static_friction_coefficient > 0.0)
+          ? path.drivetrain.static_friction_coefficient
           : path.drivetrain.wheel_cof * 1.2;
       double max_static_friction_force = static_friction_coef * normal_force_per_wheel;
 
