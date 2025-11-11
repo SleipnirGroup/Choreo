@@ -13,13 +13,3 @@ modifiableFileExclude {
   \.ico$
   \.png$
 }
-
-includeOtherLibs {
-  ^fmt/
-  ^frc/
-  ^frc2/
-  ^gtest/
-  ^hal/
-  ^units/
-  ^wpi/
-}
