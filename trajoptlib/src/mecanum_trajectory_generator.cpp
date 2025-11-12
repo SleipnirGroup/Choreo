@@ -249,7 +249,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     auto Fx_net = std::accumulate(Fx_body.begin(), Fx_body.end(), slp::Variable<double>{0.0});
     auto Fy_net = std::accumulate(Fy_body.begin(), Fy_body.end(), slp::Variable<double>{0.0});
 
-    // solve for net torque
+    // Solve for net torque
     slp::Variable<double> τ_net = 0.0;
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
