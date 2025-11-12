@@ -257,8 +257,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       // force vector in body frame
       Translation2v<double> F_body{Fx_body.at(module_index), Fy_body.at(module_index)};
 
-      // torque = r * F
-      // computed in body frame: r_body * F_body
+      // τ = r x F
+      // τ_body = r_body x F_body
       τ_net += wheel_pos.cross(F_body);
     }
 
