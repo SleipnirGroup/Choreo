@@ -67,7 +67,7 @@ struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
   std::vector<Translation2d> wheels;
 
   /**
-   * Gravity constant [m/s^2]
+   * Gravity constant [m/s²]
    */
   double gravity = 9.8;
 
