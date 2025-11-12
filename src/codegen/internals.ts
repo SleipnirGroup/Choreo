@@ -1,5 +1,5 @@
 import { DimensionName } from "../document/ExpressionStore";
-import { Expr, Variable } from "../document/2025/DocumentTypes";
+import { Expr } from "../document/2025/DocumentTypes";
 
 export interface UnitData {
   type: string;
