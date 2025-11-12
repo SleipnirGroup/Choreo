@@ -301,7 +301,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
           : path.drivetrain.wheel_cof * 1.2;
       double max_static_friction_force = static_friction_coef * normal_force_per_wheel;
 
-      // max force is limited by motor torque & static friction
+      // Max force is limited by motor torque and static friction
       double max_force = std::min(max_wheel_force, max_static_friction_force);
 
       auto f = F.at(index).at(module_index);
