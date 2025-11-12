@@ -270,8 +270,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
       double sign = (module_index == 2 || module_index == 3) ? 1.0 : -1.0;
 
-      // v_active_trans = vx * cos(45°) - vy * sin(45°) * sign
-      // = (vx - vy * sign) / sqrt(2)
+      // v_active_trans = v_x cos(45°) - v_y sin(45°) sign
+      // = (v_x − v_y sign) / √(2)
       auto v_active_from_translation =
           (v_wrt_robot.x() - v_wrt_robot.y() * sign) * s;
 
