@@ -64,7 +64,6 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
-import { genConstsFile } from "../codegen/genConstsFile";
 import { genVarsFile } from "../codegen/genVarsFile";
 
 export type OpenFilePayload = {
@@ -716,8 +715,7 @@ export async function newProject(promptForCodegen: boolean = true) {
     (Do this if you're switching to a new codebase)
     `
     : `
-    Choreo can now output Java files
-    containing variables and constants defined in the GUI.
+    Choreo can generate a java file with variables defined in the GUI.
     Select a folder to enable this feature?
     `;
   if (await ask(msg, { title: "Choreo", kind: "warning" })) {
@@ -808,16 +806,13 @@ export async function saveProject() {
       );
       let tasks = [Commands.writeProject(data)];
       if (javaRoot && packageName) {
-        const constsFile = genConstsFile(data, packageName);
-        const varsFile = genVarsFile(data, packageName);
         tasks = [
           ...tasks,
           Commands.writeRawFile(
-            constsFile,
-            javaRoot + packageName + "/ChoreoConsts.java"
-          ),
-          Commands.writeRawFile(
-            varsFile,
+            genVarsFile(
+              data,
+              packageName.replaceAll("/", ".").replaceAll("\\", ".")
+            ),
             javaRoot + packageName + "/ChoreoVars.java"
           )
         ];
@@ -851,6 +846,7 @@ export async function codeGenDialog() {
   }
   localStorage.setItem(LocalStorageKeys.JAVA_ROOT, splitPath[0] + "/java/");
   localStorage.setItem(LocalStorageKeys.CODE_GEN_PACKAGE, splitPath[1]);
+  await saveProject();
 }
 
 export async function disableCodegen() {

@@ -46,6 +46,7 @@ export function writeConst(
   variableName: string,
   dimension: DimensionName
 ): string {
+  variableName = variableName.replace(/\b(\w)/g, (char) => char.toLowerCase());
   const unitData = unitDataFrom(dimension);
   let val = typeof expr === "number" ? expr : expr.val;
   val = round(val, dimension === "MoI" ? 5 : 3);
@@ -53,10 +54,6 @@ export function writeConst(
     return `    public static final double ${variableName} = ${val};`;
   }
   return `    public static final ${unitData.type} ${variableName} = ${unitData.baseUnit}.of(${val});`;
-}
-
-export function writeVar(variable: Variable, name: string): string {
-  return writeConst(variable.var, name, variable.dimension);
 }
 
 export function round(val: number, digits: number) {
