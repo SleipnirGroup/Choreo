@@ -262,7 +262,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       τ_net += wheel_pos.cross(F_body);
     }
 
-    // power constraint
+    // Apply module power constraints
     auto v_wrt_robot = v_k.rotate_by(-θ_k);
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
