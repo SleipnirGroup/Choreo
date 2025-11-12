@@ -104,7 +104,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     dts.emplace_back(problem.decision_variable());
   }
 
-  // minimize total time
+  // Minimize total time
   const double s_init = 1.0 / std::sqrt(2.0);
   const double max_force =
       path.drivetrain.wheel_max_torque * 4 / path.drivetrain.wheel_radius * s_init;
