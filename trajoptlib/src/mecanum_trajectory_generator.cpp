@@ -128,7 +128,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
         dts.at(index).set_value(0.0);
       }
     } else {
-      // use initial_guess and Ns to find the dx, dy, dθ between wpts
+      // Use initial_guess and Ns to find the dx, dy, dθ between wpts
       const auto dx =
           initial_guess.x.at(sgmt_end) - initial_guess.x.at(sgmt_start);
       const auto dy =
