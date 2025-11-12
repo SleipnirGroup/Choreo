@@ -245,7 +245,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       Fy_body.push_back(fy_coeff[i] * F.at(index)[i]);
     }
 
-    // sum forces to get net body force
+    // Solve for net force
     auto Fx_net = std::accumulate(Fx_body.begin(), Fx_body.end(), slp::Variable<double>{0.0});
     auto Fy_net = std::accumulate(Fy_body.begin(), Fy_body.end(), slp::Variable<double>{0.0});
 
