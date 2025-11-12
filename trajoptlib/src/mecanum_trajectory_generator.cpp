@@ -275,10 +275,10 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       auto v_active_from_translation =
           (v_wrt_robot.x() - v_wrt_robot.y() * sign) * s;
 
-      //   v_active_rot = v_rot_x*cos(45°) - v_rot_y*sin(45°)*sign
-      //   = (-ω*y)*cos(45°) - (ω*x)*sin(45°)*sign
-      //   = -ω*(y*cos(45°) + x*sin(45°)*sign)
-      //   = -ω*(y + x*sign) / sqrt(2)
+      //   v_active_rot = v_rot_x cos(45°) − v_rot_y sin(45°) sign
+      //   = (−ωy) cos(45°) − (ωx) sin(45°) sign
+      //   = −ω(y cos(45°) + x sin(45°) sign)
+      //   = −ω(y + x sign) / √(2)
       auto v_active_from_rotation =
           -ω.at(index) * (wheel_pos.y() + wheel_pos.x() * sign) * s;
 
