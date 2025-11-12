@@ -63,8 +63,18 @@ struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
   double strafe_efficiency = 0.75;
 
   /// Translation of each wheel from the origin of the robot coordinate
-  /// system to the center of the wheel (m). 
+  /// system to the center of the wheel (m).
   std::vector<Translation2d> wheels;
+
+  /**
+   * Gravity constant [m/s^2]
+   */
+  double gravity = 9.8;
+
+  /**
+   * Safety factor to apply to static friction coefficient.
+   */
+  double wheel_static_friction_safety_factor = 1.2;
 };
 
 /**
