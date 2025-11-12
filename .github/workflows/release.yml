@@ -21,7 +21,7 @@ jobs:
           app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
           private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           fetch-depth: 0
