@@ -287,7 +287,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       double max_wheel_velocity = path.drivetrain.wheel_radius *
                                   path.drivetrain.wheel_max_angular_velocity;
 
-      // v^2 <= vmax^2
+      // v² ≤ vₘₐₓ²
       problem.subject_to(v_wheel * v_wheel <=
                          max_wheel_velocity * max_wheel_velocity);
 
