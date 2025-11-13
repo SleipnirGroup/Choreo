@@ -149,7 +149,7 @@ jobs:
         with:
           path: combiner/products/build/allOutputs
       - name: Flatten Artifacts
-        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
+        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
