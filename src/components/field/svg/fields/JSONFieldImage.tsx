@@ -2,8 +2,8 @@ import { Component } from "react";
 
 import { FtToM, InToM } from "../../../../util/UnitConversions";
 
-import defaultFieldJSON from "./OregonBunnybotsField2025.json";
-import defaultFieldImage from "./oregon-bunnybots-2025-field.png";
+import defaultFieldJSON from "./BunnybotsField2025MD.json";
+import defaultFieldImage from "./bunnybots-2025MD-field.png";
 
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 
