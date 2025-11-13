@@ -1,10 +1,11 @@
 {
   "game": "Borrow into the Void",
   "field-image": "bunnybots-2025MD-field.png",
+  "image-dimensions": [1280,647],
   "field-corners": {
-    "top-left": [18, 0],
-    "bottom-right": [1040, 518]
+    "top-left": [9, 9],
+    "bottom-right": [1271,638]
   },
-  "field-size": [54.5833333, 27.582021],
-  "field-unit": "foot"
+  "field-size": [648, 324],
+  "field-unit": "inch"
 }

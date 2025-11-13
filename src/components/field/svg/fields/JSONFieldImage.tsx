@@ -8,12 +8,7 @@ import defaultFieldImage from "./bunnybots-2025MD-field.png";
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 
 type Props = {
-  opacity: number;
-
-  imageWidthPx: number;
-
-  imageHeightPx: number;
-
+  opacity: number
   fieldJSON?: FieldJSON;
 };
 
@@ -29,7 +24,7 @@ export type FieldJSON = {
   game: string;
 
   "field-image": string;
-
+  "image-dimensions": [number, number],
   "field-corners": {
     "top-left": [number, number];
 
@@ -63,11 +58,7 @@ export default class CustomFieldImage extends Component<Props, State> {
     const pxToM = (px: number) => (px * fieldLengthM) / fieldLengthPx;
     console.log(pxToM, fieldWidthM / fieldWidthPx);
     const [leftM, bottomM] = [leftPx, bottomPx].map(pxToM);
-    const [fullLengthM, fullWidthM] = [
-      this.props.imageWidthPx,
-
-      this.props.imageHeightPx
-    ].map(pxToM);
+    const [fullLengthM, fullWidthM] = fieldJSON["image-dimensions"].map(pxToM);
 
     return (
       <g id="layer1" transform={"scale(1, -1)"}>
