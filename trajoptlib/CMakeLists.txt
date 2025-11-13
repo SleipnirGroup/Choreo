@@ -43,6 +43,9 @@ if(BUILD_TESTING)
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
         GIT_TAG v3.11.0
+        GIT_SHALLOW ON
+        EXCLUDE_FROM_ALL
+        SYSTEM
     )
     FetchContent_MakeAvailable(Catch2)
 endif()
@@ -56,14 +59,16 @@ set(BUILD_EXAMPLES OFF)
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    GIT_TAG v0.2.1
+    GIT_TAG v0.3.1
+    GIT_SHALLOW ON
+    SYSTEM
 )
 FetchContent_MakeAvailable(Sleipnir)
 
 set(BUILD_TESTING ${BUILD_TESTING_SAVE})
 set(BUILD_EXAMPLES ${BUILD_EXAMPLES_SAVE})
 
-target_link_libraries(TrajoptLib PUBLIC Sleipnir)
+target_link_libraries(TrajoptLib PUBLIC Sleipnir::Sleipnir)
 
 install(
     TARGETS TrajoptLib
