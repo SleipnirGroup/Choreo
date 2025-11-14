@@ -5,7 +5,6 @@ import {
   HolonomicPathStore,
   IHolonomicPathStore
 } from "./path/HolonomicPathStore";
-import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
 import { SavingState } from "./UIStateStore";
 
 export const PathListStore = types
@@ -122,6 +121,9 @@ export const PathListStore = types
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
+              const fieldSettings = env.fieldSettings();
+              const fieldLength = fieldSettings.fieldLength;
+              const fieldWidth = fieldSettings.fieldWidth;
               path.setName(usedName);
               path.params.addConstraint("StopPoint", true, "first");
               path.params.addConstraint("StopPoint", true, "last");
@@ -134,12 +136,12 @@ export const PathListStore = types
                   x: { exp: "0 m", val: 0.0 },
                   y: { exp: "0 m", val: 0.0 },
                   w: {
-                    exp: `${FieldDimensions.FIELD_LENGTH} m`,
-                    val: FieldDimensions.FIELD_LENGTH
+                    exp: `${fieldLength} m`,
+                    val: fieldLength
                   },
                   h: {
-                    exp: `${FieldDimensions.FIELD_WIDTH} m`,
-                    val: FieldDimensions.FIELD_WIDTH
+                    exp: `${fieldWidth} m`,
+                    val: fieldWidth
                   }
                 }
               );
