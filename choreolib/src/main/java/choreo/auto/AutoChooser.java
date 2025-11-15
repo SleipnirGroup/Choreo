@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -45,7 +46,7 @@ public class AutoChooser implements Sendable {
   private final HashMap<String, Supplier<Command>> autoRoutines =
       new HashMap<>(Map.of(NONE_NAME, Commands::none));
 
-  private String selected = NONE_NAME;
+  protected String selected = NONE_NAME;
   private String[] options = new String[] {NONE_NAME};
 
   private Optional<Alliance> allianceAtGeneration = Optional.empty();
@@ -175,7 +176,7 @@ public class AutoChooser implements Sendable {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.deferredProxy(() -> selectedCommand());
+    return Commands.deferredProxy(this::selectedCommand);
   }
 
   /**
@@ -187,7 +188,7 @@ public class AutoChooser implements Sendable {
    * @return The currently selected command.
    */
   public Command selectedCommand() {
-    if (RobotBase.isSimulation() && nameAtGeneration == NONE_NAME) {
+    if (RobotBase.isSimulation() && Objects.equals(nameAtGeneration, NONE_NAME)) {
       select(selected, true);
     }
     return generatedCommand;

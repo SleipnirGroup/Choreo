@@ -309,3 +309,45 @@ public class Robot extends TimedRobot {
     }
 }
 ```
+
+## AutoChooser for AdvantageKit Users
+Choreo's base `AutoChooser` does not support log replay. AdvantageKit users should instead copy-and-paste the code below, and use the `AutoChooserAK` class instead of the base `AutoChooser` class. 
+
+!!! tip
+    `AutoChooserAK` will automatically register the auto chooser to smart dashboard, meaning that
+    a manual `SmartDashboard.putData` call is no longer necessary.
+
+```java title="AutoChooserAK.java"
+package your.utilities.folder;
+
+import choreo.auto.AutoChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
+import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
+
+/** A variant of choreo's AutoChooser class that supports replay functionalities. */
+public class AutoChooserAK extends AutoChooser {
+    public AutoChooserAK(String name) {
+        var replayHandle = new LoggableInputs() {
+            @Override
+            public void toLog(LogTable table) {
+                table.put("selected", selected);
+            }
+
+            @Override
+            public void fromLog(LogTable table) {
+                selected = table.get("selected", NONE_NAME);
+            }
+        };
+        Logger.registerDashboardInput(new LoggedNetworkInput() {
+            @Override
+            public void periodic() {
+                Logger.processInputs(name, replayHandle);
+            }
+        });
+        SmartDashboard.putData(name, this);
+    }
+}
+```
