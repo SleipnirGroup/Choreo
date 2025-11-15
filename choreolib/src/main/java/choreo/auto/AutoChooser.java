@@ -202,7 +202,7 @@ public class AutoChooser implements Sendable {
    * @return The currently selected command.
    */
   public Command selectedCommand() {
-    if (RobotBase.isSimulation() && Objects.equals(nameAtGeneration, NONE_NAME)) {
+    if (RobotBase.isSimulation() && nameAtGeneration.equals(NONE_NAME)) {
       select(selected, true);
     }
     return generatedCommand;
