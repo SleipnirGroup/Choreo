@@ -320,32 +320,30 @@ Choreo's base `AutoChooser` does not support log replay. AdvantageKit users shou
 ```java title="AutoChooserAK.java"
 package your.utilities.folder;
 
-import choreo.auto.AutoChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
-import org.littletonrobotics.junction.networktables.LoggedNetworkInput;
 
-/** A variant of choreo's AutoChooser class that supports replay functionalities. */
-public class AutoChooserAK extends AutoChooser {
+public class AutoChooserAK extends AutoChooserImpl {
+    private String selected = NONE_NAME;
+    private final LoggableInputs replayHandle = new LoggableInputs() {
+        @Override
+        public void toLog(LogTable table) {
+            table.put("selected", selected);
+        }
+
+        @Override
+        public void fromLog(LogTable table) {
+            selected = table.get("selected", selected);
+        }
+    };
+
     public AutoChooserAK(String name) {
-        var replayHandle = new LoggableInputs() {
-            @Override
-            public void toLog(LogTable table) {
-                table.put("selected", selected);
-            }
-
-            @Override
-            public void fromLog(LogTable table) {
-                selected = table.get("selected", NONE_NAME);
-            }
-        };
-        Logger.registerDashboardInput(new LoggedNetworkInput() {
-            @Override
-            public void periodic() {
-                Logger.processInputs(name, replayHandle);
-            }
+        setOnSelectOverride(value -> {
+            selected = value;
+            Logger.processInputs(name, replayHandle);
+            return selected;
         });
         SmartDashboard.putData(name, this);
     }
