@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "choreo/Choreo.h"
+#include "choreo/Choreo.hpp"
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

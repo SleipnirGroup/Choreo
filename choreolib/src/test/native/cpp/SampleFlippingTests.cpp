@@ -6,9 +6,9 @@
 #include <units/force.h>
 #include <wpi/json.h>
 
-#include "choreo/trajectory/SwerveSample.h"
-#include "choreo/trajectory/Trajectory.h"
-#include "choreo/util/AllianceFlipperUtil.h"
+#include "choreo/trajectory/SwerveSample.hpp"
+#include "choreo/trajectory/Trajectory.hpp"
+#include "choreo/util/AllianceFlipperUtil.hpp"
 
 using namespace choreo;
 

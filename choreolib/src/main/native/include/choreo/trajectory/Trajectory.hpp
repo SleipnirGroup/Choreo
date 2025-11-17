@@ -13,10 +13,10 @@
 #include <units/time.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/DifferentialSample.h"
-#include "choreo/trajectory/EventMarker.h"
-#include "choreo/trajectory/SwerveSample.h"
-#include "choreo/trajectory/TrajectorySample.h"
+#include "choreo/trajectory/DifferentialSample.hpp"
+#include "choreo/trajectory/EventMarker.hpp"
+#include "choreo/trajectory/SwerveSample.hpp"
+#include "choreo/trajectory/TrajectorySample.hpp"
 
 namespace choreo {
 

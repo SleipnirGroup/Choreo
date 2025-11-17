@@ -20,7 +20,7 @@
 #include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/util/AllianceFlipperUtil.h"
+#include "choreo/util/AllianceFlipperUtil.hpp"
 
 namespace choreo {
 
@@ -285,4 +285,4 @@ void from_json(const wpi::json& json, DifferentialSample& trajectorySample);
 
 }  // namespace choreo
 
-#include "choreo/trajectory/struct/DifferentialSampleStruct.h"
+#include "choreo/trajectory/struct/DifferentialSampleStruct.hpp"
