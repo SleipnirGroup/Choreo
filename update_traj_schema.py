@@ -72,8 +72,6 @@ TRAJ_SCHEMA_VERSION = {version}""",
 
 namespace choreo {{
 
-[[deprecated("Use kTrajSchemaVersion.")]]
-inline constexpr uint32_t kTrajSpecVersion = {version};
 inline constexpr uint32_t kTrajSchemaVersion = {version};
 
 }}  // namespace choreo""",
