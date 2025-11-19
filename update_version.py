@@ -41,28 +41,28 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        relative_path=Path("choreolib/ChoreoLib2026.json"),
         version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        relative_path=Path("choreolib/ChoreoLib2026.json"),
         version_path=["javaDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        relative_path=Path("choreolib/ChoreoLib2026.json"),
         version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
         relative_path=Path("src-tauri/tauri.conf.json"),
-        version_path=["package", "version"],
+        version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
         relative_path=Path("src-tauri/tauri.conf.json"),
-        version_path=["tauri", "windows", 0, "title"],
+        version_path=["app", "windows", 0, "title"],
         file_format="json2",
         prefix="Choreo v",
     ),
@@ -91,9 +91,9 @@ def update_version(version: str) -> None:
     # Formats:
     #
     # v2024.2.3-193-g869a3ef
-    # v2025.0.0
-    # v2025.0.0-alpha-1
-    # v2025.0.0-beta-2
+    # v2026.0.0
+    # v2026.0.0-alpha-1
+    # v2026.0.0-beta-2
     m = re.search(
         r"""
         ^v

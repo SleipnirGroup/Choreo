@@ -434,7 +434,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "choreo"
-version = "2025.0.3"
+version = "2026.0.0-beta.1"
 dependencies = [
  "built",
  "choreo-core",
@@ -456,7 +456,7 @@ dependencies = [
 
 [[package]]
 name = "choreo-cli"
-version = "2025.0.3"
+version = "2026.0.0-beta.1"
 dependencies = [
  "choreo-core",
  "clap",
@@ -466,7 +466,7 @@ dependencies = [
 
 [[package]]
 name = "choreo-core"
-version = "2025.0.3"
+version = "2026.0.0-beta.1"
 dependencies = [
  "dashmap",
  "fastrand",

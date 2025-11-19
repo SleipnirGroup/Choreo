@@ -8,7 +8,13 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
+    "targets": [
+      "appimage",
+      "deb",
+      "dmg",
+      "nsis",
+      "rpm"
+    ],
     "macOS": {
       "minimumSystemVersion": "14.5",
       "signingIdentity": "-"
@@ -21,10 +27,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["../target/choreo-cli"]
+    "externalBin": [
+      "../target/choreo-cli"
+    ]
   },
   "productName": "Choreo",
-  "version": "2025.0.3",
+  "version": "2026.0.0-beta-1",
   "identifier": "org.sleipnirgroup",
   "plugins": {},
   "app": {
@@ -33,13 +41,15 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2025.0.3",
+        "title": "Choreo v2026.0.0-beta-1",
         "width": 1200,
         "height": 800
       }
     ],
     "security": {
-      "capabilities": ["main-capability"],
+      "capabilities": [
+        "main-capability"
+      ],
       "csp": null
     }
   }
