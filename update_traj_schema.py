@@ -84,7 +84,7 @@ def update_version(version: int) -> None:
     for location in LOCATIONS:
         file_path = Path(__file__).parent / location.relative_path
 
-        with open(file_path, "w") as f:
+        with open(file_path, mode="w", newline="\n") as f:
             f.write(location.template(version))
             f.write("\n")
 

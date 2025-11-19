@@ -116,7 +116,7 @@ def update_version(version: str) -> None:
         if location.file_format == "json2" or location.file_format == "json4":
             import json
 
-            with open(file_path, "r") as f:
+            with open(file_path, mode="r", newline="\n") as f:
                 data = json.load(f)
             og = data
             version_str = (
@@ -133,13 +133,13 @@ def update_version(version: str) -> None:
                     f"Version path not found: {location.version_path} in {location.relative_path}"
                 )
                 raise e
-            with open(file_path, "w") as f:
+            with open(file_path, mode="w", newline="\n") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
                 f.write("\n")
         elif location.file_format == "toml":
             import tomlkit
 
-            with open(file_path, "r") as f:
+            with open(file_path, mode="r", newline="\n") as f:
                 data = tomlkit.load(f)
             og = data
             version_str = (
@@ -156,7 +156,7 @@ def update_version(version: str) -> None:
                     f"Version path not found: {location.version_path} in {location.relative_path}"
                 )
                 raise e
-            with open(file_path, "w") as f:
+            with open(file_path, mode="w", newline="\n") as f:
                 tomlkit.dump(og, f)
         else:
             raise ValueError(f"Unsupported file format: {location.file_format}")
