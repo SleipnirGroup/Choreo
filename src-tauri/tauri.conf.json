@@ -8,13 +8,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "appimage",
-      "deb",
-      "dmg",
-      "nsis",
-      "rpm"
-    ],
+    "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
     "macOS": {
       "minimumSystemVersion": "14.5",
       "signingIdentity": "-"
@@ -27,9 +21,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": [
-      "../target/choreo-cli"
-    ]
+    "externalBin": ["../target/choreo-cli"]
   },
   "productName": "Choreo",
   "version": "2026.0.0-beta-1",
@@ -47,9 +39,7 @@
       }
     ],
     "security": {
-      "capabilities": [
-        "main-capability"
-      ],
+      "capabilities": ["main-capability"],
       "csp": null
     }
   }

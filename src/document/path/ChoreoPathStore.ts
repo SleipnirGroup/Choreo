@@ -1,6 +1,11 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { ChoreoPath, Constraint, Expr, Waypoint } from "../schema/DocumentTypes";
+import {
+  ChoreoPath,
+  Constraint,
+  Expr,
+  Waypoint
+} from "../schema/DocumentTypes";
 import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
 import {
   ConstraintStore,
