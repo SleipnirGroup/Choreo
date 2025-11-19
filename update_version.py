@@ -7,6 +7,7 @@ simply run `python update_version.py <version>` to update the version in the fil
 """
 
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Literal
@@ -160,6 +161,7 @@ def update_version(version: str) -> None:
                 tomlkit.dump(og, f)
         else:
             raise ValueError(f"Unsupported file format: {location.file_format}")
+    subprocess.check_call(["pnpm", "prettier", "--write", "."])
 
 
 if __name__ == "__main__":
