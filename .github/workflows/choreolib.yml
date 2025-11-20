@@ -142,7 +142,7 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: ChoreoLib-json
-          path: choreolib/ChoreoLib2026.json
+          path: choreolib/ChoreoLib2026Beta.json
 
   build-python:
     name: Python

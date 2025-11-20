@@ -42,17 +42,17 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2026.json"),
+        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
         version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2026.json"),
+        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
         version_path=["javaDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2026.json"),
+        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
         version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),

@@ -5,10 +5,9 @@
   "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
   "frcYear": "2026",
   "mavenUrls": [
-    "https://lib.choreo.autos/dep",
-    "https://repo1.maven.org/maven2"
+    "https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/"
   ],
-  "jsonUrl": "https://lib.choreo.autos/dep/ChoreoLib2026Beta.json",
+  "jsonUrl": "https://choreo.autos/lib/ChoreoLib2026Beta.json",
   "javaDependencies": [
     {
       "groupId": "choreo",
