@@ -6,9 +6,9 @@ A utility script to update the field dimensions in multiple files.
 simply run `python update_field_dimensions.py <length_meters> <width_meters>` to update the dimensions in the files.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
 
 
 @dataclass(frozen=True, slots=True)

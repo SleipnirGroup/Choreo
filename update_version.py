@@ -8,9 +8,10 @@ simply run `python update_version.py <version>` to update the version in the fil
 
 import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
