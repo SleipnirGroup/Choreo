@@ -30,7 +30,7 @@
   "dependencies": {
     "@emotion/styled": "^11.14.1",
     "@fontsource-variable/roboto-mono": "^5.2.8",
-    "@fontsource/roboto": "^5.2.8",
+    "@fontsource/roboto": "^5.2.9",
     "@hello-pangea/dnd": "^18.0.1",
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.5",
@@ -54,20 +54,19 @@
     "@tauri-apps/cli": "2.9.4",
     "@types/d3": "^7.4.3",
     "@types/node": "^24.10.1",
-    "@types/react": "^19.2.4",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.46.4",
-    "@typescript-eslint/parser": "^8.46.4",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-react": "^7.37.5",
     "fs": "^0.0.2",
-    "glob": "^11.0.3",
     "globals": "^16.5.0",
     "prettier": "3.6.2",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2"
+    "vite": "^7.2.4"
   }
 }
