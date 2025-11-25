@@ -4,6 +4,7 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import {
   DifferentialSample,
+  MecanumSample,
   ProgressUpdate,
   Project,
   PROJECT_SCHEMA_VERSION,
@@ -60,7 +61,8 @@ function itemType(
 }
 export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
-  "Differential"
+  "Differential",
+  "Mecanum"
 ]);
 
 // When adding new fields, consult
@@ -238,11 +240,13 @@ export const DocumentStore = types
               rawEvent as Event<ProgressUpdate>;
             if (
               event.payload!.type === "swerveTrajectory" ||
-              event.payload!.type === "differentialTrajectory"
+              event.payload!.type === "differentialTrajectory" ||
+              event.payload!.type === "mecanumTrajectory"
             ) {
               const samples = event.payload.update as
                 | SwerveSample[]
-                | DifferentialSample[];
+                | DifferentialSample[]
+                | MecanumSample[];
               pathStore.ui.setInProgressTrajectory(samples);
               pathStore.ui.setIterationNumber(
                 pathStore.ui.generationIterationNumber + 1
