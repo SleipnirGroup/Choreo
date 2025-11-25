@@ -17,17 +17,15 @@ use crate::{
 
 use super::intervals::guess_control_interval_counts;
 
-macro_rules! add_transformers (
-    ($module:ident : $($transformer:ident),*) => {
-        mod $module;
-        $(pub use $module::$transformer;)*
-    };
-);
-
-add_transformers!(interval_count: IntervalCountSetter);
-add_transformers!(drivetrain_and_bumpers: DrivetrainAndBumpersSetter);
-add_transformers!(constraints: ConstraintSetter);
-add_transformers!(callback: CallbackSetter);
+// Add transformers
+mod callback;
+mod constraints;
+mod drivetrain_and_bumpers;
+mod interval_count;
+pub use callback::CallbackSetter;
+pub use constraints::ConstraintSetter;
+pub use drivetrain_and_bumpers::DrivetrainAndBumpersSetter;
+pub use interval_count::IntervalCountSetter;
 
 pub(super) struct GenerationContext {
     pub project: ProjectFile,
