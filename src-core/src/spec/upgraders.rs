@@ -5,9 +5,9 @@ use crate::ChoreoResult;
 mod traj_file {
     use crate::spec::trajectory::Trajectory;
     use crate::{
+        ChoreoResult,
         file_management::upgrader::{Editor, Upgrader},
         spec::TRAJ_SCHEMA_VERSION,
-        ChoreoResult,
     };
     use std::sync::LazyLock;
 
@@ -49,9 +49,9 @@ mod traj_file {
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
-        use crate::spec::TRAJ_SCHEMA_VERSION;
         use crate::ChoreoResult;
+        use crate::spec::TRAJ_SCHEMA_VERSION;
+        use crate::spec::upgraders::testing_shared::{FileType, get_contents};
 
         use crate::spec::trajectory::TrajectoryFile;
         // beta6 is technically the same spec as 0, but with a string version number
@@ -148,9 +148,9 @@ mod project_file {
     use std::sync::LazyLock;
 
     use crate::{
+        ChoreoResult,
         file_management::upgrader::{Editor, Upgrader},
         spec::{Expr, PROJECT_SCHEMA_VERSION},
-        ChoreoResult,
     };
 
     pub(super) static PROJECT_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
@@ -169,9 +169,9 @@ mod project_file {
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
-        use crate::spec::PROJECT_SCHEMA_VERSION;
         use crate::ChoreoResult;
+        use crate::spec::PROJECT_SCHEMA_VERSION;
+        use crate::spec::upgraders::testing_shared::{FileType, get_contents};
 
         use crate::spec::project::ProjectFile;
 

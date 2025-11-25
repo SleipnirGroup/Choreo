@@ -8,11 +8,11 @@ use trajoptlib::{
 };
 
 use crate::{
+    ChoreoResult,
     spec::{
         project::ProjectFile,
         trajectory::{DriveType, Parameters, Sample, TrajectoryFile},
     },
-    ChoreoResult,
 };
 
 use super::intervals::guess_control_interval_counts;
@@ -224,8 +224,8 @@ fn postprocess(
         .zip(snapshot.waypoints.iter_mut())
         .zip(counts_vec)
         .for_each(|w| {
-            w.0 .0.intervals = w.1;
-            w.0 .1.intervals = w.1;
+            w.0.0.intervals = w.1;
+            w.0.1.intervals = w.1;
         });
     // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
     // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
