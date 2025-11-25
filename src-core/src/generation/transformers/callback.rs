@@ -1,8 +1,8 @@
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
 use crate::{
-    generation::generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK},
     ResultExt,
+    generation::generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK},
 };
 
 use super::{

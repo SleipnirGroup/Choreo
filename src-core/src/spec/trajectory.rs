@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
+use super::{Expr, SnapshottableType, upgraders::upgrade_traj_file};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -289,11 +289,7 @@ pub enum Sample {
 fn round(input: f64) -> f64 {
     let factor = 100_000.0;
     let result = (input * factor).round() / factor;
-    if result == -0.0 {
-        0.0
-    } else {
-        result
-    }
+    if result == -0.0 { 0.0 } else { result }
 }
 
 impl From<&SwerveTrajectorySample> for Sample {

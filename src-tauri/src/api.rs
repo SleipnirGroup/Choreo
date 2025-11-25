@@ -4,14 +4,14 @@ use std::path::PathBuf;
 
 use crate::tauri::TauriResult;
 use choreo_core::{
-    file_management::{self, create_diagnostic_file, get_log_lines, WritingResources},
+    ChoreoError, ChoreoResult,
+    file_management::{self, WritingResources, create_diagnostic_file, get_log_lines},
     generation::remote::RemoteGenerationResources,
     spec::{
+        Expr, OpenFilePayload,
         project::{ProjectFile, RobotConfig},
         trajectory::TrajectoryFile,
-        Expr, OpenFilePayload,
     },
-    ChoreoError, ChoreoResult,
 };
 use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt, FilePath};
