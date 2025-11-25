@@ -21,7 +21,7 @@ choreo-core = { path = "../src-core" }
 current_platform = "0.2.0"
 dirs = "6.0.0"
 nu-ansi-term = "0.50.3"
-open = "5.3.2"
+open = "5.3.3"
 regex = "1.12.2"
 serde = "1.0"
 serde_json = "1.0"
