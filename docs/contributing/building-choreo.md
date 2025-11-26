@@ -86,8 +86,8 @@ target = "<target>"
 
 ### Formatters/linters
 
-- [wpiformat](https://pypi.org/project/wpiformat/): C++ formatter
-- [spotless](https://github.com/diffplug/spotless): Java formatter
+- [eslint](https://eslint.org/): JavaScript/TypeScript linter
 - [prettier](https://prettier.io/): JavaScript/TypeScript formatter
 - [rustfmt](https://github.com/rust-lang/rustfmt): Rust formatter
-- [eslint](https://eslint.org/): JavaScript/TypeScript linter
+- [spotless](https://github.com/diffplug/spotless): Java formatter
+- [wpiformat](https://pypi.org/project/wpiformat/): C++ formatter
