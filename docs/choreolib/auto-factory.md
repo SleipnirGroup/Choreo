@@ -311,7 +311,7 @@ public class Robot extends TimedRobot {
 ```
 
 ## AutoChooser for AdvantageKit Users
-Choreo's base `AutoChooser` does not support log replay. AdvantageKit users should instead copy-and-paste the code below, and use the `AutoChooserAK` class instead of the base `AutoChooser` class. 
+Choreo's base `AutoChooser` does not support log replay. AdvantageKit users should instead copy-and-paste the code below, and use the `AutoChooserAK` class instead of the base `AutoChooser` class.
 
 !!! tip
     `AutoChooserAK` will automatically register the auto chooser to smart dashboard, meaning that
