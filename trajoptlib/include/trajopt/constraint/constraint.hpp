@@ -37,16 +37,17 @@ namespace trajopt {
  * 3. Add the type to Constraint's std::variant type list
  */
 template <typename T>
-concept ConstraintType = requires(
-    T self, slp::Problem& problem, const Pose2v& pose,
-    const Translation2v& linear_velocity, const slp::Variable& angular_velocity,
-    const Translation2v& linear_acceleration,
-    const slp::Variable& angular_acceleration) {
-  {
-    self.apply(problem, pose, linear_velocity, angular_velocity,
-               linear_acceleration, angular_acceleration)
-  } -> std::same_as<void>;
-};
+concept ConstraintType =
+    requires(T self, slp::Problem<double>& problem, const Pose2v<double>& pose,
+             const Translation2v<double>& linear_velocity,
+             const slp::Variable<double>& angular_velocity,
+             const Translation2v<double>& linear_acceleration,
+             const slp::Variable<double>& angular_acceleration) {
+      {
+        self.apply(problem, pose, linear_velocity, angular_velocity,
+                   linear_acceleration, angular_acceleration)
+      } -> std::same_as<void>;
+    };
 
 static_assert(ConstraintType<AngularVelocityMaxMagnitudeConstraint>);
 static_assert(ConstraintType<LaneConstraint>);

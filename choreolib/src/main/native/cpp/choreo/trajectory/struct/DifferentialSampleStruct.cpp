@@ -2,6 +2,8 @@
 
 #include "choreo/trajectory/struct/DifferentialSampleStruct.h"
 
+#include <wpi/struct/Struct.h>
+
 namespace {
 constexpr size_t kTimestampOff = 0;
 constexpr size_t kXOff = kTimestampOff + 8;
@@ -12,7 +14,8 @@ constexpr size_t kVrOff = kVlOff + 8;
 constexpr size_t kOmegaOff = kVrOff + 8;
 constexpr size_t kAlOff = kOmegaOff + 8;
 constexpr size_t kArOff = kAlOff + 8;
-constexpr size_t kFlOff = kArOff + 8;
+constexpr size_t kAlphaOff = kArOff + 8;
+constexpr size_t kFlOff = kAlphaOff + 8;
 constexpr size_t kFrOff = kFlOff + 8;
 }  // namespace
 
@@ -31,6 +34,8 @@ choreo::DifferentialSample StructType::Unpack(std::span<const uint8_t> data) {
           wpi::UnpackStruct<double, kAlOff>(data)},
       units::meters_per_second_squared_t{
           wpi::UnpackStruct<double, kArOff>(data)},
+      units::radians_per_second_squared_t{
+          wpi::UnpackStruct<double, kAlphaOff>(data)},
       units::newton_t{wpi::UnpackStruct<double, kFlOff>(data)},
       units::newton_t{wpi::UnpackStruct<double, kFrOff>(data)}};
 }
@@ -46,6 +51,7 @@ void StructType::Pack(std::span<uint8_t> data,
   wpi::PackStruct<kOmegaOff>(data, value.omega.value());
   wpi::PackStruct<kAlOff>(data, value.al.value());
   wpi::PackStruct<kArOff>(data, value.ar.value());
+  wpi::PackStruct<kAlphaOff>(data, value.alpha.value());
   wpi::PackStruct<kFlOff>(data, value.fl.value());
   wpi::PackStruct<kFrOff>(data, value.fr.value());
 }

@@ -82,7 +82,7 @@ int main() {
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 2: {}", slp::to_message(solution.error()));
+      std::println("Error in example 3: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
   }

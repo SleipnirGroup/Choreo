@@ -108,16 +108,16 @@ TEST(SampleFlippingTest, SwerveSample) {
 
 TEST(SampleFlippingTest, ZeroDifferentialSample) {
   try {
-    DifferentialSample sample{0_s,      0_m,   0_m,         0_rad,
-                              0_mps,    0_mps, 0_rad_per_s, 0_mps_sq,
-                              0_mps_sq, 0_N,   0_N};
+    DifferentialSample sample{
+        0_s,         0_m,      0_m,      0_rad,          0_mps, 0_mps,
+        0_rad_per_s, 0_mps_sq, 0_mps_sq, 0_rad_per_s_sq, 0_N,   0_N};
     DifferentialSample mirrored2024{
         0_s,         util::fieldLength - 0_m,
         0_m,         units::radian_t{std::numbers::pi} - 0_rad,
         0_mps,       0_mps,
         0_rad_per_s, 0_mps_sq,
-        0_mps_sq,    0_N,
-        0_N};
+        0_mps_sq,    0_rad_per_s_sq,
+        0_N,         0_N};
     DifferentialSample rotated2022{0_s,
                                    util::fieldLength - 0_m,
                                    util::fieldWidth - 0_m,
@@ -127,6 +127,7 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
                                    0_rad_per_s,
                                    0_mps_sq,
                                    0_mps_sq,
+                                   0_rad_per_s_sq,
                                    0_N,
                                    0_N};
 
@@ -140,16 +141,16 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
 
 TEST(SampleFlippingTest, DifferentialSample) {
   try {
-    DifferentialSample sample{0_s,      1_m,   2_m,         3_rad,
-                              4_mps,    5_mps, 6_rad_per_s, 7_mps_sq,
-                              8_mps_sq, 9_N,   10_N};
+    DifferentialSample sample{
+        0_s,         1_m,      2_m,      3_rad,          4_mps, 5_mps,
+        6_rad_per_s, 7_mps_sq, 8_mps_sq, 9_rad_per_s_sq, 10_N,  11_N};
     DifferentialSample mirrored2024{
         0_s,          util::fieldLength - 1_m,
         2_m,          units::radian_t{std::numbers::pi} - 3_rad,
         5_mps,        4_mps,
         -6_rad_per_s, 8_mps_sq,
-        7_mps_sq,     10_N,
-        9_N};
+        7_mps_sq,     -9_rad_per_s_sq,
+        11_N,         10_N};
     DifferentialSample rotated2022{0_s,
                                    util::fieldLength - 1_m,
                                    util::fieldWidth - 2_m,
@@ -159,8 +160,9 @@ TEST(SampleFlippingTest, DifferentialSample) {
                                    6_rad_per_s,
                                    7_mps_sq,
                                    8_mps_sq,
-                                   9_N,
-                                   10_N};
+                                   9_rad_per_s_sq,
+                                   10_N,
+                                   11_N};
 
     ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
     ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);
