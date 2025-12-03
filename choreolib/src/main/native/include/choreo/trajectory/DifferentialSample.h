@@ -24,33 +24,28 @@
 
 namespace choreo {
 
-/**
- * A single differential drive robot sample in a Trajectory.
- */
+/// A single differential drive robot sample in a Trajectory.
 class DifferentialSample {
  public:
-  /**
-   * Constructs a DifferentialSample that is defaulted.
-   */
+  /// Constructs a DifferentialSample that is defaulted.
   constexpr DifferentialSample() = default;
 
-  /**
-   * Constructs a DifferentialSample with the specified parameters.
-   *
-   * @param timestamp The timestamp of this sample, relative to the beginning of
-   * the trajectory.
-   * @param x The X position of the sample
-   * @param y The Y position of the sample
-   * @param heading The heading of the sample, with 0 being in the +X direction.
-   * @param vl The velocity of the left wheels
-   * @param vr The velocity of the right wheels
-   * @param omega The chassis angular velocity
-   * @param al The acceleration of the left wheels
-   * @param ar The acceleration of the left wheels
-   * @param alpha The chassis angular acceleration
-   * @param fl The force of the left wheels
-   * @param fr The force of the right wheels
-   */
+  /// Constructs a DifferentialSample with the specified parameters.
+  ///
+  /// @param timestamp The timestamp of this sample, relative to the beginning
+  ///     of the trajectory.
+  /// @param x The X position of the sample
+  /// @param y The Y position of the sample
+  /// @param heading The heading of the sample, with 0 being in the +X
+  ///     direction.
+  /// @param vl The velocity of the left wheels
+  /// @param vr The velocity of the right wheels
+  /// @param omega The chassis angular velocity
+  /// @param al The acceleration of the left wheels
+  /// @param ar The acceleration of the left wheels
+  /// @param alpha The chassis angular acceleration
+  /// @param fl The force of the left wheels
+  /// @param fr The force of the right wheels
   constexpr DifferentialSample(units::second_t timestamp, units::meter_t x,
                                units::meter_t y, units::radian_t heading,
                                units::meters_per_second_t vl,
@@ -73,37 +68,29 @@ class DifferentialSample {
         fl{fl},
         fr{fr} {}
 
-  /**
-   * Gets the timestamp of the DifferentialSample.
-   *
-   * @return The timestamp.
-   */
+  /// Gets the timestamp of the DifferentialSample.
+  ///
+  /// @return The timestamp.
   units::second_t GetTimestamp() const { return timestamp; }
 
-  /**
-   * Gets the Pose2d of the DifferentialSample.
-   *
-   * @return The pose.
-   */
+  /// Gets the Pose2d of the DifferentialSample.
+  ///
+  /// @return The pose.
   constexpr frc::Pose2d GetPose() const {
     return frc::Pose2d{x, y, frc::Rotation2d{heading}};
   }
 
-  /**
-   * Gets the field-relative chassis speeds of the DifferentialSample.
-   *
-   * @return The field-relative chassis speeds.
-   */
+  /// Gets the field-relative chassis speeds of the DifferentialSample.
+  ///
+  /// @return The field-relative chassis speeds.
   constexpr frc::ChassisSpeeds GetChassisSpeeds() const {
     return frc::ChassisSpeeds{(vl + vr) / 2.0, 0_mps, omega};
   }
 
-  /**
-   * Returns the current sample offset by a the time offset passed in.
-   *
-   * @param timeStampOffset time to move sample by
-   * @return DifferentialSample that is moved forward by the offset
-   */
+  /// Returns the current sample offset by a the time offset passed in.
+  ///
+  /// @param timeStampOffset time to move sample by
+  /// @return DifferentialSample that is moved forward by the offset
   constexpr DifferentialSample OffsetBy(units::second_t timeStampOffset) const {
     return DifferentialSample{timestamp + timeStampOffset,
                               x,
@@ -119,13 +106,11 @@ class DifferentialSample {
                               fr};
   }
 
-  /**
-   * Interpolates between endValue and this by t
-   *
-   * @param endValue the end interpolated value
-   * @param t time to move sample by
-   * @return the interpolated sample
-   */
+  /// Interpolates between endValue and this by t
+  ///
+  /// @param endValue the end interpolated value
+  /// @param t time to move sample by
+  /// @return the interpolated sample
   DifferentialSample Interpolate(const DifferentialSample& endValue,
                                  units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
@@ -185,12 +170,10 @@ class DifferentialSample {
     };
   }
 
-  /**
-   * Returns the current sample flipped based on the field year.
-   *
-   * @tparam Year The field year.
-   * @return DifferentialSample that is flipped based on the field layout.
-   */
+  /// Returns the current sample flipped based on the field year.
+  ///
+  /// @tparam Year The field year.
+  /// @return DifferentialSample that is flipped based on the field layout.
   template <int Year = util::kDefaultYear>
   constexpr DifferentialSample Flipped() const {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
@@ -205,12 +188,10 @@ class DifferentialSample {
     }
   }
 
-  /**
-   * DifferentialSample equality operator.
-   *
-   * @param other The other DifferentialSample.
-   * @return True for equality.
-   */
+  /// DifferentialSample equality operator.
+  ///
+  /// @param other The other DifferentialSample.
+  /// @return True for equality.
   constexpr bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
 

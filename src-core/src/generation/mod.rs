@@ -3,9 +3,7 @@ pub mod heading;
 pub mod intervals;
 pub mod remote;
 
-/**
- * A port of `WPILib`'s MathUtil.inputModulus
- */
+/// A port of `WPILib`'s MathUtil.inputModulus
 #[must_use]
 pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 {
     let mut val = input;
@@ -22,9 +20,7 @@ pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 
     val
 }
 
-/**
- * A port of `WPILib`'s MathUtil.angleModulus
- */
+/// A port of `WPILib`'s MathUtil.angleModulus
 #[must_use]
 pub fn angle_modulus(input: f64) -> f64 {
     use std::f64::consts::PI;

@@ -14,22 +14,18 @@
 
 namespace trajopt {
 
-/**
- * Point-at constraint.
- *
- * Specifies a point on the field at which the robot should point.
- */
+/// Point-at constraint.
+///
+/// Specifies a point on the field at which the robot should point.
 class TRAJOPT_DLLEXPORT PointAtConstraint {
  public:
-  /**
-   * Constructs a PointAtConstraint.
-   *
-   * @param field_point Field point.
-   * @param heading_tolerance The allowed robot heading tolerance (radians).
-   *     Must be nonnegative.
-   * @param flip False points at the field point while true points away from the
-   *     field point.
-   */
+  /// Constructs a PointAtConstraint.
+  ///
+  /// @param field_point Field point.
+  /// @param heading_tolerance The allowed robot heading tolerance (radians).
+  ///     Must be nonnegative.
+  /// @param flip False points at the field point while true points away from
+  ///     the field point.
   explicit PointAtConstraint(Translation2d field_point,
                              double heading_tolerance, bool flip = false)
       : m_field_point{std::move(field_point)},
@@ -38,16 +34,14 @@ class TRAJOPT_DLLEXPORT PointAtConstraint {
     assert(m_heading_tolerance >= 0.0);
   }
 
-  /**
-   * Applies this constraint to the given problem.
-   *
-   * @param problem The optimization problem.
-   * @param pose The robot's pose.
-   * @param linear_velocity The robot's linear velocity.
-   * @param angular_velocity The robot's angular velocity.
-   * @param linear_acceleration The robot's linear acceleration.
-   * @param angular_acceleration The robot's angular acceleration.
-   */
+  /// Applies this constraint to the given problem.
+  ///
+  /// @param problem The optimization problem.
+  /// @param pose The robot's pose.
+  /// @param linear_velocity The robot's linear velocity.
+  /// @param angular_velocity The robot's angular velocity.
+  /// @param linear_acceleration The robot's linear acceleration.
+  /// @param angular_acceleration The robot's angular acceleration.
   void apply(
       slp::Problem<double>& problem, const Pose2v<double>& pose,
       [[maybe_unused]] const Translation2v<double>& linear_velocity,

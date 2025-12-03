@@ -22,35 +22,30 @@
 
 namespace choreo {
 
-/**
- * A single swerve robot sample in a Trajectory.
- */
+/// A single swerve robot sample in a Trajectory.
 class SwerveSample {
  public:
-  /**
-   * Constructs a SwerveSample that is defaulted.
-   */
+  /// Constructs a SwerveSample that is defaulted.
   constexpr SwerveSample() = default;
 
-  /**
-   * Constructs a SwerveSample with the specified parameters.
-   *
-   * @param timestamp The timestamp of this sample, relative to the beginning of
-   * the trajectory.
-   * @param x The X position of the sample
-   * @param y The Y position of the sample
-   * @param heading The heading of the sample, with 0 being in the +X direction.
-   * @param vx The velocity of the sample in the X direction.
-   * @param vy The velocity of the sample in the Y direction.
-   * @param omega The angular velocity of the sample.
-   * @param ax The acceleration of the sample in the X direction.
-   * @param ay The acceleration of the sample in the Y direction.
-   * @param alpha The angular acceleration of the sample.
-   * @param moduleForcesX The force on each swerve module in the X direction.
-   *   Module forces appear in the following order: [FL, FR, BL, BR].
-   * @param moduleForcesY The force on each swerve module in the Y direction.
-   *   Module forces appear in the following order: [FL, FR, BL, BR].
-   */
+  /// Constructs a SwerveSample with the specified parameters.
+  ///
+  /// @param timestamp The timestamp of this sample, relative to the beginning
+  ///     of the trajectory.
+  /// @param x The X position of the sample
+  /// @param y The Y position of the sample
+  /// @param heading The heading of the sample, with 0 being in the +X
+  ///     direction.
+  /// @param vx The velocity of the sample in the X direction.
+  /// @param vy The velocity of the sample in the Y direction.
+  /// @param omega The angular velocity of the sample.
+  /// @param ax The acceleration of the sample in the X direction.
+  /// @param ay The acceleration of the sample in the Y direction.
+  /// @param alpha The angular acceleration of the sample.
+  /// @param moduleForcesX The force on each swerve module in the X direction.
+  ///     Module forces appear in the following order: [FL, FR, BL, BR].
+  /// @param moduleForcesY The force on each swerve module in the Y direction.
+  ///     Module forces appear in the following order: [FL, FR, BL, BR].
   constexpr SwerveSample(units::second_t timestamp, units::meter_t x,
                          units::meter_t y, units::radian_t heading,
                          units::meters_per_second_t vx,
@@ -74,37 +69,29 @@ class SwerveSample {
         moduleForcesX{moduleForcesX},
         moduleForcesY{moduleForcesY} {}
 
-  /**
-   * Gets the timestamp of the SwerveSample.
-   *
-   * @return The timestamp.
-   */
+  /// Gets the timestamp of the SwerveSample.
+  ///
+  /// @return The timestamp.
   constexpr units::second_t GetTimestamp() const { return timestamp; }
 
-  /**
-   * Gets the Pose2d of the SwerveSample.
-   *
-   * @return The pose.
-   */
+  /// Gets the Pose2d of the SwerveSample.
+  ///
+  /// @return The pose.
   constexpr frc::Pose2d GetPose() const {
     return frc::Pose2d{x, y, frc::Rotation2d{heading}};
   }
 
-  /**
-   * Gets the field-relative chassis speeds of the SwerveSample.
-   *
-   * @return The field-relative chassis speeds.
-   */
+  /// Gets the field-relative chassis speeds of the SwerveSample.
+  ///
+  /// @return The field-relative chassis speeds.
   constexpr frc::ChassisSpeeds GetChassisSpeeds() const {
     return frc::ChassisSpeeds{vx, vy, omega};
   }
 
-  /**
-   * Returns the current sample flipped based on the field year.
-   *
-   * @tparam Year The field year.
-   * @return SwerveSample that is flipped based on the field layout.
-   */
+  /// Returns the current sample flipped based on the field year.
+  ///
+  /// @tparam Year The field year.
+  /// @return SwerveSample that is flipped based on the field layout.
   template <int Year = util::kDefaultYear>
   constexpr SwerveSample Flipped() const {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
@@ -147,12 +134,10 @@ class SwerveSample {
     }
   }
 
-  /**
-   * Returns the current sample offset by a the time offset passed in.
-   *
-   * @param timeStampOffset time to move sample by
-   * @return SwerveSample that is moved forward by the offset
-   */
+  /// Returns the current sample offset by a the time offset passed in.
+  ///
+  /// @param timeStampOffset time to move sample by
+  /// @return SwerveSample that is moved forward by the offset
   constexpr SwerveSample OffsetBy(units::second_t timeStampOffset) const {
     return SwerveSample{timestamp + timeStampOffset,
                         x,
@@ -168,13 +153,11 @@ class SwerveSample {
                         moduleForcesY};
   }
 
-  /**
-   * Interpolates between endValue and this by t
-   *
-   * @param endValue the end interpolated value
-   * @param t time to move sample by
-   * @return the interpolated sample
-   */
+  /// Interpolates between endValue and this by t
+  ///
+  /// @param endValue the end interpolated value
+  /// @param t time to move sample by
+  /// @return the interpolated sample
   constexpr SwerveSample Interpolate(const SwerveSample& endValue,
                                      units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
@@ -212,12 +195,10 @@ class SwerveSample {
                         interpolatedForcesY};
   }
 
-  /**
-   * SwerveSample equality operator.
-   *
-   * @param other The other SwerveSample.
-   * @return True for equality.
-   */
+  /// SwerveSample equality operator.
+  ///
+  /// @param other The other SwerveSample.
+  /// @return True for equality.
   constexpr bool operator==(const SwerveSample& other) const {
     constexpr double epsilon = 1e-6;
 

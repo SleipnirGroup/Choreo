@@ -13,32 +13,26 @@
 
 namespace trajopt {
 
-/**
- * Linear velocity max magnitude inequality constraint.
- */
+/// Linear velocity max magnitude inequality constraint.
 class TRAJOPT_DLLEXPORT LinearVelocityMaxMagnitudeConstraint {
  public:
-  /**
-   * Constructs a LinearVelocityMaxMagnitudeConstraint.
-   *
-   * @param max_magnitude The maximum linear velocity magnitude. Must be
-   *     nonnegative.
-   */
+  /// Constructs a LinearVelocityMaxMagnitudeConstraint.
+  ///
+  /// @param max_magnitude The maximum linear velocity magnitude. Must be
+  ///     nonnegative.
   explicit LinearVelocityMaxMagnitudeConstraint(double max_magnitude)
       : m_max_magnitude{max_magnitude} {
     assert(max_magnitude >= 0.0);
   }
 
-  /**
-   * Applies this constraint to the given problem.
-   *
-   * @param problem The optimization problem.
-   * @param pose The robot's pose.
-   * @param linear_velocity The robot's linear velocity.
-   * @param angular_velocity The robot's angular velocity.
-   * @param linear_acceleration The robot's linear acceleration.
-   * @param angular_acceleration The robot's angular acceleration.
-   */
+  /// Applies this constraint to the given problem.
+  ///
+  /// @param problem The optimization problem.
+  /// @param pose The robot's pose.
+  /// @param linear_velocity The robot's linear velocity.
+  /// @param angular_velocity The robot's angular velocity.
+  /// @param linear_acceleration The robot's linear acceleration.
+  /// @param angular_acceleration The robot's angular acceleration.
   void apply(
       slp::Problem<double>& problem,
       [[maybe_unused]] const Pose2v<double>& pose,
