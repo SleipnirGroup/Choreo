@@ -65,6 +65,7 @@ import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 import { genVarsFile } from "../codegen/genVarsFile";
+import { genTrajNamesFile } from "../codegen/genTrajNamesFile";
 
 export type OpenFilePayload = {
   name: string;
@@ -741,6 +742,7 @@ export async function renamePath(uuid: string, newName: string) {
       await Commands.renameTrajectory(trajectory.serialize, newName)
         .finally(() => doc.pathlist.paths.get(uuid)?.setName(newName))
         .catch(tracing.error);
+      await genJavaFiles();
     }
   } else {
     doc.pathlist.paths.get(uuid)?.setName(newName);
@@ -799,24 +801,7 @@ export function codegenEnabled() {
 export async function saveProject() {
   if (await canSave()) {
     try {
-      const data = doc.serializeChor();
-      const javaRoot = localStorage.getItem(LocalStorageKeys.JAVA_ROOT);
-      const packageName = localStorage.getItem(
-        LocalStorageKeys.CODE_GEN_PACKAGE
-      );
-      let tasks = [Commands.writeProject(data)];
-      if (javaRoot && packageName) {
-        tasks = [
-          ...tasks,
-          Commands.writeRawFile(
-            genVarsFile(
-              data,
-              packageName.replaceAll("/", ".").replaceAll("\\", ".")
-            ),
-            javaRoot + packageName + "/ChoreoVars.java"
-          )
-        ];
-      }
+      const tasks = [Commands.writeProject(doc.serializeChor()), genJavaFiles()]; 
       await toast.promise(Promise.all(tasks), {
         error: {
           render(toastProps: ToastContentProps<ChoreoError>) {
@@ -833,6 +818,28 @@ export async function saveProject() {
     tracing.warn("Can't save project, skipping");
     uiState.setProjectSavingState(SavingState.NO_LOCATION);
   }
+}
+
+export async function genJavaFiles() {
+  const data = doc.serializeChor();
+  const javaRoot = localStorage.getItem(LocalStorageKeys.JAVA_ROOT);
+  const packageName = localStorage.getItem(
+    LocalStorageKeys.CODE_GEN_PACKAGE
+  );
+  if (!javaRoot || !packageName) {
+    return;
+  }
+  const javaPackage = packageName.replaceAll("/", ".").replaceAll("\\", ".");
+  await Promise.all([
+    Commands.writeRawFile(
+      genVarsFile(data, javaPackage),
+      javaRoot + packageName + "/ChoreoVars.java"
+    ),
+    Commands.writeRawFile(
+      genTrajNamesFile(doc.pathlist.pathNames, javaPackage),
+      javaRoot + packageName + "/ChoreoTrajNames.java"
+    )
+  ])
 }
 
 export async function codeGenDialog() {
@@ -887,7 +894,7 @@ export async function saveProjectDialog() {
 
   await saveProject();
 
-  //save all trajectories
+  // save all trajectories
   await writeAllTrajectories();
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
