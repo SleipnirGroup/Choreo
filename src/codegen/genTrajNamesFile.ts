@@ -39,7 +39,7 @@ function sanitizeTrajName(trajName: string): string {
       newName.charAt(i + 1).toUpperCase() +
       newName.slice(i + 2);
   }
-  newName = newName.replaceAll(/[^\w|^\$]/g, "");
+  newName = newName.replaceAll(/[^\w|^$]/g, "");
   if (newName.charAt(0).match(/[0-9]/)) {
     newName = "_" + newName;
   }
