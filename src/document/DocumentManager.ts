@@ -801,7 +801,10 @@ export function codegenEnabled() {
 export async function saveProject() {
   if (await canSave()) {
     try {
-      const tasks = [Commands.writeProject(doc.serializeChor()), genJavaFiles()]; 
+      const tasks = [
+        Commands.writeProject(doc.serializeChor()),
+        genJavaFiles()
+      ];
       await toast.promise(Promise.all(tasks), {
         error: {
           render(toastProps: ToastContentProps<ChoreoError>) {
@@ -823,9 +826,7 @@ export async function saveProject() {
 export async function genJavaFiles() {
   const data = doc.serializeChor();
   const javaRoot = localStorage.getItem(LocalStorageKeys.JAVA_ROOT);
-  const packageName = localStorage.getItem(
-    LocalStorageKeys.CODE_GEN_PACKAGE
-  );
+  const packageName = localStorage.getItem(LocalStorageKeys.CODE_GEN_PACKAGE);
   if (!javaRoot || !packageName) {
     return;
   }
@@ -839,7 +840,7 @@ export async function genJavaFiles() {
       genTrajNamesFile(doc.pathlist.pathNames, javaPackage),
       javaRoot + packageName + "/ChoreoTrajNames.java"
     )
-  ])
+  ]);
 }
 
 export async function codeGenDialog() {

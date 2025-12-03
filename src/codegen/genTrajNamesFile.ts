@@ -1,5 +1,7 @@
-
-export function genTrajNamesFile(trajNames: string[], packageName: string): string {
+export function genTrajNamesFile(
+  trajNames: string[],
+  packageName: string
+): string {
   const out: string[] = [];
   const usedVarNames: Record<string, number> = {};
   out.push(`package ${packageName};`);
@@ -32,7 +34,10 @@ function sanitizeTrajName(trajName: string): string {
   for (let i = 0; i < newName.length; i++) {
     const char = newName.charAt(i);
     if (char !== " ") continue;
-    newName = newName.slice(0, i) + newName.charAt(i+1).toUpperCase() + newName.slice(i+2);
+    newName =
+      newName.slice(0, i) +
+      newName.charAt(i + 1).toUpperCase() +
+      newName.slice(i + 2);
   }
   newName = newName.replaceAll(/[^\w|^\$]/g, "");
   if (newName.charAt(0).match(/[0-9]/)) {

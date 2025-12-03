@@ -1,5 +1,5 @@
-import { Project, Expr } from "../document/2025/DocumentTypes";
 import { DimensionName } from "../document/ExpressionStore";
+import { Expr, Project } from "../document/schema/DocumentTypes";
 
 // Generates a Java file containing variables defined in the choreo GUI.
 export function genVarsFile(project: Project, packageName: string): string {
@@ -64,7 +64,7 @@ function asVariable(
 // Transforms choreo unit dimensions into WPILib dimensions, as well as their default units.
 function unitDataFrom(
   choreoDimensionName: DimensionName
-): { type: string, baseUnit: string } | null {
+): { type: string; baseUnit: string } | null {
   switch (choreoDimensionName) {
     case "LinAcc":
       return {
