@@ -14,11 +14,9 @@ use crate::ChoreoResult;
 use crate::spec::project::ProjectFile;
 use crate::spec::trajectory::{ConstraintScope, Sample, TrajectoryFile};
 
-/**
- * A [`OnceLock`] is a synchronization primitive that can be written to
- * once. Used here to create a read-only static reference to the sender,
- * even though the sender can't be constructed in a static context.
- */
+/// A [`OnceLock`] is a synchronization primitive that can be written to once.
+/// Used here to create a read-only static reference to the sender, even though
+/// the sender can't be constructed in a static context.
 pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpdate>> =
     OnceLock::new();
 

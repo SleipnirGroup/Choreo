@@ -11,28 +11,22 @@
 
 namespace trajopt {
 
-/**
- * Linear velocity direction equality constraint.
- */
+/// Linear velocity direction equality constraint.
 class TRAJOPT_DLLEXPORT LinearVelocityDirectionConstraint {
  public:
-  /**
-   * Constructs a LinearVelocityDirectionConstraint.
-   *
-   * @param angle The angle (radians).
-   */
+  /// Constructs a LinearVelocityDirectionConstraint.
+  ///
+  /// @param angle The angle (radians).
   explicit LinearVelocityDirectionConstraint(double angle) : m_angle{angle} {}
 
-  /**
-   * Applies this constraint to the given problem.
-   *
-   * @param problem The optimization problem.
-   * @param pose The robot's pose.
-   * @param linear_velocity The robot's linear velocity.
-   * @param angular_velocity The robot's angular velocity.
-   * @param linear_acceleration The robot's linear acceleration.
-   * @param angular_acceleration The robot's angular acceleration.
-   */
+  /// Applies this constraint to the given problem.
+  ///
+  /// @param problem The optimization problem.
+  /// @param pose The robot's pose.
+  /// @param linear_velocity The robot's linear velocity.
+  /// @param angular_velocity The robot's angular velocity.
+  /// @param linear_acceleration The robot's linear acceleration.
+  /// @param angular_acceleration The robot's angular acceleration.
   void apply(
       [[maybe_unused]] slp::Problem<double>& problem,
       [[maybe_unused]] const Pose2v<double>& pose,

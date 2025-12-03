@@ -17,9 +17,7 @@
 
 namespace trajopt {
 
-/**
- * A differential drivetrain physical model.
- */
+/// A differential drivetrain physical model.
 struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   /// The mass of the robot (kg).
   double mass;
@@ -43,9 +41,7 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   double trackwidth;
 };
 
-/**
- * The holonomic trajectory optimization solution.
- */
+/// The holonomic trajectory optimization solution.
 struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// Times between samples.
   std::vector<double> dt;
@@ -86,9 +82,7 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   std::vector<double> Fr;
 };
 
-/**
- * Differential trajectory sample.
- */
+/// Differential trajectory sample.
 class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
  public:
   /// The timestamp.
@@ -129,21 +123,19 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
 
   DifferentialTrajectorySample() = default;
 
-  /**
-   * Construct a DifferentialTrajectorySample.
-   *
-   * @param timestamp The timestamp.
-   * @param x The x coordinate. @param y The y coordinate.
-   * @param heading The heading.
-   * @param velocity_l The left wheel velocity.
-   * @param velocity_r The right wheel velocity.
-   * @param angular_velocity The chassis angular velocity.
-   * @param acceleration_l The left wheel acceleration.
-   * @param acceleration_r The right wheel acceleration.
-   * @param angular_acceleration The chassis angular acceleration.
-   * @param force_l The left wheel force.
-   * @param force_r The right wheel force.
-   */
+  /// Construct a DifferentialTrajectorySample.
+  ///
+  /// @param timestamp The timestamp.
+  /// @param x The x coordinate. @param y The y coordinate.
+  /// @param heading The heading.
+  /// @param velocity_l The left wheel velocity.
+  /// @param velocity_r The right wheel velocity.
+  /// @param angular_velocity The chassis angular velocity.
+  /// @param acceleration_l The left wheel acceleration.
+  /// @param acceleration_r The right wheel acceleration.
+  /// @param angular_acceleration The chassis angular acceleration.
+  /// @param force_l The left wheel force.
+  /// @param force_r The right wheel force.
   DifferentialTrajectorySample(double timestamp, double x, double y,
                                double heading, double velocity_l,
                                double velocity_r, double angular_velocity,
@@ -164,9 +156,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
         force_r{force_r} {}
 };
 
-/**
- * Differential trajectory.
- */
+/// Differential trajectory.
 class TRAJOPT_DLLEXPORT DifferentialTrajectory {
  public:
   /// Trajectory samples.
@@ -174,20 +164,16 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
 
   DifferentialTrajectory() = default;
 
-  /**
-   * Construct a DifferentialTrajectory from samples.
-   *
-   * @param samples The samples.
-   */
+  /// Construct a DifferentialTrajectory from samples.
+  ///
+  /// @param samples The samples.
   explicit DifferentialTrajectory(
       std::vector<DifferentialTrajectorySample> samples)
       : samples{std::move(samples)} {}
 
-  /**
-   * Construct a DifferentialTrajectory from a swerve solution.
-   *
-   * @param solution The swerve solution.
-   */
+  /// Construct a DifferentialTrajectory from a swerve solution.
+  ///
+  /// @param solution The swerve solution.
   explicit DifferentialTrajectory(const DifferentialSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
@@ -202,43 +188,33 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
   }
 };
 
-/**
- * A differential drive path.
- */
+/// A differential drive path.
 using DifferentialPath = Path<DifferentialDrivetrain, DifferentialSolution>;
 
-/**
- * Builds a differential drive path using information about how the robot
- * must travel through a series of waypoints. This path can be converted
- * to a trajectory using DifferentialTrajectoryGenerator.
- */
+/// Builds a differential drive path using information about how the robot
+/// must travel through a series of waypoints. This path can be converted
+/// to a trajectory using DifferentialTrajectoryGenerator.
 using DifferentialPathBuilder =
     PathBuilder<DifferentialDrivetrain, DifferentialSolution>;
 
-/**
- * This trajectory generator class contains functions to generate
- * time-optimal trajectories for differential drivetrain types.
- */
+/// This trajectory generator class contains functions to generate
+/// time-optimal trajectories for differential drivetrain types.
 class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
  public:
-  /**
-   * Construct a new swerve trajectory optimization problem.
-   *
-   * @param path_builder The path builder.
-   * @param handle An identifier for state callbacks.
-   */
+  /// Construct a new swerve trajectory optimization problem.
+  ///
+  /// @param path_builder The path builder.
+  /// @param handle An identifier for state callbacks.
   explicit DifferentialTrajectoryGenerator(DifferentialPathBuilder path_builder,
                                            int64_t handle = 0);
 
-  /**
-   * Generates an optimal trajectory.
-   *
-   * This function may take a long time to complete.
-   *
-   * @param diagnostics Enables diagnostic prints.
-   * @return Returns a differential trajectory on success, or the solver's exit
-   *     status on failure.
-   */
+  /// Generates an optimal trajectory.
+  ///
+  /// This function may take a long time to complete.
+  ///
+  /// @param diagnostics Enables diagnostic prints.
+  /// @return Returns a differential trajectory on success, or the solver's exit
+  ///     status on failure.
   std::expected<DifferentialSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
 

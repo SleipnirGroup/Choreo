@@ -24,21 +24,17 @@
 
 namespace choreo {
 
-/**
- * A class that handles loading choreo and caching choreo trajectories.
- */
+/// A class that handles loading choreo and caching choreo trajectories.
 class Choreo {
  public:
-  /**
-   * Load a trajectory from the deploy directory. Choreolib expects .traj files
-   * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
-   *
-   * @tparam SampleType The type of samples in the trajectory.
-   * @param trajectoryName The path name in Choreo, which matches the file name
-   *   in the deploy directory, file extension is optional.
-   * @return The loaded trajectory, or `empty std::optional` if the trajectory
-   *   could not be loaded.
-   */
+  /// Load a trajectory from the deploy directory. Choreolib expects .traj files
+  /// to be placed in src/main/deploy/choreo/[trajectoryName].traj.
+  ///
+  /// @tparam SampleType The type of samples in the trajectory.
+  /// @param trajectoryName The path name in Choreo, which matches the file name
+  ///     in the deploy directory, file extension is optional.
+  /// @return The loaded trajectory, or `empty std::optional` if the trajectory
+  ///     could not be loaded.
   template <TrajectorySample SampleType>
   static std::optional<Trajectory<SampleType>> LoadTrajectory(
       std::string_view trajectoryName) {
@@ -71,16 +67,14 @@ class Choreo {
     return {};
   }
 
-  /**
-   * Load a trajectory from a string.
-   *
-   * @tparam SampleType The type of samples in the trajectory.
-   * @param trajectoryJsonString The JSON string.
-   * @param trajectoryName The path name in Choreo, which matches the file name
-   *   in the deploy directory, file extension is optional.
-   * @return The loaded trajectory, or `empty std::optional` if the trajectory
-   *   could not be loaded.
-   */
+  /// Load a trajectory from a string.
+  ///
+  /// @tparam SampleType The type of samples in the trajectory.
+  /// @param trajectoryJsonString The JSON string.
+  /// @param trajectoryName The path name in Choreo, which matches the file name
+  ///     in the deploy directory, file extension is optional.
+  /// @return The loaded trajectory, or `empty std::optional` if the trajectory
+  ///     could not be loaded.
   template <TrajectorySample SampleType>
   static std::optional<Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
@@ -101,26 +95,22 @@ class Choreo {
     return trajectory;
   }
 
-  /**
-   * A utility for caching loaded trajectories. This allows for loading
-   * trajectories only once, and then reusing them.
-   */
+  /// A utility for caching loaded trajectories. This allows for loading
+  /// trajectories only once, and then reusing them.
   template <TrajectorySample SampleType>
   class TrajectoryCache {
    public:
-    /**
-     * Load a trajectory from the deploy directory. Choreolib expects .traj
-     * files to be placed in src/main/deploy/choreo/[trajectoryName].traj.
-     *
-     * This method will cache the loaded trajectory and reused it if it is
-     * requested again.
-     *
-     * @param trajectoryName the path name in Choreo, which matches the file
-     *     name in the deploy directory, file extension is optional.
-     * @return the loaded trajectory, or `empty std::optional` if the trajectory
-     *     could not be loaded.
-     * @see Choreo#LoadTrajectory(std::string_view)
-     */
+    /// Load a trajectory from the deploy directory. Choreolib expects .traj
+    /// files to be placed in src/main/deploy/choreo/[trajectoryName].traj.
+    ///
+    /// This method will cache the loaded trajectory and reused it if it is
+    /// requested again.
+    ///
+    /// @param trajectoryName the path name in Choreo, which matches the file
+    ///     name in the deploy directory, file extension is optional.
+    /// @return the loaded trajectory, or `empty std::optional` if the
+    ///     trajectory could not be loaded.
+    /// @see Choreo#LoadTrajectory(std::string_view)
     static std::optional<Trajectory<SampleType>> LoadTrajectory(
         std::string_view trajectoryName) {
       if (cache.contains(std::string{trajectoryName})) {
@@ -132,21 +122,20 @@ class Choreo {
       }
     }
 
-    /**
-     * Load a section of a split trajectory from the deploy directory. Choreolib
-     * expects .traj files to be placed in
-     * src/main/deploy/choreo/[trajectoryName].traj.
-     *
-     * This method will cache the loaded trajectory and reused it if it is
-     * requested again. The trajectory that is split off of will also be cached.
-     *
-     * @param trajectoryName the path name in Choreo, which matches the file
-     *     name in the deploy directory, file extension is optional.
-     * @param splitIndex the index of the split trajectory to load
-     * @return the loaded trajectory, or `empty std::optional` if the trajectory
-     *     could not be loaded.
-     * @see Choreo#LoadTrajectory(std::string_view)
-     */
+    /// Load a section of a split trajectory from the deploy directory.
+    /// Choreolib expects .traj files to be placed in
+    /// src/main/deploy/choreo/[trajectoryName].traj.
+    ///
+    /// This method will cache the loaded trajectory and reused it if it is
+    /// requested again. The trajectory that is split off of will also be
+    /// cached.
+    ///
+    /// @param trajectoryName the path name in Choreo, which matches the file
+    ///     name in the deploy directory, file extension is optional.
+    /// @param splitIndex the index of the split trajectory to load
+    /// @return the loaded trajectory, or `empty std::optional` if the
+    ///     trajectory could not be loaded.
+    /// @see Choreo#LoadTrajectory(std::string_view)
     static std::optional<Trajectory<SampleType>> LoadTrajectory(
         std::string_view trajectoryName, int splitIndex) {
       std::string key = fmt::format("{}.:.{}", trajectoryName, splitIndex);
@@ -168,9 +157,7 @@ class Choreo {
       return cache[key];
     }
 
-    /**
-     * Clears the trajectory cache.
-     */
+    /// Clears the trajectory cache.
     static void Clear() { cache.clear(); }
 
    private:
