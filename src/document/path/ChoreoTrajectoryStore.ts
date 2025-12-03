@@ -4,7 +4,7 @@ import {
   SampleType,
   type SwerveSample,
   Output
-} from "../2025/DocumentTypes";
+} from "../schema/DocumentTypes";
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/

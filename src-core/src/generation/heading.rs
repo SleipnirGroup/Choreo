@@ -2,9 +2,9 @@ use std::f64::consts::PI;
 
 use crate::generation::angle_modulus;
 use crate::izip;
+use crate::spec::Expr;
 use crate::spec::trajectory::ConstraintData::{MaxAngularVelocity, PointAt};
 use crate::spec::trajectory::{ConstraintIDX, ConstraintScope, TrajectoryFile};
-use crate::spec::Expr;
 use crate::{ChoreoError, ChoreoResult};
 
 // This should be used before sending to solver
