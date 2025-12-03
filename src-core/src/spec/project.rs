@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType};
+use super::{Expr, SnapshottableType, trajectory::DriveType, upgraders::upgrade_project_file};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {

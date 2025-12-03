@@ -1,5 +1,5 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { Trajectory } from "./2025/DocumentTypes";
+import { Trajectory } from "./schema/DocumentTypes";
 import { Env, genJavaFiles } from "./DocumentManager";
 import {
   HolonomicPathStore,

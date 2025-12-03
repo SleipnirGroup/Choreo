@@ -1,7 +1,7 @@
 #![allow(clippy::missing_errors_doc)]
 
-use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
+use std::sync::mpsc::{Receiver, Sender, channel};
 
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
@@ -10,9 +10,9 @@ use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
     TrajectoryFileGenerator,
 };
+use crate::ChoreoResult;
 use crate::spec::project::ProjectFile;
 use crate::spec::trajectory::{ConstraintScope, Sample, TrajectoryFile};
-use crate::ChoreoResult;
 
 /**
  * A [`OnceLock`] is a synchronization primitive that can be written to
@@ -100,10 +100,10 @@ fn set_initial_guess(trajectory: &mut TrajectoryFile) {
                 ConstraintScope::Both => valid_wpt || valid_sgmt,
             } {
                 not_initial_guess_wpt(trajectory, from_idx);
-                if let Some(to_idx) = to {
-                    if to_idx != from_idx {
-                        not_initial_guess_wpt(trajectory, to_idx);
-                    }
+                if let Some(to_idx) = to
+                    && to_idx != from_idx
+                {
+                    not_initial_guess_wpt(trajectory, to_idx);
                 }
             }
         }
@@ -118,12 +118,12 @@ pub fn generate(
     set_initial_guess(&mut trajectory_file);
     adjust_headings(&mut trajectory_file)?;
 
-    let mut gen = TrajectoryFileGenerator::new(chor, trajectory_file, handle);
+    let mut generator = TrajectoryFileGenerator::new(chor, trajectory_file, handle);
 
-    gen.add_omni_transformer::<IntervalCountSetter>();
-    gen.add_omni_transformer::<DrivetrainAndBumpersSetter>();
-    gen.add_omni_transformer::<ConstraintSetter>();
-    gen.add_omni_transformer::<CallbackSetter>();
+    generator.add_omni_transformer::<IntervalCountSetter>();
+    generator.add_omni_transformer::<DrivetrainAndBumpersSetter>();
+    generator.add_omni_transformer::<ConstraintSetter>();
+    generator.add_omni_transformer::<CallbackSetter>();
 
-    gen.generate()
+    generator.generate()
 }

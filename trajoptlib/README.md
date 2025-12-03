@@ -1,6 +1,6 @@
 # TrajoptLib
 
-![Build](https://github.com/SleipnirGroup/Choreo/actions/workflows/trajoptlib-cpp.yml/badge.svg)
+![Build](https://github.com/SleipnirGroup/Choreo/actions/workflows/trajoptlib.yml/badge.svg)
 
 This library is used to generate time-optimal trajectories for FRC robots.
 
@@ -19,7 +19,7 @@ Trajectory optimization works by mathematically formulating the problem of trave
 ### Dependencies
 
 * C++23 compiler
-  * On Windows 10 or greater, install [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) and select the C++ programming language during installation
+  * On Windows 11 or greater, install [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) and select the C++ programming language during installation
   * On Ubuntu 24.04 or greater, install GCC 14 via `sudo apt install g++-14`
   * On macOS 14 or greater, install the Xcode 15.3 command-line build tools via `xcode-select --install`
 * [CMake](https://cmake.org/download/) 3.21 or greater

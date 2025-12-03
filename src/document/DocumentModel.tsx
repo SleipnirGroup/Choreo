@@ -10,7 +10,7 @@ import {
   SampleType,
   SwerveSample,
   Trajectory
-} from "./2025/DocumentTypes";
+} from "./schema/DocumentTypes";
 import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 import { Variables } from "./ExpressionStore";

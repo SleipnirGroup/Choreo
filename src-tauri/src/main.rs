@@ -12,7 +12,7 @@ mod tauri;
 
 use std::fs;
 
-use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
+use choreo_core::generation::remote::{RemoteArgs, remote_generate_child};
 
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();

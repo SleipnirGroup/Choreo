@@ -1,7 +1,7 @@
 [package]
 name = "choreo"
-version = "2025.0.3"
-edition = "2021"
+version = "2026.0.0-beta.1"
+edition = "2024"
 description = """\
   A graphical tool for planning time-optimized trajectories for autonomous \
   mobile robots in the FIRST Robotics Competition.\
@@ -14,18 +14,18 @@ license = "BSD-3-Clause"
 
 [build-dependencies]
 built = { version = "0.8.0", features = ["chrono"] }
-tauri-build = { version = "2.5.1", features = [] }
+tauri-build = { version = "2.5.2", features = [] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
 current_platform = "0.2.0"
 dirs = "6.0.0"
 nu-ansi-term = "0.50.3"
-open = "5.3.2"
+open = "5.3.3"
 regex = "1.12.2"
 serde = "1.0"
 serde_json = "1.0"
-tauri = { version = "2.9.2", features = [ "devtools"] }
+tauri = { version = "2.9.3", features = [ "devtools"] }
 tauri-plugin-dialog = "2.4.2"
 tauri-plugin-fs = "2.4.4"
 tracing = "0.1.41"
