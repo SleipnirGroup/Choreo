@@ -795,7 +795,7 @@ export async function writeAllTrajectories() {
 }
 
 export function codegenEnabled() {
-  return localStorage.getItem(LocalStorageKeys.JAVA_ROOT) != null;
+  return doc.codegenroot != null;
 }
 
 export async function saveProject() {
@@ -824,42 +824,56 @@ export async function saveProject() {
 }
 
 export async function genJavaFiles() {
-  const data = doc.serializeChor();
-  const javaRoot = localStorage.getItem(LocalStorageKeys.JAVA_ROOT);
-  const packageName = localStorage.getItem(LocalStorageKeys.CODE_GEN_PACKAGE);
-  if (!javaRoot || !packageName) {
+  const relativePath = doc.codegenroot;
+  const codeGenPkg = doc.codeGenPackage;
+  if (!relativePath || !codeGenPkg) {
     return;
   }
-  const javaPackage = packageName.replaceAll("/", ".").replaceAll("\\", ".");
+  const rootPath = await path.join(
+    await Commands.getDeployRoot(),
+    relativePath
+  );
   await Promise.all([
     Commands.writeRawFile(
-      genVarsFile(data, javaPackage),
-      javaRoot + packageName + "/ChoreoVars.java"
+      genVarsFile(doc.serializeChor(), codeGenPkg),
+      rootPath + "/ChoreoVars.java"
     ),
     Commands.writeRawFile(
-      genTrajNamesFile(doc.pathlist.pathNames, javaPackage),
-      javaRoot + packageName + "/ChoreoTrajNames.java"
+      genTrajNamesFile(doc.pathlist.pathNames, codeGenPkg),
+      rootPath + "/ChoreoTrajNames.java"
     )
   ]);
 }
 
-export async function codeGenDialog() {
-  const filePath = await Commands.selectCodegenFolder();
-  const splitPath = filePath.split(path.sep() + "java" + path.sep());
-  if (splitPath.length === 1) {
-    toast.error(
-      'Invalid path: make sure your code generation root points to a "java" directory.'
-    );
-    return;
+function getRelativePath(from: string, to: string): string {
+  const fromParts = from.split(path.sep());
+  const toParts = to.split(path.sep());
+  let i = 0;
+  while (
+    i < fromParts.length &&
+    i < toParts.length &&
+    fromParts[i] === toParts[i]
+  ) {
+    i++;
   }
-  localStorage.setItem(LocalStorageKeys.JAVA_ROOT, splitPath[0] + "/java/");
-  localStorage.setItem(LocalStorageKeys.CODE_GEN_PACKAGE, splitPath[1]);
+  const backSteps = fromParts.slice(i).map(() => "..");
+  const forwardSteps = toParts.slice(i);
+  return [...backSteps, ...forwardSteps].join(path.sep());
+}
+
+export async function codeGenDialog() {
+  doc.setCodeGenRoot(
+    getRelativePath(
+      await Commands.getDeployRoot(),
+      await Commands.selectCodegenFolder()
+    )
+  );
   await saveProject();
+  toast.success("Choreo Codegen was enabled.");
 }
 
 export async function disableCodegen() {
-  localStorage.removeItem(LocalStorageKeys.JAVA_ROOT);
-  localStorage.removeItem(LocalStorageKeys.CODE_GEN_PACKAGE);
+  doc.setCodeGenRoot(null);
   toast.info("Choreo Codegen was disabled.");
 }
 

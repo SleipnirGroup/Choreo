@@ -151,6 +151,7 @@ pub struct ProjectFile {
     pub config: RobotConfig<Expr>,
     #[serde(default)]
     pub generation_features: Vec<String>,
+    pub codegenroot: Option<String>,
 }
 
 impl ProjectFile {
@@ -200,6 +201,7 @@ impl Default for ProjectFile {
                 differential_track_width: Expr::new("22 in", 0.2794 * 2.0),
             },
             generation_features: Vec::new(),
+            codegenroot: Option::None,
         }
     }
 }

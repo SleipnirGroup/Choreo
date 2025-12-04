@@ -64,6 +64,7 @@ export interface Project {
   version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
+  codegenroot: string | null;
 }
 
 export interface Waypoint<T extends ExprOrNumber> {

@@ -3,9 +3,9 @@ import { Expr, Project } from "../document/schema/DocumentTypes";
 
 // Generates a Java file containing variables defined in the choreo GUI.
 export function genVarsFile(project: Project, packageName: string): string {
-  const out: string[] = [];
-  out.push(`package ${packageName};`);
-  out.push(`
+  const content: string[] = [];
+  content.push(`package ${packageName};`);
+  content.push(`
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
@@ -19,12 +19,12 @@ import static edu.wpi.first.units.Units.*;
  */
 public final class ChoreoVars {`);
   for (const [varName, data] of Object.entries(project.variables.expressions)) {
-    out.push(asVariable(data.var, varName, data.dimension));
+    content.push(asVariable(data.var, varName, data.dimension));
   }
-  out.push("");
+  content.push("");
   const poseEntries = Object.entries(project.variables.poses);
   if (poseEntries.length > 0) {
-    out.push("    public static final class Poses {");
+    content.push("    public static final class Poses {");
     for (const [varName, pose] of poseEntries) {
       const heading =
         Math.abs(pose.heading.val) < 1e-5
@@ -32,18 +32,18 @@ public final class ChoreoVars {`);
           : `Rotation2d.fromRadians(${round(pose.heading.val, 3)})`;
       const x = round(pose.x.val, 3);
       const y = round(pose.y.val, 3);
-      out.push(
+      content.push(
         `        public static final Pose2d ${varName} = new Pose2d(${x}, ${y}, ${heading});`
       );
     }
-    out.push("");
-    out.push("        private Poses() {}");
-    out.push("    }");
-    out.push("");
+    content.push("");
+    content.push("        private Poses() {}");
+    content.push("    }");
+    content.push("");
   }
-  out.push("    private ChoreoVars() {}");
-  out.push("}");
-  return out.join("\n");
+  content.push("    private ChoreoVars() {}");
+  content.push("}");
+  return content.join("\n");
 }
 
 // Generates a Java variable declaration for a given expression.

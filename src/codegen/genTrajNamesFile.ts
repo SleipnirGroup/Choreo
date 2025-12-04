@@ -2,10 +2,10 @@ export function genTrajNamesFile(
   trajNames: string[],
   packageName: string
 ): string {
-  const out: string[] = [];
+  const content: string[] = [];
   const usedVarNames: Record<string, number> = {};
-  out.push(`package ${packageName};`);
-  out.push(`
+  content.push(`package ${packageName};`);
+  content.push(`
 /**
  * A class containing the names of all trajectories created in the choreo GUI.
  * This allows for references of non-existent or deleted trajectories
@@ -21,12 +21,12 @@ public class ChoreoTrajNames {`);
     } else {
       usedVarNames[varName] = 1;
     }
-    out.push(`    public static final String ${varName} = "${trajName}";`);
+    content.push(`    public static final String ${varName} = "${trajName}";`);
   }
-  out.push("");
-  out.push("    private ChoreoTrajNames() {}");
-  out.push("}");
-  return out.join("\n");
+  content.push("");
+  content.push("    private ChoreoTrajNames() {}");
+  content.push("}");
+  return content.join("\n");
 }
 
 function sanitizeTrajName(trajName: string): string {
