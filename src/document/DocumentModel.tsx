@@ -22,7 +22,6 @@ import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
-import { path } from "@tauri-apps/api";
 import { CodeGenStore } from "./CodeGenStore";
 
 export type SelectableItemTypes =
