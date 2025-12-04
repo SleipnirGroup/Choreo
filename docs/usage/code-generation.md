@@ -17,7 +17,7 @@ ChoreoLib Example:
 ```java
 AutoRoutine routine = factory.newRoutine("Three Piece");
 // instead of routine.trajectory("Station To Reef 4"), do:
-AutoTrajectory traj = routine.trajectory(ChoreoTrajNames.StationToReef4); 
+AutoTrajectory traj = routine.trajectory(ChoreoTrajNames.StationToReef4);
 // By only referencing trajectory names from ChoreoTrajNames,
 // you remove the risk of referencing mispelled or deleted trajectories.
 ```
