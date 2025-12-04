@@ -1,3 +1,5 @@
+export const TRAJ_NAMES_FILENAME = "ChoreoTrajNames";
+
 export function genTrajNamesFile(
   trajNames: string[],
   packageName: string
@@ -11,7 +13,7 @@ export function genTrajNamesFile(
  * This allows for references of non-existent or deleted trajectories
  * to be caught at compile time. DO NOT MODIFY THIS FILE YOURSELF!
  */
-public class ChoreoTrajNames {`);
+public class ${TRAJ_NAMES_FILENAME} {`);
   for (const trajName of trajNames) {
     let varName = sanitizeTrajName(trajName);
     const dupeCount = usedVarNames[varName];
@@ -24,7 +26,7 @@ public class ChoreoTrajNames {`);
     content.push(`    public static final String ${varName} = "${trajName}";`);
   }
   content.push("");
-  content.push("    private ChoreoTrajNames() {}");
+  content.push(`    private ${TRAJ_NAMES_FILENAME}() {}`);
   content.push("}");
   return content.join("\n");
 }

@@ -64,8 +64,11 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
-import { genVarsFile } from "../codegen/genVarsFile";
-import { genTrajNamesFile } from "../codegen/genTrajNamesFile";
+import { genVarsFile, VARS_FILENAME } from "../codegen/genVarsFile";
+import {
+  genTrajNamesFile,
+  TRAJ_NAMES_FILENAME
+} from "../codegen/genTrajNamesFile";
 
 export type OpenFilePayload = {
   name: string;
@@ -253,7 +256,13 @@ export const doc = DocumentStore.create(
     },
     name: "Untitled",
     variables: castToSnapshot(variables),
-    selectedSidebarItem: undefined
+    selectedSidebarItem: undefined,
+    codegen: {
+      enabled: false,
+      root: "",
+      genVars: true,
+      genTrajNames: true
+    }
   },
   env
 );
@@ -274,8 +283,29 @@ function renameVariable(find: string, replace: string) {
     }
   });
 }
+async function removeFilegenFile(name: string) {
+  const deployRoot = await Commands.getDeployRoot();
+  const dir = await path.join(deployRoot, doc.codegen.root);
+  await Commands.deleteJavaFile(dir + "/" + name + ".java");
+}
 export function setup() {
   doc.history.clear();
+  reaction(
+    () => !doc.codegen.genVars,
+    (removeFile) => {
+      if (removeFile) {
+        removeFilegenFile(VARS_FILENAME);
+      }
+    }
+  );
+  reaction(
+    () => !doc.codegen.genTrajNames,
+    (removeFile) => {
+      if (removeFile) {
+        removeFilegenFile(TRAJ_NAMES_FILENAME);
+      }
+    }
+  );
   setupEventListeners()
     .then(() => newProject(false))
     .then(() => uiState.updateWindowTitle())
@@ -710,13 +740,13 @@ export async function newProject(promptForCodegen: boolean = true) {
   if (!promptForCodegen) {
     return;
   }
-  const msg = codegenEnabled()
+  const msg = doc.codegen.enabled
     ? `
     Change the folder in which Java file generation occurs?
     (Do this if you're switching to a new codebase)
     `
     : `
-    Choreo can generate a java file with variables defined in the GUI.
+    Choreo can generate java files(more information: https://choreo.autos/usage/editing-paths/).
     Select a folder to enable this feature?
     `;
   if (await ask(msg, { title: "Choreo", kind: "warning" })) {
@@ -794,10 +824,6 @@ export async function writeAllTrajectories() {
   }
 }
 
-export function codegenEnabled() {
-  return doc.codegenroot != null;
-}
-
 export async function saveProject() {
   if (await canSave()) {
     try {
@@ -824,25 +850,38 @@ export async function saveProject() {
 }
 
 export async function genJavaFiles() {
-  const relativePath = doc.codegenroot;
-  const codeGenPkg = doc.codeGenPackage;
-  if (!relativePath || !codeGenPkg) {
+  const codeGenPkg = doc.codegen.javaPkg;
+  if (!doc.codegen.enabled || !codeGenPkg) {
     return;
   }
   const rootPath = await path.join(
     await Commands.getDeployRoot(),
-    relativePath
+    doc.codegen.root
   );
-  await Promise.all([
-    Commands.writeRawFile(
-      genVarsFile(doc.serializeChor(), codeGenPkg),
-      rootPath + "/ChoreoVars.java"
-    ),
-    Commands.writeRawFile(
-      genTrajNamesFile(doc.pathlist.pathNames, codeGenPkg),
-      rootPath + "/ChoreoTrajNames.java"
-    )
-  ]);
+  const tasks = [];
+  if (doc.codegen.genVars) {
+    tasks.push(
+      Commands.writeJavaFile(
+        genVarsFile(doc.serializeChor(), codeGenPkg),
+        rootPath + `/${VARS_FILENAME}.java`
+      )
+    );
+  }
+  if (doc.codegen.genTrajNames) {
+    tasks.push(
+      Commands.writeJavaFile(
+        genTrajNamesFile(doc.pathlist.pathNames, codeGenPkg),
+        rootPath + `/${TRAJ_NAMES_FILENAME}.java`
+      )
+    );
+  }
+  await toast.promise(Promise.all(tasks), {
+    error: {
+      render(toastProps: ToastContentProps<ChoreoError>) {
+        return `Java files did not generate. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+      }
+    }
+  });
 }
 
 function getRelativePath(from: string, to: string): string {
@@ -862,7 +901,7 @@ function getRelativePath(from: string, to: string): string {
 }
 
 export async function codeGenDialog() {
-  doc.setCodeGenRoot(
+  doc.codegen.setRoot(
     getRelativePath(
       await Commands.getDeployRoot(),
       await Commands.selectCodegenFolder()
@@ -870,11 +909,6 @@ export async function codeGenDialog() {
   );
   await saveProject();
   toast.success("Choreo Codegen was enabled.");
-}
-
-export async function disableCodegen() {
-  doc.setCodeGenRoot(null);
-  toast.info("Choreo Codegen was disabled.");
 }
 
 export async function saveProjectDialog() {

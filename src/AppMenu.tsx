@@ -29,10 +29,7 @@ import {
   saveProjectDialog,
   uiState,
   openDiagnosticZipWithInfo,
-  openProjectSelectFeedback,
-  codeGenDialog,
-  disableCodegen,
-  codegenEnabled
+  openProjectSelectFeedback
 } from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
@@ -193,33 +190,6 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Diagnostic Report"></ListItemText>
             </ListItemButton>
-            <Tooltip
-              disableInteractive
-              title="Output Java files containing variables and constants defined in the GUI."
-            >
-              <ListItemButton
-                onClick={async () => {
-                  codeGenDialog();
-                }}
-              >
-                <ListItemIcon>
-                  <UploadIcon />
-                </ListItemIcon>
-                <ListItemText primary="Choose Codegen Folder"></ListItemText>
-              </ListItemButton>
-            </Tooltip>
-            {codegenEnabled() && (
-              <ListItemButton
-                onClick={async () => {
-                  disableCodegen();
-                }}
-              >
-                <ListItemIcon>
-                  <RemoveCircle />
-                </ListItemIcon>
-                <ListItemText primary="Disable Codegen"></ListItemText>
-              </ListItemButton>
-            )}
             <Divider orientation="horizontal"></Divider>
             {/* Info about save locations */}
             <ListItem>

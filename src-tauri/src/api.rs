@@ -103,8 +103,24 @@ pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<Op
 }
 
 #[tauri::command]
-pub fn write_raw_file(content: String, file_path: String) -> ChoreoResult<()> {
+pub fn write_java_file(content: String, file_path: String) -> ChoreoResult<()> {
+    if !file_path.contains(".java") {
+        return Err(ChoreoError::Io(
+            "Attempted to write a non-java file".to_string(),
+        ));
+    }
     fs::write(file_path, content.as_bytes())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
+    if !file_path.contains(".java") {
+        return Err(ChoreoError::Io(
+            "Attempted to delete a non-java file".to_string(),
+        ));
+    }
+    fs::remove_file(file_path)?;
     Ok(())
 }
 

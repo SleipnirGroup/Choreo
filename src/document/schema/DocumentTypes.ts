@@ -58,13 +58,19 @@ export interface RobotConfig<T extends ExprOrNumber> {
   differentialTrackWidth: T;
 }
 
+export interface CodeGenConfig {
+  root: string;
+  genVars: boolean;
+  genTrajNames: boolean;
+}
+
 export interface Project {
   name: string;
   type: SampleType;
   version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
-  codegenroot: string | null;
+  codegen: CodeGenConfig | null;
 }
 
 export interface Waypoint<T extends ExprOrNumber> {

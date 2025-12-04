@@ -144,10 +144,16 @@ export const Commands = {
     invoke<void>("open_diagnostic_file", { project, trajectories }),
 
   /**
-   * Writes raw file content to a specified path.
+   * Writes java file content to a specified path.
    */
-  writeRawFile: (content: string, filePath: string) =>
-    invoke<void>("write_raw_file", { content, filePath }),
+  writeJavaFile: (content: string, filePath: string) =>
+    invoke<void>("write_java_file", { content, filePath }),
+
+  /**
+   * Deletes java file content from a specified path.
+   */
+  deleteJavaFile: (filePath: string) =>
+    invoke<void>("delete_java_file", { filePath }),
 
   /**
    * Sets the directory path to push generated Java files to.

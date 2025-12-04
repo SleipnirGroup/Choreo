@@ -1,6 +1,8 @@
 import { DimensionName } from "../document/ExpressionStore";
 import { Expr, Project } from "../document/schema/DocumentTypes";
 
+export const VARS_FILENAME = "ChoreoVars";
+
 // Generates a Java file containing variables defined in the choreo GUI.
 export function genVarsFile(project: Project, packageName: string): string {
   const content: string[] = [];
@@ -17,7 +19,7 @@ import static edu.wpi.first.units.Units.*;
  * DO NOT MODIFY THIS FILE YOURSELF; instead, change these values
  * in the choreo GUI.
  */
-public final class ChoreoVars {`);
+public final class ${VARS_FILENAME} {`);
   for (const [varName, data] of Object.entries(project.variables.expressions)) {
     content.push(asVariable(data.var, varName, data.dimension));
   }
@@ -41,7 +43,7 @@ public final class ChoreoVars {`);
     content.push("    }");
     content.push("");
   }
-  content.push("    private ChoreoVars() {}");
+  content.push(`    private ${VARS_FILENAME}() {}`);
   content.push("}");
   return content.join("\n");
 }

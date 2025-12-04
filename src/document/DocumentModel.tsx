@@ -23,6 +23,7 @@ import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 import { path } from "@tauri-apps/api";
+import { CodeGenStore } from "./CodeGenStore";
 
 export type SelectableItemTypes =
   | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {
@@ -74,9 +75,9 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
+    codegen: CodeGenStore,
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    codegenroot: types.maybeNull(types.string)
+    hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
   .views((self) => ({
     selected(item: SelectableItemTypes) {
@@ -92,7 +93,7 @@ export const DocumentStore = types
         type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize,
-        codegenroot: self.codegenroot
+        codegen: self.codegen.serialize
       };
     },
     get isSidebarMarkerSelected() {
@@ -122,24 +123,6 @@ export const DocumentStore = types
       } else {
         return undefined;
       }
-    },
-    get codeGenPackage() {
-      if (!self.codegenroot) {
-        return null;
-      }
-      const splitPath = self.codegenroot.split(
-        path.sep() + "java" + path.sep()
-      );
-      if (splitPath.length === 1) {
-        toast.error(
-          'Invalid path: make sure your code generation root points to a "java" directory.'
-        );
-        self.codegenroot = null;
-        return null;
-      }
-      const pkg = splitPath[1].replaceAll("/", ".").replaceAll("\\", ".");
-      console.log("PACKAGE NAME: " + pkg);
-      return pkg;
     }
   }))
   .volatile((self) => ({
@@ -150,8 +133,8 @@ export const DocumentStore = types
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
+      self.codegen.deserialize(ser.codegen);
       self.type = ser.type;
-      self.codegenroot = ser.codegenroot;
     },
     setName(name: string) {
       self.name = name;
@@ -168,9 +151,6 @@ export const DocumentStore = types
       self.history.withoutUndo(() => {
         self.hoveredSidebarItem = item;
       });
-    },
-    setCodeGenRoot(codeGenRoot: string | null) {
-      self.codegenroot = codeGenRoot;
     },
     afterCreate() {
       self.history = UndoManager.create({}, { targetStore: self });
