@@ -48,7 +48,7 @@ public final class ${TRAJ_DATA_FILENAME} {
       }
       mapData.push(
         `        Map.entry(
-            "${traj.name}", 
+            "${traj.name}",
             new TrajectoryData(
                 ${waypoints[waypoints.length - 1].t},
                 ${formatPose(waypoints[0])},

@@ -23,6 +23,7 @@ import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 import { CodeGenStore } from "./CodeGenStore";
+import { genJavaFiles } from "./DocumentManager";
 
 export type SelectableItemTypes =
   | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {
@@ -170,6 +171,7 @@ export const DocumentStore = types
         uuidsToGenerate.push(pathStore.uuid);
       });
       await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+      await genJavaFiles();
     },
     async generateAllOutdated() {
       const uuidsToGenerate: string[] = [];
@@ -179,6 +181,7 @@ export const DocumentStore = types
         }
       });
       await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+      await genJavaFiles();
     },
 
     async generatePath(uuid: string) {

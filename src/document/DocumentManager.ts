@@ -4,7 +4,7 @@ import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
-import { getDebugName, reaction } from "mobx";
+import { getDebugName, IReactionDisposer, reaction } from "mobx";
 import {
   applySnapshot,
   castToSnapshot,
@@ -297,6 +297,18 @@ async function removeFilegenFile(name: string) {
   await Commands.deleteJavaFile(dir + "/" + name + ".java");
 }
 
+let pathNamesReactionDisposer: IReactionDisposer | null = null;
+
+function startPathNamesReaction() {
+  pathNamesReactionDisposer = reaction(
+    () => doc.pathlist.pathNames,
+    () =>
+      toast.promise(genJavaFiles(), {
+        error: "Error updating generated java files."
+      })
+  );
+}
+
 export function setup() {
   doc.history.clear();
   setupEventListeners()
@@ -327,13 +339,6 @@ export function setup() {
             removeFilegenFile(TRAJ_DATA_FILENAME);
           }
         }
-      );
-      reaction(
-        () => doc.pathlist.pathNames,
-        (names) =>
-          toast.promise(genJavaFiles(), {
-            error: "Error updating generated java files."
-          })
       );
     });
 }
@@ -685,10 +690,12 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
+    pathNamesReactionDisposer?.(); // prevents the reaction from triggering for every addPath()
     doc.pathlist.deleteAll();
     trajectories.forEach((trajectory) => {
       doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
+    startPathNamesReaction();
     uiState.setSaveFileDir(dir);
     uiState.setProjectName(name);
     localStorage.setItem(
