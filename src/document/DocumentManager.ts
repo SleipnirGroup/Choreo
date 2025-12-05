@@ -69,6 +69,10 @@ import {
   genTrajNamesFile,
   TRAJ_NAMES_FILENAME
 } from "../codegen/genTrajNamesFile";
+import {
+  genTrajDataFile,
+  TRAJ_DATA_FILENAME
+} from "../codegen/genTrajDataFile";
 
 export type OpenFilePayload = {
   name: string;
@@ -258,10 +262,10 @@ export const doc = DocumentStore.create(
     variables: castToSnapshot(variables),
     selectedSidebarItem: undefined,
     codegen: {
-      enabled: false,
-      root: "",
+      root: null,
       genVars: true,
-      genTrajNames: true
+      genTrajNames: true,
+      genTrajData: false
     }
   },
   env
@@ -283,33 +287,55 @@ function renameVariable(find: string, replace: string) {
     }
   });
 }
+
 async function removeFilegenFile(name: string) {
+  if (!doc.codegen.root) {
+    return;
+  }
   const deployRoot = await Commands.getDeployRoot();
   const dir = await path.join(deployRoot, doc.codegen.root);
   await Commands.deleteJavaFile(dir + "/" + name + ".java");
 }
+
 export function setup() {
   doc.history.clear();
-  reaction(
-    () => !doc.codegen.genVars,
-    (removeFile) => {
-      if (removeFile) {
-        removeFilegenFile(VARS_FILENAME);
-      }
-    }
-  );
-  reaction(
-    () => !doc.codegen.genTrajNames,
-    (removeFile) => {
-      if (removeFile) {
-        removeFilegenFile(TRAJ_NAMES_FILENAME);
-      }
-    }
-  );
   setupEventListeners()
     .then(() => newProject(false))
     .then(() => uiState.updateWindowTitle())
-    .then(() => openProjectFile());
+    .then(() => openProjectFile())
+    .then(() => {
+      reaction(
+        () => !doc.codegen.genVars,
+        (removeFile) => {
+          if (removeFile) {
+            removeFilegenFile(VARS_FILENAME);
+          }
+        }
+      );
+      reaction(
+        () => !doc.codegen.genTrajNames,
+        (removeFile) => {
+          if (removeFile) {
+            removeFilegenFile(TRAJ_NAMES_FILENAME);
+          }
+        }
+      );
+      reaction(
+        () => !doc.codegen.genTrajData,
+        (removeFile) => {
+          if (removeFile) {
+            removeFilegenFile(TRAJ_DATA_FILENAME);
+          }
+        }
+      );
+      reaction(
+        () => doc.pathlist.pathNames,
+        (names) =>
+          toast.promise(genJavaFiles(), {
+            error: "Error updating generated java files."
+          })
+      );
+    });
 }
 setup();
 
@@ -696,17 +722,17 @@ export async function generateAndExport(uuid: string) {
 export async function generateWithToastsAndExport(uuid: string) {
   tracing.debug("generateWithToastsAndExport", uuid);
   const pathName = doc.pathlist.paths.get(uuid)?.name;
-  doc.generatePathWithToasts(uuid).then(() =>
-    toast.promise(writeTrajectory(uuid), {
-      success: `Saved "${pathName}" to ${uiState.projectDir}.`,
-      error: {
-        render(toastProps) {
-          tracing.error(toastProps.data);
-          return `Couldn't export trajectory: ${toastProps.data as string[]}`;
-        }
+  await doc.generatePathWithToasts(uuid);
+  await toast.promise(writeTrajectory(uuid), {
+    success: `Saved "${pathName}" to ${uiState.projectDir}.`,
+    error: {
+      render(toastProps) {
+        tracing.error(toastProps.data);
+        return `Couldn't export trajectory: ${toastProps.data as string[]}`;
       }
-    })
-  );
+    }
+  });
+  await genJavaFiles();
 }
 
 function getSelectedWaypoint() {
@@ -740,12 +766,13 @@ export async function newProject(promptForCodegen: boolean = true) {
   if (!promptForCodegen) {
     return;
   }
-  const msg = doc.codegen.enabled
-    ? `
+  const msg =
+    doc.codegen.root != null
+      ? `
     Change the folder in which Java file generation occurs?
     (Do this if you're switching to a new codebase)
     `
-    : `
+      : `
     Choreo can generate java files(more information: https://choreo.autos/usage/editing-paths/).
     Select a folder to enable this feature?
     `;
@@ -772,7 +799,6 @@ export async function renamePath(uuid: string, newName: string) {
       await Commands.renameTrajectory(trajectory.serialize, newName)
         .finally(() => doc.pathlist.paths.get(uuid)?.setName(newName))
         .catch(tracing.error);
-      await genJavaFiles();
     }
   } else {
     doc.pathlist.paths.get(uuid)?.setName(newName);
@@ -851,12 +877,16 @@ export async function saveProject() {
 
 export async function genJavaFiles() {
   const codeGenPkg = doc.codegen.javaPkg;
-  if (!doc.codegen.enabled || !codeGenPkg) {
+  if (!doc.codegen.root || !codeGenPkg) {
     return;
   }
+  tracing.info("Generating Java Files...");
   const rootPath = await path.join(
     await Commands.getDeployRoot(),
     doc.codegen.root
+  );
+  const trajectories = [...doc.pathlist.paths.values()].map(
+    (it) => it.serialize
   );
   const tasks = [];
   if (doc.codegen.genVars) {
@@ -870,8 +900,16 @@ export async function genJavaFiles() {
   if (doc.codegen.genTrajNames) {
     tasks.push(
       Commands.writeJavaFile(
-        genTrajNamesFile(doc.pathlist.pathNames, codeGenPkg),
+        genTrajNamesFile(trajectories, codeGenPkg),
         rootPath + `/${TRAJ_NAMES_FILENAME}.java`
+      )
+    );
+  }
+  if (doc.codegen.genTrajData) {
+    tasks.push(
+      Commands.writeJavaFile(
+        genTrajDataFile(trajectories, codeGenPkg),
+        rootPath + `/${TRAJ_DATA_FILENAME}.java`
       )
     );
   }

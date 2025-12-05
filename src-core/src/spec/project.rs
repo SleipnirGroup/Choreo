@@ -143,9 +143,10 @@ impl RobotConfig<f64> {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeGenConfig {
-    pub root: String,
+    pub root: Option<String>,
     pub gen_vars: bool,
     pub gen_traj_names: bool,
+    pub gen_traj_data: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -159,7 +160,7 @@ pub struct ProjectFile {
     pub config: RobotConfig<Expr>,
     #[serde(default)]
     pub generation_features: Vec<String>,
-    pub codegen: Option<CodeGenConfig>,
+    pub codegen: CodeGenConfig,
 }
 
 impl ProjectFile {
@@ -209,7 +210,12 @@ impl Default for ProjectFile {
                 differential_track_width: Expr::new("22 in", 0.2794 * 2.0),
             },
             generation_features: Vec::new(),
-            codegen: Option::None,
+            codegen: CodeGenConfig {
+                root: None,
+                gen_vars: true,
+                gen_traj_names: true,
+                gen_traj_data: false,
+            },
         }
     }
 }

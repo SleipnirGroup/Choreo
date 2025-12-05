@@ -5,24 +5,22 @@ import { toast } from "react-toastify";
 
 export const CodeGenStore = types
   .model("CodeGenStore", {
-    enabled: types.boolean,
-    root: types.string,
+    root: types.maybeNull(types.string),
     genVars: types.boolean,
-    genTrajNames: types.boolean
+    genTrajNames: types.boolean,
+    genTrajData: types.boolean
   })
   .views((self) => ({
-    get serialize(): CodeGenConfig | null {
-      if (!self.enabled) {
-        return null;
-      }
+    get serialize(): CodeGenConfig {
       return {
         root: self.root,
         genVars: self.genVars,
-        genTrajNames: self.genTrajNames
+        genTrajNames: self.genTrajNames,
+        genTrajData: self.genTrajData
       };
     },
     get javaPkg() {
-      if (!self.enabled) {
+      if (!self.root) {
         return null;
       }
       const splitPath = self.root.split(path.sep() + "java" + path.sep());
@@ -37,21 +35,21 @@ export const CodeGenStore = types
   }))
   .actions((self) => ({
     setRoot(root: string) {
-      self.enabled = true;
       self.root = root;
     },
     setGenVars(genVars: boolean) {
-      self.enabled = true;
       self.genVars = genVars;
     },
     setGenTrajNames(genTrajNames: boolean) {
-      self.enabled = true;
       self.genTrajNames = genTrajNames;
     },
-    deserialize(data: CodeGenConfig | null) {
-      self.enabled = data != null;
-      self.root = data?.root ?? "";
-      self.genVars = data?.genVars ?? true;
-      self.genTrajNames = data?.genTrajNames ?? true;
+    setGenTrajData(genTrajData: boolean) {
+      self.genTrajData = genTrajData;
+    },
+    deserialize(data: CodeGenConfig) {
+      self.root = data.root;
+      self.genVars = data.genVars;
+      self.genTrajNames = data.genTrajNames;
+      self.genTrajData = data.genTrajData;
     }
   }));

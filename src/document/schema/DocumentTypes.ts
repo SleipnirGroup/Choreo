@@ -59,9 +59,10 @@ export interface RobotConfig<T extends ExprOrNumber> {
 }
 
 export interface CodeGenConfig {
-  root: string;
+  root: string | null;
   genVars: boolean;
   genTrajNames: boolean;
+  genTrajData: boolean;
 }
 
 export interface Project {
@@ -70,7 +71,7 @@ export interface Project {
   version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
-  codegen: CodeGenConfig | null;
+  codegen: CodeGenConfig;
 }
 
 export interface Waypoint<T extends ExprOrNumber> {

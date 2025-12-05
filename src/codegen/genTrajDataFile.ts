@@ -1,0 +1,72 @@
+import {
+  DifferentialSample,
+  SwerveSample,
+  Trajectory
+} from "../document/schema/DocumentTypes";
+
+export const TRAJ_DATA_FILENAME = "ChoreoTrajData";
+
+function round(val: number, digits: number) {
+  const roundingFactor = Math.pow(10, digits);
+  return Math.round(val * roundingFactor) / roundingFactor;
+}
+
+function formatPose(sample: SwerveSample | DifferentialSample): string {
+  const x = round(sample.x, 3);
+  const y = round(sample.y, 3);
+  const heading = round(sample.heading, 3);
+  return `new Pose2d(${x}, ${y}, Rotation2d.fromRadians(${heading}))`;
+}
+
+export function genTrajDataFile(
+  trajectories: Trajectory[],
+  packageName: string
+): string {
+  try {
+    const content: string[] = [];
+    content.push(`package ${packageName};`);
+    content.push(`
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+
+import java.util.Map;
+
+public final class ${TRAJ_DATA_FILENAME} {
+    public record TrajectoryData(double totalTimeSecs, Pose2d initialPoseBlue, Pose2d endPoseBlue) {}
+
+    /** Fetches the data corresponding to a specific trajectory. */
+    public static TrajectoryData get(String trajName) {
+        return data.get(trajName);
+    }
+
+    private static final Map<String, TrajectoryData> data = Map.ofEntries(`);
+    const mapData: string[] = [];
+    for (const traj of trajectories) {
+      const waypoints = traj.trajectory.samples;
+      if (waypoints.length === 0) {
+        continue;
+      }
+      mapData.push(
+        `        Map.entry(
+            "${traj.name}", 
+            new TrajectoryData(
+                ${waypoints[waypoints.length - 1].t},
+                ${formatPose(waypoints[0])},
+                ${formatPose(waypoints[waypoints.length - 1])}
+            )
+        )
+    `.trimEnd()
+      );
+    }
+    content.push(mapData.join(",\n"));
+    content.push(`    );
+
+    private ${TRAJ_DATA_FILENAME}() {}
+}
+  `);
+    return content.join("\n");
+  } catch (e) {
+    console.error("Error generating trajectory data file:", e);
+    throw e;
+  }
+}

@@ -27,7 +27,7 @@ function CodeGenConfigPanel() {
     width: "max-content"
   };
 
-  if (!doc.codegen.enabled) {
+  if (!doc.codegen.root) {
     return (
       <div style={containerStyle}>
         <Stack spacing={2} direction="column">
@@ -66,6 +66,16 @@ function CodeGenConfigPanel() {
               />
             }
             label="Generate Trajectory Names File"
+            style={{ gap: 10 }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={doc.codegen.genTrajData}
+                onChange={(_, value) => doc.codegen.setGenTrajData(value)}
+              />
+            }
+            label="Generate Trajectory Data File (start & end pose, total time)"
             style={{ gap: 10 }}
           />
         </Stack>

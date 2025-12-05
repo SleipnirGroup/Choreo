@@ -1,13 +1,12 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { Trajectory } from "./schema/DocumentTypes";
-import { Env, genJavaFiles } from "./DocumentManager";
+import { Env } from "./DocumentManager";
 import {
   HolonomicPathStore,
   IHolonomicPathStore
 } from "./path/HolonomicPathStore";
 import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
 import { SavingState } from "./UIStateStore";
-import { toast } from "react-toastify";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -153,9 +152,6 @@ export const PathListStore = types
             env.stopGroup();
           }
         });
-        toast.promise(genJavaFiles(), {
-          error: "Error generating Java files"
-        });
         return newUUID;
       }
     };
@@ -184,9 +180,6 @@ export const PathListStore = types
           self.setActivePathUUID(self.pathUUIDs[0]);
         }
         self.paths.delete(uuid);
-        toast.promise(genJavaFiles(), {
-          error: "Error updating generated java files."
-        });
       },
       duplicatePath(uuid: string) {
         if (self.pathUUIDs.includes(uuid)) {
@@ -200,9 +193,6 @@ export const PathListStore = types
           const copyOfOldPath = { ...oldPath.serialize, name: path!.name };
           path!.deserialize(copyOfOldPath);
         }
-        toast.promise(genJavaFiles(), {
-          error: "Error updating generated java files."
-        });
       }
     };
   })
