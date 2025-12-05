@@ -13,23 +13,17 @@
 
 namespace trajopt {
 
-/**
- * A rotation in a 2D coordinate frame represented by a point on the unit circle
- * (cosine and sine).
- */
+/// A rotation in a 2D coordinate frame represented by a point on the unit
+/// circle (cosine and sine).
 template <typename T>
 class Rotation2 {
  public:
-  /**
-   * Constructs a rotation with a default angle of 0 degrees.
-   */
+  /// Constructs a rotation with a default angle of 0 degrees.
   constexpr Rotation2() = default;
 
-  /**
-   * Constructs a rotation with the given angle.
-   *
-   * @param angle The angle in radians.
-   */
+  /// Constructs a rotation with the given angle.
+  ///
+  /// @param angle The angle in radians.
   // NOLINTNEXTLINE (google-explicit-constructor)
   constexpr Rotation2(const T& angle) {
     using std::cos;
@@ -39,23 +33,19 @@ class Rotation2 {
     m_sin = sin(angle);
   }
 
-  /**
-   * Constructs a rotation with the given cosine and sine components.
-   *
-   * @param cos The cosine component of the rotation.
-   * @param sin The sine component of the rotation.
-   */
+  /// Constructs a rotation with the given cosine and sine components.
+  ///
+  /// @param cos The cosine component of the rotation.
+  /// @param sin The sine component of the rotation.
   constexpr Rotation2(T cos, T sin)
     requires(!std::same_as<T, double>)
       : m_cos{std::move(cos)}, m_sin{std::move(sin)} {}
 
-  /**
-   * Constructs a rotation with the given x and y components. The x and y don't
-   * have to be normalized.
-   *
-   * @param x The x component of the rotation.
-   * @param y The y component of the rotation.
-   */
+  /// Constructs a rotation with the given x and y components. The x and y don't
+  /// have to be normalized.
+  ///
+  /// @param x The x component of the rotation.
+  /// @param y The y component of the rotation.
   constexpr Rotation2(double x, double y)
     requires std::same_as<T, double>
   {
@@ -69,53 +59,43 @@ class Rotation2 {
     }
   }
 
-  /**
-   * Coerces one rotation type into another.
-   *
-   * @param other The other rotation type.
-   */
+  /// Coerces one rotation type into another.
+  ///
+  /// @param other The other rotation type.
   template <typename U>
   constexpr explicit Rotation2(const Rotation2<U>& other)
       : m_cos{other.cos()}, m_sin{other.sin()} {}
 
-  /**
-   * Adds two rotations together, with the result being bounded between -pi and
-   * pi.
-   *
-   * @param other The rotation to add.
-   * @return The sum of the two rotations.
-   */
+  /// Adds two rotations together, with the result being bounded between -pi and
+  /// pi.
+  ///
+  /// @param other The rotation to add.
+  /// @return The sum of the two rotations.
   constexpr Rotation2<T> operator+(const Rotation2<T>& other) const {
     return rotate_by(other);
   }
 
-  /**
-   * Subtracts the new rotation from the current rotation and returns the new
-   * rotation.
-   *
-   * @param other The rotation to subtract.
-   * @return The difference between the two rotations.
-   */
+  /// Subtracts the new rotation from the current rotation and returns the new
+  /// rotation.
+  ///
+  /// @param other The rotation to subtract.
+  /// @return The difference between the two rotations.
   constexpr Rotation2<T> operator-(const Rotation2<T>& other) const {
     return *this + -other;
   }
 
-  /**
-   * Takes the inverse of the current rotation.
-   *
-   * @return The inverse of the current rotation.
-   */
+  /// Takes the inverse of the current rotation.
+  ///
+  /// @return The inverse of the current rotation.
   constexpr Rotation2<T> operator-() const {
     return Rotation2<T>{m_cos, -m_sin};
   }
 
-  /**
-   * Adds the new rotation to the current rotation using a clockwise rotation
-   * matrix.
-   *
-   * @param other The rotation to rotate by.
-   * @return The new rotated rotation.
-   */
+  /// Adds the new rotation to the current rotation using a clockwise rotation
+  /// matrix.
+  ///
+  /// @param other The rotation to rotate by.
+  /// @return The new rotated rotation.
   template <typename U>
   constexpr Rotation2<U> rotate_by(const Rotation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
@@ -123,34 +103,26 @@ class Rotation2 {
                         cos() * other.sin() + sin() * other.cos()};
   }
 
-  /**
-   * Returns the rotation as an Euler angle in radians.
-   *
-   * @return The Euler angle in radians.
-   */
+  /// Returns the rotation as an Euler angle in radians.
+  ///
+  /// @return The Euler angle in radians.
   constexpr T radians() const { return atan2(m_sin, m_cos); }
 
-  /**
-   * Returns the rotation as an Euler angle in degrees.
-   *
-   * @return The Euler angle in degrees.
-   */
+  /// Returns the rotation as an Euler angle in degrees.
+  ///
+  /// @return The Euler angle in degrees.
   constexpr T degrees() const {
     return atan2(m_sin, m_cos) / std::numbers::pi * 180.0;
   }
 
-  /**
-   * Returns the cosine of the rotation.
-   *
-   * @return The cosine of the rotation.
-   */
+  /// Returns the cosine of the rotation.
+  ///
+  /// @return The cosine of the rotation.
   constexpr const T& cos() const { return m_cos; }
 
-  /**
-   * Returns the sine of the rotation.
-   *
-   * @return The sine of the rotation.
-   */
+  /// Returns the sine of the rotation.
+  ///
+  /// @return The sine of the rotation.
   constexpr const T& sin() const { return m_sin; }
 
  private:
