@@ -32,7 +32,7 @@ function CodeGenConfigPanel() {
       <div style={containerStyle}>
         <Stack spacing={2} direction="column">
           <p>
-            Choreo can generate java files to ensure consistency between your{" "}
+            Choreo can generate Java files to ensure consistency between your{" "}
             <br />
             robot code and trajectories. Visit the documentation for more
             details.

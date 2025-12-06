@@ -144,13 +144,13 @@ export const Commands = {
     invoke<void>("open_diagnostic_file", { project, trajectories }),
 
   /**
-   * Writes java file content to a specified path.
+   * Writes Java file content to a specified path.
    */
   writeJavaFile: (content: string, filePath: string) =>
     invoke<void>("write_java_file", { content, filePath }),
 
   /**
-   * Deletes java file content from a specified path.
+   * Deletes Java file content from a specified path.
    */
   deleteJavaFile: (filePath: string) =>
     invoke<void>("delete_java_file", { filePath }),

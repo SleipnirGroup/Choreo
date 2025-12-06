@@ -780,7 +780,7 @@ export async function newProject(promptForCodegen: boolean = true) {
     (Do this if you're switching to a new codebase)
     `
       : `
-    Choreo can generate java files(more information: https://choreo.autos/usage/editing-paths/).
+    Choreo can generate Java files (more information: https://choreo.autos/usage/editing-paths/).
     Select a folder to enable this feature?
     `;
   if (await ask(msg, { title: "Choreo", kind: "warning" })) {
@@ -953,7 +953,7 @@ export async function codeGenDialog() {
     )
   );
   await saveProject();
-  toast.success("Choreo Codegen was enabled.");
+  toast.success("Choreo code geneneration was enabled.");
 }
 
 export async function saveProjectDialog() {

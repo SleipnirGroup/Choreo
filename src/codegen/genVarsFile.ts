@@ -3,7 +3,7 @@ import { Expr, Project } from "../document/schema/DocumentTypes";
 
 export const VARS_FILENAME = "ChoreoVars";
 
-// Generates a Java file containing variables defined in the choreo GUI.
+// Generates a Java file containing variables defined in the Choreo GUI.
 export function genVarsFile(project: Project, packageName: string): string {
   const content: string[] = [];
   content.push(`package ${packageName};`);
@@ -17,7 +17,7 @@ import static edu.wpi.first.units.Units.*;
 /**
  * Generated file containing variables defined in Choreo.
  * DO NOT MODIFY THIS FILE YOURSELF; instead, change these values
- * in the choreo GUI.
+ * in the Choreo GUI.
  */
 public final class ${VARS_FILENAME} {`);
   for (const [varName, data] of Object.entries(project.variables.expressions)) {
