@@ -39,7 +39,7 @@ jobs:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.6.2
+      - run: pnpm install prettier@3.7.4
       - name: Update version
         run: |
           ./update_version.py ${{ github.event.inputs.tag }}
