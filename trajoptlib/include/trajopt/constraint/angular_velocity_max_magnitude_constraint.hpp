@@ -43,8 +43,8 @@ class TRAJOPT_DLLEXPORT AngularVelocityMaxMagnitudeConstraint {
     if (m_max_magnitude == 0.0) {
       problem.subject_to(angular_velocity == 0.0);
     } else {
-      problem.subject_to(angular_velocity >= -m_max_magnitude);
-      problem.subject_to(angular_velocity <= m_max_magnitude);
+      problem.subject_to(
+          slp::bounds(-m_max_magnitude, angular_velocity, m_max_magnitude));
     }
   }
 

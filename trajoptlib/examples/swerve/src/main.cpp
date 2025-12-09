@@ -47,7 +47,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 1: {}", slp::to_message(solution.error()));
+      std::println("Error in example 1: {}", solution.error());
       return std::to_underlying(solution.error());
     }
   }
@@ -64,7 +64,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 2: {}", slp::to_message(solution.error()));
+      std::println("Error in example 2: {}", solution.error());
       return std::to_underlying(solution.error());
     }
   }
@@ -82,7 +82,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 3: {}", slp::to_message(solution.error()));
+      std::println("Error in example 3: {}", solution.error());
       return std::to_underlying(solution.error());
     }
   }
@@ -98,7 +98,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 4: {}", slp::to_message(solution.error()));
+      std::println("Error in example 4: {}", solution.error());
       return std::to_underlying(solution.error());
     }
   }
@@ -134,7 +134,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 5: {}", slp::to_message(solution.error()));
+      std::println("Error in example 5: {}", solution.error());
       return std::to_underlying(solution.error());
     }
   }
@@ -172,7 +172,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 6: {}", slp::to_message(solution.error()));
+      std::println("Error in example 6: {}", solution.error());
       return std::to_underlying(solution.error());
     }
   }
@@ -205,7 +205,7 @@ int main() {
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 7: {}", slp::to_message(solution.error()));
+      std::println("Error in example 7: {}", solution.error());
       // FIXME: Fix solver excessive regularization and factorization failure
       // return std::to_underlying(solution.error());
     }
