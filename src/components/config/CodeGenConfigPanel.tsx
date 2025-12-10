@@ -61,21 +61,11 @@ function CodeGenConfigPanel() {
           <FormControlLabel
             control={
               <Checkbox
-                checked={doc.codegen.genTrajNames}
-                onChange={(_, value) => doc.codegen.setGenTrajNames(value)}
-              />
-            }
-            label="Generate Trajectory Names File"
-            style={{ gap: 10 }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
                 checked={doc.codegen.genTrajData}
                 onChange={(_, value) => doc.codegen.setGenTrajData(value)}
               />
             }
-            label="Generate Trajectory Data File (start & end pose, total time)"
+            label="Generate Trajectory Data File (name, start & end pose, total time)"
             style={{ gap: 10 }}
           />
         </Stack>

@@ -63,40 +63,31 @@ function asVariable(
   return `    public static final ${unitData.type} ${variableName} = ${unitData.baseUnit}.of(${val});`;
 }
 
+const javaUnitData = {
+
+    "Number": null,
+    "LinAcc": {
+        type: "LinearAcceleration",
+        baseUnit: "MetersPerSecondPerSecond"
+      },
+    "LinVel": { type: "LinearVelocity", baseUnit: "MetersPerSecond" },
+    "Length": { type: "Distance", baseUnit: "Meters" },
+    "Angle": { type: "Angle", baseUnit: "Radians" },
+    "AngVel": { type: "AngularVelocity", baseUnit: "RadiansPerSecond" },
+    "AngAcc": {
+        type: "AngularAcceleration",
+        baseUnit: "RadiansPerSecondPerSecond"
+      },
+    "Time": { type: "Time", baseUnit: "Seconds" },
+    "Mass": { type: "Mass", baseUnit: "Kilograms" },
+    "Torque": { type: "Torque", baseUnit: "NewtonMeters" },
+    "MoI": { type: "MomentOfInertia", baseUnit: "KilogramSquareMeters" }
+} as const satisfies {[D in DimensionName]: {type: string, baseUnit: string} | null};
 // Transforms choreo unit dimensions into WPILib dimensions, as well as their default units.
 function unitDataFrom(
   choreoDimensionName: DimensionName
 ): { type: string; baseUnit: string } | null {
-  switch (choreoDimensionName) {
-    case "LinAcc":
-      return {
-        type: "LinearAcceleration",
-        baseUnit: "MetersPerSecondPerSecond"
-      };
-    case "LinVel":
-      return { type: "LinearVelocity", baseUnit: "MetersPerSecond" };
-    case "Length":
-      return { type: "Distance", baseUnit: "Meters" };
-    case "Angle":
-      return { type: "Angle", baseUnit: "Radians" };
-    case "AngVel":
-      return { type: "AngularVelocity", baseUnit: "RadiansPerSecond" };
-    case "AngAcc":
-      return {
-        type: "AngularAcceleration",
-        baseUnit: "RadiansPerSecondPerSecond"
-      };
-    case "Time":
-      return { type: "Time", baseUnit: "Seconds" };
-    case "Mass":
-      return { type: "Mass", baseUnit: "Kilograms" };
-    case "Torque":
-      return { type: "Torque", baseUnit: "NewtonMeters" };
-    case "MoI":
-      return { type: "MomentOfInertia", baseUnit: "KilogramSquareMeters" };
-    default:
-      return null;
-  }
+  return javaUnitData[choreoDimensionName];
 }
 
 function round(val: number, digits: number) {

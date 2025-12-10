@@ -66,10 +66,6 @@ import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 import { genVarsFile, VARS_FILENAME } from "../codegen/genVarsFile";
 import {
-  genTrajNamesFile,
-  TRAJ_NAMES_FILENAME
-} from "../codegen/genTrajNamesFile";
-import {
   genTrajDataFile,
   TRAJ_DATA_FILENAME
 } from "../codegen/genTrajDataFile";
@@ -264,7 +260,6 @@ export const doc = DocumentStore.create(
     codegen: {
       root: null,
       genVars: true,
-      genTrajNames: true,
       genTrajData: false
     }
   },
@@ -321,14 +316,6 @@ export function setup() {
         (removeFile) => {
           if (removeFile) {
             removeFilegenFile(VARS_FILENAME);
-          }
-        }
-      );
-      reaction(
-        () => !doc.codegen.genTrajNames,
-        (removeFile) => {
-          if (removeFile) {
-            removeFilegenFile(TRAJ_NAMES_FILENAME);
           }
         }
       );
@@ -904,14 +891,6 @@ export async function genJavaFiles() {
       )
     );
   }
-  if (doc.codegen.genTrajNames) {
-    tasks.push(
-      Commands.writeJavaFile(
-        genTrajNamesFile(trajectories, codeGenPkg),
-        rootPath + `/${TRAJ_NAMES_FILENAME}.java`
-      )
-    );
-  }
   if (doc.codegen.genTrajData) {
     tasks.push(
       Commands.writeJavaFile(
@@ -946,10 +925,15 @@ function getRelativePath(from: string, to: string): string {
 }
 
 export async function codeGenDialog() {
+  const newRoot = await Commands.selectCodegenFolder();
+  await Promise.allSettled([
+    removeFilegenFile(VARS_FILENAME),
+    removeFilegenFile(TRAJ_DATA_FILENAME)
+  ]);
   doc.codegen.setRoot(
     getRelativePath(
       await Commands.getDeployRoot(),
-      await Commands.selectCodegenFolder()
+      newRoot
     )
   );
   await saveProject();

@@ -7,7 +7,6 @@ export const CodeGenStore = types
   .model("CodeGenStore", {
     root: types.maybeNull(types.string),
     genVars: types.boolean,
-    genTrajNames: types.boolean,
     genTrajData: types.boolean
   })
   .views((self) => ({
@@ -15,7 +14,6 @@ export const CodeGenStore = types
       return {
         root: self.root,
         genVars: self.genVars,
-        genTrajNames: self.genTrajNames,
         genTrajData: self.genTrajData
       };
     },
@@ -40,16 +38,12 @@ export const CodeGenStore = types
     setGenVars(genVars: boolean) {
       self.genVars = genVars;
     },
-    setGenTrajNames(genTrajNames: boolean) {
-      self.genTrajNames = genTrajNames;
-    },
     setGenTrajData(genTrajData: boolean) {
       self.genTrajData = genTrajData;
     },
     deserialize(data: CodeGenConfig) {
       self.root = data.root;
       self.genVars = data.genVars;
-      self.genTrajNames = data.genTrajNames;
       self.genTrajData = data.genTrajData;
     }
   }));

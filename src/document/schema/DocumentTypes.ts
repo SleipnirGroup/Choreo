@@ -61,7 +61,6 @@ export interface RobotConfig<T extends ExprOrNumber> {
 export interface CodeGenConfig {
   root: string | null;
   genVars: boolean;
-  genTrajNames: boolean;
   genTrajData: boolean;
 }
 

@@ -145,7 +145,6 @@ impl RobotConfig<f64> {
 pub struct CodeGenConfig {
     pub root: Option<String>,
     pub gen_vars: bool,
-    pub gen_traj_names: bool,
     pub gen_traj_data: bool,
 }
 
@@ -213,7 +212,6 @@ impl Default for ProjectFile {
             codegen: CodeGenConfig {
                 root: None,
                 gen_vars: true,
-                gen_traj_names: true,
                 gen_traj_data: false,
             },
         }
