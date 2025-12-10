@@ -103,7 +103,7 @@ public record ${TRAJ_DATA_FILENAME}(
      * A map between trajectory names and their corresponding data.
      * This allows for trajectory data to be looked up with strings during runtime.
      */
-    public static final Map<String, ChoreoTraj> all = Map.ofEntries(\n`);
+    public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(\n`);
     const mapEntries = [];
     for (const [varName, trajNames] of Object.entries(usedVarNames)) {
       for (let i = 0; i < trajNames.length; i++) {

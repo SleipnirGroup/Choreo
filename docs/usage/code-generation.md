@@ -11,22 +11,28 @@ Choreo can output a Java file containing variables defined in the Choreo GUI. Th
 
 ## Trajectory Names
 
-Choreo can also output a Java enum listing the name, total time, and blue-alliance start and end poses of each trajectory. This removes the risk of referencing trajectories that don't exist or aren't generated yet.
+Choreo can also output a Java file listing the name, total time, and blue-alliance start and end poses of each trajectory. Each trajectory is represented as a static constant of the ChoreoTraj.java file. This removes the risk of referencing trajectories that don't exist or aren't generated yet.
 
 > **Name Changes**
 > Some valid trajectory names aren't valid Java identifiers. Commonly, trajectory names have spaces and/or start with numbers. The enum fields will strip out spaces (i.e. `REEF POSES.traj` is the field `REEFPOSES`). If the name starts with a number or other invalid character, an underscore `_` will be added at the beginning.
 
-The enum is rewritten when the project is loaded, and when paths are generated, renamed, or deleted.
+The file is rewritten when the project is loaded, and when paths are generated, renamed, or deleted.
 ## ChoreoLib Example:
 ```java
 import static frc.robot.wherever.ChoreoTraj.*;
 import frc.robot.wherever.ChoreoVars;
+
 AutoRoutine routine = factory.newRoutine("Three Piece");
 // instead of routine.trajectory("Station To Reef 4"), do:
 AutoTrajectory traj = routine.trajectory(StationToReef4.name());
 Pose2d station = StationToReef4.initialPoseBlue();
 Pose2d poseVariable = ChoreoVars.Poses.myPoseVariable;
 Pose2d reef4 = StationToReef4.endPoseBlue();
-double stationToReef4Time = StationToReef4.totalTimeSeconds();
+double stationToReef4Time = StationToReef4.totalTimeSecs();
 Distance lengthVariable = ChoreoVars.myLengthVariable;
+// Furthermore, if you decide to compute trajectory names during runtime,
+// You can fetch their metadata like so:
+String computedTrajName = "StationToReef5";
+Pose2d startPose = ALL_TRAJECTORIES.get(computedTrajName).initialPoseBlue();
+double trajTime = ALL_TRAJECTORIES.get(computedTrajName).totalTimeSecs();
 ```
