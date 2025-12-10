@@ -260,7 +260,7 @@ export const doc = DocumentStore.create(
     codegen: {
       root: null,
       genVars: true,
-      genTrajData: false
+      genTrajData: true
     }
   },
   env
@@ -283,7 +283,7 @@ function renameVariable(find: string, replace: string) {
   });
 }
 
-async function removeFilegenFile(name: string) {
+async function removeCodegenFile(name: string) {
   if (!doc.codegen.root) {
     return;
   }
@@ -315,7 +315,7 @@ export function setup() {
         () => !doc.codegen.genVars,
         (removeFile) => {
           if (removeFile) {
-            removeFilegenFile(VARS_FILENAME);
+            removeCodegenFile(VARS_FILENAME);
           }
         }
       );
@@ -323,7 +323,7 @@ export function setup() {
         () => !doc.codegen.genTrajData,
         (removeFile) => {
           if (removeFile) {
-            removeFilegenFile(TRAJ_DATA_FILENAME);
+            removeCodegenFile(TRAJ_DATA_FILENAME);
           }
         }
       );
@@ -874,28 +874,30 @@ export async function genJavaFiles() {
   if (!doc.codegen.root || !codeGenPkg) {
     return;
   }
-  tracing.info("Generating Java Files...");
   const rootPath = await path.join(
     await Commands.getDeployRoot(),
     doc.codegen.root
   );
+  tracing.info("Generating Java Files at " + rootPath);
   const trajectories = [...doc.pathlist.paths.values()].map(
     (it) => it.serialize
   );
   const tasks = [];
   if (doc.codegen.genVars) {
+    tracing.info("Hi1");
     tasks.push(
       Commands.writeJavaFile(
         genVarsFile(doc.serializeChor(), codeGenPkg),
-        rootPath + `/${VARS_FILENAME}.java`
+        `${rootPath}/${VARS_FILENAME}.java`
       )
     );
   }
   if (doc.codegen.genTrajData) {
+    tracing.info("Hi2");
     tasks.push(
       Commands.writeJavaFile(
         genTrajDataFile(trajectories, codeGenPkg),
-        rootPath + `/${TRAJ_DATA_FILENAME}.java`
+        `${rootPath}/${TRAJ_DATA_FILENAME}.java`
       )
     );
   }
@@ -927,8 +929,8 @@ function getRelativePath(from: string, to: string): string {
 export async function codeGenDialog() {
   const newRoot = await Commands.selectCodegenFolder();
   await Promise.allSettled([
-    removeFilegenFile(VARS_FILENAME),
-    removeFilegenFile(TRAJ_DATA_FILENAME)
+    removeCodegenFile(VARS_FILENAME),
+    removeCodegenFile(TRAJ_DATA_FILENAME)
   ]);
   doc.codegen.setRoot(getRelativePath(await Commands.getDeployRoot(), newRoot));
   await saveProject();

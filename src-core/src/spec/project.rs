@@ -212,7 +212,7 @@ impl Default for ProjectFile {
             codegen: CodeGenConfig {
                 root: None,
                 gen_vars: true,
-                gen_traj_data: false,
+                gen_traj_data: true,
             },
         }
     }
