@@ -19,14 +19,14 @@ Choreo can also output a Java enum listing the name, total time, and blue-allian
 The enum is rewritten when the project is loaded, and when paths are generated, renamed, or deleted.
 ## ChoreoLib Example:
 ```java
-import static frc.robot.wherever.ChoreoTrajectories.*;
+import static frc.robot.wherever.ChoreoTraj.*;
 import frc.robot.wherever.ChoreoVars;
 AutoRoutine routine = factory.newRoutine("Three Piece");
 // instead of routine.trajectory("Station To Reef 4"), do:
-AutoTrajectory traj = routine.trajectory(StationToReef4.filename);
-Pose2d station = StationToReef4.initialPoseBlue;
+AutoTrajectory traj = routine.trajectory(StationToReef4.name());
+Pose2d station = StationToReef4.initialPoseBlue();
 Pose2d poseVariable = ChoreoVars.Poses.myPoseVariable;
-Pose2d reef4 = StationToReef4.endPoseBlue;
-double stationToReef4Time = StationToReef4.totalTimeSeconds;
+Pose2d reef4 = StationToReef4.endPoseBlue();
+double stationToReef4Time = StationToReef4.totalTimeSeconds();
 Distance lengthVariable = ChoreoVars.myLengthVariable;
 ```
