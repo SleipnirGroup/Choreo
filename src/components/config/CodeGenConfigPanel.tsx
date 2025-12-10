@@ -46,6 +46,7 @@ function CodeGenConfigPanel() {
   return (
     <div style={containerStyle}>
       <Stack spacing={2} direction="column">
+        <p>Current Folder: {doc.codegen.root}</p>
         <OpenFolderButton>Change Folder for Generated Files</OpenFolderButton>
         <Stack spacing={1}>
           <FormControlLabel
