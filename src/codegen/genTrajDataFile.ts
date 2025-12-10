@@ -29,7 +29,7 @@ function sanitizeTrajName(trajName: string): string {
       newName.slice(i + 2);
   }
   newName = newName.replaceAll(/[^\w|^$]/g, "");
-  if (newName.charAt(0).match(/[0-9]/)) {
+  if (!newName.charAt(0).match(/[a-zA-z\$\_]/)) {
     newName = "_" + newName;
   }
   return newName;
