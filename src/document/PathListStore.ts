@@ -131,8 +131,14 @@ export const PathListStore = types
                 "first",
                 "last",
                 {
-                  x: { exp: "0 m", val: 0.0 },
-                  y: { exp: "0 m", val: 0.0 },
+                  x: {
+                    exp: `${FieldDimensions.FIELD_LENGTH / 2} m`,
+                    val: FieldDimensions.FIELD_LENGTH / 2
+                  },
+                  y: {
+                    exp: `${FieldDimensions.FIELD_WIDTH / 2} m`,
+                    val: FieldDimensions.FIELD_WIDTH / 2
+                  },
                   w: {
                     exp: `${FieldDimensions.FIELD_LENGTH} m`,
                     val: FieldDimensions.FIELD_LENGTH
