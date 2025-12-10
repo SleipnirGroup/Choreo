@@ -930,12 +930,7 @@ export async function codeGenDialog() {
     removeFilegenFile(VARS_FILENAME),
     removeFilegenFile(TRAJ_DATA_FILENAME)
   ]);
-  doc.codegen.setRoot(
-    getRelativePath(
-      await Commands.getDeployRoot(),
-      newRoot
-    )
-  );
+  doc.codegen.setRoot(getRelativePath(await Commands.getDeployRoot(), newRoot));
   await saveProject();
   toast.success("Choreo code geneneration was enabled.");
 }

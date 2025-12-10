@@ -64,25 +64,26 @@ function asVariable(
 }
 
 const javaUnitData = {
-
-    "Number": null,
-    "LinAcc": {
-        type: "LinearAcceleration",
-        baseUnit: "MetersPerSecondPerSecond"
-      },
-    "LinVel": { type: "LinearVelocity", baseUnit: "MetersPerSecond" },
-    "Length": { type: "Distance", baseUnit: "Meters" },
-    "Angle": { type: "Angle", baseUnit: "Radians" },
-    "AngVel": { type: "AngularVelocity", baseUnit: "RadiansPerSecond" },
-    "AngAcc": {
-        type: "AngularAcceleration",
-        baseUnit: "RadiansPerSecondPerSecond"
-      },
-    "Time": { type: "Time", baseUnit: "Seconds" },
-    "Mass": { type: "Mass", baseUnit: "Kilograms" },
-    "Torque": { type: "Torque", baseUnit: "NewtonMeters" },
-    "MoI": { type: "MomentOfInertia", baseUnit: "KilogramSquareMeters" }
-} as const satisfies {[D in DimensionName]: {type: string, baseUnit: string} | null};
+  Number: null,
+  LinAcc: {
+    type: "LinearAcceleration",
+    baseUnit: "MetersPerSecondPerSecond"
+  },
+  LinVel: { type: "LinearVelocity", baseUnit: "MetersPerSecond" },
+  Length: { type: "Distance", baseUnit: "Meters" },
+  Angle: { type: "Angle", baseUnit: "Radians" },
+  AngVel: { type: "AngularVelocity", baseUnit: "RadiansPerSecond" },
+  AngAcc: {
+    type: "AngularAcceleration",
+    baseUnit: "RadiansPerSecondPerSecond"
+  },
+  Time: { type: "Time", baseUnit: "Seconds" },
+  Mass: { type: "Mass", baseUnit: "Kilograms" },
+  Torque: { type: "Torque", baseUnit: "NewtonMeters" },
+  MoI: { type: "MomentOfInertia", baseUnit: "KilogramSquareMeters" }
+} as const satisfies {
+  [D in DimensionName]: { type: string; baseUnit: string } | null;
+};
 // Transforms choreo unit dimensions into WPILib dimensions, as well as their default units.
 function unitDataFrom(
   choreoDimensionName: DimensionName

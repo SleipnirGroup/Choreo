@@ -59,20 +59,20 @@ import java.util.Map;
 
     const mapData: string[] = [];
     for (const traj of trajectories) {
-        let varName = sanitizeTrajName(traj.name);
-        const dupeCount = usedVarNames[varName];
-        if (dupeCount > 0) {
-          varName += `_${dupeCount}`;
-          usedVarNames[varName] = dupeCount + 1;
-        } else {
-          usedVarNames[varName] = 1;
-        }
+      let varName = sanitizeTrajName(traj.name);
+      const dupeCount = usedVarNames[varName];
+      if (dupeCount > 0) {
+        varName += `_${dupeCount}`;
+        usedVarNames[varName] = dupeCount + 1;
+      } else {
+        usedVarNames[varName] = 1;
+      }
       const waypoints = traj.trajectory.samples;
       if (waypoints.length === 0) {
         continue;
       }
       mapData.push(
-`      ${varName}(
+        `      ${varName}(
           "${traj.name}",
           ${waypoints[waypoints.length - 1].t},
           ${formatPose(waypoints[0])},
