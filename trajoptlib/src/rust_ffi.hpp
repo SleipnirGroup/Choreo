@@ -246,22 +246,21 @@ class MecanumTrajectoryGenerator {
   void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
 
-  /**
-   * Add a callback that will be called on each iteration of the solver.
-   *
-   * @param callback A `fn` (not a closure) to be executed. The callback's first
-   *   parameter will be a `trajopt::MecanumTrajectory`, and the second parameter
-   *   will be an `i64` equal to the handle passed in `generate()`.
-   *
-   * This function can be called multiple times to add multiple callbacks.
-   */
+  /// Add a callback that will be called on each iteration of the solver.
+  ///
+  /// This function can be called multiple times to add multiple callbacks.
+  ///
+  /// @param callback A `fn` (not a closure) to be executed. The callback's
+  ///     first parameter will be a `trajopt::MecanumTrajectory`, and the second
+  ///     parameter will be an `i64` equal to the handle passed in `generate()`.
   void add_callback(rust::Fn<void(MecanumTrajectory, int64_t)> callback);
 
   // TODO: Return std::expected<MecanumTrajectory, slp::SolverExitCondition>
   // instead of throwing exception, once cxx supports it
   //
   // https://github.com/dtolnay/cxx/issues/1052
-  MecanumTrajectory generate(bool diagnostics = false, int64_t handle = 0) const;
+  MecanumTrajectory generate(bool diagnostics = false,
+                             int64_t handle = 0) const;
 
  private:
   trajopt::MecanumPathBuilder path_builder;

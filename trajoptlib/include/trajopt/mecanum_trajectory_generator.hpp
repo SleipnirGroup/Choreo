@@ -1,6 +1,4 @@
 // Copyright (c) TrajoptLib contributors
-// Developed by Polar (23396) & Thomas (22377) for FTC Choreo under
-// github/@Null-Robotics.
 
 #pragma once
 
@@ -18,62 +16,41 @@
 
 namespace trajopt {
 
-/**
- * A mecanum drivetrain physical model.
- */
+/// A mecanum drivetrain physical model.
 struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
-  /**
-   * The mass of the robot in [kg]
-   */
+  /// The mass of the robot in (kg).
   double mass;
 
-  /**
-   * The MOI of the robot about the origin [kg-m²]
-   */
+  /// The moment of inertia of the robot about the origin (kg−m²).
   double moi;
 
-  /**
-   * Radius of the wheel [m]
-   */
+  /// Radius of the wheel (m).
   double wheel_radius;
 
-  /**
-   * Maximum angular velocity of the wheel [rad/s].
-   */
+  /// Maximum angular velocity of the wheel (rad/s).
   double wheel_max_angular_velocity;
 
-  /**
-   * Maximum torque applied to the wheel [N-m]
-   */
+  /// Maximum torque applied to the wheel (N-m).
   double wheel_max_torque;
 
-  /**
-   * The Coefficient of Friction (CoF) of the wheels (kinetic friction).
-   */
+  /// The Coefficient of Friction (CoF) of the wheels.
   double wheel_cof;
 
-  /**
-   * Static friction coefficient. Prevents wheel slip. Force cannot exceed static_friction_coefficient * normal_force per wheel.
-   */
+  /// Static friction coefficient. Prevents wheel slip. Force cannot exceed
+  /// static_friction_coefficient * normal_force per wheel.
   double static_friction_coefficient = 0.0;
 
-  /**
-   * Strafing efficiency [0 -> 1] penalizes strafing by a certain %.
-   */
+  /// Strafing efficiency [0 -> 1] penalizes strafing by a certain percent.
   double strafe_efficiency = 0.75;
 
   /// Translation of each wheel from the origin of the robot coordinate
   /// system to the center of the wheel (m).
   std::vector<Translation2d> wheels;
 
-  /**
-   * Gravity constant [m/s²]
-   */
+  /// Gravity constant (m/s²).
   double gravity = 9.8;
 
-  /**
-   * Safety factor to apply to static friction coefficient.
-   */
+  /// Safety factor to apply to static friction coefficient.
   double wheel_static_friction_safety_factor = 1.2;
 };
 
@@ -158,27 +135,25 @@ class TRAJOPT_DLLEXPORT MecanumTrajectorySample {
 
   MecanumTrajectorySample() = default;
 
-  /**
-   * Construct a MecanumTrajectorySample.
-   *
-   * @param timestamp The timestamp.
-   * @param x The x coordinate.
-   * @param y The y coordinate.
-   * @param heading The heading.
-   * @param velocity_x The velocity's x component.
-   * @param velocity_y The velocity's y component.
-   * @param angular_velocity The angular velocity.
-   * @param acceleration_x The acceleration's x component.
-   * @param acceleration_y The acceleration's y component.
-   * @param angular_acceleration The angular acceleration.
-   * @param module_forces_x Forces acting on the modules in the X direction.
-   * @param module_forces_y Forces acting on the modules in the Y direction.
-   */
+  /// Construct a MecanumTrajectorySample.
+  ///
+  /// @param timestamp The timestamp.
+  /// @param x The x coordinate.
+  /// @param y The y coordinate.
+  /// @param heading The heading.
+  /// @param velocity_x The velocity's x component.
+  /// @param velocity_y The velocity's y component.
+  /// @param angular_velocity The angular velocity.
+  /// @param acceleration_x The acceleration's x component.
+  /// @param acceleration_y The acceleration's y component.
+  /// @param angular_acceleration The angular acceleration.
+  /// @param module_forces_x Forces acting on the modules in the X direction.
+  /// @param module_forces_y Forces acting on the modules in the Y direction.
   MecanumTrajectorySample(double timestamp, double x, double y, double heading,
-                         double velocity_x, double velocity_y,
-                         double angular_velocity, double acceleration_x,
-                         double acceleration_y, double angular_acceleration,
-                         std::vector<double> wheel_forces)
+                          double velocity_x, double velocity_y,
+                          double angular_velocity, double acceleration_x,
+                          double acceleration_y, double angular_acceleration,
+                          std::vector<double> wheel_forces)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -192,9 +167,7 @@ class TRAJOPT_DLLEXPORT MecanumTrajectorySample {
         wheel_forces{std::move(wheel_forces)} {}
 };
 
-/**
- * Mecanum trajectory.
- */
+/// Mecanum trajectory.
 class TRAJOPT_DLLEXPORT MecanumTrajectory {
  public:
   /// Trajectory samples.
@@ -202,19 +175,15 @@ class TRAJOPT_DLLEXPORT MecanumTrajectory {
 
   MecanumTrajectory() = default;
 
-  /**
-   * Construct a MecanumTrajectory from samples.
-   *
-   * @param samples The samples.
-   */
+  /// Construct a MecanumTrajectory from samples.
+  ///
+  /// @param samples The samples.
   explicit MecanumTrajectory(std::vector<MecanumTrajectorySample> samples)
       : samples{std::move(samples)} {}
 
-  /**
-   * Construct a MecanumTrajectory from a swerve solution.
-   *
-   * @param solution The swerve solution.
-   */
+  /// Construct a MecanumTrajectory from a swerve solution.
+  ///
+  /// @param solution The swerve solution.
   explicit MecanumTrajectory(const MecanumSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
@@ -229,42 +198,32 @@ class TRAJOPT_DLLEXPORT MecanumTrajectory {
   }
 };
 
-/**
- * A mecanum path.
- */
+/// A mecanum path.
 using MecanumPath = Path<MecanumDrivetrain, MecanumSolution>;
 
-/**
- * Builds a mecanum path using information about how the robot
- * must travel through a series of waypoints. This path can be converted to
- * a trajectory using MecanumTrajectoryGenerator.
- */
+/// Builds a mecanum path using information about how the robot must travel
+/// through a series of waypoints. This path can be converted to a trajectory
+/// using MecanumTrajectoryGenerator.
 using MecanumPathBuilder = PathBuilder<MecanumDrivetrain, MecanumSolution>;
 
-/**
- * This trajectory generator class contains functions to generate
- * time-optimal trajectories for several drivetrain types.
- */
+/// This trajectory generator class contains functions to generate time-optimal
+/// trajectories for several drivetrain types.
 class TRAJOPT_DLLEXPORT MecanumTrajectoryGenerator {
  public:
-  /**
-   * Construct a new swerve trajectory optimization problem.
-   *
-   * @param path_builder The path builder.
-   * @param handle An identifier for state callbacks.
-   */
+  /// Construct a new swerve trajectory optimization problem.
+  ///
+  /// @param path_builder The path builder.
+  /// @param handle An identifier for state callbacks.
   explicit MecanumTrajectoryGenerator(MecanumPathBuilder path_builder,
-                                     int64_t handle = 0);
+                                      int64_t handle = 0);
 
-  /**
-   * Generates an optimal trajectory.
-   *
-   * This function may take a long time to complete.
-   *
-   * @param diagnostics Enables diagnostic prints.
-   * @return Returns a holonomic trajectory on success, or the solver's exit
-   *     status on failure.
-   */
+  /// Generates an optimal trajectory.
+  ///
+  /// This function may take a long time to complete.
+  ///
+  /// @param diagnostics Enables diagnostic prints.
+  /// @return Returns a holonomic trajectory on success, or the solver's exit
+  ///     status on failure.
   std::expected<MecanumSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
 

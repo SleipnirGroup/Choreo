@@ -711,7 +711,7 @@ void MecanumTrajectoryGenerator::set_drivetrain(
 }
 
 void MecanumTrajectoryGenerator::set_bumpers(double front, double left,
-                                            double right, double back) {
+                                             double right, double back) {
   path_builder.set_bumpers(front, left, right, back);
 }
 
@@ -738,25 +738,25 @@ void MecanumTrajectoryGenerator::sgmt_initial_guess_points(
 }
 
 void MecanumTrajectoryGenerator::pose_wpt(size_t index, double x, double y,
-                                         double heading) {
+                                          double heading) {
   path_builder.pose_wpt(index, x, y, heading);
 }
 
 void MecanumTrajectoryGenerator::translation_wpt(size_t index, double x,
-                                                double y,
-                                                double heading_guess) {
+                                                 double y,
+                                                 double heading_guess) {
   path_builder.translation_wpt(index, x, y, heading_guess);
 }
 
 void MecanumTrajectoryGenerator::empty_wpt(size_t index, double x_guess,
-                                          double y_guess,
-                                          double heading_guess) {
+                                           double y_guess,
+                                           double heading_guess) {
   path_builder.wpt_initial_guess_point(index,
                                        {x_guess, y_guess, heading_guess});
 }
 
 void MecanumTrajectoryGenerator::wpt_linear_velocity_direction(size_t index,
-                                                              double angle) {
+                                                               double angle) {
   path_builder.wpt_constraint(
       index, trajopt::LinearVelocityDirectionConstraint{angle});
 }
@@ -779,10 +779,11 @@ void MecanumTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
       index, trajopt::LinearAccelerationMaxMagnitudeConstraint{magnitude});
 }
 
-void MecanumTrajectoryGenerator::wpt_point_at(size_t index, double field_point_x,
-                                             double field_point_y,
-                                             double heading_tolerance,
-                                             bool flip) {
+void MecanumTrajectoryGenerator::wpt_point_at(size_t index,
+                                              double field_point_x,
+                                              double field_point_y,
+                                              double heading_tolerance,
+                                              bool flip) {
   path_builder.wpt_constraint(
       index, trajopt::PointAtConstraint{
                  trajopt::Translation2d{field_point_x, field_point_y},
@@ -790,9 +791,9 @@ void MecanumTrajectoryGenerator::wpt_point_at(size_t index, double field_point_x
 }
 
 void MecanumTrajectoryGenerator::wpt_keep_in_circle(size_t index,
-                                                   double field_point_x,
-                                                   double field_point_y,
-                                                   double keep_in_radius) {
+                                                    double field_point_x,
+                                                    double field_point_y,
+                                                    double keep_in_radius) {
   for (size_t bumper = 0; bumper < path_builder.get_bumpers().size();
        bumper++) {
     for (size_t i = 0; i < path_builder.get_bumpers().at(bumper).points.size();
@@ -846,7 +847,7 @@ void MecanumTrajectoryGenerator::wpt_keep_in_lane(
 }
 
 void MecanumTrajectoryGenerator::wpt_keep_out_circle(size_t index, double x,
-                                                    double y, double radius) {
+                                                     double y, double radius) {
   for (size_t bumper = 0; bumper < path_builder.get_bumpers().size();
        bumper++) {
     for (size_t i = 0; i < path_builder.get_bumpers().at(bumper).points.size();
@@ -905,10 +906,10 @@ void MecanumTrajectoryGenerator::sgmt_point_at(
 }
 
 void MecanumTrajectoryGenerator::sgmt_keep_in_circle(size_t from_index,
-                                                    size_t to_index,
-                                                    double field_point_x,
-                                                    double field_point_y,
-                                                    double keep_in_radius) {
+                                                     size_t to_index,
+                                                     double field_point_x,
+                                                     double field_point_y,
+                                                     double keep_in_radius) {
   for (size_t bumper = 0; bumper < path_builder.get_bumpers().size();
        bumper++) {
     for (size_t i = 0; i < path_builder.get_bumpers().at(bumper).points.size();
@@ -962,8 +963,8 @@ void MecanumTrajectoryGenerator::sgmt_keep_in_lane(
 }
 
 void MecanumTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,
-                                                     size_t to_index, double x,
-                                                     double y, double radius) {
+                                                      size_t to_index, double x,
+                                                      double y, double radius) {
   for (size_t bumper = 0; bumper < path_builder.get_bumpers().size();
        bumper++) {
     for (size_t i = 0; i < path_builder.get_bumpers().at(bumper).points.size();
@@ -999,13 +1000,12 @@ void MecanumTrajectoryGenerator::add_callback(
           std::copy(cpp_sample.wheel_forces.begin(),
                     cpp_sample.wheel_forces.end(), std::back_inserter(fs));
 
-
           rust_samples.push_back(MecanumTrajectorySample{
               cpp_sample.timestamp, cpp_sample.x, cpp_sample.y,
               cpp_sample.heading, cpp_sample.velocity_x, cpp_sample.velocity_y,
               cpp_sample.angular_velocity, cpp_sample.acceleration_x,
               cpp_sample.acceleration_y, cpp_sample.angular_acceleration,
-              std::move(fs) });
+              std::move(fs)});
         }
 
         callback(MecanumTrajectory{rust_samples}, handle);
@@ -1013,7 +1013,7 @@ void MecanumTrajectoryGenerator::add_callback(
 }
 
 MecanumTrajectory MecanumTrajectoryGenerator::generate(bool diagnostics,
-                                                     int64_t handle) const {
+                                                       int64_t handle) const {
   trajopt::MecanumTrajectoryGenerator generator{path_builder, handle};
   if (auto sol = generator.generate(diagnostics); sol.has_value()) {
     trajopt::MecanumTrajectory cpp_trajectory{sol.value()};
@@ -1021,15 +1021,15 @@ MecanumTrajectory MecanumTrajectoryGenerator::generate(bool diagnostics,
     rust::Vec<MecanumTrajectorySample> rust_samples;
     for (const auto& cpp_sample : cpp_trajectory.samples) {
       rust::Vec<double> fs;
-      std::copy(cpp_sample.wheel_forces.begin(),
-                cpp_sample.wheel_forces.end(), std::back_inserter(fs));
+      std::copy(cpp_sample.wheel_forces.begin(), cpp_sample.wheel_forces.end(),
+                std::back_inserter(fs));
 
       rust_samples.push_back(MecanumTrajectorySample{
           cpp_sample.timestamp, cpp_sample.x, cpp_sample.y, cpp_sample.heading,
           cpp_sample.velocity_x, cpp_sample.velocity_y,
           cpp_sample.angular_velocity, cpp_sample.acceleration_x,
           cpp_sample.acceleration_y, cpp_sample.angular_acceleration,
-          std::move(fs) });
+          std::move(fs)});
     }
 
     return MecanumTrajectory{std::move(rust_samples)};
