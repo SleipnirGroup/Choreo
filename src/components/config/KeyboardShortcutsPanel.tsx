@@ -71,7 +71,6 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
           marginTop: `${1 * this.rowGap}px`,
           marginBottom: `${1 * this.rowGap}px`,
           marginLeft: "8px",
-
           width: "max-content"
         }}
       >

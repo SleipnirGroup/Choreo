@@ -22,6 +22,8 @@ import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { CodeGenStore } from "./CodeGenStore";
+import { genJavaFiles } from "./DocumentManager";
 
 export type SelectableItemTypes =
   | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {
@@ -73,6 +75,7 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
+    codegen: CodeGenStore,
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
@@ -89,7 +92,8 @@ export const DocumentStore = types
         version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
-        config: self.robotConfig.serialize
+        config: self.robotConfig.serialize,
+        codegen: self.codegen.serialize
       };
     },
     get isSidebarMarkerSelected() {
@@ -129,6 +133,7 @@ export const DocumentStore = types
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
+      self.codegen.deserialize(ser.codegen);
       self.type = ser.type;
     },
     setName(name: string) {
@@ -166,6 +171,7 @@ export const DocumentStore = types
         uuidsToGenerate.push(pathStore.uuid);
       });
       await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+      await genJavaFiles();
     },
     async generateAllOutdated() {
       const uuidsToGenerate: string[] = [];
@@ -175,6 +181,7 @@ export const DocumentStore = types
         }
       });
       await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+      await genJavaFiles();
     },
 
     async generatePath(uuid: string) {
