@@ -1,4 +1,4 @@
-import { Instance, SnapshotIn, types } from "mobx-state-tree";
+import { SnapshotIn, types } from "mobx-state-tree";
 
 export const FIELD_PRESETS = [
   {
@@ -106,8 +106,5 @@ export const FieldSettingsStore = types
       }
     }
   }));
-
-export interface IFieldSettingsStore
-  extends Instance<typeof FieldSettingsStore> {}
 
 export type FieldSettingsSnapshot = SnapshotIn<typeof FieldSettingsStore>;

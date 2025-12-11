@@ -35,7 +35,6 @@ import FieldImage2025 from "./fields/FieldImage2025";
 import FieldImageDecode from "./fields/FieldImageDecode";
 import {
   CUSTOM_FIELD_ID,
-  FIELD_PRESETS,
   FieldPresetId,
   getPresetById
 } from "../../../document/FieldSettingsStore";

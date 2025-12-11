@@ -12,13 +12,11 @@ import {
   Stack,
   TextField,
   Typography,
-  Paper,
-  Tooltip,
-  IconButton
+  Paper
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import { observer } from "mobx-react";
-import { Fragment, useCallback } from "react";
+import { useCallback } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import {
   CUSTOM_FIELD_ID,
