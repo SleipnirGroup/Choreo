@@ -1,7 +1,8 @@
 use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope, Waypoint};
 
 use super::{
-    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, MecanumGenerationTransformer, SwerveGenerationTransformer
+    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
+    MecanumGenerationTransformer, SwerveGenerationTransformer,
 };
 
 fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
@@ -263,7 +264,7 @@ impl MecanumGenerationTransformer for ConstraintSetter {
                         generator.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         generator.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                     }
-                },
+                }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                     None => generator.wpt_keep_in_circle(from, x, y, r),
                     Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
@@ -275,26 +276,19 @@ impl MecanumGenerationTransformer for ConstraintSetter {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
-                },
-                ConstraintData::KeepInLane {
-                    tolerance
-                } => {
+                }
+                ConstraintData::KeepInLane { tolerance } => {
                     if let Some(idx_to) = to_opt {
                         if let Some(wpt_from) = self.waypoint_idx.get(from) {
                             if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
                                 generator.sgmt_keep_in_lane(
-                                    from,
-                                    idx_to,
-                                    wpt_from.x,
-                                    wpt_from.y,
-                                    wpt_to.x,
-                                    wpt_to.y,
+                                    from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y,
                                     tolerance,
                                 );
                             }
                         }
                     }
-                },
+                }
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
                     None => generator.wpt_keep_out_circle(from, x, y, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
