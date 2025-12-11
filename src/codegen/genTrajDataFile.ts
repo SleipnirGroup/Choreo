@@ -20,58 +20,36 @@ function formatPose(sample: Pose2d): string {
 }
 
 function getPose(sample: SwerveSample | DifferentialSample): Pose2d {
-  const {x,y,heading} = sample;
-  return {x,y,heading};
+  const { x, y, heading } = sample;
+  return { x, y, heading };
 }
 
-function sanitizeTrajName(trajName: string): string {
-  let newName = trajName;
-  for (let i = 0; i < newName.length; i++) {
-    const char = newName.charAt(i);
-    if (char !== " ") continue;
-    newName =
-      newName.slice(0, i) +
-      newName.charAt(i + 1).toUpperCase() +
-      newName.slice(i + 2);
-  }
-  newName = newName.replaceAll(/[^\w]/g, "");
-  if (!newName.charAt(0).match(/[a-zA-z_]/)) {
-    newName = "_" + newName;
-  }
-  return newName;
-}
-
-function distinguishDupes(varName: string, numDupes: number) {
-  return numDupes <= 1 ? varName : `${varName}$Duplicate${numDupes - 1}`;
-}
 interface Pose2d {
   x: number;
   y: number;
   heading: number;
 }
 interface ChoreoTraj {
-  varName:string,
-  trajName: string,
-  mapName:string,
-  segment: number | undefined,
-  totalTimeSecs: number,
-  firstPose: Pose2d,
-  lastPose: Pose2d
+  varName: string;
+  trajName: string;
+  mapName: string;
+  segment: number | undefined;
+  totalTimeSecs: number;
+  firstPose: Pose2d;
+  lastPose: Pose2d;
 }
 
-function getChoreoTrajList(
-  trajectories: Trajectory[]
-) {
-  let trajList: ChoreoTraj[] = [];
-  for (const traj of trajectories){
+function getChoreoTrajList(trajectories: Trajectory[]) {
+  const trajList: ChoreoTraj[] = [];
+  for (const traj of trajectories) {
     const name = traj.name;
     const samples = traj.trajectory.samples;
     if (samples.length < 2) {
       continue;
     }
     {
-    // TODO dedupe/sanitize if necessary
-      const totalTimeSecs = samples[samples.length-1].t;
+      // TODO dedupe/sanitize if necessary
+      const totalTimeSecs = samples[samples.length - 1].t;
       trajList.push({
         varName: name,
         trajName: name,
@@ -79,35 +57,33 @@ function getChoreoTrajList(
         segment: undefined,
         totalTimeSecs,
         firstPose: getPose(samples[0]),
-        lastPose: getPose(samples[samples.length-1])
+        lastPose: getPose(samples[samples.length - 1])
       });
     }
     const splitTimes = traj.trajectory.splits.concat(
-        traj.trajectory.samples.length - 1
-      );
-      if (splitTimes.length > 2) {
-        for (let i = 0; i < splitTimes.length - 1; i++) {
-          let varName = name;
-          varName += `$${i}`;
-          const trajName = name;
-          trajList.push(
-            {
-              varName,
-              trajName,
-              mapName: `${trajName}\$${i}`,
-              segment: i,
-              totalTimeSecs: samples[splitTimes[i + 1]].t - samples[splitTimes[i]].t,
-              firstPose: getPose(samples[splitTimes[i]]),
-              lastPose: getPose(samples[splitTimes[i + 1]])
-            }
-          )
-        }
+      traj.trajectory.samples.length - 1
+    );
+    if (splitTimes.length > 2) {
+      for (let i = 0; i < splitTimes.length - 1; i++) {
+        let varName = name;
+        varName += `$${i}`;
+        const trajName = name;
+        trajList.push({
+          varName,
+          trajName,
+          mapName: `${trajName}$${i}`,
+          segment: i,
+          totalTimeSecs:
+            samples[splitTimes[i + 1]].t - samples[splitTimes[i]].t,
+          firstPose: getPose(samples[splitTimes[i]]),
+          lastPose: getPose(samples[splitTimes[i + 1]])
+        });
       }
-    
+    }
   }
   return trajList;
 }
-function printChoreoTraj(traj: ChoreoTraj,) : string {
+function printChoreoTraj(traj: ChoreoTraj): string {
   return `public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
     "${traj.trajName}",
     ${traj.segment === undefined ? "Optional.empty()" : `Optional.of(${traj.segment})`},
@@ -117,8 +93,7 @@ function printChoreoTraj(traj: ChoreoTraj,) : string {
 );`;
 }
 
-const CHOREOLIB_HELPERS = 
-`   
+const CHOREOLIB_HELPERS = `
     // If these methods cause errors because you're not using ChoreoLib,
     // turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
     /**
@@ -130,7 +105,7 @@ const CHOREOLIB_HELPERS =
         }
         return routine.trajectory(traj.name());
     }
-`
+`;
 export function genTrajDataFile(
   trajectories: Trajectory[],
   packageName: string,
@@ -147,12 +122,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Map;
 import java.util.Optional;
 
-${isUsingChoreoLib ? 
-`// If these imports cause errors because you're not using ChoreoLib,
+${
+  isUsingChoreoLib
+    ? `// If these imports cause errors because you're not using ChoreoLib,
 // turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
 import choreo.auto.AutoRoutine;
-import choreo.auto.AutoTrajectory;`  
-: ""}
+import choreo.auto.AutoTrajectory;`
+    : ""
+}
 /**
  * A class containing the name, start pose, end pose, and total time of every Choreo trajectory.
  * This prevents your code from referencing deleted or misspelled trajectories,
@@ -167,20 +144,23 @@ public record ${TRAJ_DATA_FILENAME}(
     Pose2d endPoseBlue
 ) {
 ${isUsingChoreoLib ? CHOREOLIB_HELPERS : ""}
-  ${trajList.map(printChoreoTraj).map((item)=>item.replaceAll("\n", "\n\t")).join("\n\t")}
+  ${trajList
+    .map(printChoreoTraj)
+    .map((item) => item.replaceAll("\n", "\n\t"))
+    .join("\n\t")}
   /**
    * A map between trajectory names and their corresponding data.
    * This allows for trajectory data to be looked up with strings during runtime.
    */
   public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-${trajList.map((entry)=>
-`     Map.entry("${entry.mapName}", ${entry.varName})`
-).join(",\n")}
+${trajList
+  .map((entry) => `     Map.entry("${entry.mapName}", ${entry.varName})`)
+  .join(",\n")}
     );
 
     /**
      * Looks up the ChoreoTraj segment of the given overall ChoreoTraj
-     * 
+     *
      * WARNING: will return null at runtime if not called with an overall ChoreoTraj and a valid segment index.
      */
     public static ChoreoTraj segment(ChoreoTraj main, int segment) {
@@ -188,7 +168,7 @@ ${trajList.map((entry)=>
     }
 }
 `;
-return content;
+    return content;
   } catch (e) {
     tracing.error("Error generating trajectory data file:", e);
     throw e;

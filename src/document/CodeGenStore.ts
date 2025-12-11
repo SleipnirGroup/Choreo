@@ -50,6 +50,6 @@ export const CodeGenStore = types
       self.root = data.root;
       self.genVars = data.genVars;
       self.genTrajData = data.genTrajData;
-      self.useChoreoLib= data.useChoreoLib;
+      self.useChoreoLib = data.useChoreoLib;
     }
   }));

@@ -70,7 +70,7 @@ function CodeGenConfigPanel() {
             style={{ gap: 10 }}
           />
 
-                    <FormControlLabel
+          <FormControlLabel
             control={
               <Checkbox
                 checked={doc.codegen.useChoreoLib}

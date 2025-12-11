@@ -120,7 +120,9 @@ pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
             "Attempted to delete a non-Java file".to_string(),
         ));
     }
-    if let Ok(t) = fs::exists(file_path.clone()) && t==false {
+    if let Ok(t) = fs::exists(file_path.clone())
+        && t == false
+    {
         return Ok(());
     }
     fs::remove_file(file_path)?;
