@@ -36,19 +36,12 @@ struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
   /// The Coefficient of Friction (CoF) of the wheels.
   double wheel_cof;
 
-  /// Static friction coefficient. Prevents wheel slip. Force cannot exceed
-  /// static_friction_coefficient * normal_force per wheel.
-  double static_friction_coefficient = 0.0;
-
   /// Strafing efficiency [0 -> 1] penalizes strafing by a certain percent.
   double strafe_efficiency = 0.75;
 
   /// Translation of each wheel from the origin of the robot coordinate
   /// system to the center of the wheel (m).
   std::vector<Translation2d> wheels;
-
-  /// Safety factor to apply to static friction coefficient.
-  double wheel_static_friction_safety_factor = 1.2;
 };
 
 /// The mecanum drive trajectory optimization solution.
