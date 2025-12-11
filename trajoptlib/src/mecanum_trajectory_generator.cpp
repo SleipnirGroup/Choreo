@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <numbers>
 #include <ranges>
 #include <vector>
 
@@ -105,7 +106,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   }
 
   // Minimize total time
-  const double s_init = 1.0 / std::sqrt(2.0);
+  constexpr double s_init = 1.0 / std::numbers::sqrt2;
   const double max_force = path.drivetrain.wheel_max_torque * 4 /
                            path.drivetrain.wheel_radius * s_init;
   const auto max_accel = max_force / path.drivetrain.mass;
@@ -225,7 +226,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     }
   }
 
-  const double s = 1.0 / std::sqrt(2.0);
+  constexpr double s = 1.0 / std::numbers::sqrt2;
 
   const double strafe_eff = path.drivetrain.strafe_efficiency;
   std::vector<double> fx_coeff = {s, s, s, s};
