@@ -884,7 +884,6 @@ export async function genJavaFiles() {
   );
   const tasks = [];
   if (doc.codegen.genVars) {
-    tracing.info("Hi1");
     tasks.push(
       Commands.writeJavaFile(
         genVarsFile(doc.serializeChor(), codeGenPkg),
@@ -893,7 +892,6 @@ export async function genJavaFiles() {
     );
   }
   if (doc.codegen.genTrajData) {
-    tracing.info("Hi2");
     tasks.push(
       Commands.writeJavaFile(
         genTrajDataFile(trajectories, codeGenPkg),

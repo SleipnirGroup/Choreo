@@ -12,11 +12,16 @@ function round(val: number, digits: number) {
   return Math.round(val * roundingFactor) / roundingFactor;
 }
 
-function formatPose(sample: SwerveSample | DifferentialSample): string {
+function formatPose(sample: Pose2d): string {
   const x = round(sample.x, 3);
   const y = round(sample.y, 3);
   const heading = round(sample.heading, 3);
   return `new Pose2d(${x}, ${y}, Rotation2d.fromRadians(${heading}))`;
+}
+
+function getPose(sample: SwerveSample | DifferentialSample): Pose2d {
+  const {x,y,heading} = sample;
+  return {x,y,heading};
 }
 
 function sanitizeTrajName(trajName: string): string {
@@ -39,19 +44,107 @@ function sanitizeTrajName(trajName: string): string {
 function distinguishDupes(varName: string, numDupes: number) {
   return numDupes <= 1 ? varName : `${varName}$Duplicate${numDupes - 1}`;
 }
+interface Pose2d {
+  x: number;
+  y: number;
+  heading: number;
+}
+interface ChoreoTraj {
+  varName:string,
+  trajName: string,
+  mapName:string,
+  segment: number | undefined,
+  totalTimeSecs: number,
+  firstPose: Pose2d,
+  lastPose: Pose2d
+}
 
+function getChoreoTrajList(
+  trajectories: Trajectory[]
+) {
+  let trajList: ChoreoTraj[] = [];
+  for (const traj of trajectories){
+    const name = traj.name;
+    const samples = traj.trajectory.samples;
+    if (samples.length < 2) {
+      continue;
+    }
+    {
+    // TODO dedupe/sanitize if necessary
+      const totalTimeSecs = samples[samples.length-1].t;
+      trajList.push({
+        varName: name,
+        trajName: name,
+        mapName: name,
+        segment: undefined,
+        totalTimeSecs,
+        firstPose: getPose(samples[0]),
+        lastPose: getPose(samples[samples.length-1])
+      });
+    }
+    const splitTimes = traj.trajectory.splits.concat(
+        traj.trajectory.samples.length - 1
+      );
+      if (splitTimes.length > 2) {
+        for (let i = 0; i < splitTimes.length - 1; i++) {
+          let varName = name;
+          varName += `$${i}`;
+          const trajName = name;
+          trajList.push(
+            {
+              varName,
+              trajName,
+              mapName: `${trajName}\$${i}`,
+              segment: i,
+              totalTimeSecs: samples[splitTimes[i + 1]].t - samples[splitTimes[i]].t,
+              firstPose: getPose(samples[splitTimes[i]]),
+              lastPose: getPose(samples[splitTimes[i + 1]])
+            }
+          )
+        }
+      }
+    
+  }
+  return trajList;
+}
+function printChoreoTraj(traj: ChoreoTraj,) : string {
+  return `public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
+    "${traj.trajName}",
+    ${traj.segment === undefined ? "Optional.empty()" : `Optional.of(${traj.segment})`},
+    ${traj.totalTimeSecs},
+    ${formatPose(traj.firstPose)},
+    ${formatPose(traj.lastPose)}
+);`;
+}
+
+const CHOREOLIB_HELPERS = 
+`   public static AutoTrajectory trajectory(AutoRoutine routine, ChoreoTraj traj) {
+        if (traj.segment().isPresent()) {
+            return routine.trajectory(traj.name(), traj.segment().get());
+        }
+        return routine.trajectory(traj.name());
+    }
+`
 export function genTrajDataFile(
   trajectories: Trajectory[],
   packageName: string
 ): string {
+  const isUsingChoreoLib = true;
+  const trajList = getChoreoTrajList(trajectories);
+  console.log(trajList);
   try {
-    const content: string[] = [];
-    content.push(`package ${packageName}; \n`);
-    content.push(`
+    const content: string = `
+package ${packageName};
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Map;
+import java.util.Optional;
 
+${isUsingChoreoLib ? 
+`import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;`  
+: ""}
 /**
  * A class containing the name, start pose, end pose, and total time of every Choreo trajectory.
  * This prevents your code from referencing deleted or misspelled trajectories,
@@ -60,62 +153,34 @@ import java.util.Map;
  */
 public record ${TRAJ_DATA_FILENAME}(
     String name,
+    Optional<Integer> segment,
     double totalTimeSecs,
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
-) { \n`);
-    // Since sanitizeTrajName() can technically produce identical variable names
-    // for 2 distinct trajectories(like ABA___ and ABA),
-    // we have to distinguish between duplicates like this.
-    const usedVarNames: Record<string, string[]> = {};
-    const staticMembers: string[] = [];
-    for (const traj of trajectories) {
-      const waypoints = traj.trajectory.samples;
-      if (waypoints.length === 0) {
-        continue;
-      }
-      const splitTimes = traj.trajectory.splits.concat(
-        traj.trajectory.samples.length - 1
-      );
-      for (let i = 0; i < splitTimes.length - 1; i++) {
-        let varName = sanitizeTrajName(traj.name);
-        varName += splitTimes.length > 2 ? `$${i + 1}` : "";
-        const trajName = traj.name + (splitTimes.length > 2 ? `.${i + 1}` : "");
-        const dupes = usedVarNames[varName];
-        if (dupes) {
-          varName = distinguishDupes(varName, dupes.length + 1);
-          usedVarNames[varName].push(trajName);
-        } else {
-          usedVarNames[varName] = [trajName];
-        }
-        let staticDef = `    public static final ChoreoTraj ${varName} = new ChoreoTraj(`;
-        staticDef += `\n        "${trajName}",`;
-        staticDef += `\n        ${waypoints[splitTimes[i + 1]].t},`;
-        staticDef += `\n        ${formatPose(waypoints[splitTimes[i]])},`;
-        staticDef += `\n        ${formatPose(waypoints[splitTimes[i + 1]])}`;
-        staticDef += `\n    );`;
-        staticMembers.push(staticDef);
-      }
-    }
-    content.push(staticMembers.join("\n"));
-    content.push(`\n
+) {
+${isUsingChoreoLib ? CHOREOLIB_HELPERS : ""}
+  ${trajList.map(printChoreoTraj).map((item)=>item.replaceAll("\n", "\n\t")).join("\n\t")}
+  /**
+   * A map between trajectory names and their corresponding data.
+   * This allows for trajectory data to be looked up with strings during runtime.
+   */
+  public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
+${trajList.map((entry)=>
+`     Map.entry("${entry.mapName}", ${entry.varName})`
+).join(",\n")}
+    );
+
     /**
-     * A map between trajectory names and their corresponding data.
-     * This allows for trajectory data to be looked up with strings during runtime.
+     * Looks up the ChoreoTraj segment of the given overall ChoreoTraj
+     * 
+     * WARNING: will return null at runtime if not called with an overall ChoreoTraj and a valid segment index.
      */
-    public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(\n`);
-    const mapEntries = [];
-    for (const [varName, trajNames] of Object.entries(usedVarNames)) {
-      for (let i = 0; i < trajNames.length; i++) {
-        mapEntries.push(
-          `        Map.entry("${trajNames[i]}", ${distinguishDupes(varName, i + 1)})`
-        );
-      }
+    public static ChoreoTraj segment(ChoreoTraj main, int segment) {
+        return ChoreoTraj.ALL_TRAJECTORIES.get(main.name() + "$" + segment);
     }
-    content.push(mapEntries.join(",\n"));
-    content.push("\n    );");
-    content.push(`\n}`);
-    return content.join("");
+}
+`;
+return content;
   } catch (e) {
     tracing.error("Error generating trajectory data file:", e);
     throw e;
