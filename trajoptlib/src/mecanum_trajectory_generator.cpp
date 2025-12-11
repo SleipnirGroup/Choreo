@@ -300,9 +300,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
           (path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius) * s;
 
       // Static force constraint prevents wheel slip
-      double normal_force_per_wheel = path.drivetrain.mass /
-                                      path.drivetrain.wheels.size() *
-                                      path.drivetrain.gravity;
+      double normal_force_per_wheel =
+          path.drivetrain.mass / path.drivetrain.wheels.size() * 9.8;
       double static_friction_coef =
           (path.drivetrain.static_friction_coefficient > 0.0)
               ? path.drivetrain.static_friction_coefficient
