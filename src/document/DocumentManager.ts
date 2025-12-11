@@ -260,7 +260,8 @@ export const doc = DocumentStore.create(
     codegen: {
       root: null,
       genVars: true,
-      genTrajData: true
+      genTrajData: true,
+      useChoreoLib: true
     }
   },
   env
@@ -894,7 +895,7 @@ export async function genJavaFiles() {
   if (doc.codegen.genTrajData) {
     tasks.push(
       Commands.writeJavaFile(
-        genTrajDataFile(trajectories, codeGenPkg),
+        genTrajDataFile(trajectories, codeGenPkg, doc.codegen.useChoreoLib),
         `${rootPath}/${TRAJ_DATA_FILENAME}.java`
       )
     );

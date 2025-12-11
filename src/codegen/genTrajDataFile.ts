@@ -118,7 +118,13 @@ function printChoreoTraj(traj: ChoreoTraj,) : string {
 }
 
 const CHOREOLIB_HELPERS = 
-`   public static AutoTrajectory trajectory(AutoRoutine routine, ChoreoTraj traj) {
+`   
+    // If these methods cause errors because you're not using ChoreoLib,
+    // turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
+    /**
+     * Load an AutoTrajectory directly from a ChoreoTraj, which may be a segment of a larger trajectory.
+     */
+    public static AutoTrajectory trajectory(AutoRoutine routine, ChoreoTraj traj) {
         if (traj.segment().isPresent()) {
             return routine.trajectory(traj.name(), traj.segment().get());
         }
@@ -127,9 +133,9 @@ const CHOREOLIB_HELPERS =
 `
 export function genTrajDataFile(
   trajectories: Trajectory[],
-  packageName: string
+  packageName: string,
+  isUsingChoreoLib: boolean
 ): string {
-  const isUsingChoreoLib = true;
   const trajList = getChoreoTrajList(trajectories);
   console.log(trajList);
   try {
@@ -142,7 +148,9 @@ import java.util.Map;
 import java.util.Optional;
 
 ${isUsingChoreoLib ? 
-`import choreo.auto.AutoRoutine;
+`// If these imports cause errors because you're not using ChoreoLib,
+// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
+import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;`  
 : ""}
 /**

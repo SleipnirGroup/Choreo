@@ -69,6 +69,17 @@ function CodeGenConfigPanel() {
             label="Generate Trajectory Data File (name, start & end pose, total time)"
             style={{ gap: 10 }}
           />
+
+                    <FormControlLabel
+            control={
+              <Checkbox
+                checked={doc.codegen.useChoreoLib}
+                onChange={(_, value) => doc.codegen.setUseChoreoLib(value)}
+              />
+            }
+            label="Include ChoreoLib-specific Helpers"
+            style={{ gap: 10 }}
+          />
         </Stack>
       </Stack>
     </div>

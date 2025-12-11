@@ -7,14 +7,16 @@ export const CodeGenStore = types
   .model("CodeGenStore", {
     root: types.maybeNull(types.string),
     genVars: types.boolean,
-    genTrajData: types.boolean
+    genTrajData: types.boolean,
+    useChoreoLib: types.boolean
   })
   .views((self) => ({
     get serialize(): CodeGenConfig {
       return {
         root: self.root,
         genVars: self.genVars,
-        genTrajData: self.genTrajData
+        genTrajData: self.genTrajData,
+        useChoreoLib: self.useChoreoLib
       };
     },
     get javaPkg() {
@@ -41,9 +43,13 @@ export const CodeGenStore = types
     setGenTrajData(genTrajData: boolean) {
       self.genTrajData = genTrajData;
     },
+    setUseChoreoLib(useChoreoLib: boolean) {
+      self.useChoreoLib = useChoreoLib;
+    },
     deserialize(data: CodeGenConfig) {
       self.root = data.root;
       self.genVars = data.genVars;
       self.genTrajData = data.genTrajData;
+      self.useChoreoLib= data.useChoreoLib;
     }
   }));

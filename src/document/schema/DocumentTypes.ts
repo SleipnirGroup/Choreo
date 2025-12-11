@@ -62,6 +62,7 @@ export interface CodeGenConfig {
   root: string | null;
   genVars: boolean;
   genTrajData: boolean;
+  useChoreoLib: boolean;
 }
 
 export interface Project {

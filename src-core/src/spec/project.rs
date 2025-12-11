@@ -146,6 +146,7 @@ pub struct CodeGenConfig {
     pub root: Option<String>,
     pub gen_vars: bool,
     pub gen_traj_data: bool,
+    pub use_choreo_lib: bool
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -213,6 +214,7 @@ impl Default for ProjectFile {
                 root: None,
                 gen_vars: true,
                 gen_traj_data: true,
+                use_choreo_lib: true
             },
         }
     }
