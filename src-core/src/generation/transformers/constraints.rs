@@ -278,15 +278,13 @@ impl MecanumGenerationTransformer for ConstraintSetter {
                     }
                 }
                 ConstraintData::KeepInLane { tolerance } => {
-                    if let Some(idx_to) = to_opt {
-                        if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                            if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                                generator.sgmt_keep_in_lane(
-                                    from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y,
-                                    tolerance,
-                                );
-                            }
-                        }
+                    if let Some(idx_to) = to_opt
+                        && let Some(wpt_from) = self.waypoint_idx.get(from)
+                        && let Some(wpt_to) = self.waypoint_idx.get(idx_to)
+                    {
+                        generator.sgmt_keep_in_lane(
+                            from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y, tolerance,
+                        );
                     }
                 }
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
