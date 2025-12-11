@@ -213,29 +213,34 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
     Translation2v<double> v_k{vx.at(index), vy.at(index)};
 
-    std::vector<slp::Variable<double>> Fx;
-    Fx.reserve(path.drivetrain.wheels.size());
-    std::vector<slp::Variable<double>> Fy;
-    Fy.reserve(path.drivetrain.wheels.size());
+    // x and y forces in the body frame
+    std::vector<slp::Variable<double>> Fx_body;
+    Fx_body.reserve(path.drivetrain.wheels.size());
+    std::vector<slp::Variable<double>> Fy_body;
+    Fy_body.reserve(path.drivetrain.wheels.size());
 
     for (size_t i = 0; i < path.drivetrain.wheels.size(); ++i) {
-      Fx.push_back(fx_coeff[i] * F.at(index)[i]);
-      Fy.push_back(fy_coeff[i] * F.at(index)[i]);
+      Fx_body.push_back(fx_coeff[i] * F.at(index)[i]);
+      Fy_body.push_back(fy_coeff[i] * F.at(index)[i]);
     }
 
     // Solve for net force
-    auto Fx_net = std::accumulate(Fx.begin(), Fx.end(), slp::Variable{0.0});
-    auto Fy_net = std::accumulate(Fy.begin(), Fy.end(), slp::Variable{0.0});
+    auto Fx_body_net =
+        std::accumulate(Fx_body.begin(), Fx_body.end(), slp::Variable{0.0});
+    auto Fy_body_net =
+        std::accumulate(Fy_body.begin(), Fy_body.end(), slp::Variable{0.0});
+    auto F_world_net =
+        Translation2v<double>{Fx_body_net, Fy_body_net}.rotate_by(θ_k);
 
     // Solve for net torque
     slp::Variable τ_net = 0.0;
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
-      const auto& translation = path.drivetrain.wheels.at(module_index);
-      auto r = translation.rotate_by(θ_k);
-      Translation2v<double> F{Fx.at(module_index), Fy.at(module_index)};
+      const auto& r_body = path.drivetrain.wheels.at(module_index);
+      Translation2v<double> F_body{Fx_body.at(module_index),
+                                   Fy_body.at(module_index)};
 
-      τ_net += r.cross(F);
+      τ_net += r_body.cross(F_body);
     }
 
     // Apply module power constraints
@@ -288,8 +293,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     //   ΣF_xₖ = ma_xₖ
     //   ΣF_yₖ = ma_yₖ
     //   Στₖ = Jαₖ
-    problem.subject_to(Fx_net == path.drivetrain.mass * ax.at(index));
-    problem.subject_to(Fy_net == path.drivetrain.mass * ay.at(index));
+    problem.subject_to(F_world_net.x() == path.drivetrain.mass * ax.at(index));
+    problem.subject_to(F_world_net.y() == path.drivetrain.mass * ay.at(index));
     problem.subject_to(τ_net == path.drivetrain.moi * α.at(index));
   }
 
