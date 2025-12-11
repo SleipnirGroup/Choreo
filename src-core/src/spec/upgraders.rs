@@ -169,7 +169,7 @@ mod project_file {
     fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
         editor.set_path("codegen.root", Option::<String>::None)?;
         editor.set_path("codegen.genVars", true)?;
-        editor.set_path("codegen.genTrajData", false)?;
+        editor.set_path("codegen.genTrajData", true)?;
         Ok(())
     }
 
