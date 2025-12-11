@@ -18,19 +18,19 @@ namespace trajopt {
 
 /// A mecanum drivetrain physical model.
 struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
-  /// The mass of the robot in (kg).
+  /// The mass of the robot (kg).
   double mass;
 
   /// The moment of inertia of the robot about the origin (kg−m²).
   double moi;
 
-  /// Radius of the wheel (m).
+  /// Radius of wheel (m).
   double wheel_radius;
 
-  /// Maximum angular velocity of the wheel (rad/s).
+  /// Maximum angular velocity of wheel (rad/s).
   double wheel_max_angular_velocity;
 
-  /// Maximum torque applied to the wheel (N-m).
+  /// Maximum torque applied to wheel (N−m).
   double wheel_max_torque;
 
   /// The Coefficient of Friction (CoF) of the wheels.
@@ -54,9 +54,7 @@ struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
   double wheel_static_friction_safety_factor = 1.2;
 };
 
-/**
- * The mecanum drive trajectory optimization solution.
- */
+/// The mecanum drive trajectory optimization solution.
 struct TRAJOPT_DLLEXPORT MecanumSolution {
   /// Times between samples.
   std::vector<double> dt;
@@ -91,13 +89,11 @@ struct TRAJOPT_DLLEXPORT MecanumSolution {
   /// The angular accelerations.
   std::vector<double> alpha;
 
-  /// The forces along the active axis of each wheel
+  /// The forces along the active axis of each wheel.
   std::vector<std::vector<double>> wheel_f;
 };
 
-/**
- * Mecanum drive trajectory sample.
- */
+/// Mecanum drive trajectory sample.
 class TRAJOPT_DLLEXPORT MecanumTrajectorySample {
  public:
   /// The timestamp.

@@ -193,13 +193,13 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
 /// A swerve path.
 using SwervePath = Path<SwerveDrivetrain, SwerveSolution>;
 
-/// Builds a swerve path using information about how the robot
-/// must travel through a series of waypoints. This path can be converted
-/// to a trajectory using SwerveTrajectoryGenerator.
+/// Builds a swerve path using information about how the robot must travel
+/// through a series of waypoints. This path can be converted to a trajectory
+/// using SwerveTrajectoryGenerator.
 using SwervePathBuilder = PathBuilder<SwerveDrivetrain, SwerveSolution>;
 
-/// This trajectory generator class contains functions to generate
-/// time-optimal trajectories for several drivetrain types.
+/// This trajectory generator class contains functions to generate time-optimal
+/// trajectories for several drivetrain types.
 class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
  public:
   /// Construct a new swerve trajectory optimization problem.
