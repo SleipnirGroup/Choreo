@@ -143,8 +143,7 @@ class TRAJOPT_DLLEXPORT MecanumTrajectorySample {
   /// @param acceleration_x The acceleration's x component.
   /// @param acceleration_y The acceleration's y component.
   /// @param angular_acceleration The angular acceleration.
-  /// @param module_forces_x Forces acting on the modules in the X direction.
-  /// @param module_forces_y Forces acting on the modules in the Y direction.
+  /// @param wheel_forces Forces along the wheel directions.
   MecanumTrajectorySample(double timestamp, double x, double y, double heading,
                           double velocity_x, double velocity_y,
                           double angular_velocity, double acceleration_x,
