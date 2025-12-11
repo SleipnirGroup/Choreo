@@ -8,7 +8,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
+import { Expr, Waypoint } from "../../../document/schema/DocumentTypes";
 import { ConstraintKey } from "../../../document/ConstraintDefinitions";
 import { IConstraintStoreKeyed } from "../../../document/ConstraintStore";
 import { doc, uiState } from "../../../document/DocumentManager";

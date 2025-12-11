@@ -1,8 +1,8 @@
 use super::angle_modulus;
+use crate::ChoreoResult;
 use crate::error::ChoreoError;
 use crate::spec::project::RobotConfig;
 use crate::spec::trajectory::{ConstraintData, Parameters, Waypoint};
-use crate::ChoreoResult;
 
 pub fn guess_control_interval_counts(
     config: &RobotConfig<f64>,
@@ -65,32 +65,28 @@ pub fn guess_control_interval_count(
                     if let Some(to) = constraint
                         .to
                         .and_then(|id| id.get_idx(params.waypoints.len()))
+                        && let Some(from) = constraint.from.get_idx(params.waypoints.len())
+                        && i < to
+                        && i >= from
                     {
-                        if let Some(from) = constraint.from.get_idx(params.waypoints.len()) {
-                            if i < to && i >= from {
-                                match constraint.data {
-                                    ConstraintData::MaxVelocity { max } => {
-                                        max_linear_vel = max_linear_vel.min(max);
-                                    }
-                                    ConstraintData::MaxAcceleration { max } => {
-                                        max_linear_accel = max_linear_accel.min(max);
-                                    }
-                                    ConstraintData::MaxAngularVelocity { max } => {
-                                        max_ang_vel = max_ang_vel.min(max);
-                                        if max_ang_vel == 0.0 {
-                                            dtheta = 0.0;
-                                        }
-                                        let time = calculate_trapezoidal_time(
-                                            dtheta,
-                                            max_ang_vel,
-                                            max_ang_accel,
-                                        );
-                                        max_linear_vel = max_linear_vel.min(distance / time);
-                                    }
-                                    _ => {}
-                                };
+                        match constraint.data {
+                            ConstraintData::MaxVelocity { max } => {
+                                max_linear_vel = max_linear_vel.min(max);
                             }
-                        }
+                            ConstraintData::MaxAcceleration { max } => {
+                                max_linear_accel = max_linear_accel.min(max);
+                            }
+                            ConstraintData::MaxAngularVelocity { max } => {
+                                max_ang_vel = max_ang_vel.min(max);
+                                if max_ang_vel == 0.0 {
+                                    dtheta = 0.0;
+                                }
+                                let time =
+                                    calculate_trapezoidal_time(dtheta, max_ang_vel, max_ang_accel);
+                                max_linear_vel = max_linear_vel.min(distance / time);
+                            }
+                            _ => {}
+                        };
                     }
                 });
 

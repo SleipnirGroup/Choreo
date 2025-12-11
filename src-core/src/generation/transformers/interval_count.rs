@@ -2,19 +2,25 @@ use trajoptlib::Pose2d;
 
 use crate::{generation::intervals::guess_control_interval_counts, spec::trajectory::Waypoint};
 
-use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, MecanumGenerationTransformer, SwerveGenerationTransformer};
-
+use super::{
+    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
+    MecanumGenerationTransformer, SwerveGenerationTransformer,
+};
 
 pub struct IntervalCountSetter {
     counts: Vec<usize>,
-    waypoints: Vec<Waypoint<f64>>
+    waypoints: Vec<Waypoint<f64>>,
 }
 
 impl SwerveGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
-            waypoints: context.params.waypoints.clone()
+            counts: guess_control_interval_counts(
+                &context.project.config.snapshot(),
+                &context.params,
+            )
+            .unwrap_or_default(),
+            waypoints: context.params.waypoints.clone(),
         })
     }
 
@@ -62,8 +68,12 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
 impl DifferentialGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
-            waypoints: context.params.waypoints.clone()
+            counts: guess_control_interval_counts(
+                &context.project.config.snapshot(),
+                &context.params,
+            )
+            .unwrap_or_default(),
+            waypoints: context.params.waypoints.clone(),
         })
     }
 
@@ -111,8 +121,12 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
 impl MecanumGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
-            waypoints: context.params.waypoints.clone()
+            counts: guess_control_interval_counts(
+                &context.project.config.snapshot(),
+                &context.params,
+            )
+            .unwrap_or_default(),
+            waypoints: context.params.waypoints.clone(),
         })
     }
 

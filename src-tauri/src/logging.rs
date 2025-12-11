@@ -5,7 +5,7 @@
 )]
 
 use nu_ansi_term::{Color, Style};
-use tracing::{field::Visit, Level};
+use tracing::{Level, field::Visit};
 
 pub fn now_str() -> String {
     format!(

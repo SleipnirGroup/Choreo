@@ -10,18 +10,14 @@
 
 namespace choreo {
 
-/**
- * Enforce equality operators on trajectory sample types.
- */
+/// Enforce equality operators on trajectory sample types.
 template <typename T>
 concept EqualityComparable = requires(const T& a, const T& b) {
   { a == b } -> std::convertible_to<bool>;
   { a != b } -> std::convertible_to<bool>;
 };
 
-/**
- * A concept representing a single robot sample in a Trajectory.
- */
+/// A concept representing a single robot sample in a Trajectory.
 template <typename T>
 concept TrajectorySample =
     EqualityComparable<T> &&

@@ -427,20 +427,6 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
-   * after one pulse.
-   *
-   * @param cycles The number of cycles to delay the trigger from rising to true.
-   * @return A trigger that is true when the trajectory is finished.
-   * @see #doneDelayed(int)
-   * @deprecated Use {@link #doneDelayed(int)} instead.
-   */
-  @Deprecated(forRemoval = true, since = "2025")
-  public Trigger done(int cycles) {
-    return doneDelayed(0.02 * cycles);
-  }
-
-  /**
    * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
    *
    * <p>This is different from inactive() in a few ways.

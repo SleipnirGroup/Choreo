@@ -7,9 +7,11 @@ simply run `python update_version.py <version>` to update the version in the fil
 """
 
 import re
+import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
@@ -41,28 +43,28 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
         version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
         version_path=["javaDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
         version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
         relative_path=Path("src-tauri/tauri.conf.json"),
-        version_path=["package", "version"],
+        version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
         relative_path=Path("src-tauri/tauri.conf.json"),
-        version_path=["tauri", "windows", 0, "title"],
+        version_path=["app", "windows", 0, "title"],
         file_format="json2",
         prefix="Choreo v",
     ),
@@ -91,9 +93,9 @@ def update_version(version: str) -> None:
     # Formats:
     #
     # v2024.2.3-193-g869a3ef
-    # v2025.0.0
-    # v2025.0.0-alpha-1
-    # v2025.0.0-beta-2
+    # v2026.0.0
+    # v2026.0.0-alpha-1
+    # v2026.0.0-beta-2
     m = re.search(
         r"""
         ^v
@@ -116,7 +118,7 @@ def update_version(version: str) -> None:
         if location.file_format == "json2" or location.file_format == "json4":
             import json
 
-            with open(file_path, "r") as f:
+            with open(file_path, mode="r", newline="\n") as f:
                 data = json.load(f)
             og = data
             version_str = (
@@ -133,13 +135,13 @@ def update_version(version: str) -> None:
                     f"Version path not found: {location.version_path} in {location.relative_path}"
                 )
                 raise e
-            with open(file_path, "w") as f:
+            with open(file_path, mode="w", newline="\n") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
                 f.write("\n")
         elif location.file_format == "toml":
             import tomlkit
 
-            with open(file_path, "r") as f:
+            with open(file_path, mode="r", newline="\n") as f:
                 data = tomlkit.load(f)
             og = data
             version_str = (
@@ -156,10 +158,11 @@ def update_version(version: str) -> None:
                     f"Version path not found: {location.version_path} in {location.relative_path}"
                 )
                 raise e
-            with open(file_path, "w") as f:
+            with open(file_path, mode="w", newline="\n") as f:
                 tomlkit.dump(og, f)
         else:
             raise ValueError(f"Unsupported file format: {location.file_format}")
+    subprocess.check_call(["pnpm", "prettier", "--write", "."])
 
 
 if __name__ == "__main__":

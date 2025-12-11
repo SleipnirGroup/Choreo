@@ -1,10 +1,5 @@
 cppHeaderFileInclude {
   \.h$
-  \.hpp$
-}
-
-cppSrcFileInclude {
-  \.cpp$
 }
 
 modifiableFileExclude {

@@ -26,16 +26,14 @@
 
 namespace trajopt {
 
-/**
- * ConstraintType concept.
- *
- * To make TrajoptLib support a new constraint type, do the following in this
- * file:
- *
- * 1. Include the type's header file
- * 2. Add a constraint static assert for the type
- * 3. Add the type to Constraint's std::variant type list
- */
+/// ConstraintType concept.
+///
+/// To make TrajoptLib support a new constraint type, do the following in this
+/// file:
+///
+/// 1. Include the type's header file
+/// 2. Add a constraint static assert for the type
+/// 3. Add the type to Constraint's std::variant type list
 template <typename T>
 concept ConstraintType =
     requires(T self, slp::Problem<double>& problem, const Pose2v<double>& pose,

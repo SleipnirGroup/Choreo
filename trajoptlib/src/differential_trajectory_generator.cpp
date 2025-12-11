@@ -178,8 +178,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
         auto& dt = dts.at(index);
-        problem.subject_to(dt >= 0);
-        problem.subject_to(dt <= 3);
+        problem.subject_to(slp::bounds(0, dt, 3));
         dt.set_value(sgmt_time / N_sgmt);
       }
     }
@@ -236,12 +235,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
                                 path.drivetrain.wheel_max_angular_velocity;
 
     // −vₘₐₓ < vₗ < vₘₐₓ
-    problem.subject_to(-max_wheel_velocity < vl.at(index));
-    problem.subject_to(vl.at(index) < max_wheel_velocity);
+    problem.subject_to(
+        slp::bounds(-max_wheel_velocity, vl.at(index), max_wheel_velocity));
 
     // −vₘₐₓ < vᵣ < vₘₐₓ
-    problem.subject_to(-max_wheel_velocity < vr.at(index));
-    problem.subject_to(vr.at(index) < max_wheel_velocity);
+    problem.subject_to(
+        slp::bounds(-max_wheel_velocity, vr.at(index), max_wheel_velocity));
 
     // τ = r x F
     // F = τ/r
@@ -255,12 +254,10 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     double max_force = std::min(max_wheel_force, max_friction_force);
 
     // −Fₘₐₓ < Fₗ < Fₘₐₓ
-    problem.subject_to(-max_force < Fl.at(index));
-    problem.subject_to(Fl.at(index) < max_force);
+    problem.subject_to(slp::bounds(-max_force, Fl.at(index), max_force));
 
     // −Fₘₐₓ < Fᵣ < Fₘₐₓ
-    problem.subject_to(-max_force < Fr.at(index));
-    problem.subject_to(Fr.at(index) < max_force);
+    problem.subject_to(slp::bounds(-max_force, Fr.at(index), max_force));
   }
 
   for (size_t wpt_index = 0; wpt_index < wpt_cnt; ++wpt_index) {

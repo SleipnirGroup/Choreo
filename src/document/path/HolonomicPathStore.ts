@@ -15,7 +15,7 @@ import {
   WaypointUUID,
   type ChoreoPath,
   type Trajectory
-} from "../2025/DocumentTypes";
+} from "../schema/DocumentTypes";
 import { Env, uiState } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 import {
@@ -241,8 +241,9 @@ export const HolonomicPathStore = types
   });
 // TS complains of circular dependencies if we directly alias this
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface IHolonomicPathStore
-  extends Instance<typeof HolonomicPathStore> {}
+export interface IHolonomicPathStore extends Instance<
+  typeof HolonomicPathStore
+> {}
 export function getPathStore(self: IAnyStateTreeNode): IHolonomicPathStore {
   const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore);
   return path;

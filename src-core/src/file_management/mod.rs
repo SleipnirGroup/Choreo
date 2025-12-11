@@ -7,7 +7,7 @@ use std::{
 use serde::Serialize;
 use tokio::{
     fs,
-    sync::{mpsc::UnboundedSender, Mutex, Notify},
+    sync::{Mutex, Notify, mpsc::UnboundedSender},
 };
 
 use crate::{ChoreoError, ChoreoResult, ResultExt};
@@ -310,12 +310,11 @@ pub async fn find_all_trajectories(resources: &WritingResources) -> Vec<String> 
     if let Ok(mut dir) = fs::read_dir(&deploy_dir).await {
         while let Ok(Some(entry)) = dir.next_entry().await {
             let path = entry.path();
-            if let Some(extension) = path.extension() {
-                if extension.eq_ignore_ascii_case("traj") {
-                    if let Some(p) = path.file_stem().map(|p| p.to_string_lossy()) {
-                        out.push(p.to_string());
-                    }
-                }
+            if let Some(extension) = path.extension()
+                && extension.eq_ignore_ascii_case("traj")
+                && let Some(p) = path.file_stem().map(|p| p.to_string_lossy())
+            {
+                out.push(p.to_string());
             }
         }
     }

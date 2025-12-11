@@ -1,7 +1,7 @@
 use std::{
     mem::forget,
     path::PathBuf,
-    sync::{mpsc, Arc},
+    sync::{Arc, mpsc},
     thread,
 };
 
@@ -13,19 +13,19 @@ use tokio::{
     io::AsyncReadExt,
     process::Command,
     select,
-    sync::{oneshot, Notify},
+    sync::{Notify, oneshot},
 };
 
 use crate::{
-    generation::generate::{generate, LocalProgressUpdate},
+    ChoreoError, ChoreoResult, ResultExt,
+    generation::generate::{LocalProgressUpdate, generate},
     spec::{
         project::ProjectFile,
         trajectory::{Sample, Trajectory, TrajectoryFile},
     },
-    ChoreoError, ChoreoResult, ResultExt,
 };
 
-use super::generate::{setup_progress_sender, HandledLocalProgressUpdate, PROGRESS_SENDER_LOCK};
+use super::generate::{HandledLocalProgressUpdate, PROGRESS_SENDER_LOCK, setup_progress_sender};
 
 #[derive(Clone)]
 #[allow(missing_debug_implementations)]
@@ -35,9 +35,7 @@ pub struct RemoteGenerationResources {
 }
 
 impl RemoteGenerationResources {
-    /**
-     * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
-     */
+    /// Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {

@@ -77,7 +77,7 @@ Create unit tests that load the files previously captured in `test-jsons` and up
 
 ## src (Typescript UI source)
 
-### Make changes to the data objects in `src/document/2025/DocumentTypes.ts`
+### Make changes to the data objects in `src/document/schema/DocumentTypes.ts`
 
 There is a mirror for every Rust struct that gets serialized. Note again that in TS, the fields are in `camelCase`.
 
@@ -85,7 +85,7 @@ There is a mirror for every Rust struct that gets serialized. Note again that in
 
 Some objects have default values stored throughout the code.
 
-### Update the relevant schema version in `src/document/2025/DocumentTypes.ts`
+### Update the relevant schema version in `src/document/schema/DocumentTypes.ts`
 
 ### Update the Mobx store for the modified data struct.
 

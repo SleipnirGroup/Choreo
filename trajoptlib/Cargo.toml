@@ -1,7 +1,7 @@
 [package]
 name = "trajoptlib"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 cxx = "1.0"
@@ -11,6 +11,3 @@ thiserror = "2.0.17"
 [build-dependencies]
 cmake = "0.1"
 cxx-build = "1.0"
-
-[[example]]
-name = "swerve"

@@ -162,8 +162,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
         auto& dt = dts.at(index);
-        problem.subject_to(dt >= 0);
-        problem.subject_to(dt <= 3);
+        problem.subject_to(slp::bounds(0, dt, 3));
         dt.set_value(sgmt_time / N_sgmt);
       }
     }

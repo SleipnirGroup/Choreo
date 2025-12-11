@@ -6,9 +6,9 @@ use std::{
 };
 
 use choreo_core::{
+    ChoreoError,
     file_management::{self, WritingResources},
     generation::generate::generate,
-    ChoreoError,
 };
 use clap::Parser;
 
@@ -80,14 +80,14 @@ pub struct Cli {
 impl Cli {
     fn action(mut self) -> CliAction {
         //if chor is provided and not an absolute path, make it absolute
-        if let Some(chor) = &self.chor {
-            if !chor.is_absolute() {
-                self.chor = Some(
-                    std::fs::canonicalize(chor)
-                        .map_err(|_| ChoreoError::FileNotFound(Some(chor.clone())))
-                        .expect("Failed to make path absolute"),
-                );
-            }
+        if let Some(chor) = &self.chor
+            && !chor.is_absolute()
+        {
+            self.chor = Some(
+                std::fs::canonicalize(chor)
+                    .map_err(|_| ChoreoError::FileNotFound(Some(chor.clone())))
+                    .expect("Failed to make path absolute"),
+            );
         }
 
         if self.generate {

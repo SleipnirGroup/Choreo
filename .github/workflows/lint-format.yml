@@ -55,13 +55,13 @@ jobs:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.6.2
+      - run: pnpm install prettier@3.7.4
 
       - uses: actions/setup-python@v6
         with:
           python-version: 3.14
 
-      - run: pip3 install wpiformat==2025.48
+      - run: pip3 install wpiformat==2025.77
 
       - run: pnpm run fmt
 
@@ -128,7 +128,7 @@ jobs:
         with:
           python-version: 3.14
 
-      - run: pip3 install wpiformat==2025.48
+      - run: pip3 install wpiformat==2025.77
 
       - name: Create compile_commands.json
         working-directory: choreolib
@@ -143,11 +143,11 @@ jobs:
 
       - name: Run clang-tidy debug
         working-directory: choreolib
-        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug
 
       - name: Run clang-tidy release
         working-directory: choreolib
-        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release
 
   trajoptlib-tidy:
     name: "TrajoptLib clang-tidy"
@@ -180,7 +180,7 @@ jobs:
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
-      - run: pip3 install wpiformat==2025.48
+      - run: pip3 install wpiformat==2025.77
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
@@ -191,5 +191,5 @@ jobs:
         working-directory: trajoptlib
 
       - name: Run clang-tidy
-        run: wpiformat -f . -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23 -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23
         working-directory: trajoptlib
