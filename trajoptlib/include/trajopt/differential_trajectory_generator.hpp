@@ -191,14 +191,14 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
 /// A differential drive path.
 using DifferentialPath = Path<DifferentialDrivetrain, DifferentialSolution>;
 
-/// Builds a differential drive path using information about how the robot
-/// must travel through a series of waypoints. This path can be converted
-/// to a trajectory using DifferentialTrajectoryGenerator.
+/// Builds a differential drive path using information about how the robot must
+/// travel through a series of waypoints. This path can be converted to a
+/// trajectory using DifferentialTrajectoryGenerator.
 using DifferentialPathBuilder =
     PathBuilder<DifferentialDrivetrain, DifferentialSolution>;
 
-/// This trajectory generator class contains functions to generate
-/// time-optimal trajectories for differential drivetrain types.
+/// This trajectory generator class contains functions to generate time-optimal
+/// trajectories for differential drivetrain types.
 class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
  public:
   /// Construct a new swerve trajectory optimization problem.

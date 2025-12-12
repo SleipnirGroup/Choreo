@@ -64,6 +64,7 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { DEFAULT_FIELD_SETTINGS } from "./FieldSettingsStore";
 
 export type OpenFilePayload = {
   name: string;
@@ -74,8 +75,10 @@ export const uiState = UIStateStore.create({
   settingsTab: 0,
   projectSavingState: SavingState.NO_LOCATION,
   projectSaveTime: new Date(),
-  layers: ViewLayerDefaults
+  layers: ViewLayerDefaults,
+  fieldSettings: DEFAULT_FIELD_SETTINGS
 });
+uiState.loadFieldSettingsFromLocalStorage();
 type ConstraintDataConstructor<K extends ConstraintKey> = (
   data: Partial<DataMap[K]["props"]>
 ) => IConstraintDataStore<K>;
@@ -235,6 +238,7 @@ const env = {
   },
   history: () => doc.history,
   vars: () => doc.variables,
+  fieldSettings: () => uiState.fieldSettings,
   renameVariable: renameVariable,
   exporter: async (uuid: string) => writeTrajectory(uuid).catch(tracing.error),
   create: getConstructors(() => doc.variables)
@@ -691,11 +695,12 @@ function getSelectedConstraint() {
 }
 
 export async function newProject() {
-  applySnapshot(uiState, {
-    settingsTab: 0,
-    layers: ViewLayerDefaults,
-    projectSavingState: SavingState.NO_LOCATION
-  });
+  uiState.setSettingsTab(0);
+  const defaultVisibleLayers = ViewLayerDefaults.flatMap((visible, index) =>
+    visible ? [index] : []
+  );
+  uiState.setVisibleLayers(defaultVisibleLayers);
+  uiState.setProjectSavingState(SavingState.NO_LOCATION);
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
