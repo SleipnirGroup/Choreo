@@ -538,7 +538,10 @@ mod ffi {
 
         fn mecanum_trajectory_generator_new() -> UniquePtr<MecanumTrajectoryGenerator>;
 
-        fn set_drivetrain(self: Pin<&mut MecanumTrajectoryGenerator>, drivetrain: &MecanumDrivetrain);
+        fn set_drivetrain(
+            self: Pin<&mut MecanumTrajectoryGenerator>,
+            drivetrain: &MecanumDrivetrain,
+        );
 
         fn set_bumpers(
             self: Pin<&mut MecanumTrajectoryGenerator>,
@@ -1527,7 +1530,6 @@ impl DifferentialTrajectoryGenerator {
     }
 }
 
-
 pub struct MecanumTrajectoryGenerator {
     generator: cxx::UniquePtr<crate::ffi::MecanumTrajectoryGenerator>,
 }
@@ -1546,7 +1548,10 @@ impl MecanumTrajectoryGenerator {
     }
 
     pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::MecanumDrivetrain) {
-        crate::ffi::MecanumTrajectoryGenerator::set_drivetrain(self.generator.pin_mut(), drivetrain);
+        crate::ffi::MecanumTrajectoryGenerator::set_drivetrain(
+            self.generator.pin_mut(),
+            drivetrain,
+        );
     }
 
     pub fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
@@ -1932,13 +1937,13 @@ use error::TrajoptError;
 pub use ffi::DifferentialDrivetrain;
 pub use ffi::DifferentialTrajectory;
 pub use ffi::DifferentialTrajectorySample;
+pub use ffi::MecanumDrivetrain;
+pub use ffi::MecanumTrajectory;
+pub use ffi::MecanumTrajectorySample;
 pub use ffi::Pose2d;
 pub use ffi::SwerveDrivetrain;
 pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;
-pub use ffi::MecanumDrivetrain;
-pub use ffi::MecanumTrajectory;
-pub use ffi::MecanumTrajectorySample;
 pub use ffi::Translation2d;
 
 pub mod error;

@@ -1,4 +1,4 @@
-import { WaypointIDX } from "../2025/DocumentTypes";
+import { WaypointIDX } from "../schema/DocumentTypes";
 import { IWaypointScope } from "../ConstraintStore";
 import { IHolonomicWaypointStore } from "../HolonomicWaypointStore";
 

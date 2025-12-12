@@ -1,33 +1,41 @@
 use trajoptlib::{DifferentialTrajectory, MecanumTrajectory, SwerveTrajectory};
 
-use crate::{generation::generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK}, ResultExt};
+use crate::{
+    ResultExt,
+    generation::generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK},
+};
 
-use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, MecanumGenerationTransformer, SwerveGenerationTransformer};
-
+use super::{
+    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
+    MecanumGenerationTransformer, SwerveGenerationTransformer,
+};
 
 pub struct CallbackSetter;
 
 fn swerve_status_callback(trajectory: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        let _  = tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
-        .trace_warn();
+        let _ = tx
+            .send(LocalProgressUpdate::from(trajectory).handled(handle))
+            .trace_warn();
     };
 }
 
 fn differential_status_callback(trajectory: DifferentialTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        let _ = tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
-        .trace_warn();
+        let _ = tx
+            .send(LocalProgressUpdate::from(trajectory).handled(handle))
+            .trace_warn();
     };
 }
 
 fn mecanum_status_callback(trajectory: MecanumTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        let _ = tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
-        .trace_warn();
+        let _ = tx
+            .send(LocalProgressUpdate::from(trajectory).handled(handle))
+            .trace_warn();
     };
 }
 

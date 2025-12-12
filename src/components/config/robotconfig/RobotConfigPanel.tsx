@@ -2,12 +2,10 @@ import {
   Autocomplete,
   Divider,
   FormHelperText,
-  Switch,
   TextField
 } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import inputStyles from "../../input/InputList.module.css";
 import DimensionsConfigPanel from "./DimensionsConfigPanel";
 import ModuleConfigPanel from "./ModuleConfigPanel";
 import TheoreticalPanel from "./TheoreticalPanel";

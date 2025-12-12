@@ -9,9 +9,7 @@
 
 namespace choreo {
 
-/**
- * A marker for an event in a trajectory.
- */
+/// A marker for an event in a trajectory.
 struct EventMarker {
   /// The timestamp of the event.
   units::second_t timestamp;
@@ -19,23 +17,19 @@ struct EventMarker {
   /// The event.
   std::string event;
 
-  /**
-   * Returns a new EventMarker with the timestamp offset by the specified
-   * amount.
-   *
-   * @param timestampOffset The amount to offset the timestamp by.
-   * @return A new EventMarker with the timestamp offset by the specified
-   * amount.
-   */
+  /// Returns a new EventMarker with the timestamp offset by the specified
+  /// amount.
+  ///
+  /// @param timestampOffset The amount to offset the timestamp by.
+  /// @return A new EventMarker with the timestamp offset by the specified
+  ///     amount.
   EventMarker OffsetBy(units::second_t timestampOffset) const {
     return EventMarker{timestamp + timestampOffset, event};
   }
 
-  /**
-   * EventMarker equality operator.
-   *
-   * @return True for equality.
-   */
+  /// EventMarker equality operator.
+  ///
+  /// @return True for equality.
   bool operator==(const EventMarker&) const = default;
 };
 

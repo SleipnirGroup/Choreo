@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <numbers>
 #include <ranges>
 #include <vector>
 
@@ -64,7 +65,7 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   size_t wpt_cnt = path.waypoints.size();
   size_t sgmt_cnt = path.waypoints.size() - 1;
   size_t samp_tot = get_index(Ns, wpt_cnt - 1, 0) + 1;
-  size_t module_cnt = 4;
+  size_t module_cnt = path.drivetrain.wheels.size();
 
   x.reserve(samp_tot);
   y.reserve(samp_tot);
@@ -105,9 +106,9 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
   }
 
   // Minimize total time
-  const double s_init = 1.0 / std::sqrt(2.0);
-  const double max_force =
-      path.drivetrain.wheel_max_torque * 4 / path.drivetrain.wheel_radius * s_init;
+  constexpr double s_init = 1.0 / std::numbers::sqrt2;
+  const double max_force = path.drivetrain.wheel_max_torque * 4 /
+                           path.drivetrain.wheel_radius * s_init;
   const auto max_accel = max_force / path.drivetrain.mass;
   const double max_drivetrain_velocity =
       path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
@@ -142,48 +143,24 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
 
       auto max_linear_vel = max_drivetrain_velocity;
 
-      const auto combined_time = std::max(
-          calculate_trapezoidal_time(dist, max_linear_vel, max_accel),
-          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel));
-      const double sgmt_time = combined_time;
+      const auto angular_time =
+          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel);
+      max_linear_vel = std::min(max_linear_vel, dist / angular_time);
+
+      const auto linear_time =
+          calculate_trapezoidal_time(dist, max_linear_vel, max_accel);
+      const double sgmt_time = angular_time + linear_time;
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
         auto& dt = dts.at(index);
-        problem.subject_to(dt >= 0);
-        problem.subject_to(dt <= 3);
+        problem.subject_to(slp::bounds(0, dt, 3));
         dt.set_value(sgmt_time / N_sgmt);
       }
     }
   }
-  slp::Variable<double> total_time = std::accumulate(dts.begin(), dts.end(), slp::Variable<double>{0.0});
+  problem.minimize(std::accumulate(dts.begin(), dts.end(), slp::Variable{0.0}));
 
-  // Penalty: ∫(v²ω²)dt
-  const double separation_penalty_weight = 0.0;
-  slp::Variable<double> separation_penalty = 0.0;
-
-  for (size_t index = 0; index < samp_tot; ++index) {
-    auto v_trans_sq = vx.at(index) * vx.at(index) + vy.at(index) * vy.at(index);
-    auto omega_sq = ω.at(index) * ω.at(index);
-    separation_penalty += v_trans_sq * omega_sq * dts.at(index);
-  }
-
-  // Penalty: ∫ω²dt
-  const double rotation_penalty_weight = 0.0; // todo
-  slp::Variable<double> rotation_penalty = 0.0;
-  for (size_t index = 0; index < samp_tot; ++index) {
-    rotation_penalty += ω.at(index) * ω.at(index) * dts.at(index);
-  }
-
-  slp::Variable<double> cost = total_time;
-  if (separation_penalty_weight > 0.0) {
-    cost += separation_penalty_weight * separation_penalty;
-  }
-  if (rotation_penalty_weight > 0.0) {
-    cost += rotation_penalty_weight * rotation_penalty;
-  }
-  problem.minimize(cost);
-
-  // apply kinematics constraints
+  // Apply kinematics constraints
   for (size_t wpt_index = 0; wpt_index < wpt_cnt - 1; ++wpt_index) {
     size_t N_sgmt = Ns.at(wpt_index);
 
@@ -225,16 +202,18 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     }
   }
 
-  const double s = 1.0 / std::sqrt(2.0);
+  constexpr double s = 1.0 / std::numbers::sqrt2;
 
   const double strafe_eff = path.drivetrain.strafe_efficiency;
   std::vector<double> fx_coeff = {s, s, s, s};
-  std::vector<double> fy_coeff = {-s * strafe_eff, -s * strafe_eff, s * strafe_eff, s * strafe_eff};
+  std::vector<double> fy_coeff = {-s * strafe_eff, -s * strafe_eff,
+                                  s * strafe_eff, s * strafe_eff};
 
   for (size_t index = 0; index < samp_tot; ++index) {
     Rotation2v<double> θ_k{cosθ.at(index), sinθ.at(index)};
     Translation2v<double> v_k{vx.at(index), vy.at(index)};
 
+    // x and y forces in the body frame
     std::vector<slp::Variable<double>> Fx_body;
     Fx_body.reserve(path.drivetrain.wheels.size());
     std::vector<slp::Variable<double>> Fy_body;
@@ -246,27 +225,29 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     }
 
     // Solve for net force
-    auto Fx_net = std::accumulate(Fx_body.begin(), Fx_body.end(), slp::Variable<double>{0.0});
-    auto Fy_net = std::accumulate(Fy_body.begin(), Fy_body.end(), slp::Variable<double>{0.0});
+    auto Fx_body_net =
+        std::accumulate(Fx_body.begin(), Fx_body.end(), slp::Variable{0.0});
+    auto Fy_body_net =
+        std::accumulate(Fy_body.begin(), Fy_body.end(), slp::Variable{0.0});
+    auto F_world_net =
+        Translation2v<double>{Fx_body_net, Fy_body_net}.rotate_by(θ_k);
 
     // Solve for net torque
-    slp::Variable<double> τ_net = 0.0;
+    slp::Variable τ_net = 0.0;
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
-      const auto& wheel_pos = path.drivetrain.wheels.at(module_index);
-      // force vector in body frame
-      Translation2v<double> F_body{Fx_body.at(module_index), Fy_body.at(module_index)};
+      const auto& r_body = path.drivetrain.wheels.at(module_index);
+      Translation2v<double> F_body{Fx_body.at(module_index),
+                                   Fy_body.at(module_index)};
 
-      // τ = r x F
-      // τ_body = r_body x F_body
-      τ_net += wheel_pos.cross(F_body);
+      τ_net += r_body.cross(F_body);
     }
 
     // Apply module power constraints
     auto v_wrt_robot = v_k.rotate_by(-θ_k);
     for (size_t module_index = 0; module_index < path.drivetrain.wheels.size();
          ++module_index) {
-      const auto& wheel_pos = path.drivetrain.wheels.at(module_index);
+      const auto& translation = path.drivetrain.wheels.at(module_index);
 
       double sign = (module_index == 2 || module_index == 3) ? 1.0 : -1.0;
 
@@ -280,33 +261,30 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
       //   = −ω(y cos(45°) + x sin(45°) sign)
       //   = −ω(y + x sign) / √(2)
       auto v_active_from_rotation =
-          -ω.at(index) * (wheel_pos.y() + wheel_pos.x() * sign) * s;
+          -ω.at(index) * (translation.y() + translation.x() * sign) * s;
 
       auto v_wheel = v_active_from_translation + v_active_from_rotation;
 
       double max_wheel_velocity = path.drivetrain.wheel_radius *
                                   path.drivetrain.wheel_max_angular_velocity;
 
-      // v² ≤ vₘₐₓ²
+      // |v|₂² ≤ vₘₐₓ²
       problem.subject_to(v_wheel * v_wheel <=
                          max_wheel_velocity * max_wheel_velocity);
 
+      // τ = r x F
+      // F = τ/r
       double max_wheel_force =
           (path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius) * s;
 
-      // Static force constraint prevents wheel slip
-      double normal_force_per_wheel = path.drivetrain.mass / path.drivetrain.wheels.size() * path.drivetrain.gravity;
-      double static_friction_coef = (path.drivetrain.static_friction_coefficient > 0.0)
-          ? path.drivetrain.static_friction_coefficient
-          : path.drivetrain.wheel_cof * path.drivetrain.wheel_static_friction_safety_factor;
-      double max_static_friction_force = static_friction_coef * normal_force_per_wheel;
+      // friction = μmg
+      double max_friction_force =
+          path.drivetrain.wheel_cof * path.drivetrain.mass * 9.8;
 
-      // Max force is limited by motor torque and static friction
-      double max_force = std::min(max_wheel_force, max_static_friction_force);
+      double max_force = std::min(max_wheel_force, max_friction_force);
 
+      // |F|₂² ≤ Fₘₐₓ²
       auto f = F.at(index).at(module_index);
-
-      // |F|₂² <= Fₘₐₓ²
       problem.subject_to(f * f <= max_force * max_force);
     }
 
@@ -315,8 +293,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     //   ΣF_xₖ = ma_xₖ
     //   ΣF_yₖ = ma_yₖ
     //   Στₖ = Jαₖ
-    problem.subject_to(Fx_net == path.drivetrain.mass * ax.at(index));
-    problem.subject_to(Fy_net == path.drivetrain.mass * ay.at(index));
+    problem.subject_to(F_world_net.x() == path.drivetrain.mass * ax.at(index));
+    problem.subject_to(F_world_net.y() == path.drivetrain.mass * ay.at(index));
     problem.subject_to(τ_net == path.drivetrain.moi * α.at(index));
   }
 
@@ -324,7 +302,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     // First index of next wpt - 1
     size_t index = get_index(Ns, wpt_index, 0);
 
-    Pose2v<double> pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+    Pose2v<double> pose_k{
+        x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
     Translation2v<double> v_k{vx.at(index), vy.at(index)};
     auto ω_k = ω.at(index);
     Translation2v<double> a_k{ax.at(index), ay.at(index)};
@@ -342,7 +321,8 @@ MecanumTrajectoryGenerator::MecanumTrajectoryGenerator(
     size_t end_index = get_index(Ns, sgmt_index + 1, 0);
 
     for (size_t index = start_index; index < end_index; ++index) {
-      Pose2v<double> pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+      Pose2v<double> pose_k{
+          x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
       Translation2v<double> v_k{vx.at(index), vy.at(index)};
       auto ω_k = ω.at(index);
       Translation2v<double> a_k{ax.at(index), ay.at(index)};
@@ -430,20 +410,21 @@ MecanumSolution MecanumTrajectoryGenerator::construct_mecanum_solution() {
            std::ranges::to<std::vector>();
   };
 
-  auto matrix_value = [&](std::vector<std::vector<slp::Variable<double>>>& mat) {
-    return mat | std::views::transform([&](auto& v) {
-             return v | std::views::transform(get_value) |
-                    std::ranges::to<std::vector>();
-           }) |
-           std::ranges::to<std::vector>();
-  };
+  auto matrix_value =
+      [&](std::vector<std::vector<slp::Variable<double>>>& mat) {
+        return mat | std::views::transform([&](auto& v) {
+                 return v | std::views::transform(get_value) |
+                        std::ranges::to<std::vector>();
+               }) |
+               std::ranges::to<std::vector>();
+      };
 
   return MecanumSolution{
       vector_value(dts),  vector_value(x),    vector_value(y),
       vector_value(cosθ), vector_value(sinθ), vector_value(vx),
       vector_value(vy),   vector_value(ω),    vector_value(ax),
       vector_value(ay),   vector_value(α),    matrix_value(F),
-    };
+  };
 }
 
 }  // namespace trajopt

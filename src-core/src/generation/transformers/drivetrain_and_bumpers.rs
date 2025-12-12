@@ -2,17 +2,19 @@ use trajoptlib::{DifferentialDrivetrain, MecanumDrivetrain, SwerveDrivetrain};
 
 use crate::spec::project::RobotConfig;
 
-use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, MecanumGenerationTransformer, SwerveGenerationTransformer};
-
+use super::{
+    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
+    MecanumGenerationTransformer, SwerveGenerationTransformer,
+};
 
 pub struct DrivetrainAndBumpersSetter {
-    config: RobotConfig<f64>
+    config: RobotConfig<f64>,
 }
 
 impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            config: context.project.config.snapshot()
+            config: context.project.config.snapshot(),
         })
     }
 
@@ -26,8 +28,7 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
             wheel_max_angular_velocity: config.vmax / config.gearing,
             wheel_max_torque: config.tmax * config.gearing,
             wheel_cof: config.cof,
-            modules: config
-                .module_translations(),
+            modules: config.module_translations(),
         };
 
         generator.set_drivetrain(&drivetrain);
@@ -35,7 +36,7 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
             config.bumper.front,
             config.bumper.side,
             config.bumper.side,
-            config.bumper.back
+            config.bumper.back,
         );
     }
 }
@@ -43,7 +44,7 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
 impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            config: context.project.config.snapshot()
+            config: context.project.config.snapshot(),
         })
     }
 
@@ -65,7 +66,7 @@ impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
             config.bumper.front,
             config.bumper.side,
             config.bumper.side,
-            config.bumper.back
+            config.bumper.back,
         );
     }
 }
@@ -73,7 +74,7 @@ impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
 impl MecanumGenerationTransformer for DrivetrainAndBumpersSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            config: context.project.config.snapshot()
+            config: context.project.config.snapshot(),
         })
     }
 
@@ -89,8 +90,7 @@ impl MecanumGenerationTransformer for DrivetrainAndBumpersSetter {
             wheel_cof: config.cof,
             static_friction_coefficient: 0.0,
             strafe_efficiency: 0.75,
-            modules: config
-                .module_translations(),
+            modules: config.module_translations(),
         };
 
         generator.set_drivetrain(&drivetrain);
@@ -98,7 +98,7 @@ impl MecanumGenerationTransformer for DrivetrainAndBumpersSetter {
             config.bumper.front,
             config.bumper.side,
             config.bumper.side,
-            config.bumper.back
+            config.bumper.back,
         );
     }
 }

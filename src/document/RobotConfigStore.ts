@@ -4,7 +4,7 @@ import {
   MotorCurves
 } from "../components/config/robotconfig/MotorCurves";
 import { InToM, LbsToKg, MToIn } from "../util/UnitConversions";
-import { Bumper, Expr, Module, RobotConfig } from "./2025/DocumentTypes";
+import { Bumper, Expr, Module, RobotConfig } from "./schema/DocumentTypes";
 import { ExpressionStore } from "./ExpressionStore";
 
 const DEFAULT_FRAME_SIZE = InToM(28);

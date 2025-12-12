@@ -3,12 +3,6 @@ import { Component } from "react";
 type Props = object;
 
 type State = object;
-const red = "rgb(162,0,16)";
-const blue = "rgb(0,72,167)";
-const white = "rgb(204,204,204)";
-const green = "rgb(76,175,80)";
-const gray = "rgb(66,66,66)";
-const purple = "rgb(156,39,176)";
 export default class FieldImageDecode extends Component<Props, State> {
   WIDTH_M = 3.6576;
   LENGTH_M = 3.6576;

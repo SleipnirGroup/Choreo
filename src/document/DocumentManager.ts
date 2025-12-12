@@ -25,7 +25,7 @@ import {
   type Expr,
   type RobotConfig,
   type Waypoint
-} from "./2025/DocumentTypes";
+} from "./schema/DocumentTypes";
 import {
   CommandStore,
   ICommandStore,

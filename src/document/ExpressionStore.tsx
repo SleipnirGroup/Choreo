@@ -34,7 +34,7 @@ import {
   Variables as DocVariables,
   Expr,
   isExpr
-} from "./2025/DocumentTypes";
+} from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { tracing } from "./tauriTracing";
 

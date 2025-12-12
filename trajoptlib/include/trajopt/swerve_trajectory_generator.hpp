@@ -16,9 +16,7 @@
 
 namespace trajopt {
 
-/**
- * A swerve drivetrain physical model.
- */
+/// A swerve drivetrain physical model.
 struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   /// The mass of the robot (kg).
   double mass;
@@ -44,9 +42,7 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   std::vector<Translation2d> modules;
 };
 
-/**
- * The swerve drive trajectory optimization solution.
- */
+/// The swerve drive trajectory optimization solution.
 struct TRAJOPT_DLLEXPORT SwerveSolution {
   /// Times between samples.
   std::vector<double> dt;
@@ -88,9 +84,7 @@ struct TRAJOPT_DLLEXPORT SwerveSolution {
   std::vector<std::vector<double>> module_fy;
 };
 
-/**
- * Swerve trajectory sample.
- */
+/// Swerve trajectory sample.
 class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
  public:
   /// The timestamp.
@@ -131,22 +125,20 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
 
   SwerveTrajectorySample() = default;
 
-  /**
-   * Construct a SwerveTrajectorySample.
-   *
-   * @param timestamp The timestamp.
-   * @param x The x coordinate.
-   * @param y The y coordinate.
-   * @param heading The heading.
-   * @param velocity_x The velocity's x component.
-   * @param velocity_y The velocity's y component.
-   * @param angular_velocity The angular velocity.
-   * @param acceleration_x The acceleration's x component.
-   * @param acceleration_y The acceleration's y component.
-   * @param angular_acceleration The angular acceleration.
-   * @param module_forces_x Forces acting on the modules in the X direction.
-   * @param module_forces_y Forces acting on the modules in the Y direction.
-   */
+  /// Construct a SwerveTrajectorySample.
+  ///
+  /// @param timestamp The timestamp.
+  /// @param x The x coordinate.
+  /// @param y The y coordinate.
+  /// @param heading The heading.
+  /// @param velocity_x The velocity's x component.
+  /// @param velocity_y The velocity's y component.
+  /// @param angular_velocity The angular velocity.
+  /// @param acceleration_x The acceleration's x component.
+  /// @param acceleration_y The acceleration's y component.
+  /// @param angular_acceleration The angular acceleration.
+  /// @param module_forces_x Forces acting on the modules in the X direction.
+  /// @param module_forces_y Forces acting on the modules in the Y direction.
   SwerveTrajectorySample(double timestamp, double x, double y, double heading,
                          double velocity_x, double velocity_y,
                          double angular_velocity, double acceleration_x,
@@ -167,9 +159,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
         module_forces_y{std::move(module_forces_y)} {}
 };
 
-/**
- * Swerve trajectory.
- */
+/// Swerve trajectory.
 class TRAJOPT_DLLEXPORT SwerveTrajectory {
  public:
   /// Trajectory samples.
@@ -177,19 +167,15 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
 
   SwerveTrajectory() = default;
 
-  /**
-   * Construct a SwerveTrajectory from samples.
-   *
-   * @param samples The samples.
-   */
+  /// Construct a SwerveTrajectory from samples.
+  ///
+  /// @param samples The samples.
   explicit SwerveTrajectory(std::vector<SwerveTrajectorySample> samples)
       : samples{std::move(samples)} {}
 
-  /**
-   * Construct a SwerveTrajectory from a swerve solution.
-   *
-   * @param solution The swerve solution.
-   */
+  /// Construct a SwerveTrajectory from a swerve solution.
+  ///
+  /// @param solution The swerve solution.
   explicit SwerveTrajectory(const SwerveSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
@@ -204,42 +190,32 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
   }
 };
 
-/**
- * A swerve path.
- */
+/// A swerve path.
 using SwervePath = Path<SwerveDrivetrain, SwerveSolution>;
 
-/**
- * Builds a swerve path using information about how the robot
- * must travel through a series of waypoints. This path can be converted
- * to a trajectory using SwerveTrajectoryGenerator.
- */
+/// Builds a swerve path using information about how the robot must travel
+/// through a series of waypoints. This path can be converted to a trajectory
+/// using SwerveTrajectoryGenerator.
 using SwervePathBuilder = PathBuilder<SwerveDrivetrain, SwerveSolution>;
 
-/**
- * This trajectory generator class contains functions to generate
- * time-optimal trajectories for several drivetrain types.
- */
+/// This trajectory generator class contains functions to generate time-optimal
+/// trajectories for several drivetrain types.
 class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
  public:
-  /**
-   * Construct a new swerve trajectory optimization problem.
-   *
-   * @param path_builder The path builder.
-   * @param handle An identifier for state callbacks.
-   */
+  /// Construct a new swerve trajectory optimization problem.
+  ///
+  /// @param path_builder The path builder.
+  /// @param handle An identifier for state callbacks.
   explicit SwerveTrajectoryGenerator(SwervePathBuilder path_builder,
                                      int64_t handle = 0);
 
-  /**
-   * Generates an optimal trajectory.
-   *
-   * This function may take a long time to complete.
-   *
-   * @param diagnostics Enables diagnostic prints.
-   * @return Returns a holonomic trajectory on success, or the solver's exit
-   *     status on failure.
-   */
+  /// Generates an optimal trajectory.
+  ///
+  /// This function may take a long time to complete.
+  ///
+  /// @param diagnostics Enables diagnostic prints.
+  /// @return Returns a holonomic trajectory on success, or the solver's exit
+  ///     status on failure.
   std::expected<SwerveSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
 
