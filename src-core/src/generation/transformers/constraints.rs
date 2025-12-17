@@ -2,7 +2,7 @@ use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope, Wa
 
 use super::{
     DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
-    SwerveGenerationTransformer,
+    MecanumGenerationTransformer, SwerveGenerationTransformer,
 };
 
 fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
@@ -179,6 +179,74 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         generator.wpt_point_at(from, x, y, tolerance, flip)
                     }
                 }
+                ConstraintData::MaxVelocity { max } => match to_opt {
+                    None => generator.wpt_linear_velocity_max_magnitude(from, max),
+                    Some(to) => generator.sgmt_linear_velocity_max_magnitude(from, to, max),
+                },
+                ConstraintData::MaxAcceleration { max } => match to_opt {
+                    None => generator.wpt_linear_acceleration_max_magnitude(from, max),
+                    Some(to) => generator.sgmt_linear_acceleration_max_magnitude(from, to, max),
+                },
+                ConstraintData::MaxAngularVelocity { max } => match to_opt {
+                    None => generator.wpt_angular_velocity_max_magnitude(from, max),
+                    Some(to) => generator.sgmt_angular_velocity_max_magnitude(from, to, max),
+                },
+                ConstraintData::StopPoint {} => {
+                    if to_opt.is_none() {
+                        generator.wpt_linear_velocity_max_magnitude(from, 0.0f64);
+                        generator.wpt_angular_velocity_max_magnitude(from, 0.0f64);
+                    }
+                }
+                ConstraintData::KeepInCircle { x, y, r } => match to_opt {
+                    None => generator.wpt_keep_in_circle(from, x, y, r),
+                    Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
+                },
+                ConstraintData::KeepInRectangle { x, y, w, h } => {
+                    let xs = vec![x, x + w, x + w, x];
+                    let ys = vec![y, y, y + h, y + h];
+                    match to_opt {
+                        None => generator.wpt_keep_in_polygon(from, xs, ys),
+                        Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
+                    }
+                }
+                ConstraintData::KeepInLane { tolerance } => {
+                    if let Some(idx_to) = to_opt
+                        && let Some(wpt_from) = self.waypoint_idx.get(from)
+                        && let Some(wpt_to) = self.waypoint_idx.get(idx_to)
+                    {
+                        generator.sgmt_keep_in_lane(
+                            from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y, tolerance,
+                        );
+                    }
+                }
+                ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
+                    None => generator.wpt_keep_out_circle(from, x, y, r),
+                    Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
+                },
+            };
+        }
+    }
+}
+
+impl MecanumGenerationTransformer for ConstraintSetter {
+    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
+        Self::initialize(context)
+    }
+
+    fn transform(&self, generator: &mut trajoptlib::MecanumTrajectoryGenerator) {
+        for constraint in &self.constraint_idx {
+            let from = fix_scope(constraint.from, &self.guess_points);
+            let to_opt = constraint.to.map(|idx| fix_scope(idx, &self.guess_points));
+            match constraint.data {
+                ConstraintData::PointAt {
+                    x,
+                    y,
+                    tolerance,
+                    flip,
+                } => match to_opt {
+                    None => generator.wpt_point_at(from, x, y, tolerance, flip),
+                    Some(to) => generator.sgmt_point_at(from, to, x, y, tolerance, flip),
+                },
                 ConstraintData::MaxVelocity { max } => match to_opt {
                     None => generator.wpt_linear_velocity_max_magnitude(from, max),
                     Some(to) => generator.sgmt_linear_velocity_max_magnitude(from, to, max),

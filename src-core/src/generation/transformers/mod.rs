@@ -3,8 +3,8 @@
 use std::collections::{HashMap, HashSet};
 
 use trajoptlib::{
-    DifferentialTrajectory, DifferentialTrajectoryGenerator, SwerveTrajectory,
-    SwerveTrajectoryGenerator,
+    DifferentialTrajectory, DifferentialTrajectoryGenerator, MecanumTrajectory,
+    MecanumTrajectoryGenerator, SwerveTrajectory, SwerveTrajectoryGenerator,
 };
 
 use crate::{
@@ -39,6 +39,7 @@ pub(super) struct TrajectoryFileGenerator {
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
     differential_transformers:
         HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
+    mecanum_transformers: HashMap<String, Vec<Box<dyn InitializedMecanumGenerationTransformer>>>,
 }
 
 impl TrajectoryFileGenerator {
@@ -53,6 +54,7 @@ impl TrajectoryFileGenerator {
             trajectory_file,
             swerve_transformers: HashMap::new(),
             differential_transformers: HashMap::new(),
+            mecanum_transformers: HashMap::new(),
         }
     }
 
@@ -78,14 +80,29 @@ impl TrajectoryFileGenerator {
             .push(transformer);
     }
 
+    /// Add a transformer to the generator that is only applied when generating a mecanum trajectory
+    pub fn add_mecanum_transformer<T: MecanumGenerationTransformer + 'static>(&mut self) {
+        let featurelocked_transformer = T::initialize(&self.ctx);
+        let feature = featurelocked_transformer.feature;
+        let transformer = Box::new(featurelocked_transformer.inner);
+        self.mecanum_transformers
+            .entry(feature)
+            .or_default()
+            .push(transformer);
+    }
+
     /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
     pub fn add_omni_transformer<
-        T: SwerveGenerationTransformer + DifferentialGenerationTransformer + 'static,
+        T: SwerveGenerationTransformer
+            + DifferentialGenerationTransformer
+            + MecanumGenerationTransformer
+            + 'static,
     >(
         &mut self,
     ) {
         self.add_swerve_transformer::<T>();
         self.add_differential_transformer::<T>();
+        self.add_mecanum_transformer::<T>();
     }
 
     fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
@@ -122,6 +139,23 @@ impl TrajectoryFileGenerator {
         generator.generate(true, handle).map_err(Into::into)
     }
 
+    fn generate_mecanum(&self, handle: i64) -> ChoreoResult<MecanumTrajectory> {
+        let mut generator = MecanumTrajectoryGenerator::new();
+        let mut feature_set = HashSet::new();
+        feature_set.extend(self.ctx.project.generation_features.clone());
+        feature_set.insert("".to_string());
+
+        for feature in feature_set.iter() {
+            if let Some(transformers) = self.mecanum_transformers.get(feature) {
+                for transformer in transformers.iter() {
+                    transformer.trans(&mut generator);
+                }
+            }
+        }
+
+        generator.generate(true, handle).map_err(Into::into)
+    }
+
     /// Generate the trajectory file
     pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
@@ -133,6 +167,12 @@ impl TrajectoryFileGenerator {
                 .collect(),
             DriveType::Differential => self
                 .generate_differential(self.ctx.handle)?
+                .samples
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            DriveType::Mecanum => self
+                .generate_mecanum(self.ctx.handle)?
                 .samples
                 .into_iter()
                 .map(Into::into)
@@ -210,6 +250,27 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     }
 }
 
+/// An object safe variant of the [`MecanumGenerationTransformer`] trait,
+///
+/// Should not be implemented directly, instead implement [`MecanumGenerationTransformer`]
+pub(super) trait InitializedMecanumGenerationTransformer {
+    fn trans(&self, generator: &mut MecanumTrajectoryGenerator);
+}
+
+/// A trait for objects that can transform a [`MecanumTrajectoryGenerator`]
+pub(super) trait MecanumGenerationTransformer:
+    InitializedMecanumGenerationTransformer + Sized
+{
+    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self>;
+    fn transform(&self, generator: &mut MecanumTrajectoryGenerator);
+}
+
+impl<T: MecanumGenerationTransformer> InitializedMecanumGenerationTransformer for T {
+    fn trans(&self, generator: &mut MecanumTrajectoryGenerator) {
+        self.transform(generator);
+    }
+}
+
 fn postprocess(
     result: &[Sample],
     mut path: TrajectoryFile,
@@ -248,6 +309,7 @@ fn postprocess(
                 result.get(total_intervals).map_or(0.0, |s| match s {
                     Sample::Swerve { t, .. } => *t,
                     Sample::DifferentialDrive { t, .. } => *t,
+                    Sample::Mecanum { t, .. } => *t,
                 }),
             )
         })

@@ -16,8 +16,8 @@
 
 namespace trajopt {
 
-/// A swerve drivetrain physical model.
-struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
+/// A mecanum drivetrain physical model.
+struct TRAJOPT_DLLEXPORT MecanumDrivetrain {
   /// The mass of the robot (kg).
   double mass;
 
@@ -36,14 +36,16 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   /// The Coefficient of Friction (CoF) of the wheels.
   double wheel_cof;
 
-  /// Translation of each swerve module from the origin of the robot coordinate
-  /// system to the center of the module (m). There's usually one in each
-  /// corner.
-  std::vector<Translation2d> modules;
+  /// Strafing efficiency [0 -> 1] penalizes strafing by a certain percent.
+  double strafe_efficiency = 0.75;
+
+  /// Translation of each wheel from the origin of the robot coordinate
+  /// system to the center of the wheel (m).
+  std::vector<Translation2d> wheels;
 };
 
-/// The swerve drive trajectory optimization solution.
-struct TRAJOPT_DLLEXPORT SwerveSolution {
+/// The mecanum drive trajectory optimization solution.
+struct TRAJOPT_DLLEXPORT MecanumSolution {
   /// Times between samples.
   std::vector<double> dt;
 
@@ -77,15 +79,12 @@ struct TRAJOPT_DLLEXPORT SwerveSolution {
   /// The angular accelerations.
   std::vector<double> alpha;
 
-  /// The x forces for each module.
-  std::vector<std::vector<double>> module_fx;
-
-  /// The y forces for each module.
-  std::vector<std::vector<double>> module_fy;
+  /// The forces along the active axis of each wheel.
+  std::vector<std::vector<double>> wheel_f;
 };
 
-/// Swerve trajectory sample.
-class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
+/// Mecanum drive trajectory sample.
+class TRAJOPT_DLLEXPORT MecanumTrajectorySample {
  public:
   /// The timestamp.
   double timestamp = 0.0;
@@ -117,15 +116,12 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
   /// The angular acceleration.
   double angular_acceleration = 0.0;
 
-  /// The force on each module in the X direction.
-  std::vector<double> module_forces_x;
+  /// The force on each wheel along its active axis.
+  std::vector<double> wheel_forces;
 
-  /// The force on each module in the Y direction.
-  std::vector<double> module_forces_y;
+  MecanumTrajectorySample() = default;
 
-  SwerveTrajectorySample() = default;
-
-  /// Construct a SwerveTrajectorySample.
+  /// Construct a MecanumTrajectorySample.
   ///
   /// @param timestamp The timestamp.
   /// @param x The x coordinate.
@@ -137,14 +133,12 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
   /// @param acceleration_x The acceleration's x component.
   /// @param acceleration_y The acceleration's y component.
   /// @param angular_acceleration The angular acceleration.
-  /// @param module_forces_x Forces acting on the modules in the X direction.
-  /// @param module_forces_y Forces acting on the modules in the Y direction.
-  SwerveTrajectorySample(double timestamp, double x, double y, double heading,
-                         double velocity_x, double velocity_y,
-                         double angular_velocity, double acceleration_x,
-                         double acceleration_y, double angular_acceleration,
-                         std::vector<double> module_forces_x,
-                         std::vector<double> module_forces_y)
+  /// @param wheel_forces Forces along the wheel directions.
+  MecanumTrajectorySample(double timestamp, double x, double y, double heading,
+                          double velocity_x, double velocity_y,
+                          double angular_velocity, double acceleration_x,
+                          double acceleration_y, double angular_acceleration,
+                          std::vector<double> wheel_forces)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -155,28 +149,27 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
         acceleration_x{acceleration_x},
         acceleration_y{acceleration_y},
         angular_acceleration{angular_acceleration},
-        module_forces_x{std::move(module_forces_x)},
-        module_forces_y{std::move(module_forces_y)} {}
+        wheel_forces{std::move(wheel_forces)} {}
 };
 
-/// Swerve trajectory.
-class TRAJOPT_DLLEXPORT SwerveTrajectory {
+/// Mecanum trajectory.
+class TRAJOPT_DLLEXPORT MecanumTrajectory {
  public:
   /// Trajectory samples.
-  std::vector<SwerveTrajectorySample> samples;
+  std::vector<MecanumTrajectorySample> samples;
 
-  SwerveTrajectory() = default;
+  MecanumTrajectory() = default;
 
-  /// Construct a SwerveTrajectory from samples.
+  /// Construct a MecanumTrajectory from samples.
   ///
   /// @param samples The samples.
-  explicit SwerveTrajectory(std::vector<SwerveTrajectorySample> samples)
+  explicit MecanumTrajectory(std::vector<MecanumTrajectorySample> samples)
       : samples{std::move(samples)} {}
 
-  /// Construct a SwerveTrajectory from a swerve solution.
+  /// Construct a MecanumTrajectory from a swerve solution.
   ///
   /// @param solution The swerve solution.
-  explicit SwerveTrajectory(const SwerveSolution& solution) {
+  explicit MecanumTrajectory(const MecanumSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
       samples.emplace_back(
@@ -184,30 +177,30 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
           std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
           solution.vx[sample], solution.vy[sample], solution.omega[sample],
           solution.ax[sample], solution.ay[sample], solution.alpha[sample],
-          solution.module_fx[sample], solution.module_fy[sample]);
+          solution.wheel_f[sample]);
       ts += solution.dt[sample];
     }
   }
 };
 
-/// A swerve path.
-using SwervePath = Path<SwerveDrivetrain, SwerveSolution>;
+/// A mecanum path.
+using MecanumPath = Path<MecanumDrivetrain, MecanumSolution>;
 
-/// Builds a swerve path using information about how the robot must travel
+/// Builds a mecanum path using information about how the robot must travel
 /// through a series of waypoints. This path can be converted to a trajectory
-/// using SwerveTrajectoryGenerator.
-using SwervePathBuilder = PathBuilder<SwerveDrivetrain, SwerveSolution>;
+/// using MecanumTrajectoryGenerator.
+using MecanumPathBuilder = PathBuilder<MecanumDrivetrain, MecanumSolution>;
 
 /// This trajectory generator class contains functions to generate time-optimal
 /// trajectories for several drivetrain types.
-class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
+class TRAJOPT_DLLEXPORT MecanumTrajectoryGenerator {
  public:
   /// Construct a new swerve trajectory optimization problem.
   ///
   /// @param path_builder The path builder.
   /// @param handle An identifier for state callbacks.
-  explicit SwerveTrajectoryGenerator(SwervePathBuilder path_builder,
-                                     int64_t handle = 0);
+  explicit MecanumTrajectoryGenerator(MecanumPathBuilder path_builder,
+                                      int64_t handle = 0);
 
   /// Generates an optimal trajectory.
   ///
@@ -216,12 +209,12 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   /// @param diagnostics Enables diagnostic prints.
   /// @return Returns a holonomic trajectory on success, or the solver's exit
   ///     status on failure.
-  std::expected<SwerveSolution, slp::ExitStatus> generate(
+  std::expected<MecanumSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
 
  private:
-  /// Swerve path
-  SwervePath path;
+  /// Mecanum path
+  MecanumPath path;
 
   /// State Variables
   std::vector<slp::Variable<double>> x;
@@ -236,8 +229,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   std::vector<slp::Variable<double>> α;
 
   /// Input Variables
-  std::vector<std::vector<slp::Variable<double>>> Fx;
-  std::vector<std::vector<slp::Variable<double>>> Fy;
+  std::vector<std::vector<slp::Variable<double>>> F;
 
   /// Time Variables
   std::vector<slp::Variable<double>> dts;
@@ -247,9 +239,9 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
 
   slp::Problem<double> problem;
 
-  void apply_initial_guess(const SwerveSolution& solution);
+  void apply_initial_guess(const MecanumSolution& solution);
 
-  SwerveSolution construct_swerve_solution();
+  MecanumSolution construct_mecanum_solution();
 };
 
 }  // namespace trajopt

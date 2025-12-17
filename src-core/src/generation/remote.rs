@@ -90,6 +90,8 @@ pub enum RemoteProgressUpdate {
     IncompleteSwerveTrajectory(Vec<Sample>),
     // Diff variant
     IncompleteTankTrajectory(Vec<Sample>),
+    // Mecanum variant
+    IncompleteMecanumTrajectory(Vec<Sample>),
     CompleteTrajectory(Trajectory),
     Error(ChoreoError),
 }
@@ -114,6 +116,12 @@ pub fn remote_generate_child(args: RemoteArgs) {
                         update: LocalProgressUpdate::DifferentialTrajectory { update },
                         ..
                     } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTrajectory(
+                        update,
+                    )),
+                    HandledLocalProgressUpdate {
+                        update: LocalProgressUpdate::MecanumTrajectory { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteMecanumTrajectory(
                         update,
                     )),
                     _ => continue,
@@ -311,6 +319,13 @@ pub async fn remote_generate_parent(
                             Ok(RemoteProgressUpdate::IncompleteTankTrajectory(trajectory)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::DifferentialTrajectory {
+                                        update: trajectory
+                                    }.handled(handle)
+                                );
+                            },
+                            Ok(RemoteProgressUpdate::IncompleteMecanumTrajectory(trajectory)) => {
+                                remote_resources.emit_progress(
+                                    LocalProgressUpdate::MecanumTrajectory {
                                         update: trajectory
                                     }.handled(handle)
                                 );

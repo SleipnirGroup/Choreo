@@ -3,7 +3,7 @@
 use std::sync::OnceLock;
 use std::sync::mpsc::{Receiver, Sender, channel};
 
-use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
+use trajoptlib::{DifferentialTrajectory, MecanumTrajectory, SwerveTrajectory};
 
 use super::heading::adjust_headings;
 use super::transformers::{
@@ -31,6 +31,9 @@ pub enum LocalProgressUpdate {
         // Diff variant
         update: Vec<Sample>,
     },
+    MecanumTrajectory {
+        update: Vec<Sample>,
+    },
     DiagnosticText {
         update: String,
     },
@@ -56,6 +59,14 @@ impl From<SwerveTrajectory> for LocalProgressUpdate {
 impl From<DifferentialTrajectory> for LocalProgressUpdate {
     fn from(trajectory: DifferentialTrajectory) -> Self {
         LocalProgressUpdate::DifferentialTrajectory {
+            update: trajectory.samples.iter().map(Sample::from).collect(),
+        }
+    }
+}
+
+impl From<MecanumTrajectory> for LocalProgressUpdate {
+    fn from(trajectory: MecanumTrajectory) -> Self {
+        LocalProgressUpdate::MecanumTrajectory {
             update: trajectory.samples.iter().map(Sample::from).collect(),
         }
     }
