@@ -46,7 +46,7 @@ jobs:
 
       - name: Build with Gradle
         working-directory: choreolib
-        run: ./gradlew build  ${{ matrix.build-options }}
+        run: ./gradlew build ${{ matrix.build-options }}
 
       - name: Publish with Gradle (release)
         if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
