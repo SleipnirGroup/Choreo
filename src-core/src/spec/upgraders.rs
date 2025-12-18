@@ -158,13 +158,20 @@ mod project_file {
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
-
+        upgrader.add_version_action(up_1_2);
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
     // the up prefix lets version numerals be used
     fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         editor.set_path_serialize("config.cof", Expr::new("1.5", 1.5))
+    }
+    fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        editor.set_path("codegen.root", Option::<String>::None)?;
+        editor.set_path("codegen.genVars", true)?;
+        editor.set_path("codegen.genTrajData", true)?;
+        editor.set_path("codegen.useChoreoLib", true)?;
+        Ok(())
     }
 
     #[cfg(test)]
@@ -211,6 +218,14 @@ mod project_file {
         #[test]
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_project("1", "swerve")
+        }
+        #[test]
+        pub fn test_2_differential() -> ChoreoResult<()> {
+            test_project("2", "differential")
+        }
+        #[test]
+        pub fn test_2_swerve() -> ChoreoResult<()> {
+            test_project("2", "swerve")
         }
     }
 }

@@ -4,7 +4,7 @@ import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
-import { getDebugName, reaction } from "mobx";
+import { getDebugName, IReactionDisposer, reaction } from "mobx";
 import {
   applySnapshot,
   castToSnapshot,
@@ -64,6 +64,11 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { genVarsFile, VARS_FILENAME } from "../codegen/genVarsFile";
+import {
+  genTrajDataFile,
+  TRAJ_DATA_FILENAME
+} from "../codegen/genTrajDataFile";
 
 export type OpenFilePayload = {
   name: string;
@@ -251,7 +256,13 @@ export const doc = DocumentStore.create(
     },
     name: "Untitled",
     variables: castToSnapshot(variables),
-    selectedSidebarItem: undefined
+    selectedSidebarItem: undefined,
+    codegen: {
+      root: null,
+      genVars: true,
+      genTrajData: true,
+      useChoreoLib: true
+    }
   },
   env
 );
@@ -272,12 +283,52 @@ function renameVariable(find: string, replace: string) {
     }
   });
 }
+
+async function removeCodegenFile(name: string) {
+  if (!doc.codegen.root) {
+    return;
+  }
+  const deployRoot = await Commands.getDeployRoot();
+  const dir = await path.join(deployRoot, doc.codegen.root);
+  await Commands.deleteJavaFile(dir + "/" + name + ".java");
+}
+
+let pathNamesReactionDisposer: IReactionDisposer | null = null;
+
+function startPathNamesReaction() {
+  pathNamesReactionDisposer = reaction(
+    () => doc.pathlist.pathNames,
+    () =>
+      toast.promise(genJavaFiles(), {
+        error: "Error updating generated java files."
+      })
+  );
+}
+
 export function setup() {
   doc.history.clear();
   setupEventListeners()
-    .then(() => newProject())
+    .then(() => newProject(false))
     .then(() => uiState.updateWindowTitle())
-    .then(() => openProjectFile());
+    .then(() => openProjectFile())
+    .then(() => {
+      reaction(
+        () => !doc.codegen.genVars,
+        (removeFile) => {
+          if (removeFile) {
+            removeCodegenFile(VARS_FILENAME);
+          }
+        }
+      );
+      reaction(
+        () => !doc.codegen.genTrajData,
+        (removeFile) => {
+          if (removeFile) {
+            removeCodegenFile(TRAJ_DATA_FILENAME);
+          }
+        }
+      );
+    });
 }
 setup();
 
@@ -627,10 +678,12 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
+    pathNamesReactionDisposer?.(); // prevents the reaction from triggering for every addPath()
     doc.pathlist.deleteAll();
     trajectories.forEach((trajectory) => {
       doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
+    startPathNamesReaction();
     uiState.setSaveFileDir(dir);
     uiState.setProjectName(name);
     localStorage.setItem(
@@ -664,17 +717,17 @@ export async function generateAndExport(uuid: string) {
 export async function generateWithToastsAndExport(uuid: string) {
   tracing.debug("generateWithToastsAndExport", uuid);
   const pathName = doc.pathlist.paths.get(uuid)?.name;
-  doc.generatePathWithToasts(uuid).then(() =>
-    toast.promise(writeTrajectory(uuid), {
-      success: `Saved "${pathName}" to ${uiState.projectDir}.`,
-      error: {
-        render(toastProps) {
-          tracing.error(toastProps.data);
-          return `Couldn't export trajectory: ${toastProps.data as string[]}`;
-        }
+  await doc.generatePathWithToasts(uuid);
+  await toast.promise(writeTrajectory(uuid), {
+    success: `Saved "${pathName}" to ${uiState.projectDir}.`,
+    error: {
+      render(toastProps) {
+        tracing.error(toastProps.data);
+        return `Couldn't export trajectory: ${toastProps.data as string[]}`;
       }
-    })
-  );
+    }
+  });
+  await genJavaFiles();
 }
 
 function getSelectedWaypoint() {
@@ -690,7 +743,7 @@ function getSelectedConstraint() {
   });
 }
 
-export async function newProject() {
+export async function newProject(promptForCodegen: boolean = true) {
   applySnapshot(uiState, {
     settingsTab: 0,
     layers: ViewLayerDefaults,
@@ -705,6 +758,22 @@ export async function newProject() {
   uiState.setProjectSavingState(SavingState.NO_LOCATION);
   uiState.setProjectSavingTime(new Date());
   doc.history.clear();
+  if (!promptForCodegen) {
+    return;
+  }
+  const msg =
+    doc.codegen.root != null
+      ? `
+    Change the folder in which Java file generation occurs?
+    (Do this if you're switching to a new codebase)
+    `
+      : `
+    Choreo can generate Java files (more information: https://choreo.autos/usage/editing-paths/).
+    Select a folder to enable this feature?
+    `;
+  if (await ask(msg, { title: "Choreo", kind: "warning" })) {
+    await codeGenDialog();
+  }
 }
 export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
@@ -779,7 +848,11 @@ export async function writeAllTrajectories() {
 export async function saveProject() {
   if (await canSave()) {
     try {
-      await toast.promise(Commands.writeProject(doc.serializeChor()), {
+      const tasks = [
+        Commands.writeProject(doc.serializeChor()),
+        genJavaFiles()
+      ];
+      await toast.promise(Promise.all(tasks), {
         error: {
           render(toastProps: ToastContentProps<ChoreoError>) {
             return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
@@ -795,6 +868,72 @@ export async function saveProject() {
     tracing.warn("Can't save project, skipping");
     uiState.setProjectSavingState(SavingState.NO_LOCATION);
   }
+}
+
+export async function genJavaFiles() {
+  const codeGenPkg = doc.codegen.javaPkg;
+  if (!doc.codegen.root || !codeGenPkg) {
+    return;
+  }
+  const rootPath = await path.join(
+    await Commands.getDeployRoot(),
+    doc.codegen.root
+  );
+  tracing.info("Generating Java Files at " + rootPath);
+  const trajectories = [...doc.pathlist.paths.values()].map(
+    (it) => it.serialize
+  );
+  const tasks = [];
+  if (doc.codegen.genVars) {
+    tasks.push(
+      Commands.writeJavaFile(
+        genVarsFile(doc.serializeChor(), codeGenPkg),
+        `${rootPath}/${VARS_FILENAME}.java`
+      )
+    );
+  }
+  if (doc.codegen.genTrajData) {
+    tasks.push(
+      Commands.writeJavaFile(
+        genTrajDataFile(trajectories, codeGenPkg, doc.codegen.useChoreoLib),
+        `${rootPath}/${TRAJ_DATA_FILENAME}.java`
+      )
+    );
+  }
+  await toast.promise(Promise.all(tasks), {
+    error: {
+      render(toastProps: ToastContentProps<ChoreoError>) {
+        return `Java files did not generate. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+      }
+    }
+  });
+}
+
+function getRelativePath(from: string, to: string): string {
+  const fromParts = from.split(path.sep());
+  const toParts = to.split(path.sep());
+  let i = 0;
+  while (
+    i < fromParts.length &&
+    i < toParts.length &&
+    fromParts[i] === toParts[i]
+  ) {
+    i++;
+  }
+  const backSteps = fromParts.slice(i).map(() => "..");
+  const forwardSteps = toParts.slice(i);
+  return [...backSteps, ...forwardSteps].join(path.sep());
+}
+
+export async function codeGenDialog() {
+  const newRoot = await Commands.selectCodegenFolder();
+  await Promise.allSettled([
+    removeCodegenFile(VARS_FILENAME),
+    removeCodegenFile(TRAJ_DATA_FILENAME)
+  ]);
+  doc.codegen.setRoot(getRelativePath(await Commands.getDeployRoot(), newRoot));
+  await saveProject();
+  toast.success("Choreo code geneneration was enabled.");
 }
 
 export async function saveProjectDialog() {
@@ -829,7 +968,7 @@ export async function saveProjectDialog() {
 
   await saveProject();
 
-  //save all trajectories
+  // save all trajectories
   await writeAllTrajectories();
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);

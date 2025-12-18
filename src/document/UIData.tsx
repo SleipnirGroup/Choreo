@@ -18,6 +18,7 @@ import {
   ConstraintKey
 } from "./ConstraintDefinitions";
 import { ConstraintStore } from "./ConstraintStore";
+import CodeGenConfigPanel from "../components/config/CodeGenConfigPanel";
 
 /* Navbar stuff */
 export const WaypointData: {
@@ -177,6 +178,10 @@ export const SETTINGS_TABS = [
   {
     name: "Controls",
     component: () => <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
+  },
+  {
+    name: "Code Generation",
+    component: () => <CodeGenConfigPanel></CodeGenConfigPanel>
   }
 ] as const;
 export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

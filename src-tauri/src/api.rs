@@ -1,5 +1,6 @@
 #![allow(clippy::needless_pass_by_value)]
 
+use std::fs;
 use std::path::PathBuf;
 
 use crate::tauri::TauriResult;
@@ -56,6 +57,21 @@ pub async fn open_in_explorer(path: String) -> TauriResult<()> {
 }
 
 #[tauri::command]
+pub async fn select_codegen_folder(app_handle: tauri::AppHandle) -> TauriResult<String> {
+    Ok(app_handle
+        .dialog()
+        .file()
+        .set_title("Select a folder to output generated Java files")
+        .blocking_pick_folder()
+        .ok_or(ChoreoError::FileNotFound(None))?
+        .as_path()
+        .ok_or(ChoreoError::FileNotFound(None))?
+        .to_str()
+        .ok_or(ChoreoError::FileNotFound(None))?
+        .to_string())
+}
+
+#[tauri::command]
 pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<OpenFilePayload> {
     app_handle
         .dialog()
@@ -84,6 +100,33 @@ pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<Op
                     .to_string(),
             }),
         })?
+}
+
+#[tauri::command]
+pub fn write_java_file(content: String, file_path: String) -> ChoreoResult<()> {
+    if !file_path.contains(".java") {
+        return Err(ChoreoError::Io(
+            "Attempted to write a non-Java file".to_string(),
+        ));
+    }
+    fs::write(file_path, content.as_bytes())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
+    if !file_path.contains(".java") {
+        return Err(ChoreoError::Io(
+            "Attempted to delete a non-Java file".to_string(),
+        ));
+    }
+    if let Ok(t) = fs::exists(file_path.clone())
+        && !t
+    {
+        return Ok(());
+    }
+    fs::remove_file(file_path)?;
+    Ok(())
 }
 
 #[tauri::command]
