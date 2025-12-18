@@ -5,6 +5,12 @@ To enable or disable this feature, simply go to the "Code Generation" tab in the
 
     These generated Java files do not depend on ChoreoLib to work. They will be perfectly compatible with any Java project.
 
+
+> **NOTE**
+To make this code generation possible, Choreo requires that trajectory names are valid variable names (identifiers) in C++, Python, and Java. **Trajectory names can only contain letters (a-z, A-Z), numbers (0-9), and the underscore character (_). They cannot begin with a number.**
+> Choreo's code generation will intentionally output errored code if this rule is broken, and the code will have a comment explaining the rule. The Choreo app will indicate any trajectories that need to be renamed.
+
+
 ## Variables
 
 Choreo can output a Java file containing variables defined in the Choreo GUI. This allows information such as predefined poses and robot characteristics to be shared between the robot code and the GUI, while ensuring consistency. Values will use the Java units library when possible.
@@ -13,8 +19,6 @@ Choreo can output a Java file containing variables defined in the Choreo GUI. Th
 
 Choreo can also output a Java file listing the name, total time, and blue-alliance start and end poses of each trajectory. Each trajectory is represented as a static constant of the ChoreoTraj.java file. This removes the risk of referencing trajectories that don't exist or aren't generated yet.
 
-> **Name Changes**
-> Some valid trajectory names aren't valid Java identifiers. Commonly, trajectory names have spaces and/or start with numbers. The enum fields will strip out spaces (i.e. `REEF POSES.traj` is the field `REEFPOSES`). If the name starts with a number or other invalid character, an underscore `_` will be added at the beginning.
 
 The file is rewritten when the project is loaded, and when paths are generated, renamed, or deleted.
 ## ChoreoLib Example:
