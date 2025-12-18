@@ -242,7 +242,7 @@ export const HolonomicPathStore = types
 // TS complains of circular dependencies if we directly alias this
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHolonomicPathStore extends Instance<
-   typeof HolonomicPathStore
+    typeof HolonomicPathStore
 > {}
 export function getPathStore(self: IAnyStateTreeNode): IHolonomicPathStore {
   const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore);
