@@ -121,7 +121,7 @@ pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
         ));
     }
     if let Ok(t) = fs::exists(file_path.clone())
-        && t == false
+        && !t
     {
         return Ok(());
     }
