@@ -1,0 +1,43 @@
+{
+  "fileName": "ChoreoLib2026Beta.json",
+  "name": "ChoreoLib",
+  "version": "2026.0.0-beta-1",
+  "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
+  "frcYear": "2026beta",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/"
+  ],
+  "jsonUrl": "https://choreo.autos/lib/ChoreoLib2026Beta.json",
+  "javaDependencies": [
+    {
+      "groupId": "choreo",
+      "artifactId": "ChoreoLib-java",
+      "version": "2026.0.0-beta-1"
+    },
+    {
+      "groupId": "com.google.code.gson",
+      "artifactId": "gson",
+      "version": "2.11.0"
+    }
+  ],
+  "jniDependencies": [],
+  "cppDependencies": [
+    {
+      "groupId": "choreo",
+      "artifactId": "ChoreoLib-cpp",
+      "version": "2026.0.0-beta-1",
+      "libName": "ChoreoLib",
+      "headerClassifier": "headers",
+      "sharedLibrary": false,
+      "skipInvalidPlatforms": true,
+      "binaryPlatforms": [
+        "windowsx86-64",
+        "linuxx86-64",
+        "osxuniversal",
+        "linuxathena",
+        "linuxarm32",
+        "linuxarm64"
+      ]
+    }
+  ]
+}
