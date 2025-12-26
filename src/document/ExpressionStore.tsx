@@ -640,6 +640,15 @@ export const Variables = types
     get sortedPoseNames(): Array<string> {
       return this.sortedPoses.map(([_varUUID, { name }]) => name);
     },
+    get maxNameLength(): number {
+      const poseNames = Array.from(self.poses.values()).map(
+        (v) => v.name.length
+      );
+      const expNames = Array.from(self.expressions.values()).map(
+        (v) => v.name.length
+      );
+      return Math.min(17, Math.max(...poseNames, ...expNames, 7));
+    },
     hasName(name: string) {
       return (
         Array.from(self.expressions).some(

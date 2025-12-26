@@ -28,7 +28,7 @@ const PoseVariablePanel = observer(
         {props.logo()}
 
         <VariableRenamingInput
-          width="7ch"
+          width={doc.variables.maxNameLength + "ch"}
           key={props.name + ".name"}
           name={props.name}
           setName={(name) => props.setName(name)}
