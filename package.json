@@ -14,7 +14,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "fmtCpp": "wpiformat",
+    "fmtCpp": "wpiformat -f trajoptlib && wpiformat -f choreolib",
     "fmtJava": "cd choreolib && bash ./gradlew spotlessApply",
     "fmtJs": "prettier --write .",
     "fmtRs": "cargo fmt",
