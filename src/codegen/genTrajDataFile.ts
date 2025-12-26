@@ -150,7 +150,7 @@ public record ${TRAJ_DATA_FILENAME}(
       .map(printChoreoTraj)
       .map((item) => item.replaceAll("\n", "\n\t"))
       .join("\n\t")}
-    
+
     /**
      * A map between trajectory names and their corresponding data.
      * This allows for trajectory data to be looked up with strings during runtime.
