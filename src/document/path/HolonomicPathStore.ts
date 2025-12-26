@@ -38,6 +38,7 @@ export function waypointIDToText(
   if (id == "last") return "End";
   return findUUIDIndex(id.uuid, points) + 1;
 }
+
 export const DEFAULT_EVENT_MARKER: EventMarker = {
   name: "Marker",
   from: {
@@ -243,7 +244,7 @@ export const HolonomicPathStore = types
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHolonomicPathStore extends Instance<
   typeof HolonomicPathStore
-> {}
+> { }
 export function getPathStore(self: IAnyStateTreeNode): IHolonomicPathStore {
   const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore);
   return path;

@@ -6,7 +6,7 @@ import {
   ShapeLine
 } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, TextField, Tooltip } from "@mui/material";
+import { IconButton, InputAdornment, TextField, Tooltip } from "@mui/material";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -18,15 +18,16 @@ import ExpressionInputList from "../input/ExpressionInputList";
 import GenerateInProgress from "../../assets/GenerateInProgress";
 import { SavingState } from "../../document/UIStateStore";
 import SaveInProgress from "../../assets/SaveInProgress";
+import { TrajectoryNameErrorMessages, TrajectoryNameIssue } from "../../document/path/TrajectoryNameValidation";
 
 type Props = object;
 
 type State = object;
 
-type OptionProps = { uuid: string };
+type OptionProps = { uuid: string, selected:boolean };
 type OptionState = {
   renaming: boolean;
-  renameError: boolean;
+  renameError: TrajectoryNameIssue | undefined;
   name: string;
   settingsOpen: boolean;
 };
@@ -114,13 +115,13 @@ class PathSelectorIcon extends Component<
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   state = {
     renaming: false,
-    renameError: false,
+    renameError: doc.pathlist.validateName(this.getPath().name, this.props.uuid),
     name: this.getPath().name,
     settingsOpen: false
   };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
-    return this.props.uuid == doc.pathlist.activePathUUID;
+    return this.props.selected;
   }
   getPath() {
     return doc.pathlist.paths.get(this.props.uuid)!;
@@ -130,7 +131,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.nameInputRef.current!.value = this.getPath().name;
   }
   completeRename() {
-    if (!this.checkName()) {
+    if (this.checkName(this.nameInputRef.current!.value) === undefined) {
       const newName = this.nameInputRef.current!.value;
       if (newName !== this.getPath().name) {
         renamePath(this.props.uuid, newName);
@@ -141,34 +142,18 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   escapeRename() {
     this.setState({
       renaming: false,
-      renameError: false,
+      renameError: this.checkName(this.getPath().name),
       name: this.getPath().name
     });
   }
-  checkName(): boolean {
-    const inputName = this.nameInputRef.current!.value;
-    const error =
-      inputName.length == 0 ||
-      inputName.includes("/") ||
-      inputName.includes("\\") ||
-      inputName.includes(".") ||
-      this.searchForName(this.nameInputRef.current!.value);
+  checkName(inputName: string): TrajectoryNameIssue | undefined {
+    const error = doc.pathlist.validateName(inputName, this.props.uuid);
     this.setState({ renameError: error, name: inputName });
     return error;
   }
-  searchForName(name: string): boolean {
-    const didFind =
-      Array.from(doc.pathlist.paths.keys())
-        .filter((uuid) => uuid !== this.props.uuid)
-        .map((uuid) => doc.pathlist.paths.get(uuid)!.name)
-        .find((existingName) => existingName === name) !== undefined;
-    return didFind;
-  }
   render() {
-    // this is here to use the data we care about during actual rendering
-    // so mobx knows to rerender this component when it changes
-    this.searchForName("");
-    const selected = this.props.uuid == doc.pathlist.activePathUUID;
+    
+    const selected = this.props.selected;
     const name = this.getPath().name;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
@@ -194,19 +179,25 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         ></PathSelectorIcon>
         <TextField
           className={styles.SidebarLabel}
-          variant={this.state.renaming ? "outlined" : "standard"}
+          variant={"outlined"}//"outlined" : "standard"}
           inputRef={this.nameInputRef}
-          error={this.state.renameError}
+          error={this.state.renameError !== undefined}
+          slotProps={{
+            input: {endAdornment: this.state.renameError !== undefined ?
+              <InputAdornment position="end">
+                <Tooltip placement="right" open={true} arrow={true} disableInteractive  title={this.state.renameError?.uiMessage ?? ""}><span></span></Tooltip>
+              </InputAdornment> : <></>
+            }
+          }}
           style={{
             display: "block",
             maxWidth: "100%",
             flexGrow: "1",
             verticalAlign: "middle",
             userSelect: "none",
-            height: "24px"
           }}
           spellCheck={false}
-          onChange={() => this.checkName()}
+          onChange={() => this.checkName(this.nameInputRef.current!.value)}
           value={this.state.name}
           onKeyDown={(event) => {
             if (event.key == "Enter") {
@@ -218,7 +209,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           }}
           inputProps={{
             readOnly: !this.state.renaming,
-            style: { userSelect: "none" }
+            style: { userSelect: "none", padding: 0 }
           }}
           InputProps={{ disableUnderline: false }}
           onFocus={(e) => {
@@ -246,7 +237,8 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               height: "1.5em",
               userSelect: "none",
               padding: "4px"
-            }
+            },
+            "fieldset": { borderColor: "transparent"}
           }}
         ></TextField>
         <div>
@@ -306,11 +298,12 @@ class PathSelector extends Component<Props, State> {
 
   Option = observer(PathSelectorOption);
   render() {
+    const activePath = doc.pathlist.activePathUUID;
     return (
       <div>
         <div className={styles.WaypointList}>
           {Array.from(doc.pathlist.paths.keys()).map((uuid) => (
-            <this.Option uuid={uuid} key={uuid}></this.Option>
+            <this.Option uuid={uuid} key={uuid} selected={uuid===activePath}></this.Option>
           ))}
         </div>
       </div>

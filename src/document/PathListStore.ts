@@ -7,6 +7,7 @@ import {
 } from "./path/HolonomicPathStore";
 import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
 import { SavingState } from "./UIStateStore";
+import { isValidTrajectoryName, TrajectoryNameIssue, TrajectoryNameIssueTypes } from "./path/TrajectoryNameValidation";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -28,18 +29,31 @@ export const PathListStore = types
           (pathStore) => pathStore.name
         );
       },
+      pathNamesBesides(uuid?: string) {
+        var paths = Array.from(self.paths.values())
+        if (uuid !== undefined) {
+          paths = paths.filter(path=>path.uuid!==uuid);
+        }
+        return paths.map(path=>path.name)
+      },
 
       get pathUUIDs() {
         return Array.from(self.paths.keys());
-      }
+      },
+
     };
   })
+  .views((self)=>({
+      validateName(name: string, thisUUID?: string): TrajectoryNameIssue | undefined {
+        return isValidTrajectoryName(name, self.pathNamesBesides(thisUUID));
+      }
+  }))
   .actions((self) => {
     return {
       disambiguateName(name: string) {
         let usedName = name;
         let disambig = 1;
-        while (self.pathNames.includes(usedName)) {
+        while (self.validateName(name)?.kind === "Exists") {
           usedName = `${name} (${disambig.toFixed(0)})`;
           disambig++;
         }
@@ -51,7 +65,7 @@ export const PathListStore = types
         }
       },
       addDefaultPath() {
-        const usedName = "No Path";
+        const usedName = "NoPath";
         const newUUID = crypto.randomUUID();
         const env = getEnv<Env>(self);
         const path = HolonomicPathStore.create({
@@ -161,7 +175,7 @@ export const PathListStore = types
     get activePath(): IHolonomicPathStore {
       let path = self.paths.get(self.activePathUUID);
       if (path === undefined) {
-        self.addPath("New Path", true);
+        self.addPath("NewPath", true);
         path = self.paths.get(self.activePathUUID);
       }
       return path as IHolonomicPathStore;
