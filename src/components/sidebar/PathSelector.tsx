@@ -18,13 +18,16 @@ import ExpressionInputList from "../input/ExpressionInputList";
 import GenerateInProgress from "../../assets/GenerateInProgress";
 import { SavingState } from "../../document/UIStateStore";
 import SaveInProgress from "../../assets/SaveInProgress";
-import { TrajectoryNameErrorMessages, TrajectoryNameIssue } from "../../document/path/TrajectoryNameValidation";
+import {
+  TrajectoryNameErrorMessages,
+  TrajectoryNameIssue
+} from "../../document/path/TrajectoryNameValidation";
 
 type Props = object;
 
 type State = object;
 
-type OptionProps = { uuid: string, selected:boolean };
+type OptionProps = { uuid: string; selected: boolean };
 type OptionState = {
   renaming: boolean;
   renameError: TrajectoryNameIssue | undefined;
@@ -115,7 +118,10 @@ class PathSelectorIcon extends Component<
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   state = {
     renaming: false,
-    renameError: doc.pathlist.validateName(this.getPath().name, this.props.uuid),
+    renameError: doc.pathlist.validateName(
+      this.getPath().name,
+      this.props.uuid
+    ),
     name: this.getPath().name,
     settingsOpen: false
   };
@@ -131,26 +137,32 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.nameInputRef.current!.value = this.getPath().name;
   }
   completeRename() {
-    if (doc.pathlist.validateName(this.nameInputRef.current!.value, this.props.uuid) === undefined) {
+    if (
+      doc.pathlist.validateName(
+        this.nameInputRef.current!.value,
+        this.props.uuid
+      ) === undefined
+    ) {
       const newName = this.nameInputRef.current!.value;
       if (newName !== this.getPath().name) {
         renamePath(this.props.uuid, newName);
       }
-          this.setState({
-      renaming: false,
-      renameError: doc.pathlist.validateName(newName, this.props.uuid),
-      name: newName
-    });
-    }
-    else {
+      this.setState({
+        renaming: false,
+        renameError: doc.pathlist.validateName(newName, this.props.uuid),
+        name: newName
+      });
+    } else {
       this.escapeRename();
     }
-
   }
   escapeRename() {
     this.setState({
       renaming: false,
-      renameError: doc.pathlist.validateName(this.getPath().name, this.props.uuid),
+      renameError: doc.pathlist.validateName(
+        this.getPath().name,
+        this.props.uuid
+      ),
       name: this.getPath().name
     });
   }
@@ -160,7 +172,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     return error;
   }
   render() {
-    
     const selected = this.props.selected;
     const name = this.getPath().name;
     if (name != this.state.name && !this.state.renaming) {
@@ -185,64 +196,69 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           onGenerate={() => doc.generatePath(this.props.uuid)}
           generating={this.getPath().ui.generating}
         ></PathSelectorIcon>
-        <Tooltip placement="right" arrow={true} disableInteractive  title={this.state.renameError?.uiMessage ?? ""}>
-        <TextField
-          className={styles.SidebarLabel}
-          variant={"outlined"}//"outlined" : "standard"}
-          inputRef={this.nameInputRef}
-          error={this.state.renameError !== undefined}
-          style={{
-            display: "block",
-            maxWidth: "100%",
-            flexGrow: "1",
-            verticalAlign: "middle",
-            userSelect: "none",
-          }}
-          spellCheck={false}
-          onChange={() => this.checkName(this.nameInputRef.current!.value)}
-          value={this.state.name}
-          onKeyDown={(event) => {
-            if (event.key == "Enter") {
-              this.nameInputRef.current!.blur();
-            }
-            if (event.key == "Escape") {
-              this.escapeRename();
-            }
-          }}
-          inputProps={{
-            readOnly: !this.state.renaming,
-            style: { userSelect: "none", padding: 0 }
-          }}
-          InputProps={{ disableUnderline: false }}
-          onFocus={(e) => {
-            e.preventDefault();
-          }}
-          onDoubleClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.startRename();
-            this.nameInputRef.current!.focus();
-          }}
-          onBlur={() => this.completeRename()}
-          onDoubleClickCapture={(e) => {
-            e.stopPropagation();
-            this.startRename();
-            setTimeout(() => this.nameInputRef.current!.select(), 0.001);
-          }}
-          sx={{
-            marginLeft: "-4px",
-            ".MuiInputBase-root": {
-              "&:before": {
-                borderBottom: "2px solid transparent"
+        <Tooltip
+          placement="right"
+          arrow={true}
+          disableInteractive
+          title={this.state.renameError?.uiMessage ?? ""}
+        >
+          <TextField
+            className={styles.SidebarLabel}
+            variant={"outlined"} //"outlined" : "standard"}
+            inputRef={this.nameInputRef}
+            error={this.state.renameError !== undefined}
+            style={{
+              display: "block",
+              maxWidth: "100%",
+              flexGrow: "1",
+              verticalAlign: "middle",
+              userSelect: "none"
+            }}
+            spellCheck={false}
+            onChange={() => this.checkName(this.nameInputRef.current!.value)}
+            value={this.state.name}
+            onKeyDown={(event) => {
+              if (event.key == "Enter") {
+                this.nameInputRef.current!.blur();
+              }
+              if (event.key == "Escape") {
+                this.escapeRename();
+              }
+            }}
+            inputProps={{
+              readOnly: !this.state.renaming,
+              style: { userSelect: "none", padding: 0 }
+            }}
+            InputProps={{ disableUnderline: false }}
+            onFocus={(e) => {
+              e.preventDefault();
+            }}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.startRename();
+              this.nameInputRef.current!.focus();
+            }}
+            onBlur={() => this.completeRename()}
+            onDoubleClickCapture={(e) => {
+              e.stopPropagation();
+              this.startRename();
+              setTimeout(() => this.nameInputRef.current!.select(), 0.001);
+            }}
+            sx={{
+              marginLeft: "-4px",
+              ".MuiInputBase-root": {
+                "&:before": {
+                  borderBottom: "2px solid transparent"
+                },
+                width: "100%",
+                height: "1.5em",
+                userSelect: "none",
+                padding: "4px"
               },
-              width: "100%",
-              height: "1.5em",
-              userSelect: "none",
-              padding: "4px"
-            },
-            "fieldset": { borderColor: "transparent"}
-          }}
-        ></TextField>
+              fieldset: { borderColor: "transparent" }
+            }}
+          ></TextField>
         </Tooltip>
         <div>
           <Tooltip disableInteractive title="Path Config">
@@ -306,7 +322,11 @@ class PathSelector extends Component<Props, State> {
       <div>
         <div className={styles.WaypointList}>
           {Array.from(doc.pathlist.paths.keys()).map((uuid) => (
-            <this.Option uuid={uuid} key={uuid} selected={uuid===activePath}></this.Option>
+            <this.Option
+              uuid={uuid}
+              key={uuid}
+              selected={uuid === activePath}
+            ></this.Option>
           ))}
         </div>
       </div>

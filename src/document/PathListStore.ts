@@ -7,7 +7,11 @@ import {
 } from "./path/HolonomicPathStore";
 import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
 import { SavingState } from "./UIStateStore";
-import { isValidTrajectoryName, TrajectoryNameIssue, TrajectoryNameIssueTypes } from "./path/TrajectoryNameValidation";
+import {
+  isValidTrajectoryName,
+  TrajectoryNameIssue,
+  TrajectoryNameIssueTypes
+} from "./path/TrajectoryNameValidation";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -30,23 +34,25 @@ export const PathListStore = types
         );
       },
       pathNamesBesides(uuid?: string) {
-        var paths = Array.from(self.paths.values())
+        let paths = Array.from(self.paths.values());
         if (uuid !== undefined) {
-          paths = paths.filter(path=>path.uuid!==uuid);
+          paths = paths.filter((path) => path.uuid !== uuid);
         }
-        return paths.map(path=>path.name)
+        return paths.map((path) => path.name);
       },
 
       get pathUUIDs() {
         return Array.from(self.paths.keys());
-      },
-
+      }
     };
   })
-  .views((self)=>({
-      validateName(name: string, thisUUID?: string): TrajectoryNameIssue | undefined {
-        return isValidTrajectoryName(name, self.pathNamesBesides(thisUUID));
-      }
+  .views((self) => ({
+    validateName(
+      name: string,
+      thisUUID?: string
+    ): TrajectoryNameIssue | undefined {
+      return isValidTrajectoryName(name, self.pathNamesBesides(thisUUID));
+    }
   }))
   .actions((self) => {
     return {
