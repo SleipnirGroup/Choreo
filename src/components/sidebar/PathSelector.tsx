@@ -131,18 +131,26 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.nameInputRef.current!.value = this.getPath().name;
   }
   completeRename() {
-    if (this.checkName(this.nameInputRef.current!.value) === undefined) {
+    if (doc.pathlist.validateName(this.nameInputRef.current!.value, this.props.uuid) === undefined) {
       const newName = this.nameInputRef.current!.value;
       if (newName !== this.getPath().name) {
         renamePath(this.props.uuid, newName);
       }
+          this.setState({
+      renaming: false,
+      renameError: doc.pathlist.validateName(newName, this.props.uuid),
+      name: newName
+    });
     }
-    this.escapeRename();
+    else {
+      this.escapeRename();
+    }
+
   }
   escapeRename() {
     this.setState({
       renaming: false,
-      renameError: this.checkName(this.getPath().name),
+      renameError: doc.pathlist.validateName(this.getPath().name, this.props.uuid),
       name: this.getPath().name
     });
   }
@@ -177,18 +185,12 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           onGenerate={() => doc.generatePath(this.props.uuid)}
           generating={this.getPath().ui.generating}
         ></PathSelectorIcon>
+        <Tooltip placement="right" arrow={true} disableInteractive  title={this.state.renameError?.uiMessage ?? ""}>
         <TextField
           className={styles.SidebarLabel}
           variant={"outlined"}//"outlined" : "standard"}
           inputRef={this.nameInputRef}
           error={this.state.renameError !== undefined}
-          slotProps={{
-            input: {endAdornment: this.state.renameError !== undefined ?
-              <InputAdornment position="end">
-                <Tooltip placement="right" open={true} arrow={true} disableInteractive  title={this.state.renameError?.uiMessage ?? ""}><span></span></Tooltip>
-              </InputAdornment> : <></>
-            }
-          }}
           style={{
             display: "block",
             maxWidth: "100%",
@@ -241,6 +243,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             "fieldset": { borderColor: "transparent"}
           }}
         ></TextField>
+        </Tooltip>
         <div>
           <Tooltip disableInteractive title="Path Config">
             <IconButton

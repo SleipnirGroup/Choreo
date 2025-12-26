@@ -44,7 +44,7 @@ export function internalIsValidTrajectoryName(name: string, existingNames?: stri
   // deduplication for string arrays in https://stackoverflow.com/a/9229821
   var alreadyFlaggedCharacters : Record<string, boolean> = {};
   const invalidCharacters = name
-    .matchAll(RegExp("[^A-z0-9_]", "g"))
+    .matchAll(RegExp("[^A-Za-z0-9_]", "g"))
     .map(match=>match[0])
     .filter(function(item) {
         return alreadyFlaggedCharacters.hasOwnProperty(item) ? false : (alreadyFlaggedCharacters[item] = true);
