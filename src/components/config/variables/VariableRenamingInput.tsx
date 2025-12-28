@@ -13,7 +13,7 @@ type Props = {
 function VariableRenamingInput(props: Props) {
   // default usage is that the props.name already exists as a variable
   function submit(name: string) {
-    if (name !== null && props.validateName(name)) {
+    if (name !== null && props.validateName(name) === undefined && name !== props.name) {
       props.setName(name);
     } else {
       setNewName(props.name);
