@@ -1,4 +1,7 @@
-import { addErrorMessages, isValidIdentifier, TrajectoryNameErrorMessages, NameIssue } from "../document/path/NameIsIdentifier";
+import {
+  isValidIdentifier,
+  NameIssue
+} from "../document/path/NameIsIdentifier";
 import {
   DifferentialSample,
   SwerveSample,
@@ -38,7 +41,7 @@ interface ChoreoTraj {
   totalTimeSecs: number;
   firstPose: Pose2d;
   lastPose: Pose2d;
-  nameError: NameIssue | undefined
+  nameError: NameIssue | undefined;
 }
 
 function getChoreoTrajList(trajectories: Trajectory[]) {

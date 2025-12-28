@@ -37,7 +37,11 @@ import {
 } from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { tracing } from "./tauriTracing";
-import { addErrorMessages, isValidIdentifier, NameIssue } from "./path/NameIsIdentifier";
+import {
+  addErrorMessages,
+  isValidIdentifier,
+  NameIssue
+} from "./path/NameIsIdentifier";
 
 export const math = create(all, { predictable: true });
 
@@ -84,10 +88,10 @@ export const Units = {
 // not sure why the alias above doesn't work
 math.createUnit("rpm", "1 RPM");
 
-export function isMathJSReserved(name: string) : NameIssue | undefined {
+export function isMathJSReserved(name: string): NameIssue | undefined {
   //@ts-expect-error indexing `math`
   if (math[name] !== undefined || math.Unit.isValuelessUnit(name)) {
-    return addErrorMessages({kind:"IsMathJSDefined", name});
+    return addErrorMessages({ kind: "IsMathJSDefined", name });
   }
   return undefined;
 }
@@ -720,10 +724,9 @@ export const Variables = types
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
     validateName(name: string, selfName: string): NameIssue | undefined {
-      
       const notAlreadyExists = name === selfName || !self.hasName(name);
       if (!notAlreadyExists) {
-        return addErrorMessages({kind:"Exists", name});
+        return addErrorMessages({ kind: "Exists", name });
       }
       const issue = isValidIdentifier(name) ?? isMathJSReserved(name);
       return issue;

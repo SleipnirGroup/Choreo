@@ -58,42 +58,42 @@ const JAVA_KEYWORDS = [
 ];
 
 const PYTHON_KEYWORDS = [
-"False",
-"class",
-"from",
-"or",
-"None",
-"continue",
-"global",
-"pass",
-"True",
-"def",
-"if",
-"raise",
-"and",
-"del",
-"import",
-"return",
-"as",
-"elif",
-"in",
-"try",
-"assert",
-"else",
-"is",
-"while",
-"async",
-"except",
-"lambda",
-"with",
-"await",
-"finally",
-"nonlocal",
-"yield",
-"break",
-"for",
-"not",
-]
+  "False",
+  "class",
+  "from",
+  "or",
+  "None",
+  "continue",
+  "global",
+  "pass",
+  "True",
+  "def",
+  "if",
+  "raise",
+  "and",
+  "del",
+  "import",
+  "return",
+  "as",
+  "elif",
+  "in",
+  "try",
+  "assert",
+  "else",
+  "is",
+  "while",
+  "async",
+  "except",
+  "lambda",
+  "with",
+  "await",
+  "finally",
+  "nonlocal",
+  "yield",
+  "break",
+  "for",
+  "not"
+];
 
 export type NameIssues = {
   Empty: { kind: "Empty" };
@@ -105,47 +105,28 @@ export type NameIssues = {
     character: string[];
   };
   IsJavaKeyword: { kind: "IsJavaKeyword"; name: string };
-  IsPythonKeyword: { kind: "IsPythonKeyword"; name: string};
-  IsMathJSDefined: {kind: "IsMathJSDefined"; name: string};
+  IsPythonKeyword: { kind: "IsPythonKeyword"; name: string };
+  IsMathJSDefined: { kind: "IsMathJSDefined"; name: string };
 };
 export type NameIssueKind = keyof NameIssues;
-export type NameIssue =
-  NameIssues[NameIssueKind] & {
-    uiMessage: string;
-    codegenMessage: string;
-  };
+export type NameIssue = NameIssues[NameIssueKind] & {
+  uiMessage: string;
+  codegenMessage: string;
+};
 const SHOULD_NOT_APPEAR_CODEGEN = `This error should never appear in generated code. Tell the developers.`;
 const RENAME = `Rename it in the Choreo app to fix this error.`;
 export const TrajectoryNameErrorMessages = {
-  Empty: (_issue) => [
-    `Empty`,
-    SHOULD_NOT_APPEAR_CODEGEN
-  ],
-  Exists: (_) => [
-    `Exists`,
-    SHOULD_NOT_APPEAR_CODEGEN
-  ],
-  InvalidStartCharacter: (_) => [
-    `Must start with letter`,
-    RENAME
-  ],
-  InvalidCharacter: ({character }) => [
+  Empty: (_issue) => [`Empty`, SHOULD_NOT_APPEAR_CODEGEN],
+  Exists: (_) => [`Exists`, SHOULD_NOT_APPEAR_CODEGEN],
+  InvalidStartCharacter: (_) => [`Must start with letter`, RENAME],
+  InvalidCharacter: ({ character }) => [
     `Can only use letters, 0-9, and _. Can't use ${character.map((c) => `${c.replace(" ", "[space]")}`).join(" ")}`,
     //`Can't use ${character.map((c) => `${.replace(" ", "[space]")}`).join(" ")}.`,
     RENAME
   ],
-  IsJavaKeyword: (_) => [
-    `Can't be Java keyword`,
-    RENAME
-  ],
-  IsPythonKeyword: (_) => [
-    `Can't be Python keyword`,
-    RENAME
-  ],
-  IsMathJSDefined: (_) => [
-    `Already defined in math parser`,
-    RENAME
-  ]
+  IsJavaKeyword: (_) => [`Can't be Java keyword`, RENAME],
+  IsPythonKeyword: (_) => [`Can't be Python keyword`, RENAME],
+  IsMathJSDefined: (_) => [`Already defined in math parser`, RENAME]
 } as const satisfies {
   [I in NameIssueKind]: (issue: NameIssues[I]) => [
     string, //UI and codegen message
@@ -157,7 +138,8 @@ export function internalIsIdentifier(
 ): NameIssues[NameIssueKind] | undefined {
   if (name.length === 0) return { kind: "Empty" };
 
-  if (name.at(0)?.match("[0-9_]")) return { kind: "InvalidStartCharacter", name };
+  if (name.at(0)?.match("[0-9_]"))
+    return { kind: "InvalidStartCharacter", name };
   // Get a deduplicated list of invalid characters.
   // deduplication for string arrays in https://stackoverflow.com/a/9229821
   const alreadyFlaggedCharacters: Record<string, boolean> = {};
@@ -165,7 +147,7 @@ export function internalIsIdentifier(
     .matchAll(RegExp("[^A-Za-z0-9_]", "g"))
     .map((match) => match[0])
     .filter(function (item) {
-      return alreadyFlaggedCharacters.hasOwnProperty(item)
+      return alreadyFlaggedCharacters[item] !== undefined
         ? false
         : (alreadyFlaggedCharacters[item] = true);
     })
@@ -175,27 +157,28 @@ export function internalIsIdentifier(
     return { kind: "InvalidCharacter", name, character: invalidCharacters };
   }
   if (JAVA_KEYWORDS.includes(name)) return { kind: "IsJavaKeyword", name };
-  if (PYTHON_KEYWORDS.includes(name)) return { kind: "IsPythonKeyword", name};
+  if (PYTHON_KEYWORDS.includes(name)) return { kind: "IsPythonKeyword", name };
 }
-export function addErrorMessages(problem: NameIssues[keyof NameIssues]) : NameIssue {
+export function addErrorMessages(
+  problem: NameIssues[keyof NameIssues]
+): NameIssue {
   const messageGetter = TrajectoryNameErrorMessages[problem.kind] as (
     issue: typeof problem
   ) => [string, string];
-  const messages =  messageGetter(problem);
+  const messages = messageGetter(problem);
   return {
     ...problem,
     uiMessage: messages[0],
     codegenMessage: messages[1]
   };
 }
-export function isValidIdentifier(
-  name: string,
-): NameIssue | undefined {
+export function isValidIdentifier(name: string): NameIssue | undefined {
   const problem = internalIsIdentifier(name);
   if (problem === undefined) return undefined;
   return addErrorMessages(problem);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function testIdentifierValidators(): boolean {
   const OK_TEST_CASES = ["test", "NewPath"];
   const ISSUE_TEST_CASES = {
@@ -212,9 +195,9 @@ function testIdentifierValidators(): boolean {
       names
         .map((name) => {
           if ((issueType as NameIssueKind) === "Exists") {
-              if (OK_TEST_CASES.includes(name)){
-                return { kind: "Exists", name };
-              }
+            if (OK_TEST_CASES.includes(name)) {
+              return { kind: "Exists", name };
+            }
 
             // Expect failure because the name is already in use.
             return isValidIdentifier(name);

@@ -10,8 +10,7 @@ import { SavingState } from "./UIStateStore";
 import {
   addErrorMessages,
   isValidIdentifier,
-  NameIssue,
-  NameIssues
+  NameIssue
 } from "./path/NameIsIdentifier";
 
 export const PathListStore = types
@@ -48,10 +47,7 @@ export const PathListStore = types
     };
   })
   .views((self) => ({
-    validateName(
-      name: string,
-      thisUUID?: string
-    ): NameIssue | undefined {
+    validateName(name: string, thisUUID?: string): NameIssue | undefined {
       if (self.pathNamesBesides(thisUUID).includes(name)) {
         return addErrorMessages({ kind: "Exists", name });
       }

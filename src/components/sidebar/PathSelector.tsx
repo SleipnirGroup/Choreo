@@ -6,7 +6,7 @@ import {
   ShapeLine
 } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, InputAdornment, TextField, Tooltip } from "@mui/material";
+import { IconButton, TextField, Tooltip } from "@mui/material";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -18,9 +18,7 @@ import ExpressionInputList from "../input/ExpressionInputList";
 import GenerateInProgress from "../../assets/GenerateInProgress";
 import { SavingState } from "../../document/UIStateStore";
 import SaveInProgress from "../../assets/SaveInProgress";
-import {
-  NameIssue
-} from "../../document/path/NameIsIdentifier";
+import { NameIssue } from "../../document/path/NameIsIdentifier";
 
 type Props = object;
 

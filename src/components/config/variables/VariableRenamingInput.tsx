@@ -1,6 +1,6 @@
 import { Input, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "../../input/InputList.module.css";
 import { NameIssue } from "../../../document/path/NameIsIdentifier";
 
@@ -21,28 +21,35 @@ function VariableRenamingInput(props: Props) {
     }
   }
   const [newName, setNewName] = useState<string>(props.name);
-  const [renameError, setRenameError] = useState<NameIssue | undefined>(props.validateName(props.name))
+  const [renameError, setRenameError] = useState<NameIssue | undefined>(
+    props.validateName(props.name)
+  );
   return (
-    <Tooltip placement="left" arrow={true} disableInteractive title={renameError?.uiMessage ?? ""}>
-    <Input
-      type="standard"
-      className={styles.Number + " " + styles.Mui}
-      placeholder="Name"
-      style={{ width: props.width ?? "auto" }}
-      value={newName}
-      onChange={(e) => {
-        setNewName(e.currentTarget.value);
-        setRenameError(props.validateName(e.currentTarget.value));
-      }}
-      error={renameError !== undefined}
-      onKeyDown={(e) => {
-        if (e.key == "Enter") {
-          submit(e.currentTarget.value);
-          e.currentTarget.blur();
-        }
-      }}
-      onBlur={(e) => submit(e.currentTarget.value)}
-    ></Input>
+    <Tooltip
+      placement="left"
+      arrow={true}
+      disableInteractive
+      title={renameError?.uiMessage ?? ""}
+    >
+      <Input
+        type="standard"
+        className={styles.Number + " " + styles.Mui}
+        placeholder="Name"
+        style={{ width: props.width ?? "auto" }}
+        value={newName}
+        onChange={(e) => {
+          setNewName(e.currentTarget.value);
+          setRenameError(props.validateName(e.currentTarget.value));
+        }}
+        error={renameError !== undefined}
+        onKeyDown={(e) => {
+          if (e.key == "Enter") {
+            submit(e.currentTarget.value);
+            e.currentTarget.blur();
+          }
+        }}
+        onBlur={(e) => submit(e.currentTarget.value)}
+      ></Input>
     </Tooltip>
   );
 }
