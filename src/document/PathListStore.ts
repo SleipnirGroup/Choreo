@@ -8,10 +8,11 @@ import {
 import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
 import { SavingState } from "./UIStateStore";
 import {
-  isValidTrajectoryName,
-  TrajectoryNameIssue,
-  TrajectoryNameIssueTypes
-} from "./path/TrajectoryNameValidation";
+  addErrorMessages,
+  isValidIdentifier,
+  NameIssue,
+  NameIssues
+} from "./path/NameIsIdentifier";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -50,8 +51,11 @@ export const PathListStore = types
     validateName(
       name: string,
       thisUUID?: string
-    ): TrajectoryNameIssue | undefined {
-      return isValidTrajectoryName(name, self.pathNamesBesides(thisUUID));
+    ): NameIssue | undefined {
+      if (self.pathNamesBesides(thisUUID).includes(name)) {
+        return addErrorMessages({ kind: "Exists", name });
+      }
+      return isValidIdentifier(name);
     }
   }))
   .actions((self) => {

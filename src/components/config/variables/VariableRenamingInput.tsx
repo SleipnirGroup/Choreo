@@ -1,12 +1,13 @@
-import { Input } from "@mui/material";
+import { Input, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../../input/InputList.module.css";
+import { NameIssue } from "../../../document/path/NameIsIdentifier";
 
 type Props = {
   name: string;
   setName: (name: string) => void;
-  validateName: (name: string) => boolean;
+  validateName: (name: string) => NameIssue | undefined;
   width?: string;
 };
 function VariableRenamingInput(props: Props) {
@@ -16,12 +17,13 @@ function VariableRenamingInput(props: Props) {
       props.setName(name);
     } else {
       setNewName(props.name);
-      setValid(props.validateName(props.name));
+      setRenameError(props.validateName(props.name));
     }
   }
   const [newName, setNewName] = useState<string>(props.name);
-  const [valid, setValid] = useState<boolean>(props.validateName(props.name));
+  const [renameError, setRenameError] = useState<NameIssue | undefined>(props.validateName(props.name))
   return (
+    <Tooltip placement="left" arrow={true} disableInteractive title={renameError?.uiMessage ?? ""}>
     <Input
       type="standard"
       className={styles.Number + " " + styles.Mui}
@@ -30,9 +32,9 @@ function VariableRenamingInput(props: Props) {
       value={newName}
       onChange={(e) => {
         setNewName(e.currentTarget.value);
-        setValid(props.validateName(e.currentTarget.value));
+        setRenameError(props.validateName(e.currentTarget.value));
       }}
-      error={!valid}
+      error={renameError !== undefined}
       onKeyDown={(e) => {
         if (e.key == "Enter") {
           submit(e.currentTarget.value);
@@ -41,6 +43,7 @@ function VariableRenamingInput(props: Props) {
       }}
       onBlur={(e) => submit(e.currentTarget.value)}
     ></Input>
+    </Tooltip>
   );
 }
 export default observer(VariableRenamingInput);

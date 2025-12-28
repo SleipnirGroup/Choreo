@@ -6,6 +6,7 @@ import { doc } from "../../../document/DocumentManager";
 import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import VariableRenamingInput from "./VariableRenamingInput";
+import { NameIssue } from "../../../document/path/NameIsIdentifier";
 
 type PoseVariablePanelProps = {
   name: string;
@@ -13,7 +14,7 @@ type PoseVariablePanelProps = {
   setName: (name: string) => void;
   actionButton: () => React.JSX.Element;
   logo: () => React.JSX.Element;
-  validateName: (name: string) => boolean;
+  validateName: (name: string) => NameIssue | undefined;
 };
 
 const PoseVariablePanel = observer(

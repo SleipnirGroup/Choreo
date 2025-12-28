@@ -19,9 +19,8 @@ import GenerateInProgress from "../../assets/GenerateInProgress";
 import { SavingState } from "../../document/UIStateStore";
 import SaveInProgress from "../../assets/SaveInProgress";
 import {
-  TrajectoryNameErrorMessages,
-  TrajectoryNameIssue
-} from "../../document/path/TrajectoryNameValidation";
+  NameIssue
+} from "../../document/path/NameIsIdentifier";
 
 type Props = object;
 
@@ -30,7 +29,7 @@ type State = object;
 type OptionProps = { uuid: string; selected: boolean };
 type OptionState = {
   renaming: boolean;
-  renameError: TrajectoryNameIssue | undefined;
+  renameError: NameIssue | undefined;
   name: string;
   settingsOpen: boolean;
 };
@@ -166,7 +165,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
       name: this.getPath().name
     });
   }
-  checkName(inputName: string): TrajectoryNameIssue | undefined {
+  checkName(inputName: string): NameIssue | undefined {
     const error = doc.pathlist.validateName(inputName, this.props.uuid);
     this.setState({ renameError: error, name: inputName });
     return error;
@@ -212,7 +211,8 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               maxWidth: "100%",
               flexGrow: "1",
               verticalAlign: "middle",
-              userSelect: "none"
+              userSelect: "none",
+              height: "24px"
             }}
             spellCheck={false}
             onChange={() => this.checkName(this.nameInputRef.current!.value)}
