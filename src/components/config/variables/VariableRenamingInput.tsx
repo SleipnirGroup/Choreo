@@ -2,7 +2,11 @@ import { Input, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { useState } from "react";
 import styles from "../../input/InputList.module.css";
-import { isNameIssueError, isNameIssueWarning, NameIssue } from "../../../document/path/NameIsIdentifier";
+import {
+  isNameIssueError,
+  isNameIssueWarning,
+  NameIssue
+} from "../../../document/path/NameIsIdentifier";
 
 type Props = {
   name: string;
@@ -13,7 +17,11 @@ type Props = {
 function VariableRenamingInput(props: Props) {
   // default usage is that the props.name already exists as a variable
   function submit(name: string) {
-    if (name !== null && isNameIssueError(props.validateName(name)) === undefined && name !== props.name) {
+    if (
+      name !== null &&
+      isNameIssueError(props.validateName(name)) === undefined &&
+      name !== props.name
+    ) {
       props.setName(name);
     } else {
       setNewName(props.name);
@@ -50,13 +58,25 @@ function VariableRenamingInput(props: Props) {
           }
         }}
         onBlur={(e) => submit(e.currentTarget.value)}
-        sx={isError ? {
-          "&::before, &::after": { borderColor: 'red !important',  color: 'red !important' },
-          "& label, & P": { color: "red !important" },
-        } : isWarning ? {
-          "&::before, &::after": { borderColor: 'orange !important',  color: 'orange !important'  },
-          "& label, & P": { color: "orange !important" },
-        } : {}}
+        sx={
+          isError
+            ? {
+                "&::before, &::after": {
+                  borderColor: "red !important",
+                  color: "red !important"
+                },
+                "& label, & P": { color: "red !important" }
+              }
+            : isWarning
+              ? {
+                  "&::before, &::after": {
+                    borderColor: "orange !important",
+                    color: "orange !important"
+                  },
+                  "& label, & P": { color: "orange !important" }
+                }
+              : {}
+        }
       ></Input>
     </Tooltip>
   );

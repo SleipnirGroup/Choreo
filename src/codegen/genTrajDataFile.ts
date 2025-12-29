@@ -92,7 +92,7 @@ function getChoreoTrajList(trajectories: Trajectory[]) {
   return trajList;
 }
 function printChoreoTraj(traj: ChoreoTraj): string {
-  return `${traj.nameError !== undefined ? `/**ERROR: ${traj.nameError.uiMessage}. ${traj.nameError.codegenMessage}*/\n` : ""}public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
+  return `${traj.nameError !== undefined ? `/**ERROR: ${traj.nameError.uiMessage}. ${traj.nameError.codegenMessage}*/\n\t` : ""}public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
     "${traj.trajName}",
     ${traj.segment === undefined ? "Optional.empty()" : `Optional.of(${traj.segment})`},
     ${traj.totalTimeSecs},

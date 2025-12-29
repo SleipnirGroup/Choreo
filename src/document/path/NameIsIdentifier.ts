@@ -108,11 +108,15 @@ export type NameIssues = {
   IsPythonKeyword: { kind: "IsPythonKeyword"; name: string };
   IsMathJSDefined: { kind: "IsMathJSDefined"; name: string };
 };
-export function isNameIssueWarning(issue: NameIssue | undefined) : NameIssue | undefined {
+export function isNameIssueWarning(
+  issue: NameIssue | undefined
+): NameIssue | undefined {
   return undefined; // Currently no issues are just warnings
 }
 export function isNameIssueError(issue: NameIssue | undefined) {
-  return (issue !== undefined && isNameIssueWarning(issue) === undefined) ? issue : undefined;
+  return issue !== undefined && isNameIssueWarning(issue) === undefined
+    ? issue
+    : undefined;
 }
 export type NameIssueKind = keyof NameIssues;
 export type NameIssue = NameIssues[NameIssueKind] & {

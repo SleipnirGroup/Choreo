@@ -65,7 +65,10 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
         <Add
           sx={{ color: "var(--accent-purple)" }}
           onClick={(_) => {
-            if (isNameIssueError(doc.variables.validateName(props.name, "")) === undefined) {
+            if (
+              isNameIssueError(doc.variables.validateName(props.name, "")) ===
+              undefined
+            ) {
               doc.variables.add(
                 props.name,
                 props.expr.serialize.exp,

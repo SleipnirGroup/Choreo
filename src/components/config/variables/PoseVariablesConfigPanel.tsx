@@ -6,7 +6,10 @@ import { doc } from "../../../document/DocumentManager";
 import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import VariableRenamingInput from "./VariableRenamingInput";
-import { isNameIssueError, NameIssue } from "../../../document/path/NameIsIdentifier";
+import {
+  isNameIssueError,
+  NameIssue
+} from "../../../document/path/NameIsIdentifier";
 
 type PoseVariablePanelProps = {
   name: string;
@@ -142,8 +145,10 @@ export const AddPoseVariablePanel = observer(
           <Add
             sx={{ color: "var(--accent-purple)" }}
             onClick={(_) => {
-               
-              if (isNameIssueError(doc.variables.validateName(props.name, "")) === undefined) {
+              if (
+                isNameIssueError(doc.variables.validateName(props.name, "")) ===
+                undefined
+              ) {
                 const pose = {
                   x: props.pose.x.serialize,
                   y: props.pose.y.serialize,
