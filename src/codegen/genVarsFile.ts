@@ -11,9 +11,8 @@ export function genVarsFile(project: Project, packageName: string): string {
   content.push(`
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
-
-import static edu.wpi.first.units.Units.*;
 
 /**
  * Generated file containing variables defined in Choreo.
@@ -71,7 +70,7 @@ function asVariable(
   if (!dimension || !unitData) {
     return `    ${errorComment}public static final double ${variableName} = ${val};`;
   }
-  return `    ${errorComment}public static final ${unitData.type} ${variableName} = ${unitData.baseUnit}.of(${val});`;
+  return `    ${errorComment}public static final ${unitData.type} ${variableName} = Units.${unitData.baseUnit}.of(${val});`;
 }
 
 const javaUnitData = {
