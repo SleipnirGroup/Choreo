@@ -223,6 +223,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
 }
 
 const env = {
+  getConfigSnapshot: () => doc.robotConfig.snapshot,
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
   hoveredItem: () => safeGetIdentifier(doc.hoveredSidebarItem),
   select: (item: SelectableItemTypes) => select(item),

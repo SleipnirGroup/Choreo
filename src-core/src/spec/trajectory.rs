@@ -395,7 +395,7 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
-    pub config: RobotConfig<f64>,
+    pub config: Option<RobotConfig<f64>>,
     /// The sample type of this trajectory.
     /// Must match the type in samples if that list is non-empty
     /// Only None if trajectory was never generated.
@@ -447,6 +447,15 @@ impl TrajectoryFile {
         // Can't use is_some_and due to its move semantics.
         if let Some(snap) = &self.snapshot {
             snap == &self.params.snapshot()
+        } else {
+            false
+        }
+    }
+
+    pub fn config_up_to_date(&self, config: &RobotConfig<f64>) -> bool {
+        // Can't use is_some_and due to its move semantics.
+        if let Some(snap) = &self.trajectory.config {
+            snap == config
         } else {
             false
         }
@@ -524,7 +533,7 @@ mod tests {
                 waypoints: Vec::new(),
                 samples: Vec::new(),
                 splits: Vec::new(),
-                config: ProjectFile::default().config.snapshot()
+                config: Some(ProjectFile::default().config.snapshot()),
             },
             events: Vec::new(),
         }

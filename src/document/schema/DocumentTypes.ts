@@ -139,6 +139,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 
 export type SampleType = "Swerve" | "Differential";
 export interface Output {
+  config: RobotConfig<number> | null;
   sampleType: SampleType | undefined;
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
