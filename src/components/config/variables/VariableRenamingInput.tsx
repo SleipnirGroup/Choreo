@@ -2,7 +2,7 @@ import { Input, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { useState } from "react";
 import styles from "../../input/InputList.module.css";
-import { NameIssue } from "../../../document/path/NameIsIdentifier";
+import { isNameIssueError, isNameIssueWarning, NameIssue } from "../../../document/path/NameIsIdentifier";
 
 type Props = {
   name: string;
@@ -13,7 +13,7 @@ type Props = {
 function VariableRenamingInput(props: Props) {
   // default usage is that the props.name already exists as a variable
   function submit(name: string) {
-    if (name !== null && props.validateName(name) === undefined && name !== props.name) {
+    if (name !== null && isNameIssueError(props.validateName(name)) === undefined && name !== props.name) {
       props.setName(name);
     } else {
       setNewName(props.name);
@@ -24,6 +24,8 @@ function VariableRenamingInput(props: Props) {
   const [renameError, setRenameError] = useState<NameIssue | undefined>(
     props.validateName(props.name)
   );
+  const isWarning = isNameIssueWarning(renameError) !== undefined;
+  const isError = isNameIssueError(renameError) !== undefined;
   return (
     <Tooltip
       placement="left"
@@ -41,7 +43,6 @@ function VariableRenamingInput(props: Props) {
           setNewName(e.currentTarget.value);
           setRenameError(props.validateName(e.currentTarget.value));
         }}
-        error={renameError !== undefined}
         onKeyDown={(e) => {
           if (e.key == "Enter") {
             submit(e.currentTarget.value);
@@ -49,6 +50,13 @@ function VariableRenamingInput(props: Props) {
           }
         }}
         onBlur={(e) => submit(e.currentTarget.value)}
+        sx={isError ? {
+          "&::before, &::after": { borderColor: 'red !important',  color: 'red !important' },
+          "& label, & P": { color: "red !important" },
+        } : isWarning ? {
+          "&::before, &::after": { borderColor: 'orange !important',  color: 'orange !important'  },
+          "& label, & P": { color: "orange !important" },
+        } : {}}
       ></Input>
     </Tooltip>
   );

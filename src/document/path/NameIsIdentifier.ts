@@ -108,6 +108,12 @@ export type NameIssues = {
   IsPythonKeyword: { kind: "IsPythonKeyword"; name: string };
   IsMathJSDefined: { kind: "IsMathJSDefined"; name: string };
 };
+export function isNameIssueWarning(issue: NameIssue | undefined) : NameIssue | undefined {
+  return undefined; // Currently no issues are just warnings
+}
+export function isNameIssueError(issue: NameIssue | undefined) {
+  return (issue !== undefined && isNameIssueWarning(issue) === undefined) ? issue : undefined;
+}
 export type NameIssueKind = keyof NameIssues;
 export type NameIssue = NameIssues[NameIssueKind] & {
   uiMessage: string;
@@ -126,7 +132,7 @@ export const TrajectoryNameErrorMessages = {
   ],
   IsJavaKeyword: (_) => [`Can't be Java keyword`, RENAME],
   IsPythonKeyword: (_) => [`Can't be Python keyword`, RENAME],
-  IsMathJSDefined: (_) => [`Already defined in math parser`, RENAME]
+  IsMathJSDefined: (_) => [`Can't be predefined math term`, RENAME]
 } as const satisfies {
   [I in NameIssueKind]: (issue: NameIssues[I]) => [
     string, //UI and codegen message

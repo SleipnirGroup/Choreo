@@ -59,8 +59,8 @@ export const PathListStore = types
       disambiguateName(name: string) {
         let usedName = name;
         let disambig = 1;
-        while (self.validateName(name)?.kind === "Exists") {
-          usedName = `${name} (${disambig.toFixed(0)})`;
+        while (self.validateName(usedName)?.kind === "Exists") {
+          usedName = `${name}_copy${disambig.toFixed(0)}`;
           disambig++;
         }
         return usedName;
