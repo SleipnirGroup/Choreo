@@ -13,7 +13,10 @@ import {
 import ExpressionInput from "../../input/ExpressionInput";
 import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel";
 import VariableRenamingInput from "./VariableRenamingInput";
-import { isNameIssueError } from "../../../document/path/NameIsIdentifier";
+import {
+  isNameIssueError,
+  NameIssue
+} from "../../../document/path/NameIsIdentifier";
 
 const VariablePanel = observer(
   (props: {
