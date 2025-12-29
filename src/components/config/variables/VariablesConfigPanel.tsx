@@ -32,7 +32,7 @@ const VariablePanel = observer(
           title={() => (
             <VariableRenamingInput
               validateName={(name) => props.validateName(name)}
-              width={doc.variables.maxNameLength + "ch"}
+              width={doc.variables.maxNameLength + 1 + "ch"}
               name={props.name}
               setName={(name) => props.setName(name)}
             ></VariableRenamingInput>
