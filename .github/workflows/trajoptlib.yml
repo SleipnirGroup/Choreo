@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -80,7 +80,7 @@ jobs:
       #   if: runner.os == 'Windows'
       #   working-directory: trajoptlib
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact-name }}
           path: trajoptlib/pkg
@@ -100,7 +100,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}

@@ -33,6 +33,7 @@ interface Pose2d {
   y: number;
   heading: number;
 }
+
 interface ChoreoTraj {
   varName: string;
   trajName: string;
@@ -91,10 +92,11 @@ function getChoreoTrajList(trajectories: Trajectory[]) {
   }
   return trajList;
 }
+
 function printChoreoTraj(traj: ChoreoTraj): string {
   return `${traj.nameError !== undefined ? `/**ERROR: ${traj.nameError.uiMessage}. ${traj.nameError.codegenMessage}*/\n\t` : ""}public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
     "${traj.trajName}",
-    ${traj.segment === undefined ? "Optional.empty()" : `Optional.of(${traj.segment})`},
+    ${traj.segment === undefined ? "OptionalInt.empty()" : `OptionalInt.of(${traj.segment})`},
     ${traj.totalTimeSecs},
     ${formatPose(traj.firstPose)},
     ${formatPose(traj.lastPose)}
@@ -107,13 +109,21 @@ const CHOREOLIB_HELPERS = `
     /**
      * Load an AutoTrajectory directly from a ChoreoTraj, which may be a segment of a larger trajectory.
      */
-    public static AutoTrajectory trajectory(AutoRoutine routine, ChoreoTraj traj) {
-        if (traj.segment().isPresent()) {
-            return routine.trajectory(traj.name(), traj.segment().get());
+    public AutoTrajectory asAutoTraj(AutoRoutine routine) {
+        if (this.segment.isPresent()) {
+            return routine.trajectory(this.name, this.segment.getAsInt());
         }
-        return routine.trajectory(traj.name());
+        return routine.trajectory(this.name);
     }
-`;
+`.trimEnd();
+
+const CHOREOLIB_HELPER_IMPORTS = `
+// If these imports cause errors because you're not using ChoreoLib,
+// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
+`.trimStart();
+
 export function genTrajDataFile(
   trajectories: Trajectory[],
   packageName: string,
@@ -128,16 +138,9 @@ package ${packageName};
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Map;
-import java.util.Optional;
+import java.util.OptionalInt;
 
-${
-  isUsingChoreoLib
-    ? `// If these imports cause errors because you're not using ChoreoLib,
-// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
-import choreo.auto.AutoRoutine;
-import choreo.auto.AutoTrajectory;`
-    : ""
-}
+${isUsingChoreoLib ? CHOREOLIB_HELPER_IMPORTS : ""}
 /**
  * A class containing the name, start pose, end pose, and total time of every Choreo trajectory.
  * This prevents your code from referencing deleted or misspelled trajectories,
@@ -146,34 +149,38 @@ import choreo.auto.AutoTrajectory;`
  */
 public record ${TRAJ_DATA_FILENAME}(
     String name,
-    Optional<Integer> segment,
+    OptionalInt segment,
     double totalTimeSecs,
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
-${isUsingChoreoLib ? CHOREOLIB_HELPERS : ""}
-  ${trajList
-    .map(printChoreoTraj)
-    .map((item) => item.replaceAll("\n", "\n\t"))
-    .join("\n\t")}
-  /**
-   * A map between trajectory names and their corresponding data.
-   * This allows for trajectory data to be looked up with strings during runtime.
-   */
-  public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-${trajList
-  .map((entry) => `     Map.entry("${entry.mapName}", ${entry.varName})`)
-  .join(",\n")}
+    ${trajList
+      .map(printChoreoTraj)
+      .map((item) => item.replaceAll("\n", "\n\t"))
+      .join("\n\t")}
+
+    /**
+     * A map between trajectory names and their corresponding data.
+     * This allows for trajectory data to be looked up with strings during runtime.
+     */
+    public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
+    ${trajList
+      .map((entry) => `\tMap.entry("${entry.mapName}", ${entry.varName})`)
+      .join(",\n\t")}
     );
 
     /**
-     * Looks up the ChoreoTraj segment of the given overall ChoreoTraj
-     *
-     * WARNING: will return null at runtime if not called with an overall ChoreoTraj and a valid segment index.
+     * Looks up the ChoreoTraj segment of the given overall ChoreoTraj.
+     * WARNING: will raise an exception if not called with a valid segment index.
      */
-    public static ChoreoTraj segment(ChoreoTraj main, int segment) {
-        return ChoreoTraj.ALL_TRAJECTORIES.get(main.name() + "$" + segment);
+    public ChoreoTraj segment(int segment) {
+        var traj = ChoreoTraj.ALL_TRAJECTORIES.get(this.name + "$" + segment);
+        if (traj == null) {
+            throw new NullPointerException("Trajectory " + this.name + " does not have segment #" + segment + ".");
+        }
+        return traj;
     }
+    ${isUsingChoreoLib ? CHOREOLIB_HELPERS : ""}
 }
 `;
     return content;

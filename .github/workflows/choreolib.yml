@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -56,7 +56,7 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -84,7 +84,7 @@ jobs:
     name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           persist-credentials: false
@@ -93,7 +93,7 @@ jobs:
       - name: Fetch all history and metadata
         run: git fetch --prune --unshallow
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 17
@@ -125,7 +125,7 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -134,12 +134,12 @@ jobs:
     name: Upload vendordep JSON
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ChoreoLib-json
           path: choreolib/ChoreoLib2026Beta.json
@@ -148,7 +148,7 @@ jobs:
     name: Python
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -168,7 +168,7 @@ jobs:
         working-directory: ./choreolib/py
       - run: mypy --pretty --show-column-numbers choreolib/py
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: Python
           path: ./choreolib/py/dist
@@ -184,7 +184,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           path: dist
           pattern: "Python"
