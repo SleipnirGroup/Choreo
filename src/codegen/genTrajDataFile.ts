@@ -1,4 +1,8 @@
 import {
+  isValidIdentifier,
+  NameIssue
+} from "../document/path/NameIsIdentifier";
+import {
   DifferentialSample,
   SwerveSample,
   Trajectory
@@ -38,12 +42,14 @@ interface ChoreoTraj {
   totalTimeSecs: number;
   firstPose: Pose2d;
   lastPose: Pose2d;
+  nameError: NameIssue | undefined;
 }
 
 function getChoreoTrajList(trajectories: Trajectory[]) {
   const trajList: ChoreoTraj[] = [];
   for (const traj of trajectories) {
     const name = traj.name;
+    const nameError = isValidIdentifier(name);
     const samples = traj.trajectory.samples;
     if (samples.length < 2) {
       continue;
@@ -58,7 +64,8 @@ function getChoreoTrajList(trajectories: Trajectory[]) {
         segment: undefined,
         totalTimeSecs,
         firstPose: getPose(samples[0]),
-        lastPose: getPose(samples[samples.length - 1])
+        lastPose: getPose(samples[samples.length - 1]),
+        nameError
       });
     }
     const splitTimes = traj.trajectory.splits.concat(
@@ -77,7 +84,8 @@ function getChoreoTrajList(trajectories: Trajectory[]) {
           totalTimeSecs:
             samples[splitTimes[i + 1]].t - samples[splitTimes[i]].t,
           firstPose: getPose(samples[splitTimes[i]]),
-          lastPose: getPose(samples[splitTimes[i + 1]])
+          lastPose: getPose(samples[splitTimes[i + 1]]),
+          nameError
         });
       }
     }
@@ -86,7 +94,7 @@ function getChoreoTrajList(trajectories: Trajectory[]) {
 }
 
 function printChoreoTraj(traj: ChoreoTraj): string {
-  return `public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
+  return `${traj.nameError !== undefined ? `/**ERROR: ${traj.nameError.uiMessage}. ${traj.nameError.codegenMessage}*/\n\t` : ""}public static final ChoreoTraj ${traj.varName} = new ChoreoTraj(
     "${traj.trajName}",
     ${traj.segment === undefined ? "OptionalInt.empty()" : `OptionalInt.of(${traj.segment})`},
     ${traj.totalTimeSecs},

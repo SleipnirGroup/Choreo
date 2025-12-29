@@ -754,7 +754,7 @@ export async function newProject(promptForCodegen: boolean = true) {
   doc.deserializeChor(newChor);
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.deleteAll();
-  doc.pathlist.addPath("New Path");
+  doc.pathlist.addPath("NewPath");
   uiState.setProjectSavingState(SavingState.NO_LOCATION);
   uiState.setProjectSavingTime(new Date());
   doc.history.clear();
