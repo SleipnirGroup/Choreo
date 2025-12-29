@@ -1,49 +1,87 @@
-import { Input } from "@mui/material";
+import { Input, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { useState } from "react";
 import styles from "../../input/InputList.module.css";
+import {
+  isNameIssueError,
+  isNameIssueWarning,
+  NameIssue
+} from "../../../document/path/NameIsIdentifier";
 
 type Props = {
   name: string;
   setName: (name: string) => void;
-  validateName: (name: string) => boolean;
+  validateName: (name: string) => NameIssue | undefined;
   width?: string;
 };
 function VariableRenamingInput(props: Props) {
   // default usage is that the props.name already exists as a variable
   function submit(name: string) {
-    if (name !== null && props.validateName(name)) {
+    if (
+      name !== null &&
+      isNameIssueError(props.validateName(name)) === undefined &&
+      name !== props.name
+    ) {
       props.setName(name);
     } else {
       setNewName(props.name);
-      setValid(props.validateName(props.name));
+      setRenameError(props.validateName(props.name));
     }
   }
   const [newName, setNewName] = useState<string>(props.name);
-  const [valid, setValid] = useState<boolean>(props.validateName(props.name));
+  const [renameError, setRenameError] = useState<NameIssue | undefined>(
+    props.validateName(props.name)
+  );
+  const isWarning = isNameIssueWarning(renameError) !== undefined;
+  const isError = isNameIssueError(renameError) !== undefined;
   return (
-    <Input
-      type="standard"
-      className={styles.Number + " " + styles.Mui}
-      placeholder="Name"
-      style={{
-        width: props.width ?? "auto",
-        fontFamily: "Roboto Mono Variable"
-      }}
-      value={newName}
-      onChange={(e) => {
-        setNewName(e.currentTarget.value);
-        setValid(props.validateName(e.currentTarget.value));
-      }}
-      error={!valid}
-      onKeyDown={(e) => {
-        if (e.key == "Enter") {
-          submit(e.currentTarget.value);
-          e.currentTarget.blur();
+    <Tooltip
+      placement="left"
+      arrow={true}
+      disableInteractive
+      title={renameError?.uiMessage ?? ""}
+    >
+      <Input
+        type="standard"
+        className={styles.Number + " " + styles.Mui}
+        placeholder="Name"
+        style={{
+          width: props.width ?? "auto",
+          fontFamily: "Roboto Mono Variable"
+        }}
+        value={newName}
+        onChange={(e) => {
+          setNewName(e.currentTarget.value);
+          setRenameError(props.validateName(e.currentTarget.value));
+        }}
+        onKeyDown={(e) => {
+          if (e.key == "Enter") {
+            submit(e.currentTarget.value);
+            e.currentTarget.blur();
+          }
+        }}
+        onBlur={(e) => submit(e.currentTarget.value)}
+        sx={
+          isError
+            ? {
+                "&::before, &::after": {
+                  borderColor: "red !important",
+                  color: "red !important"
+                },
+                "& label, & P": { color: "red !important" }
+              }
+            : isWarning
+              ? {
+                  "&::before, &::after": {
+                    borderColor: "orange !important",
+                    color: "orange !important"
+                  },
+                  "& label, & P": { color: "orange !important" }
+                }
+              : {}
         }
-      }}
-      onBlur={(e) => submit(e.currentTarget.value)}
-    ></Input>
+      ></Input>
+    </Tooltip>
   );
 }
 export default observer(VariableRenamingInput);
