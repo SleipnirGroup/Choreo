@@ -26,7 +26,7 @@ function VariableRenamingInput(props: Props) {
       type="standard"
       className={styles.Number + " " + styles.Mui}
       placeholder="Name"
-      style={{ width: props.width ?? "auto" }}
+      style={{ width: props.width ?? "auto", fontFamily: "Roboto Mono Variable" }}
       value={newName}
       onChange={(e) => {
         setNewName(e.currentTarget.value);
