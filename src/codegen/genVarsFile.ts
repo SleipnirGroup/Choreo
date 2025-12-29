@@ -1,4 +1,5 @@
 import { DimensionName } from "../document/ExpressionStore";
+import { isValidIdentifier } from "../document/path/NameIsIdentifier";
 import { Expr, Project } from "../document/schema/DocumentTypes";
 
 export const VARS_FILENAME = "ChoreoVars";
@@ -33,8 +34,13 @@ public final class ${VARS_FILENAME} {`);
           : `Rotation2d.fromRadians(${round(pose.heading.val, 3)})`;
       const x = round(pose.x.val, 3);
       const y = round(pose.y.val, 3);
+      const nameError = isValidIdentifier(varName);
+      const errorComment =
+        nameError !== undefined
+          ? `/**ERROR: ${nameError.uiMessage}. ${nameError.codegenMessage}*/\n\t`
+          : "";
       content.push(
-        `        public static final Pose2d ${varName} = new Pose2d(${x}, ${y}, ${heading});`
+        `        ${errorComment}public static final Pose2d ${varName} = new Pose2d(${x}, ${y}, ${heading});`
       );
     }
     content.push("");
@@ -56,10 +62,15 @@ function asVariable(
   const unitData = unitDataFrom(dimension);
   let val = typeof expr === "number" ? expr : expr.val;
   val = round(val, dimension === "MoI" ? 5 : 3);
+  const nameError = isValidIdentifier(variableName);
+  const errorComment =
+    nameError !== undefined
+      ? `/**ERROR: ${nameError.uiMessage}. ${nameError.codegenMessage}*/\n\t`
+      : "";
   if (!dimension || !unitData) {
-    return `    public static final double ${variableName} = ${val};`;
+    return `    ${errorComment}public static final double ${variableName} = ${val};`;
   }
-  return `    public static final ${unitData.type} ${variableName} = Units.${unitData.baseUnit}.of(${val});`;
+  return `    ${errorComment}public static final ${unitData.type} ${variableName} = Units.${unitData.baseUnit}.of(${val});`;
 }
 
 const javaUnitData = {
