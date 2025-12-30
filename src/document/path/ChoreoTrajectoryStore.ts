@@ -1,4 +1,4 @@
-import { getEnv, getParent, Instance, types } from "mobx-state-tree";
+import { getEnv, Instance, types } from "mobx-state-tree";
 import {
   DifferentialSample,
   SampleType,
@@ -87,12 +87,6 @@ export const ChoreoTrajectoryStore = types
       };
     },
     async isConfigUpToDate(): Promise<boolean> {
-      console.log(
-        "configMatches:",
-        getParent(self).name,
-        self.config,
-        self.currentConfigSnapshot
-      );
       return (
         self.config !== null &&
         self.config !== undefined &&
