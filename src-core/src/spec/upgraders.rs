@@ -96,14 +96,14 @@ mod traj_file {
             test_trajectory("2", "swerve")
         }
 
-        // #[test]
-        // pub fn test_3_differential() -> ChoreoResult<()> {
-        //     test_trajectory("3", "differential")
-        // }
-        // #[test]
-        // pub fn test_3_swerve() -> ChoreoResult<()> {
-        //     test_trajectory("3", "swerve")
-        // }
+        #[test]
+        pub fn test_3_differential() -> ChoreoResult<()> {
+            test_trajectory("3", "differential")
+        }
+        #[test]
+        pub fn test_3_swerve() -> ChoreoResult<()> {
+            test_trajectory("3", "swerve")
+        }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
         fn test_trajectory(version: &str, file_name: &str) -> ChoreoResult<()> {
