@@ -5,14 +5,13 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
-use super::heading::adjust_headings;
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
     TrajectoryFileGenerator,
 };
 use crate::ChoreoResult;
 use crate::spec::project::ProjectFile;
-use crate::spec::trajectory::{ConstraintScope, Sample, Trajectory, TrajectoryFile};
+use crate::spec::trajectory::{ Sample, TrajectoryFile};
 
 /// A [`OnceLock`] is a synchronization primitive that can be written to once.
 /// Used here to create a read-only static reference to the sender, even though
@@ -72,77 +71,17 @@ pub fn setup_progress_sender() -> Receiver<HandledLocalProgressUpdate> {
     rx
 }
 
-fn set_initial_guess(trajectory: &mut TrajectoryFile) {
-    fn not_initial_guess_wpt(trajectory: &mut TrajectoryFile, idx: usize) {
-        let wpt = &mut trajectory.params.waypoints[idx];
-        wpt.is_initial_guess = false;
-    }
-    let waypoint_count = trajectory.params.waypoints.len();
-    for waypoint in trajectory.params.waypoints.iter_mut() {
-        waypoint.is_initial_guess = true;
-    }
-    for constraint in trajectory.params.snapshot().constraints {
-        let from = constraint.from.get_idx(waypoint_count);
-        let to = constraint
-            .to
-            .as_ref()
-            .and_then(|id| id.get_idx(waypoint_count));
-
-        if let Some(from_idx) = from {
-            let valid_wpt = to.is_none();
-            let valid_sgmt = to.is_some();
-            // Check for valid scope
-            if match constraint.data.scope() {
-                ConstraintScope::Waypoint => valid_wpt,
-                ConstraintScope::Segment => valid_sgmt,
-                ConstraintScope::Both => valid_wpt || valid_sgmt,
-            } {
-                not_initial_guess_wpt(trajectory, from_idx);
-                if let Some(to_idx) = to
-                    && to_idx != from_idx
-                {
-                    not_initial_guess_wpt(trajectory, to_idx);
-                }
-            }
-        }
-    }
-}
-
-/// Mark unconstrained empty waypoints as initial guess points.
-/// Adjust non-equality-constrained waypoint headings to fit trajectory constraints; error if impossible.
-/// NOTE: this mutates the params field. The params from the output of this function should NOT be part of generation output.
-fn preprocess(original: &TrajectoryFile) -> ChoreoResult<TrajectoryFile> {
-    let mut mut_trajectory_file = original.clone();
-    set_initial_guess(&mut mut_trajectory_file);
-    adjust_headings(&mut mut_trajectory_file)?;
-    Ok(mut_trajectory_file)
-}
 pub fn generate(
     chor: ProjectFile,
     trajectory_file: TrajectoryFile,
     handle: i64,
 ) -> ChoreoResult<TrajectoryFile> {
-    let original = trajectory_file;
 
-    let mut generator = TrajectoryFileGenerator::new(chor, preprocess(&original)?, handle);
+    let mut generator = TrajectoryFileGenerator::new(chor, trajectory_file, handle)?;
     generator.add_omni_transformer::<IntervalCountSetter>();
     generator.add_omni_transformer::<DrivetrainAndBumpersSetter>();
     generator.add_omni_transformer::<ConstraintSetter>();
     generator.add_omni_transformer::<CallbackSetter>();
 
-    let output = generator.generate()?;
-    // Ensure we only change the parts we mean to change.
-    Ok(TrajectoryFile {
-        name: original.name,
-        version: original.version,
-        snapshot: Some(original.params.snapshot()),
-        params: original.params,
-        trajectory: Trajectory {
-            sample_type: output.trajectory.sample_type,
-            waypoints: output.trajectory.waypoints,
-            samples: output.trajectory.samples,
-            splits: output.trajectory.splits,
-        },
-        events: output.events,
-    })
+    generator.generate()
 }
