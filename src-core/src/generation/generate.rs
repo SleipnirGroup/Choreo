@@ -33,6 +33,9 @@ pub enum LocalProgressUpdate {
     DiagnosticText {
         update: String,
     },
+    IntervalCounts {
+        update: Vec<usize>,
+    },
 }
 
 impl LocalProgressUpdate {
@@ -59,6 +62,11 @@ impl From<DifferentialTrajectory> for LocalProgressUpdate {
         }
     }
 }
+impl From<Vec<usize>> for LocalProgressUpdate {
+    fn from(value: Vec<usize>) -> Self {
+        LocalProgressUpdate::IntervalCounts { update: value }
+    }
+}
 
 pub struct HandledLocalProgressUpdate {
     pub handle: i64,
@@ -82,5 +90,7 @@ pub fn generate(
     generator.add_omni_transformer::<ConstraintSetter>();
     generator.add_omni_transformer::<CallbackSetter>();
 
-    generator.generate()
+    let result = generator.generate()?;
+    println!("{:?}", result.params);
+    Ok(result)
 }

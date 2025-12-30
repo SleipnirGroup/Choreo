@@ -163,6 +163,9 @@ export const HolonomicPathStore = types
             m.from.setTargetTimestamp(ser.trajectory.waypoints[index]);
           }
         });
+        ser.params.waypoints.forEach((w, i) =>
+          self.params.waypoints[i].setIntervals(w.intervals)
+        );
         self.setSnapshot(ser.snapshot);
         self.ui.setUpToDate(true);
       },

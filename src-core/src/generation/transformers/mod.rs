@@ -8,8 +8,11 @@ use trajoptlib::{
 };
 
 use crate::{
-    ChoreoResult,
-    generation::heading::adjust_headings,
+    ChoreoResult, ResultExt,
+    generation::{
+        generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK},
+        heading::adjust_headings,
+    },
     spec::{
         project::ProjectFile,
         trajectory::{DriveType, Parameters, Sample, Trajectory, TrajectoryFile},
@@ -75,6 +78,15 @@ fn update_control_intervals(params: &mut Parameters<f64>, counts_vec: &Vec<usize
             waypoint.intervals = *counts;
         });
 }
+
+fn send_interval_counts(counts: Vec<usize>, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        let _ = tx
+            .send(LocalProgressUpdate::from(counts).handled(handle))
+            .trace_warn();
+    };
+}
 pub(super) struct GenerationContext {
     pub project: ProjectFile,
     pub params: Parameters<f64>,
@@ -101,10 +113,13 @@ impl TrajectoryFileGenerator {
         // Adjust non-equality-constrained waypoint headings to fit trajectory constraints; error if impossible.
         // Estimate control intervals
         let mut params = trajectory_file.params.snapshot();
-        set_initial_guess(&mut params);
         adjust_headings(&mut params)?;
+        set_initial_guess(&mut params);
         let counts_vec = guess_control_interval_counts(&project.config.snapshot(), &params)?;
         update_control_intervals(&mut params, &counts_vec);
+        send_interval_counts(counts_vec.clone(), handle);
+        send_interval_counts(counts_vec.clone(), handle);
+        println!("counts from backend: {counts_vec:?}");
         Ok(Self {
             ctx: GenerationContext {
                 project,
@@ -194,6 +209,7 @@ impl TrajectoryFileGenerator {
             .for_each(|(waypoint, counts)| {
                 waypoint.intervals = *counts;
             });
+        println!("{:?} {:?}", original_params, self.ctx.counts_vec);
         // Snapshot, capturing that interval count update
         let snapshot = original_params.snapshot();
         let mut original_events = self.original_file.events.clone();

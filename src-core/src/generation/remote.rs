@@ -21,7 +21,7 @@ use crate::{
     generation::generate::{LocalProgressUpdate, generate},
     spec::{
         project::ProjectFile,
-        trajectory::{Sample, Trajectory, TrajectoryFile},
+        trajectory::{Sample, TrajectoryFile},
     },
 };
 
@@ -85,12 +85,14 @@ impl RemoteArgs {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(clippy::large_enum_variant)]
 pub enum RemoteProgressUpdate {
     // Swerve variant
     IncompleteSwerveTrajectory(Vec<Sample>),
     // Diff variant
     IncompleteTankTrajectory(Vec<Sample>),
-    CompleteTrajectory(Trajectory),
+    IntervalCounts(Vec<usize>),
+    CompleteTrajectory(TrajectoryFile),
     Error(ChoreoError),
 }
 
@@ -103,6 +105,10 @@ pub fn remote_generate_child(args: RemoteArgs) {
         .name("choreo-cli-progressupdater".to_string())
         .spawn(move || {
             for received in rx {
+                #[allow(unused_variables)]
+                if let LocalProgressUpdate::IntervalCounts { ref update } = received.update {
+                    println!("********BACKEND**********")
+                }
                 let ser_string = match received {
                     HandledLocalProgressUpdate {
                         update: LocalProgressUpdate::SwerveTrajectory { update },
@@ -116,9 +122,14 @@ pub fn remote_generate_child(args: RemoteArgs) {
                     } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTrajectory(
                         update,
                     )),
+                    HandledLocalProgressUpdate {
+                        update: LocalProgressUpdate::IntervalCounts { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IntervalCounts(update)),
                     _ => continue,
                 }
                 .expect("Failed to serialize progress update");
+
                 cln_ipc
                     .send(ser_string)
                     .expect("Failed to send progress update");
@@ -153,10 +164,9 @@ pub fn remote_generate_child(args: RemoteArgs) {
 
     match generate(project, trajectory, 0i64) {
         Ok(trajectory) => {
-            let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTrajectory(
-                trajectory.trajectory,
-            ))
-            .expect("Failed to serialize progress update");
+            let ser_string =
+                serde_json::to_string(&RemoteProgressUpdate::CompleteTrajectory(trajectory))
+                    .expect("Failed to serialize progress update");
             ipc.send(ser_string)
                 .expect("Failed to send progress update");
         }
@@ -270,11 +280,7 @@ pub async fn remote_generate_parent(
     let early_out = match serde_json::from_str::<RemoteProgressUpdate>(&o) {
         Ok(RemoteProgressUpdate::CompleteTrajectory(trajectory)) => {
             tracing::debug!("Remote generator completed (early return)");
-            Some(Ok(TrajectoryFile {
-                trajectory,
-                snapshot: Some(trajectory_file.params.snapshot()),
-                ..trajectory_file.clone()
-            }))
+            Some(Ok(trajectory))
         }
         Ok(RemoteProgressUpdate::Error(e)) => Some(Err(ChoreoError::remote(e))),
         Err(e) => Some(Err(ChoreoError::remote(ChoreoError::Json(format!(
@@ -294,7 +300,6 @@ pub async fn remote_generate_parent(
     let mut victim = victim.into_stream();
 
     let mut stream = rx.to_stream();
-
     let out: ChoreoResult<TrajectoryFile> = loop {
         select! {
             update_res = stream.try_next() => {
@@ -316,14 +321,15 @@ pub async fn remote_generate_parent(
                                 );
                             },
                             Ok(RemoteProgressUpdate::CompleteTrajectory(trajectory)) => {
-                                break Ok(
-                                    TrajectoryFile {
-                                        trajectory,
-                                        snapshot: Some(trajectory_file.params.snapshot()),
-                                        .. trajectory_file
-                                    }
-                                );
+                                break Ok(trajectory);
                             },
+                            Ok(RemoteProgressUpdate::IntervalCounts(counts)) => {
+                                remote_resources.emit_progress(
+                                    LocalProgressUpdate::IntervalCounts {
+                                        update: counts
+                                    }.handled(handle)
+                                );
+                            }
                             Ok(RemoteProgressUpdate::Error(e)) => {
                                 break Err(ChoreoError::remote(e));
                             },
