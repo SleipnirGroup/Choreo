@@ -12,7 +12,7 @@ use super::transformers::{
 };
 use crate::ChoreoResult;
 use crate::spec::project::ProjectFile;
-use crate::spec::trajectory::{ConstraintScope, Sample, TrajectoryFile};
+use crate::spec::trajectory::{ConstraintScope, Sample, Trajectory, TrajectoryFile};
 
 /// A [`OnceLock`] is a synchronization primitive that can be written to once.
 /// Used here to create a read-only static reference to the sender, even though
@@ -110,18 +110,35 @@ fn set_initial_guess(trajectory: &mut TrajectoryFile) {
 
 pub fn generate(
     chor: ProjectFile,
-    mut trajectory_file: TrajectoryFile,
+    trajectory_file: TrajectoryFile,
     handle: i64,
 ) -> ChoreoResult<TrajectoryFile> {
-    set_initial_guess(&mut trajectory_file);
-    adjust_headings(&mut trajectory_file)?;
+    let original = trajectory_file;
+    // Populate some metadata on the TrajectoryFile.
+    let mut mut_trajectory_file = original.clone();
+    set_initial_guess(&mut mut_trajectory_file);
+    adjust_headings(&mut mut_trajectory_file)?;
 
-    let mut generator = TrajectoryFileGenerator::new(chor, trajectory_file, handle);
+    let mut generator = TrajectoryFileGenerator::new(chor, mut_trajectory_file, handle);
 
     generator.add_omni_transformer::<IntervalCountSetter>();
     generator.add_omni_transformer::<DrivetrainAndBumpersSetter>();
     generator.add_omni_transformer::<ConstraintSetter>();
     generator.add_omni_transformer::<CallbackSetter>();
 
-    generator.generate()
+    let output = generator.generate()?;
+    // Ensure we only change the parts we mean to change.
+    Ok(TrajectoryFile {
+        name: original.name,
+        version: original.version,
+        snapshot: Some(original.params.snapshot()),
+        params: original.params,
+        trajectory: Trajectory {
+            sample_type: output.trajectory.sample_type,
+            waypoints: output.trajectory.waypoints,
+            samples: output.trajectory.samples,
+            splits: output.trajectory.splits,
+        },
+        events: output.events,
+    })
 }
