@@ -1,6 +1,6 @@
 use trajoptlib::Pose2d;
 
-use crate::{spec::trajectory::Waypoint};
+use crate::spec::trajectory::Waypoint;
 
 use super::{
     DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,

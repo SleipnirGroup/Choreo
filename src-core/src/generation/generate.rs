@@ -11,7 +11,7 @@ use super::transformers::{
 };
 use crate::ChoreoResult;
 use crate::spec::project::ProjectFile;
-use crate::spec::trajectory::{ Sample, TrajectoryFile};
+use crate::spec::trajectory::{Sample, TrajectoryFile};
 
 /// A [`OnceLock`] is a synchronization primitive that can be written to once.
 /// Used here to create a read-only static reference to the sender, even though
@@ -76,7 +76,6 @@ pub fn generate(
     trajectory_file: TrajectoryFile,
     handle: i64,
 ) -> ChoreoResult<TrajectoryFile> {
-
     let mut generator = TrajectoryFileGenerator::new(chor, trajectory_file, handle)?;
     generator.add_omni_transformer::<IntervalCountSetter>();
     generator.add_omni_transformer::<DrivetrainAndBumpersSetter>();
