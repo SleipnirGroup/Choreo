@@ -108,19 +108,23 @@ fn set_initial_guess(trajectory: &mut TrajectoryFile) {
     }
 }
 
+/// Mark unconstrained empty waypoints as initial guess points.
+/// Adjust non-equality-constrained waypoint headings to fit trajectory constraints; error if impossible.
+/// NOTE: this mutates the params field. The params from the output of this function should NOT be part of generation output.
+fn preprocess(original: &TrajectoryFile) -> ChoreoResult<TrajectoryFile> {
+    let mut mut_trajectory_file = original.clone();
+    set_initial_guess(&mut mut_trajectory_file);
+    adjust_headings(&mut mut_trajectory_file)?;
+    Ok(mut_trajectory_file)
+}
 pub fn generate(
     chor: ProjectFile,
     trajectory_file: TrajectoryFile,
     handle: i64,
 ) -> ChoreoResult<TrajectoryFile> {
     let original = trajectory_file;
-    // Populate some metadata on the TrajectoryFile.
-    let mut mut_trajectory_file = original.clone();
-    set_initial_guess(&mut mut_trajectory_file);
-    adjust_headings(&mut mut_trajectory_file)?;
 
-    let mut generator = TrajectoryFileGenerator::new(chor, mut_trajectory_file, handle);
-
+    let mut generator = TrajectoryFileGenerator::new(chor, preprocess(&original)?, handle);
     generator.add_omni_transformer::<IntervalCountSetter>();
     generator.add_omni_transformer::<DrivetrainAndBumpersSetter>();
     generator.add_omni_transformer::<ConstraintSetter>();
