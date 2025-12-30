@@ -82,10 +82,6 @@ pub(super) struct GenerationContext {
     pub handle: i64,
 }
 
-/// Mark unconstrained empty waypoints as initial guess points.
-/// Adjust non-equality-constrained waypoint headings to fit trajectory constraints; error if impossible.
-/// Estimate control intervals
-/// NOTE: this mutates the params field. The params from the output of this function should NOT be part of generation output.
 pub(super) struct TrajectoryFileGenerator {
     ctx: GenerationContext,
     original_file: TrajectoryFile,
