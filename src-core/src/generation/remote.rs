@@ -105,10 +105,6 @@ pub fn remote_generate_child(args: RemoteArgs) {
         .name("choreo-cli-progressupdater".to_string())
         .spawn(move || {
             for received in rx {
-                #[allow(unused_variables)]
-                if let LocalProgressUpdate::IntervalCounts { ref update } = received.update {
-                    println!("********BACKEND**********")
-                }
                 let ser_string = match received {
                     HandledLocalProgressUpdate {
                         update: LocalProgressUpdate::SwerveTrajectory { update },

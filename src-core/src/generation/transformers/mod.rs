@@ -118,8 +118,7 @@ impl TrajectoryFileGenerator {
         let counts_vec = guess_control_interval_counts(&project.config.snapshot(), &params)?;
         update_control_intervals(&mut params, &counts_vec);
         send_interval_counts(counts_vec.clone(), handle);
-        send_interval_counts(counts_vec.clone(), handle);
-        println!("counts from backend: {counts_vec:?}");
+        send_interval_counts(counts_vec.clone(), handle); // TODO: the double send is to get around a bug that consumes the first message from the IPC queue
         Ok(Self {
             ctx: GenerationContext {
                 project,
@@ -209,7 +208,6 @@ impl TrajectoryFileGenerator {
             .for_each(|(waypoint, counts)| {
                 waypoint.intervals = *counts;
             });
-        println!("{:?} {:?}", original_params, self.ctx.counts_vec);
         // Snapshot, capturing that interval count update
         let snapshot = original_params.snapshot();
         let mut original_events = self.original_file.events.clone();

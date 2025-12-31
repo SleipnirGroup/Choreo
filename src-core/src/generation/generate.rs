@@ -91,6 +91,5 @@ pub fn generate(
     generator.add_omni_transformer::<CallbackSetter>();
 
     let result = generator.generate()?;
-    println!("{:?}", result.params);
     Ok(result)
 }
