@@ -1,6 +1,6 @@
 use trajoptlib::Pose2d;
 
-use crate::{generation::intervals::guess_control_interval_counts, spec::trajectory::Waypoint};
+use crate::spec::trajectory::Waypoint;
 
 use super::{
     DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
@@ -8,18 +8,12 @@ use super::{
 };
 
 pub struct IntervalCountSetter {
-    counts: Vec<usize>,
     waypoints: Vec<Waypoint<f64>>,
 }
 
 impl SwerveGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(
-                &context.project.config.snapshot(),
-                &context.params,
-            )
-            .unwrap_or_default(),
             waypoints: context.params.waypoints.clone(),
         })
     }
@@ -40,7 +34,7 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
                 };
                 guess_points_after_waypoint.push(guess_point);
                 if let Some(last) = control_interval_counts.last_mut() {
-                    *last += self.counts[i];
+                    *last += wpt.intervals;
                 }
             } else {
                 if wpt_cnt > 0 {
@@ -56,7 +50,7 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
                 }
                 wpt_cnt += 1;
                 if i != waypoints.len() - 1 {
-                    control_interval_counts.push(self.counts[i]);
+                    control_interval_counts.push(wpt.intervals);
                 }
             }
         }
@@ -68,11 +62,6 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
 impl DifferentialGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(
-                &context.project.config.snapshot(),
-                &context.params,
-            )
-            .unwrap_or_default(),
             waypoints: context.params.waypoints.clone(),
         })
     }
@@ -93,7 +82,7 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
                 };
                 guess_points_after_waypoint.push(guess_point);
                 if let Some(last) = control_interval_counts.last_mut() {
-                    *last += self.counts[i];
+                    *last += wpt.intervals;
                 }
             } else {
                 if wpt_cnt > 0 {
@@ -109,7 +98,7 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
                 }
                 wpt_cnt += 1;
                 if i != waypoints.len() - 1 {
-                    control_interval_counts.push(self.counts[i]);
+                    control_interval_counts.push(wpt.intervals);
                 }
             }
         }

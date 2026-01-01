@@ -127,8 +127,12 @@ export interface DifferentialSample {
 }
 
 export interface ProgressUpdate {
-  type: "swerveTrajectory" | "differentialTrajectory";
-  update: SwerveSample[] | DifferentialSample[] | string;
+  type:
+    | "swerveTrajectory"
+    | "differentialTrajectory"
+    | "diagnosticText"
+    | "intervalCounts";
+  update: SwerveSample[] | DifferentialSample[] | string | number[];
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {
