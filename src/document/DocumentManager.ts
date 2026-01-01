@@ -893,16 +893,18 @@ export async function genJavaFiles() {
     );
   }
   if (doc.codegen.genTrajData) {
-    tasks.push(
-      Commands.writeJavaFile(
-        genTrajDataFile(trajectories, codeGenPkg, doc.codegen.useChoreoLib),
-        `${rootPath}/${TRAJ_DATA_FILENAME}.java`
-      )
+    await genTrajDataFile(
+      trajectories,
+      codeGenPkg,
+      doc.codegen.useChoreoLib
+    ).then((content) =>
+      Commands.writeJavaFile(content, `${rootPath}/${TRAJ_DATA_FILENAME}.java`)
     );
   }
   await toast.promise(Promise.all(tasks), {
     error: {
       render(toastProps: ToastContentProps<ChoreoError>) {
+        console.error(toastProps.data.content);
         return `Java files did not generate. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
       }
     }
