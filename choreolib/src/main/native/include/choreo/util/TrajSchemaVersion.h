@@ -8,6 +8,6 @@
 
 namespace choreo {
 
-inline constexpr uint32_t kTrajSchemaVersion = 2;
+inline constexpr uint32_t kTrajSchemaVersion = 3;
 
 }  // namespace choreo

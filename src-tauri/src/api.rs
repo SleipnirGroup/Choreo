@@ -209,6 +209,11 @@ pub async fn trajectory_up_to_date(trajectory: TrajectoryFile) -> bool {
 }
 
 #[tauri::command]
+pub async fn config_matches(config_1: RobotConfig<f64>, config_2: RobotConfig<f64>) -> bool {
+    config_1 == config_2
+}
+
+#[tauri::command]
 pub async fn set_deploy_root(app_handle: tauri::AppHandle, dir: String) {
     let resources = app_handle.state::<WritingResources>();
     file_management::set_deploy_path(&resources, PathBuf::from(dir)).await;

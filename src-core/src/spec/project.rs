@@ -35,7 +35,7 @@ pub struct Variables {
     pub expressions: BTreeMap<String, Variable>,
     pub poses: BTreeMap<String, PoseVariable>,
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct Bumper<T: SnapshottableType> {
     pub front: T,
     pub side: T,
@@ -51,7 +51,7 @@ impl<T: SnapshottableType> Bumper<T> {
         }
     }
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct Module<T: SnapshottableType> {
     pub x: T,
     pub y: T,
@@ -65,6 +65,7 @@ impl<T: SnapshottableType> Module<T> {
         }
     }
 }
+
 impl Module<f64> {
     #[must_use]
     pub fn translation(&self) -> Translation2d {
@@ -78,7 +79,7 @@ impl Module<f64> {
         self.x.hypot(self.y)
     }
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RobotConfig<T: SnapshottableType> {
     // front left

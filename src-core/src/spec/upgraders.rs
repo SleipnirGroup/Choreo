@@ -17,6 +17,7 @@ mod traj_file {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
         upgrader.add_version_action(up_1_2);
+        upgrader.add_version_action(up_2_3);
         // Ensure the new upgrader is added here
         upgrader
     }
@@ -31,6 +32,7 @@ mod traj_file {
         editor.set_path_serialize(
             "trajectory",
             Trajectory {
+                config: None,
                 sample_type: None,
                 waypoints: vec![],
                 samples: vec![],
@@ -44,6 +46,10 @@ mod traj_file {
     }
 
     fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+
+    fn up_2_3(editor: &mut Editor) -> ChoreoResult<()> {
         clear_generation_result(editor)
     }
 
@@ -88,6 +94,15 @@ mod traj_file {
         #[test]
         pub fn test_2_swerve() -> ChoreoResult<()> {
             test_trajectory("2", "swerve")
+        }
+
+        #[test]
+        pub fn test_3_differential() -> ChoreoResult<()> {
+            test_trajectory("3", "differential")
+        }
+        #[test]
+        pub fn test_3_swerve() -> ChoreoResult<()> {
+            test_trajectory("3", "swerve")
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.

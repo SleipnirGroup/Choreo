@@ -124,6 +124,7 @@ impl TrajectoryFileGenerator {
 
     /// Generate the trajectory file
     pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
+        let original_traj_file = self.trajectory_file.clone();
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
             DriveType::Swerve => self
                 .generate_swerve(self.ctx.handle)?
@@ -146,7 +147,7 @@ impl TrajectoryFileGenerator {
 
         Ok(postprocess(
             &samples,
-            self.trajectory_file,
+            original_traj_file,
             self.ctx.project,
             counts_vec,
         ))
@@ -210,12 +211,14 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     }
 }
 
+/// Update the original TrajectoryFile with the output
 fn postprocess(
     result: &[Sample],
-    mut path: TrajectoryFile,
+    orig: TrajectoryFile,
     project: ProjectFile,
     counts_vec: Vec<usize>,
 ) -> TrajectoryFile {
+    let mut path = orig.clone();
     let mut snapshot = path.params.snapshot();
     // Update the `intervals` field of each waypoint with the corresponding entry from `counts_vec`
     path.params
@@ -261,6 +264,7 @@ fn postprocess(
         .map(|a| a.1) // map to associate an index in the samples array
         .collect::<Vec<usize>>();
     // copy the above into the TrajectoryFile
+    path.trajectory.config = Some(project.config.snapshot());
     path.trajectory.sample_type = Some(project.r#type);
     path.trajectory.splits = splits;
     path.trajectory.samples = result.to_vec();
