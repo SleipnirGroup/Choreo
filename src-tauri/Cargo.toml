@@ -28,7 +28,7 @@ serde_json = "1.0"
 tauri = { version = "2.9.5", features = [ "devtools"] }
 tauri-plugin-dialog = "2.4.2"
 tauri-plugin-fs = "2.4.4"
-tracing = "0.1.43"
+tracing = "0.1.44"
 tracing-appender = "0.2.4"
 tracing-subscriber = { version = "0.3.22", features = ["ansi", "fmt", "std"] }
 
