@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -52,7 +51,6 @@ public class AutoChooser implements Sendable {
   private Optional<Alliance> allianceAtGeneration = Optional.empty();
   private String nameAtGeneration = NONE_NAME;
   private Command generatedCommand = Commands.none();
-  private Function<String, String> selectionOverride = null;
 
   /** Constructs a new {@link AutoChooser}. */
   public AutoChooser() {}
@@ -71,9 +69,6 @@ public class AutoChooser implements Sendable {
 
   private String select(String selectStr, boolean force) {
     selected = selectStr;
-    if (selectionOverride != null) {
-      selected = selectionOverride.apply(selected);
-    }
     if (selected.equals(nameAtGeneration)
         && allianceAtGeneration.equals(DriverStation.getAlliance())) {
       // early return if the selected auto matches the active auto
@@ -96,15 +91,6 @@ public class AutoChooser implements Sendable {
       generatedCommand = Commands.none();
     }
     return nameAtGeneration;
-  }
-
-  /**
-   * Sets a selection override function that modifies the selected option before it is applied.
-   *
-   * @param override The function that modifies the selected option.
-   */
-  protected void setSelectionOverride(Function<String, String> override) {
-    selectionOverride = override;
   }
 
   /**
@@ -189,7 +175,7 @@ public class AutoChooser implements Sendable {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.deferredProxy(this::selectedCommand);
+    return Commands.deferredProxy(this::selectedCommand).withName("Auto Cmd Scheduler");
   }
 
   /**

@@ -320,32 +320,61 @@ Choreo's base `AutoChooser` does not support log replay. AdvantageKit users shou
 ```java title="AutoChooserAK.java"
 package your.utilities.folder;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import org.littletonrobotics.junction.LogTable;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
+import choreo.auto.AutoRoutine;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-public class AutoChooserAK extends AutoChooserImpl {
-    private String selected = NONE_NAME;
-    private final LoggableInputs replayHandle = new LoggableInputs() {
-        @Override
-        public void toLog(LogTable table) {
-            table.put("selected", selected);
-        }
+import java.util.HashMap;
+import java.util.function.Supplier;
 
-        @Override
-        public void fromLog(LogTable table) {
-            selected = table.get("selected", selected);
-        }
-    };
+/** A replacement for {@link choreo.auto.AutoChooser} that works with AdvantageKit. */
+public class AutoChooserAK {
+    private final LoggedDashboardChooser<String> impl;
+    private final HashMap<String, Supplier<Command>> choices = new HashMap<>();
+    private Command selectedAuto = Commands.none();
 
+    /** Creates an {@link AutoChooserAK}. */
     public AutoChooserAK(String name) {
-        setOnSelectOverride(value -> {
-            selected = value;
-            Logger.processInputs(name, replayHandle);
-            return selected;
-        });
-        SmartDashboard.putData(name, this);
+        impl = new LoggedDashboardChooser<>(name);
+        impl.onChange(option -> selectedAuto = choices.get(option).get());
+        choices.put("No Auto", Commands::none);
+        impl.addDefaultOption("No Auto", "No Auto");
+    }
+
+    /**
+     * Adds a Command to the auto chooser.
+     * @see choreo.auto.AutoChooser#addCmd
+     */
+    public void addCmd(String name, Supplier<Command> commandSupplier) {
+        choices.put(name, commandSupplier);
+        impl.addOption(name, name);
+    }
+
+    /** 
+     * Add an AutoRoutine to the chooser.
+     * @see choreo.auto.AutoChooser#addRoutine
+     */
+    public void addRoutine(String name, Supplier<AutoRoutine> routineSupplier) {
+        addCmd(name, () -> routineSupplier.get().cmd());
+    }
+
+    /**
+     * Returns the currently selected command.
+     * 
+     * @see choreo.auto.AutoChooser#selectedCommand
+     */
+    public Command selectedCommand() {
+      return selectedAuto;
+    }
+
+    /**
+     * Gets a Command that schedules the selected auto routine.
+     *
+     * @see AutoChooser#selectedCommandScheduler
+     */
+    public Command selectedCommandScheduler() {
+        return Commands.deferredProxy(() -> selectedAuto).withName("Autonomous Scheduler");
     }
 }
 ```
