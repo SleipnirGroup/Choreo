@@ -175,7 +175,7 @@ public class AutoChooser implements Sendable {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.deferredProxy(() -> selectedCommand());
+    return Commands.deferredProxy(this::selectedCommand).withName("Auto Cmd Scheduler");
   }
 
   /**
@@ -187,7 +187,7 @@ public class AutoChooser implements Sendable {
    * @return The currently selected command.
    */
   public Command selectedCommand() {
-    if (RobotBase.isSimulation() && nameAtGeneration == NONE_NAME) {
+    if (RobotBase.isSimulation() && nameAtGeneration.equals(NONE_NAME)) {
       select(selected, true);
     }
     return generatedCommand;
