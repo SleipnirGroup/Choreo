@@ -61,4 +61,7 @@ public class ChoreoAlert {
 
   /** Factory class. */
   private ChoreoAlert() {}
+
+  public static final Alert allianceNotReady =
+      ChoreoAlert.alert("Alliance used but not ready", AlertType.kError);
 }
