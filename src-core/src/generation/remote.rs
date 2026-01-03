@@ -49,13 +49,6 @@ impl RemoteGenerationResources {
     }
 
     pub fn kill(&self, handle: i64) -> ChoreoResult<()> {
-        println!(
-            "sending request to cancel {handle} out of {:?}",
-            self.kill_map
-                .iter()
-                .map(|ref_multi| ref_multi.key().to_owned())
-                .collect::<Vec<i64>>()
-        );
         self.kill_map
             .remove(&handle)
             .ok_or(ChoreoError::out_of_bounds("Handle", "not found"))
@@ -226,10 +219,6 @@ pub async fn remote_generate_parent(
         .stdout(std::process::Stdio::piped())
         .spawn()?;
 
-    let (killer, victim) = oneshot::channel::<()>();
-    remote_resources.add_killer(handle, killer);
-    let mut victim = victim.into_stream();
-
     tracing::debug!("Spawned remote generator");
 
     let tee_killswitch = Arc::new(Notify::new());
@@ -281,8 +270,6 @@ pub async fn remote_generate_parent(
         }
     });
 
-    // The below line BLOCKS until the child sends the first IPC message
-
     let (rx, o) = server.accept().map_err(ChoreoError::remote)?;
 
     // check if the solver has already completed
@@ -303,6 +290,10 @@ pub async fn remote_generate_parent(
         let _ = tee_handle.await;
         return out;
     }
+
+    let (killer, victim) = oneshot::channel::<()>();
+    remote_resources.add_killer(handle, killer);
+    let mut victim = victim.into_stream();
 
     let mut stream = rx.to_stream();
     let out: ChoreoResult<TrajectoryFile> = loop {

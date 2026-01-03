@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 use crate::tauri::TauriResult;
 use choreo_core::codegen::java::trajectory_data::generate_traj_data_file;
+use choreo_core::codegen::java::choreo_vars::generate_vars_file;
 use choreo_core::{
     ChoreoError, ChoreoResult,
     file_management::{self, WritingResources, create_diagnostic_file, get_log_lines},
@@ -263,6 +264,17 @@ pub fn gen_traj_data_file(
         trajectories,
         package_name,
         is_using_choreo_lib
+    )));
+}
+
+#[tauri::command]
+pub fn gen_vars_file(
+    project: ProjectFile,
+    package_name: String
+) -> TauriResult<String> {
+    debug_result!(ChoreoResult::Ok(generate_vars_file(
+        project,
+        package_name
     )));
 }
 
