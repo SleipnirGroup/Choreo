@@ -9,6 +9,7 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -49,6 +50,11 @@ public class AutoFactory {
 
     Optional<Alliance> alliance() {
       return allianceGetter.get();
+    }
+
+    Supplier<Optional<Pose2d>> getFlippedPose(Optional<Pose2d> bluePose) {
+      return ChoreoAllianceFlipUtil.optionalFlippedPose2d(
+          bluePose, this::alliance, useAllianceFlipping);
     }
   }
 
@@ -351,6 +357,37 @@ public class AutoFactory {
    */
   public <ST extends TrajectorySample<ST>> Command resetOdometry(Trajectory<ST> trajectory) {
     return trajectory(trajectory, voidRoutine, false).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the supplied pose
+   *
+   * @param pose A function that is called when the command is run. It returns an Optional<Pose2d>
+   *     of the robot's desired odometry position.
+   * @return A command that resets the robot's odometry to the supplied pose, or does nothing if the
+   *     supplied Optional is empty.
+   */
+  public Command resetOdometry(Supplier<Optional<Pose2d>> pose) {
+    return driveSubsystem.runOnce(() -> pose.get().ifPresent(resetOdometry));
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the given pose
+   *
+   * @param pose An Optional<Pose2d> of the robot's desired odometry position.
+   * @param doFlipForAlliance True if the given pose still needs to be flipped according to the
+   *     alliance (usually true). False if it is an absolute field position.
+   * @return A command that resets the robot's odometry to the given pose (flipped as directed), or
+   *     does nothing if the supplied Optional is empty.
+   */
+  public Command resetOdometry(Optional<Pose2d> pose, boolean doFlipForAlliance) {
+    if (pose.isEmpty()) {
+      return driveSubsystem.runOnce(
+          () -> {}); // equivalent to Commands.none() requiring driveSubsystem.
+    }
+    Supplier<Optional<Pose2d>> supplier =
+        doFlipForAlliance ? allianceCtx.getFlippedPose(pose) : (() -> pose);
+    return resetOdometry(supplier);
   }
 
   /**

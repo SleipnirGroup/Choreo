@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import static choreo.util.ChoreoAlert.allianceNotReady;
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.Choreo.TrajectoryLogger;
@@ -17,7 +18,6 @@ import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -56,8 +56,6 @@ public class AutoTrajectory {
   private static final MultiAlert noInitialPose =
       ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
-  private static final Alert allianceNotReady =
-      ChoreoAlert.alert("Alliance used but not ready", kError);
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
