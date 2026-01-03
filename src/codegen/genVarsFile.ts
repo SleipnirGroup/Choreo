@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { DimensionName } from "../document/ExpressionStore";
 import { isValidIdentifier } from "../document/path/NameIsIdentifier";
 import { Expr, Project } from "../document/schema/DocumentTypes";
@@ -5,7 +6,8 @@ import { Expr, Project } from "../document/schema/DocumentTypes";
 export const VARS_FILENAME = "ChoreoVars";
 
 // Generates a Java file containing variables defined in the Choreo GUI.
-export function genVarsFile(project: Project, packageName: string): string {
+export async function genVarsFile(project: Project, packageName: string): Promise<string> {
+  return invoke("gen_vars_file", {project, packageName});
   const content: string[] = [];
   content.push(`package ${packageName};`);
   content.push(`
@@ -55,7 +57,7 @@ public final class ${VARS_FILENAME} {`);
 
 // Generates a Java variable declaration for a given expression.
 function asVariable(
-  expr: Expr | number,
+  expr: Expr,
   variableName: string,
   dimension: DimensionName
 ): string {

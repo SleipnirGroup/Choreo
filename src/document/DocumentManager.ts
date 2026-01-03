@@ -886,23 +886,26 @@ export async function genJavaFiles() {
   const tasks = [];
   if (doc.codegen.genVars) {
     tasks.push(
+      genVarsFile(doc.serializeChor(), codeGenPkg).then((content)=>
       Commands.writeJavaFile(
-        genVarsFile(doc.serializeChor(), codeGenPkg),
+        content,
         `${rootPath}/${VARS_FILENAME}.java`
       )
-    );
+    ));
   }
   if (doc.codegen.genTrajData) {
-    tasks.push(
-      Commands.writeJavaFile(
-        genTrajDataFile(trajectories, codeGenPkg, doc.codegen.useChoreoLib),
-        `${rootPath}/${TRAJ_DATA_FILENAME}.java`
-      )
-    );
+    tasks.push(genTrajDataFile(
+      trajectories,
+      codeGenPkg,
+      doc.codegen.useChoreoLib
+    ).then((content) =>
+      Commands.writeJavaFile(content, `${rootPath}/${TRAJ_DATA_FILENAME}.java`)
+    ));
   }
   await toast.promise(Promise.all(tasks), {
     error: {
       render(toastProps: ToastContentProps<ChoreoError>) {
+        console.error(toastProps.data.content);
         return `Java files did not generate. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
       }
     }
