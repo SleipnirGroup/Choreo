@@ -6,6 +6,7 @@ The Choreo GUI uses a mathematical expression parser (https://mathjs.org/) in ne
 * Use of any appropriate unit in inputs, instead of having to convert to SI units.
 * Addition of different units of the same dimension; `2 m + 1 in` is a valid length input.
 * Use of a set of pre-provided mathematical functions within the expression
+* Ability to define variables that can be referenced throughout the project.
 
 ## Expressions
 
