@@ -251,10 +251,12 @@ impl TrajectoryFileGenerator {
         // update event markers' target timestamps with the corresponding timestamp from waypoint_times
         // or None if the targeted index is None or out of bounds
         original_events.iter_mut().for_each(|marker| {
-            marker.from.target_timestamp = marker
-                .from
-                .target
-                .and_then(|idx| waypoint_times.get(idx).copied().or(marker.from.target_timestamp));
+            marker.from.target_timestamp = marker.from.target.and_then(|idx| {
+                waypoint_times
+                    .get(idx)
+                    .copied()
+                    .or(marker.from.target_timestamp)
+            });
         });
         TrajectoryFile {
             name: self.original_file.name.clone(),
@@ -266,7 +268,7 @@ impl TrajectoryFileGenerator {
                 waypoints: waypoint_times,
                 samples: result.to_vec(),
                 splits,
-                config: Some(self.ctx.project.config.snapshot())
+                config: Some(self.ctx.project.config.snapshot()),
             },
             events: original_events,
         }
