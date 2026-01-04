@@ -362,8 +362,8 @@ public class AutoFactory {
   /**
    * Creates a command that resets the robot's odometry to the supplied pose
    *
-   * @param pose A function that is called when the command is run. It returns an Optional<Pose2d>
-   *     of the robot's desired odometry position.
+   * @param pose A function that is called when the command is run. It returns an <code>
+   *     Optional&lt;Pose2d&gt;</code> of the robot's desired odometry position.
    * @return A command that resets the robot's odometry to the supplied pose, or does nothing if the
    *     supplied Optional is empty.
    */
@@ -374,7 +374,7 @@ public class AutoFactory {
   /**
    * Creates a command that resets the robot's odometry to the given pose
    *
-   * @param pose An Optional<Pose2d> of the robot's desired odometry position.
+   * @param pose An <code>Optional&lt;Pose2d&gt;</code> of the robot's desired odometry position.
    * @param doFlipForAlliance True if the given pose still needs to be flipped according to the
    *     alliance (usually true). False if it is an absolute field position.
    * @return A command that resets the robot's odometry to the given pose (flipped as directed), or
