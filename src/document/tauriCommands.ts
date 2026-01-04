@@ -6,7 +6,7 @@ export type ChoreoResult<T> = T | ChoreoError;
 export const Commands = {
   guessIntervals: (config: RobotConfig<Expr>, trajectory: Trajectory) =>
     invoke<number[]>("guess_control_interval_counts", { config, trajectory }),
-
+  getWorkerCount: () => invoke<number>("get_worker_count"),
   /**
    * Generates a `Trajectory` using the specified `Project` and `Trajectory`.
    *
