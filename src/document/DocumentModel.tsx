@@ -195,7 +195,6 @@ export const DocumentStore = types
       }
 
       console.log(pathStore.serialize);
-      const config = self.robotConfig.serialize;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
@@ -208,55 +207,30 @@ export const DocumentStore = types
         m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
       pathStore.ui.setGenerating(true);
-      const handle = pathStore.uuid
-        .split("")
-        .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
+      const handle = pathStore.handle;
       let unlisten: UnlistenFn = () => {};
       pathStore.ui.setIterationNumber(0);
-      await Commands.guessIntervals(config, pathStore.serialize)
-        .catch((e) => {
-          tracing.error("guessIntervals:", e);
-          throw e;
-        })
-        .then((counts) => {
-          tracing.debug(counts);
-          counts.forEach((count, i) => {
-            const waypoint = pathStore.params.waypoints[i];
-            if (waypoint.overrideIntervals && count !== waypoint.intervals) {
-              console.assert(
-                false,
-                "Control interval guessing did not ignore override intervals! %o",
-                {
-                  path: pathStore.name,
-                  waypoint: i,
-                  override: waypoint.intervals,
-                  calculated: count
-                }
-              );
-            } else {
-              waypoint.setIntervals(count);
-            }
-          });
-        })
-        .then(() => {
-          tracing.debug("generatePathPre");
-          return listen(`solver-status-${handle}`, async (rawEvent) => {
-            const event: Event<ProgressUpdate> =
-              rawEvent as Event<ProgressUpdate>;
-            if (
-              event.payload!.type === "swerveTrajectory" ||
-              event.payload!.type === "differentialTrajectory"
-            ) {
-              const samples = event.payload.update as
-                | SwerveSample[]
-                | DifferentialSample[];
-              pathStore.ui.setInProgressTrajectory(samples);
-              pathStore.ui.setIterationNumber(
-                pathStore.ui.generationIterationNumber + 1
-              );
-            }
-          });
-        })
+      await listen(`solver-status-${handle}`, async (rawEvent) => {
+        const event: Event<ProgressUpdate> = rawEvent as Event<ProgressUpdate>;
+        if (
+          event.payload!.type === "swerveTrajectory" ||
+          event.payload!.type === "differentialTrajectory"
+        ) {
+          const samples = event.payload.update as
+            | SwerveSample[]
+            | DifferentialSample[];
+          pathStore.ui.setInProgressTrajectory(samples);
+          pathStore.ui.setIterationNumber(
+            pathStore.ui.generationIterationNumber + 1
+          );
+        } else if (event.payload!.type === "diagnosticText") {
+          /**/
+        } else if (event.payload!.type === "intervalCounts") {
+          (event.payload.update as number[]).forEach((c, i) =>
+            pathStore.params.waypoints[i].setIntervals(c)
+          );
+        }
+      })
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generate(
