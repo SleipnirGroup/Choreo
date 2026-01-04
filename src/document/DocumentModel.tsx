@@ -207,9 +207,7 @@ export const DocumentStore = types
         m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
       pathStore.ui.setGenerating(true);
-      const handle = pathStore.uuid
-        .split("")
-        .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
+      const handle = pathStore.handle;
       let unlisten: UnlistenFn = () => {};
       pathStore.ui.setIterationNumber(0);
       await listen(`solver-status-${handle}`, async (rawEvent) => {
