@@ -206,7 +206,9 @@ impl TrajectoryFileGenerator {
             .iter_mut()
             .zip(&self.ctx.counts_vec)
             .for_each(|(waypoint, counts)| {
-                waypoint.intervals = *counts;
+                if !waypoint.override_intervals {
+                    waypoint.intervals = *counts;
+                }
             });
         // Snapshot, capturing that interval count update
         let snapshot = original_params.snapshot();
@@ -252,7 +254,7 @@ impl TrajectoryFileGenerator {
             marker.from.target_timestamp = marker
                 .from
                 .target
-                .and_then(|idx| waypoint_times.get(idx).copied());
+                .and_then(|idx| waypoint_times.get(idx).copied().or(marker.from.target_timestamp));
         });
         TrajectoryFile {
             name: self.original_file.name.clone(),
@@ -264,13 +266,13 @@ impl TrajectoryFileGenerator {
                 waypoints: waypoint_times,
                 samples: result.to_vec(),
                 splits,
+                config: Some(self.ctx.project.config.snapshot())
             },
             events: original_events,
         }
     }
     /// Generate the trajectory file
     pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
-        let original_traj_file = self.trajectory_file.clone();
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
             DriveType::Swerve => self
                 .generate_swerve(self.ctx.handle)?
@@ -286,17 +288,7 @@ impl TrajectoryFileGenerator {
                 .collect(),
         };
 
-        let counts_vec = guess_control_interval_counts(
-            &self.ctx.project.config.snapshot(),
-            &self.trajectory_file.params.snapshot(),
-        )?;
-
-        Ok(postprocess(
-            &samples,
-            original_traj_file,
-            self.ctx.project,
-            counts_vec,
-        ))
+        Ok(self.postprocess(&samples))
     }
 }
 
