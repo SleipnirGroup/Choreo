@@ -1,5 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Expr, Project, RobotConfig, Trajectory } from "./schema/DocumentTypes";
+import {
+  CustomFieldData,
+  Expr,
+  Project,
+  RobotConfig,
+  Trajectory
+} from "./schema/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
 export type ChoreoError = { type: string; content: string };
 export type ChoreoResult<T> = T | ChoreoError;
@@ -158,5 +164,7 @@ export const Commands = {
   /**
    * Sets the directory path to push generated Java files to.
    */
-  selectCodegenFolder: () => invoke<string>("select_codegen_folder")
+  selectCodegenFolder: () => invoke<string>("select_codegen_folder"),
+
+  selectFieldJSON: () => invoke<CustomFieldData>("select_field_json")
 };

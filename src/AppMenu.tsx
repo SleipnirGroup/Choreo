@@ -34,6 +34,10 @@ import {
 import SettingsModal from "./components/config/SettingsModal";
 import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
+import { invoke } from "@tauri-apps/api/core";
+import { CustomFieldData } from "./document/schema/DocumentTypes";
+import { ViewData } from "./document/UIData";
+import { defaultFieldData } from "./components/field/svg/fields/JSONFieldImage";
 
 type Props = object;
 
@@ -188,6 +192,25 @@ class AppMenu extends Component<Props, State> {
                 <SaveIcon />
               </ListItemIcon>
               <ListItemText primary="Export Diagnostic Report"></ListItemText>
+            </ListItemButton>
+            <ListItemButton
+              onClick={async () => {
+                const field_data =
+                  await invoke<CustomFieldData>("select_field_json");
+                console.log(field_data);
+                uiState.setCustomFieldData(field_data);
+              }}
+            >
+              <ListItemIcon>{ViewData.Field.icon}</ListItemIcon>
+              <ListItemText primary="Change Field Image"></ListItemText>
+            </ListItemButton>
+            <ListItemButton
+              onClick={() => {
+                uiState.setCustomFieldData(defaultFieldData);
+              }}
+            >
+              <ListItemIcon>{ViewData.Field.icon}</ListItemIcon>
+              <ListItemText primary="Reset Field Image"></ListItemText>
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             {/* Info about save locations */}
