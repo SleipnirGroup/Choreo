@@ -4,6 +4,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::tauri::TauriResult;
+use choreo_core::codegen::java::trajectory_data::generate_traj_data_file;
+use choreo_core::codegen::java::choreo_vars::generate_vars_file;
 use choreo_core::{
     ChoreoError, ChoreoResult,
     file_management::{self, WritingResources, create_diagnostic_file, get_log_lines},
@@ -250,6 +252,30 @@ pub fn cancel_remote_generator(app_handle: tauri::AppHandle, handle: i64) -> Tau
 pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     remote_resources.kill_all();
+}
+
+#[tauri::command]
+pub fn gen_traj_data_file(
+    trajectories: Vec<TrajectoryFile>,
+    package_name: String,
+    is_using_choreo_lib: bool,
+) -> TauriResult<String> {
+    debug_result!(ChoreoResult::Ok(generate_traj_data_file(
+        trajectories,
+        package_name,
+        is_using_choreo_lib
+    )));
+}
+
+#[tauri::command]
+pub fn gen_vars_file(
+    project: ProjectFile,
+    package_name: String
+) -> TauriResult<String> {
+    debug_result!(ChoreoResult::Ok(generate_vars_file(
+        project,
+        package_name
+    )));
 }
 
 #[tauri::command]

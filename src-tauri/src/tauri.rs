@@ -223,7 +223,9 @@ pub fn run_tauri(project: Option<PathBuf>) {
             cancel_all_remote_generators,
             build_info,
             open_diagnostic_file,
-            error_message
+            error_message,
+            gen_traj_data_file,
+            gen_vars_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
