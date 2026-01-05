@@ -92,9 +92,8 @@ class SwerveSample {
   ///
   /// @tparam Year The field year.
   /// @return SwerveSample that is flipped based on the field layout.
-  template <int Year = util::kDefaultYear>
+  template <Flipper flipper = util::Flippers::DEFAULT>
   constexpr SwerveSample Flipped() const {
-    constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),

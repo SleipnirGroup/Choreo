@@ -81,11 +81,10 @@ class Trajectory {
   ///     the trajectory.
   /// @param mirrorForRedAlliance whether or not to return the sample mirrored.
   /// @return The SampleType at the given time.
-  template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
     if (auto state = SampleInternal(timestamp)) {
-      return mirrorForRedAlliance ? state.value().template Flipped<Year>()
+      return mirrorForRedAlliance ? state.value().template Flipped()
                                   : state;
     } else {
       return {};
@@ -99,14 +98,13 @@ class Trajectory {
   /// @tparam Year The field year. Defaults to the current year.
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The first Pose in the trajectory.
-  template <int Year = util::kDefaultYear>
   std::optional<frc::Pose2d> GetInitialPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples.front().template Flipped<Year>().GetPose();
+      return samples.front().template Flipped().GetPose();
     } else {
       return samples.front().GetPose();
     }
@@ -119,14 +117,13 @@ class Trajectory {
   /// @tparam Year The field year. Defaults to the current year.
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The last Pose in the trajectory.
-  template <int Year = util::kDefaultYear>
   std::optional<frc::Pose2d> GetFinalPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples.back().template Flipped<Year>().GetPose();
+      return samples.back().template Flipped().GetPose();
     } else {
       return samples.back().GetPose();
     }
@@ -158,11 +155,11 @@ class Trajectory {
   ///
   /// @tparam Year The field year. Defaults to the current year.
   /// @return this trajectory, mirrored across the field midline.
-  template <int Year = util::kDefaultYear>
+  
   Trajectory<SampleType> Flipped() const {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
-      flippedStates.push_back(state.template Flipped<Year>());
+      flippedStates.push_back(state.template Flipped());
     }
     return Trajectory<SampleType>(name, flippedStates, splits, events);
   }

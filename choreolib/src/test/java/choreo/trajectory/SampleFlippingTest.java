@@ -6,13 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoAllianceFlipUtil.Flipper;
-
 import org.junit.jupiter.api.Test;
 
 public class SampleFlippingTest {
   private static final double FIELD_LENGTH_2022 = 16.4592;
   private static final double FIELD_LENGTH_2024 = 16.542;
-  private static final double FIELD_WIDTH_2022 = 16.4592/2;
+  private static final double FIELD_WIDTH_2022 = 16.4592 / 2;
 
   @Test
   void testZeroSwerveSample() {

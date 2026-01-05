@@ -174,10 +174,9 @@ class DifferentialSample {
   ///
   /// @tparam Year The field year.
   /// @return DifferentialSample that is flipped based on the field layout.
-  template <int Year = util::kDefaultYear>
+  template <Flipper flipper = util::Flippers::DEFAULT>
   constexpr DifferentialSample Flipped() const {
-    constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
-    if constexpr (flipper.isMirrored) {
+    if constexpr (flipper.symmetry == FlipperType::Mirrored) {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
                                 flipper.FlipHeading(heading), vr, vl, -omega,
                                 ar, al, -alpha, fr, fl);

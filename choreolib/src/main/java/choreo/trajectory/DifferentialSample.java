@@ -287,8 +287,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     }
 
     var other = (DifferentialSample) obj;
-    return
-           Math.abs(this.t - other.t) < 1E-9
+    return Math.abs(this.t - other.t) < 1E-9
         && Math.abs(this.x - other.x) < 1E-9
         && Math.abs(this.y - other.y) < 1E-9
         && Math.abs(this.heading - other.heading) < 1E-9
@@ -299,7 +298,6 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         && Math.abs(this.ar - other.ar) < 1E-9
         && Math.abs(this.alpha - other.alpha) < 1E-9
         && Math.abs(this.fl - other.fl) < 1E-9
-        && Math.abs(this.fr - other.fr) < 1E-9
-      ;
+        && Math.abs(this.fr - other.fr) < 1E-9;
   }
 }

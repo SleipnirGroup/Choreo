@@ -341,9 +341,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
         && Math.abs(this.ax - other.ax) < 1E-9
         && Math.abs(this.ay - other.ay) < 1E-9
         && Math.abs(this.alpha - other.alpha) < 1E-9
-        && ChoreoArrayUtil.zipEquals(
-            this.fx, other.fx, (a, b) -> Math.abs(a-b) < 1E-9)
-        && ChoreoArrayUtil.zipEquals(
-            this.fy, other.fy, (a, b) -> Math.abs(a-b) < 1E-9);
+        && ChoreoArrayUtil.zipEquals(this.fx, other.fx, (a, b) -> Math.abs(a - b) < 1E-9)
+        && ChoreoArrayUtil.zipEquals(this.fy, other.fy, (a, b) -> Math.abs(a - b) < 1E-9);
   }
 }

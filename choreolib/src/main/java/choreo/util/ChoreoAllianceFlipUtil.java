@@ -15,79 +15,133 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Supplier;
 
 /**
- * A utility to flip coordinates to the other alliance. Includes the ability to set custom flipping logic for fields other than the current FRC game.
+ * A utility to flip coordinates to the other alliance. Includes the ability to set custom flipping
+ * logic for fields other than the current FRC game.
  */
 public class ChoreoAllianceFlipUtil {
+  /** A class that captures the alliance-flipping transformation for a given field. */
   public static class Flipper {
+    /** The symmetry of the field, used to help flip trajectory samples. */
     public final Symmetry symmetry;
+
     private final DoubleUnaryOperator flipX;
+
+    /**
+     * Flip the X coordinate.
+     *
+     * @param x the original X coordinate in meters.
+     * @return the flipped X coordinate.
+     */
     public double flipX(double x) {
       return flipX.applyAsDouble(x);
     }
+
     private final DoubleUnaryOperator flipY;
+
+    /**
+     * Flip the Y coordinate.
+     *
+     * @param y the original Y coordinate in meters.
+     * @return the flipped Y coordinate.
+     */
     public double flipY(double y) {
       return flipY.applyAsDouble(y);
     }
+
     private final DoubleUnaryOperator flipHeading;
+
+    /**
+     * Flip the heading coordinate.
+     *
+     * @param heading the original heading coordinate in radians.
+     * @return the flipped heading coordinate.
+     */
     public double flipHeading(double heading) {
       return flipHeading.applyAsDouble(heading);
     }
-    public Flipper(Symmetry symmetry, DoubleUnaryOperator flipX, DoubleUnaryOperator flipY, DoubleUnaryOperator flipHeading) {
+
+    /**
+     * Construct a Flipper instance for a given set of mirroring functions.
+     *
+     * @param symmetry The symmetry of the field
+     * @param flipX The X flipping function
+     * @param flipY The Y flipping function
+     * @param flipHeading The heading flipping function
+     */
+    public Flipper(
+        Symmetry symmetry,
+        DoubleUnaryOperator flipX,
+        DoubleUnaryOperator flipY,
+        DoubleUnaryOperator flipHeading) {
       this.symmetry = symmetry;
       this.flipX = flipX;
       this.flipY = flipY;
       this.flipHeading = flipHeading;
     }
-    private static DoubleUnaryOperator IDENTITY = (arg)->arg;
-    private static DoubleUnaryOperator NEGATE = (arg)->-arg;
+
+    private static DoubleUnaryOperator IDENTITY = (arg) -> arg;
+    private static DoubleUnaryOperator NEGATE = (arg) -> -arg;
     private static final double FT_54 = 16.4592;
-    private static final double FT_27 = 16.4592/2;
+    private static final double FT_27 = 16.4592 / 2;
+
+    /** The FRC 2018 field */
     public static final Flipper ROTATED_2018 = Flipper.rotatedCenter(FT_54, FT_27); // 54 x 27 ft
+
+    /** The FRC 2019 field */
     public static final Flipper ROTATED_2019 = Flipper.rotatedCenter(FT_54, FT_27);
+
+    /** The FRC 2020 field */
     public static final Flipper ROTATED_2020 = Flipper.rotatedCenter(15.98295, 8.21055);
+
+    /** The FRC 2022 field */
     public static final Flipper ROTATED_2022 = Flipper.rotatedCenter(FT_54, FT_27);
+
+    /** The FRC 2023 field */
     public static final Flipper MIRRORED_2023 = Flipper.mirroredCenter(16.542);
+
+    /** The FRC 2024 field */
     public static final Flipper MIRRORED_2024 = Flipper.mirroredCenter(16.542);
+
+    /** The FRC 2025 field */
     public static final Flipper ROTATED_2025 = Flipper.rotatedCenter(17.548, 8.052);
 
     // TODO change
-    // If we keep a name that is before M and R lexicographically, it shows up first in VSCode autocomplete for "Flipper."
+    // If we keep a name that is before M and R lexicographically, it shows up first in VSCode
+    // autocomplete for "Flipper."
+    /** The default field, the current FRC year. */
     public static final Flipper DEFAULT = ROTATED_2025;
+
     /**
-     * Mirror across the X=fieldLength/2 line.
-     * @param fieldLength
-     * @param fieldWidth
-     * @return
+     * @param fieldLength The length of the field (along the X direction) in meters
+     * @return The Flipper that mirrors across the X=fieldLength/2 line.
      */
     public static Flipper mirroredCenter(double fieldLength) {
-      return new Flipper(Symmetry.MIRRORED, x->fieldLength-x, IDENTITY, Symmetry.MIRRORED::flipHeading);
+      return new Flipper(
+          Symmetry.MIRRORED, x -> fieldLength - x, IDENTITY, Symmetry.MIRRORED::flipHeading);
     }
+
     /**
-     * Rotate half a rotation about (fieldLength/2, fieldWidth/2)
-     * @param fieldLength
-     * @param fieldWidth
-     * @return
+     * @param fieldLength The length of the field (along the X direction) in meters
+     * @param fieldWidth The width of the field (along the Y direction) in meters
+     * @return The Flipper that rotates half a rotation about (fieldLength/2, fieldWidth/2)
      */
     public static Flipper rotatedCenter(double fieldLength, double fieldWidth) {
-      return new Flipper(Symmetry.ROTATE_AROUND, x->fieldLength-x, y->fieldWidth-y, Symmetry.ROTATE_AROUND::flipHeading);
+      return new Flipper(
+          Symmetry.ROTATE_AROUND,
+          x -> fieldLength - x,
+          y -> fieldWidth - y,
+          Symmetry.ROTATE_AROUND::flipHeading);
     }
-    /**
-     * Rotate half a rotation about the origin
-     * @return
-     */
-    public static Flipper rotatedOrigin() {
-      return new Flipper(Symmetry.ROTATE_AROUND, NEGATE, NEGATE, Symmetry.ROTATE_AROUND::flipHeading);
-    }
-    /**
-     * Mirror across the Y-axis (X=0) line.
-     * @return
-     */
-    public static Flipper mirroredAcrossYAxis() {
-      return new Flipper(Symmetry.MIRRORED, NEGATE, IDENTITY, Symmetry.MIRRORED::flipHeading);
-    }
+
+    /** The Flipper that rotates half a rotation around the origin */
+    public static final Flipper rotatedOrigin =
+        new Flipper(Symmetry.ROTATE_AROUND, NEGATE, NEGATE, Symmetry.ROTATE_AROUND::flipHeading);
   }
-  /** In MIRRORED symmetry, if the original robot translates DoubleUnaryOperatorin robot-relative +y (left),
-   *  the mirrored robot translates robot-relative -y */
+
+  /**
+   * In MIRRORED symmetry, if the original robot translates DoubleUnaryOperatorin robot-relative +y
+   * (left), the mirrored robot translates robot-relative -y
+   */
   public static enum Symmetry {
     /**
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
@@ -118,6 +172,7 @@ public class ChoreoAllianceFlipUtil {
   private ChoreoAllianceFlipUtil() {}
 
   private static Flipper activeFlipper = Flipper.DEFAULT;
+
   /**
    * Get the flipper that is currently active for flipping coordinates. It's recommended not to
    * store this locally as the flipper may change.
@@ -127,8 +182,12 @@ public class ChoreoAllianceFlipUtil {
   public static Flipper getFlipper() {
     return activeFlipper;
   }
+
   /**
-   * Set the flipper used throughout the library. Recommended to set this as early as possible in robot code startup.
+   * Set the flipper used throughout the library. Recommended to set this as early as possible in
+   * robot code startup.
+   *
+   * @param flipper the flipper.
    */
   public static void setFlipper(Flipper flipper) {
     activeFlipper = flipper;
