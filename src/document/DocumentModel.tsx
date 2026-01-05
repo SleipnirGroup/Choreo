@@ -227,12 +227,13 @@ export const DocumentStore = types
       pathStore.markers.forEach((m) => {
         m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
-      //pathStore.ui.setGenerating(true);
       const handle = pathStore.handle;
       let unlisten: UnlistenFn = () => {};
       pathStore.ui.setIterationNumber(0);
       await listen(`solver-status-${handle}`, async (rawEvent) => {
         const event: Event<ProgressUpdate> = rawEvent as Event<ProgressUpdate>;
+        // Currently, generation can't be cancelled until the child is spawned,
+        // so we wait for feedback before marking the path as generating.
         pathStore.ui.setGenerating(true);
         if (
           event.payload!.type === "swerveTrajectory" ||

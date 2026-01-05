@@ -272,6 +272,7 @@ pub fn open_diagnostic_file(
         Err(ChoreoError::FileNotFound(None).into())
     }
 }
+
 #[tauri::command]
 pub fn get_worker_count() -> TauriResult<NonZero<usize>> {
     // if this unwrap panics, 4 is equal to 0 and we have bigger problems.
