@@ -1,7 +1,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
-use std::fs;
 use std::path::PathBuf;
+use std::{fs, num::NonZero};
 
 use crate::tauri::TauriResult;
 use choreo_core::{
@@ -271,4 +271,10 @@ pub fn open_diagnostic_file(
     } else {
         Err(ChoreoError::FileNotFound(None).into())
     }
+}
+
+#[tauri::command]
+pub fn get_worker_count() -> TauriResult<NonZero<usize>> {
+    // if this unwrap panics, 4 is equal to 0 and we have bigger problems.
+    std::thread::available_parallelism().or(Ok(NonZero::new(4).unwrap()))
 }
