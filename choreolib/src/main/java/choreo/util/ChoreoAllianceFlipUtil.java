@@ -2,9 +2,6 @@
 
 package choreo.util;
 
-import static choreo.util.FieldDimensions.FIELD_LENGTH;
-import static choreo.util.FieldDimensions.FIELD_WIDTH;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,70 +10,100 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import java.util.HashMap;
 import java.util.Optional;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Supplier;
 
 /**
- * A utility to standardize flipping of coordinate data based on the current alliance across
- * different years.
- *
- * <p>If every vendor used this, the user would be able to specify the year and no matter the year
- * the vendor's code is from, the user would be able to flip as expected.
- *
- * <p>This API still allows vendors and users to match case against the flipping variant as a way to
- * specially handle cases or throw errors if a variant is explicitly not supported.
+ * A utility to flip coordinates to the other alliance. Includes the ability to set custom flipping logic for fields other than the current FRC game.
  */
 public class ChoreoAllianceFlipUtil {
-  /** The flipper to use for flipping coordinates. */
-  public static enum Flipper {
+  public static class Flipper {
+    public final Symmetry symmetry;
+    private final DoubleUnaryOperator flipX;
+    public double flipX(double x) {
+      return flipX.applyAsDouble(x);
+    }
+    private final DoubleUnaryOperator flipY;
+    public double flipY(double y) {
+      return flipY.applyAsDouble(y);
+    }
+    private final DoubleUnaryOperator flipHeading;
+    public double flipHeading(double heading) {
+      return flipHeading.applyAsDouble(heading);
+    }
+    public Flipper(Symmetry symmetry, DoubleUnaryOperator flipX, DoubleUnaryOperator flipY, DoubleUnaryOperator flipHeading) {
+      this.symmetry = symmetry;
+      this.flipX = flipX;
+      this.flipY = flipY;
+      this.flipHeading = flipHeading;
+    }
+    private static DoubleUnaryOperator IDENTITY = (arg)->arg;
+    private static DoubleUnaryOperator NEGATE = (arg)->-arg;
+    private static final double FT_54 = 16.4592;
+    private static final double FT_27 = 16.4592/2;
+    public static final Flipper ROTATED_2018 = Flipper.rotatedCenter(FT_54, FT_27); // 54 x 27 ft
+    public static final Flipper ROTATED_2019 = Flipper.rotatedCenter(FT_54, FT_27);
+    public static final Flipper ROTATED_2020 = Flipper.rotatedCenter(15.98295, 8.21055);
+    public static final Flipper ROTATED_2022 = Flipper.rotatedCenter(FT_54, FT_27);
+    public static final Flipper MIRRORED_2023 = Flipper.mirroredCenter(16.542);
+    public static final Flipper MIRRORED_2024 = Flipper.mirroredCenter(16.542);
+    public static final Flipper ROTATED_2025 = Flipper.rotatedCenter(17.548, 8.052);
+
+    // TODO change
+    // If we keep a name that is before M and R lexicographically, it shows up first in VSCode autocomplete for "Flipper."
+    public static final Flipper DEFAULT = ROTATED_2025;
+    /**
+     * Mirror across the X=fieldLength/2 line.
+     * @param fieldLength
+     * @param fieldWidth
+     * @return
+     */
+    public static Flipper mirroredCenter(double fieldLength) {
+      return new Flipper(Symmetry.MIRRORED, x->fieldLength-x, IDENTITY, Symmetry.MIRRORED::flipHeading);
+    }
+    /**
+     * Rotate half a rotation about (fieldLength/2, fieldWidth/2)
+     * @param fieldLength
+     * @param fieldWidth
+     * @return
+     */
+    public static Flipper rotatedCenter(double fieldLength, double fieldWidth) {
+      return new Flipper(Symmetry.ROTATE_AROUND, x->fieldLength-x, y->fieldWidth-y, Symmetry.ROTATE_AROUND::flipHeading);
+    }
+    /**
+     * Rotate half a rotation about the origin
+     * @return
+     */
+    public static Flipper rotatedOrigin() {
+      return new Flipper(Symmetry.ROTATE_AROUND, NEGATE, NEGATE, Symmetry.ROTATE_AROUND::flipHeading);
+    }
+    /**
+     * Mirror across the Y-axis (X=0) line.
+     * @return
+     */
+    public static Flipper mirroredAcrossYAxis() {
+      return new Flipper(Symmetry.MIRRORED, NEGATE, IDENTITY, Symmetry.MIRRORED::flipHeading);
+    }
+  }
+  /** In MIRRORED symmetry, if the original robot translates DoubleUnaryOperatorin robot-relative +y (left),
+   *  the mirrored robot translates robot-relative -y */
+  public static enum Symmetry {
     /**
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
      */
     MIRRORED {
-      public double flipX(double x) {
-        return activeYear.fieldLength - x;
-      }
-
-      public double flipY(double y) {
-        return y;
-      }
-
       public double flipHeading(double heading) {
         return Math.PI - heading;
       }
     },
     /** X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes PI - heading. */
     ROTATE_AROUND {
-      public double flipX(double x) {
-        return activeYear.fieldLength - x;
-      }
-
-      public double flipY(double y) {
-        return activeYear.fieldWidth - y;
-      }
-
       public double flipHeading(double heading) {
         return Math.PI + heading;
       }
     };
-
-    /**
-     * Flips the X coordinate.
-     *
-     * @param x The X coordinate to flip.
-     * @return The flipped X coordinate.
-     */
-    public abstract double flipX(double x);
-
-    /**
-     * Flips the Y coordinate.
-     *
-     * @param y The Y coordinate to flip.
-     * @return The flipped Y coordinate.
-     */
-    public abstract double flipY(double y);
 
     /**
      * Flips the heading.
@@ -87,26 +114,10 @@ public class ChoreoAllianceFlipUtil {
     public abstract double flipHeading(double heading);
   }
 
-  private static record YearInfo(Flipper flipper, double fieldLength, double fieldWidth) {}
-
-  // TODO: Update and expand this map
-  private static final HashMap<Integer, YearInfo> flipperMap =
-      new HashMap<Integer, YearInfo>() {
-        {
-          put(2020, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2021, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
-        }
-      };
-
-  private static YearInfo activeYear = flipperMap.get(2025);
-
   /** Default constructor. */
   private ChoreoAllianceFlipUtil() {}
 
+  private static Flipper activeFlipper = Flipper.DEFAULT;
   /**
    * Get the flipper that is currently active for flipping coordinates. It's recommended not to
    * store this locally as the flipper may change.
@@ -114,7 +125,13 @@ public class ChoreoAllianceFlipUtil {
    * @return The active flipper.
    */
   public static Flipper getFlipper() {
-    return activeYear.flipper;
+    return activeFlipper;
+  }
+  /**
+   * Set the flipper used throughout the library. Recommended to set this as early as possible in robot code startup.
+   */
+  public static void setFlipper(Flipper flipper) {
+    activeFlipper = flipper;
   }
 
   /**
@@ -127,25 +144,13 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Set the year to determine the Alliance Coordinate Flipper to use.
-   *
-   * @param year The year to set the flipper to. [2020 - 2024]
-   */
-  public static void setYear(int year) {
-    if (!flipperMap.containsKey(year)) {
-      throw new IllegalArgumentException("Year " + year + " is not supported.");
-    }
-    activeYear = flipperMap.get(year);
-  }
-
-  /**
    * Flips the X coordinate.
    *
    * @param x The X coordinate to flip.
    * @return The flipped X coordinate.
    */
   public static double flipX(double x) {
-    return activeYear.flipper.flipX(x);
+    return getFlipper().flipX(x);
   }
 
   /**
@@ -155,7 +160,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped Y coordinate.
    */
   public static double flipY(double y) {
-    return activeYear.flipper.flipY(y);
+    return getFlipper().flipY(y);
   }
 
   /**
@@ -165,7 +170,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped heading.
    */
   public static double flipHeading(double heading) {
-    return activeYear.flipper.flipHeading(heading);
+    return getFlipper().flipHeading(heading);
   }
 
   /**
@@ -185,7 +190,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped rotation.
    */
   public static Rotation2d flip(Rotation2d rotation) {
-    return switch (activeYear.flipper) {
+    return switch (getFlipper().symmetry) {
       case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
       case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
     };

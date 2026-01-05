@@ -199,13 +199,14 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
   @Override
   public SwerveSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
+    var flipper = ChoreoAllianceFlipUtil.getFlipper();
+    return switch (flipper.symmetry) {
       case MIRRORED ->
           new SwerveSample(
               this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              flipper.flipX(this.x),
+              flipper.flipY(this.y),
+              flipper.flipHeading(this.heading),
               -this.vx,
               this.vy,
               -this.omega,
@@ -233,9 +234,9 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
       case ROTATE_AROUND ->
           new SwerveSample(
               this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              flipper.flipX(this.x),
+              flipper.flipY(this.y),
+              flipper.flipHeading(this.heading),
               -this.vx,
               -this.vy,
               this.omega,
@@ -330,19 +331,19 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     var other = (SwerveSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vx == other.vx
-        && this.vy == other.vy
-        && this.omega == other.omega
-        && this.ax == other.ax
-        && this.ay == other.ay
-        && this.alpha == other.alpha
+    return Math.abs(this.t - other.t) < 1E-9
+        && Math.abs(this.x - other.x) < 1E-9
+        && Math.abs(this.y - other.y) < 1E-9
+        && Math.abs(this.heading - other.heading) < 1E-9
+        && Math.abs(this.vx - other.vx) < 1E-9
+        && Math.abs(this.vy - other.vy) < 1E-9
+        && Math.abs(this.omega - other.omega) < 1E-9
+        && Math.abs(this.ax - other.ax) < 1E-9
+        && Math.abs(this.ay - other.ay) < 1E-9
+        && Math.abs(this.alpha - other.alpha) < 1E-9
         && ChoreoArrayUtil.zipEquals(
-            this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
+            this.fx, other.fx, (a, b) -> Math.abs(a-b) < 1E-9)
         && ChoreoArrayUtil.zipEquals(
-            this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
+            this.fy, other.fy, (a, b) -> Math.abs(a-b) < 1E-9);
   }
 }

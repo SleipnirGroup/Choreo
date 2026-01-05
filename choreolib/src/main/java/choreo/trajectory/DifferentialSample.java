@@ -171,7 +171,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
+    return switch (ChoreoAllianceFlipUtil.getFlipper().symmetry) {
       case MIRRORED ->
           new DifferentialSample(
               t,
@@ -287,17 +287,19 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     }
 
     var other = (DifferentialSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vl == other.vl
-        && this.vr == other.vr
-        && this.omega == other.omega
-        && this.al == other.al
-        && this.ar == other.ar
-        && this.alpha == other.alpha
-        && this.fl == other.fl
-        && this.fr == other.fr;
+    return
+           Math.abs(this.t - other.t) < 1E-9
+        && Math.abs(this.x - other.x) < 1E-9
+        && Math.abs(this.y - other.y) < 1E-9
+        && Math.abs(this.heading - other.heading) < 1E-9
+        && Math.abs(this.vl - other.vl) < 1E-9
+        && Math.abs(this.vr - other.vr) < 1E-9
+        && Math.abs(this.omega - other.omega) < 1E-9
+        && Math.abs(this.al - other.al) < 1E-9
+        && Math.abs(this.ar - other.ar) < 1E-9
+        && Math.abs(this.alpha - other.alpha) < 1E-9
+        && Math.abs(this.fl - other.fl) < 1E-9
+        && Math.abs(this.fr - other.fr) < 1E-9
+      ;
   }
 }

@@ -5,12 +5,14 @@ package choreo.trajectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import choreo.util.ChoreoAllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
+
 import org.junit.jupiter.api.Test;
 
 public class SampleFlippingTest {
-  private static final double FIELD_LENGTH_2022 = 16.5811;
-  private static final double FIELD_LENGTH_2024 = 16.5811;
-  private static final double FIELD_WIDTH_2022 = 8.19912;
+  private static final double FIELD_LENGTH_2022 = 16.4592;
+  private static final double FIELD_LENGTH_2024 = 16.542;
+  private static final double FIELD_WIDTH_2022 = 16.4592/2;
 
   @Test
   void testZeroSwerveSample() {
@@ -45,9 +47,9 @@ public class SampleFlippingTest {
             0,
             new double[] {-0.0, -0.0, -0.0, -0.0},
             new double[] {-0.0, -0.0, -0.0, -0.0});
-    ChoreoAllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.MIRRORED_2024);
     assertEquals(sample.flipped(), mirrored2024);
-    ChoreoAllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.ROTATED_2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 
@@ -95,9 +97,9 @@ public class SampleFlippingTest {
             9.0,
             new double[] {-10.0, -11.0, -12.0, -13.0},
             new double[] {-14.0, -15.0, -16.0, -17.0});
-    ChoreoAllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.MIRRORED_2024);
     assertEquals(sample.flipped(), mirrored2024);
-    ChoreoAllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.ROTATED_2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 
@@ -121,9 +123,9 @@ public class SampleFlippingTest {
             0.0,
             0.0,
             0.0);
-    ChoreoAllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.MIRRORED_2024);
     assertEquals(sample.flipped(), mirrored2024);
-    ChoreoAllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.ROTATED_2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 
@@ -159,9 +161,9 @@ public class SampleFlippingTest {
             9.0,
             10.0,
             11.0);
-    ChoreoAllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.MIRRORED_2024);
     assertEquals(sample.flipped(), mirrored2024);
-    ChoreoAllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.ROTATED_2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 }
