@@ -226,19 +226,20 @@ export const ExpressionStore = types
   }))
   .actions((self) => ({
     findReplaceVariable(find: string, replace: string) {
-
       let didReplace = false;
 
-      const transformedExpr = self.expr.transform(function (node, _path, _parent) {
-        if (isSymbolNode(node) && node.name === find) {
-          const clone = (node as SymbolNode).clone();
-          clone.name = replace;
-          didReplace = true;
-          return clone;
-        } else {
-          return node;
+      const transformedExpr = self.expr.transform(
+        function (node, _path, _parent) {
+          if (isSymbolNode(node) && node.name === find) {
+            const clone = (node as SymbolNode).clone();
+            clone.name = replace;
+            didReplace = true;
+            return clone;
+          } else {
+            return node;
+          }
         }
-      });
+      );
       if (didReplace) {
         self.expr = transformedExpr;
       }
