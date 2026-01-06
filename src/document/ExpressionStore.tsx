@@ -226,7 +226,7 @@ export const ExpressionStore = types
   }))
   .actions((self) => ({
     findReplaceVariable(find: string, replace: string) {
-      
+
       let didReplace = false;
 
       const transformedExpr = self.expr.transform(function (node, _path, _parent) {
