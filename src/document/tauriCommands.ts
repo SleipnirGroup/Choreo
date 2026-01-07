@@ -8,6 +8,11 @@ export const Commands = {
     invoke<number[]>("guess_control_interval_counts", { config, trajectory }),
 
   /**
+   * @returns The estimate of available parallelism from Rust's std::thread
+   */
+  getWorkerCount: () => invoke<number>("get_worker_count"),
+
+  /**
    * Generates a `Trajectory` using the specified `Project` and `Trajectory`.
    *
    * @param project The `Project` to use for generation.
