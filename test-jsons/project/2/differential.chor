@@ -1,6 +1,6 @@
 {
  "name":"differential",
- "version":"v2025.0.0",
+ "version":2,
  "type":"Differential",
  "variables":{
   "expressions":{
@@ -58,6 +58,10 @@
    "exp":"6 kg m ^ 2",
    "val":6.0
   },
+  "cof":{
+   "exp":"1.5",
+   "val":1.5
+  },
   "gearing":{
    "exp":"6.5",
    "val":6.5
@@ -95,8 +99,9 @@
  },
  "generationFeatures":[],
  "codegen":{
-  "root":"..\\..\\java\\frc\\robot\\constants",
-  "genVars":false,
-  "genTrajNames":false
+  "root":".",
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
  }
 }
