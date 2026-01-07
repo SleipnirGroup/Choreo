@@ -1,6 +1,6 @@
 {
  "name":"swerve",
- "version":"v2025.0.0",
+ "version":2,
  "type":"Swerve",
  "variables":{
   "expressions":{
@@ -70,6 +70,10 @@
    "exp":"6000 RPM",
    "val":628.3185307179587
   },
+  "cof":{
+   "exp":"1.5",
+   "val":1.5
+  },
   "tmax":{
    "exp":"1.2 N * m",
    "val":1.2
@@ -95,8 +99,9 @@
  },
  "generationFeatures":[],
  "codegen":{
-  "root":"..\\..\\java\\frc\\robot\\constants",
-  "genVars":false,
-  "genTrajNames":false
+  "root":".",
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
  }
 }

@@ -165,13 +165,35 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
-    async generateAll() {
-      const uuidsToGenerate: string[] = [];
-      self.pathlist.paths.forEach((pathStore) => {
-        uuidsToGenerate.push(pathStore.uuid);
-      });
-      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    async generateMultiple(uuidsToGenerate: string[]) {
+      const errors: unknown[] = [];
+      const makeWorker = async () => {
+        while (uuidsToGenerate.length > 0) {
+          const uuid = uuidsToGenerate.shift();
+          if (uuid === undefined) return;
+          try {
+            await this.generatePath(uuid);
+          } catch (e) {
+            errors.push(e);
+          }
+        }
+      };
+      const numWorkers = await Commands.getWorkerCount();
+      const workers = Array.from({ length: numWorkers }, makeWorker);
+      await Promise.allSettled(workers);
+      console.error("Collected errors: ", errors);
       await genJavaFiles();
+    },
+    async generateAll() {
+      // make sure the currently active path is generated first
+      const uuidsToGenerate: string[] = [self.pathlist.activePathUUID];
+
+      self.pathlist.paths.forEach((pathStore) => {
+        if (pathStore.uuid !== self.pathlist.activePathUUID) {
+          uuidsToGenerate.push(pathStore.uuid);
+        }
+      });
+      await this.generateMultiple(uuidsToGenerate);
     },
     async generateAllOutdated() {
       const uuidsToGenerate: string[] = [];
@@ -180,8 +202,7 @@ export const DocumentStore = types
           uuidsToGenerate.push(pathStore.uuid);
         }
       });
-      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
-      await genJavaFiles();
+      await this.generateMultiple(uuidsToGenerate);
     },
 
     async generatePath(uuid: string) {
@@ -206,12 +227,14 @@ export const DocumentStore = types
       pathStore.markers.forEach((m) => {
         m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
-      pathStore.ui.setGenerating(true);
       const handle = pathStore.handle;
       let unlisten: UnlistenFn = () => {};
       pathStore.ui.setIterationNumber(0);
       await listen(`solver-status-${handle}`, async (rawEvent) => {
         const event: Event<ProgressUpdate> = rawEvent as Event<ProgressUpdate>;
+        // Currently, generation can't be cancelled until the child is spawned,
+        // so we wait for feedback before marking the path as generating.
+        pathStore.ui.setGenerating(true);
         if (
           event.payload!.type === "swerveTrajectory" ||
           event.payload!.type === "differentialTrajectory"

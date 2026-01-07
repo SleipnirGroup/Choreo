@@ -112,3 +112,4 @@ nav:
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md
       - Sample Flipping Logic: contributing/sample-flipping.md
+      - Generation Invariants: contributing/generation-invariants.md

@@ -1,7 +1,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use std::path::PathBuf;
-use std::{fs, path::Path};
+use std::{fs, path::Path, num::NonZero};
 
 use crate::tauri::{TauriChoreoError, TauriResult};
 use base64::Engine as _;
@@ -323,6 +323,11 @@ pub async fn trajectory_up_to_date(trajectory: TrajectoryFile) -> bool {
 }
 
 #[tauri::command]
+pub async fn config_matches(config_1: RobotConfig<f64>, config_2: RobotConfig<f64>) -> bool {
+    config_1 == config_2
+}
+
+#[tauri::command]
 pub async fn set_deploy_root(app_handle: tauri::AppHandle, dir: String) {
     let resources = app_handle.state::<WritingResources>();
     file_management::set_deploy_path(&resources, PathBuf::from(dir)).await;
@@ -385,4 +390,10 @@ pub fn open_diagnostic_file(
     } else {
         Err(ChoreoError::FileNotFound(None).into())
     }
+}
+
+#[tauri::command]
+pub fn get_worker_count() -> TauriResult<NonZero<usize>> {
+    // if this unwrap panics, 4 is equal to 0 and we have bigger problems.
+    std::thread::available_parallelism().or(Ok(NonZero::new(4).unwrap()))
 }
