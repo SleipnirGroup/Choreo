@@ -133,12 +133,14 @@ export const Commands = {
 
   /**
    * Returns if the `Trajectory` robot config snapshot is are equivalent.
+   * 
    * @param trajectory The `Trajectory` to check
    * @returns true if the parameters and snapshots are equivalent, false if not.
    */
   configMatches: (config1: RobotConfig<number>, config2: RobotConfig<number>) =>
     invoke<boolean>("config_matches", { config1, config2 }),
-  /**
+
+/**
    * If the application was opened via CLI and a file was specified, this will return the path of that file.
    *
    * @returns The path of the file that was opened via CLI, or `null` if no file was specified.
