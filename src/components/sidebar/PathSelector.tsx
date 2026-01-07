@@ -309,22 +309,21 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     );
   }
 }
-
+const Option = observer(PathSelectorOption);
 class PathSelector extends Component<Props, State> {
   state = {};
 
-  Option = observer(PathSelectorOption);
   render() {
     const activePath = doc.pathlist.activePathUUID;
     return (
       <div>
         <div className={styles.WaypointList}>
           {Array.from(doc.pathlist.paths.keys()).map((uuid) => (
-            <this.Option
+            <Option
               uuid={uuid}
               key={uuid}
               selected={uuid === activePath}
-            ></this.Option>
+            ></Option>
           ))}
         </div>
       </div>

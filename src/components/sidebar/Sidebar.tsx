@@ -19,6 +19,7 @@ import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
+import { Group, Panel, Separator } from "react-resizable-panels";
 
 type Props = object;
 
@@ -33,7 +34,7 @@ class Sidebar extends Component<Props, State> {
   render() {
     const { toggleMainMenu } = uiState;
     return (
-      <div className={styles.Container}>
+      <Group orientation="vertical" className={styles.Container}>
         <div
           style={{
             flexShrink: 0,
@@ -156,16 +157,24 @@ class Sidebar extends Component<Props, State> {
           </Tooltip>
         </div>
         <Divider></Divider>
+        <Panel maxSize={300} minSize={50} defaultSize={300}>
         <div
           className={styles.Sidebar}
-          style={{ maxHeight: "300px", minHeight: "50px" }}
+          style={{height:"100%" }}
         >
           <PathSelector></PathSelector>
         </div>
-        <Divider></Divider>
-        <div className={styles.SidebarHeading}>FEATURES</div>
+        
+        </Panel>
+        <Separator>
+          <Divider></Divider>
+          <div className={styles.SidebarHeading}>FEATURES</div>
         <Divider flexItem></Divider>
-        <div className={styles.Sidebar}>
+        </Separator>
+        
+        <Panel>
+
+        <div className={styles.Sidebar} style={{height:"100%"}}>
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
             <span>WAYPOINTS</span>
           </Divider>
@@ -218,7 +227,8 @@ class Sidebar extends Component<Props, State> {
           )}
           <Divider></Divider>
         </div>
-      </div>
+        </Panel>
+      </Group>
     );
   }
 }

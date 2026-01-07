@@ -46,6 +46,7 @@
     "mst-middlewares": "^6.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-resizable-panels": "^4.2.2",
     "react-toastify": "^11.0.5"
   },
   "devDependencies": {

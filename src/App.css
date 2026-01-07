@@ -6,7 +6,7 @@
   --background-dark-gray: #212326;
   --background-light-gray: #2f3136;
   --top-nav-height: 64px;
-  --sidebar-width: 300px;
+  --sidebar-width: 100%;
   --divider-gray: rgba(255, 255, 255, 0.12);
   user-select: none;
   -webkit-user-select: none;

@@ -226,6 +226,7 @@ export const HolonomicPathStore = types
           return self.serialize;
         },
         (ser) => {
+          console.log(ser);
           Commands.trajectoryUpToDate(ser).then((upToDate) =>
             self.ui.setUpToDate(upToDate)
           );

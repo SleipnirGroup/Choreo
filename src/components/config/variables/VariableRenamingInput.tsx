@@ -7,12 +7,14 @@ import {
   isNameIssueWarning,
   NameIssue
 } from "../../../document/path/NameIsIdentifier";
+import AutoSizingInput from "../../input/AutoSizingInput";
 
 type Props = {
   name: string;
   setName: (name: string) => void;
   validateName: (name: string) => NameIssue | undefined;
   width?: string;
+  autoWidth?: boolean;
 };
 function VariableRenamingInput(props: Props) {
   // default usage is that the props.name already exists as a variable
@@ -42,6 +44,9 @@ function VariableRenamingInput(props: Props) {
       title={renameError?.uiMessage ?? ""}
     >
       <Input
+        inputProps={{
+          "size":newName.length
+        }}
         type="standard"
         className={styles.Number + " " + styles.Mui}
         placeholder="Name"

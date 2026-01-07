@@ -1,7 +1,7 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
-import React, { Component } from "react";
+import React, { Component} from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
 import { IReactionDisposer, reaction } from "mobx";
@@ -21,6 +21,7 @@ export type ExpressionInputProps = {
   titleTooltip?: string;
   /** Maximum width of the number input, in monospace characters */
   maxWidthCharacters?: number;
+  autoWidth?:boolean;
 };
 
 type State = {
@@ -106,11 +107,19 @@ class Input extends Component<ExpressionInputProps, State> {
     if (!isAlive(this.number)) {
       return <></>;
     }
+    console.log(this.number.expr.toString(), this.props);
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
-    let characters = this.getExprStr().length + 3;
-    if (this.props.maxWidthCharacters !== undefined) {
-      characters = Math.min(characters, this.props.maxWidthCharacters);
+    let characters = 0;
+    if (this.props.autoWidth ?? false) {
+      characters = 5;
+    } else {
+      characters = this.getExprStr().length + 3;
+      if (this.props.maxWidthCharacters !== undefined) {
+        characters = Math.min(characters, this.props.maxWidthCharacters);
+      }
     }
+    
+
     return (
       <>
         {this.props.title instanceof Function ? (
@@ -131,6 +140,7 @@ class Input extends Component<ExpressionInputProps, State> {
           </Tooltip>
         )}
         <input
+          size={this.state.editedValue.length}
           key={this.state.resetCounter}
           ref={this.inputElemRef}
           type="text"
@@ -141,7 +151,9 @@ class Input extends Component<ExpressionInputProps, State> {
           }
           style={{
             minWidth: `${characters}ch`,
-            gridColumn: "span 1"
+            //maxWidth: `${this.props.maxWidthCharacters}ch`,
+            gridColumn: "span 1",
+            textAlign: "left"
           }}
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
@@ -180,6 +192,6 @@ class Input extends Component<ExpressionInputProps, State> {
 const ObservedInput = observer(Input);
 // Recreate the input element entirely when the store changes.
 function ExpressionInput(props: ExpressionInputProps) {
-  return <ObservedInput {...props} key={props.number.uuid}></ObservedInput>;
+  return <ObservedInput {...props} autoWidth={props.autoWidth ?? false} key={props.number.uuid}></ObservedInput>;
 }
 export default ExpressionInput;

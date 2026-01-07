@@ -4,7 +4,7 @@ import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
-import { getDebugName, IReactionDisposer, reaction } from "mobx";
+import { getDebugName, IReactionDisposer, reaction, untracked } from "mobx";
 import {
   applySnapshot,
   castToSnapshot,
@@ -727,7 +727,7 @@ export async function generateWithToastsAndExport(uuid: string) {
       }
     }
   });
-  await genJavaFiles();
+  await untracked(genJavaFiles());
 }
 
 function getSelectedWaypoint() {
@@ -850,7 +850,7 @@ export async function saveProject() {
     try {
       const tasks = [
         Commands.writeProject(doc.serializeChor()),
-        genJavaFiles()
+        untracked(genJavaFiles)
       ];
       await toast.promise(Promise.all(tasks), {
         error: {
