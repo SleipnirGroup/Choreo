@@ -156,7 +156,7 @@ pub async fn read_trajectory(
 }
 
 #[tauri::command]
-pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<TrajectoryFile> {
+pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> TauriResult<Vec<TrajectoryFile>> {
     let resources = app_handle.state::<WritingResources>();
     let trajectories = file_management::find_all_trajectories(&resources).await;
     let mut out = vec![];
@@ -165,10 +165,16 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<Trajectory
             file_management::read_trajectory_file(&resources, trajectory_name).await;
         match trajectory_res {
             Ok(trajectory) => out.push(trajectory),
-            Err(e) => tracing::error!("{e}"),
+            Err(e) => {
+                tracing::error!("{e}");
+                // Early terminate if any are too new, and return no trajectories.
+                if let ChoreoError::SchemaTooNew(_, _, _) = e {
+                    debug_result!(Err(e));
+                }
+            }
         }
     }
-    out
+    Ok(out)
 }
 
 #[tauri::command]
