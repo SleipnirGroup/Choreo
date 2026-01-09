@@ -143,10 +143,12 @@ public class AutoChooser implements Sendable {
    *
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
+   * @return This {@link AutoChooser} instance, to allow for method chaining.
    */
-  public void addRoutine(String name, Supplier<AutoRoutine> generator) {
+  public AutoChooser addRoutine(String name, Supplier<AutoRoutine> generator) {
     autoRoutines.put(name, () -> generator.get().cmd());
     options = autoRoutines.keySet().toArray(new String[0]);
+    return this;
   }
 
   /**
@@ -173,11 +175,13 @@ public class AutoChooser implements Sendable {
    *
    * @param name The name of the autonomous command.
    * @param generator The function that generates an autonomous command.
+   * @return This {@link AutoChooser} instance, to allow for method chaining.
    * @see AutoChooser#addRoutine
    */
-  public void addCmd(String name, Supplier<Command> generator) {
+  public AutoChooser addCmd(String name, Supplier<Command> generator) {
     autoRoutines.put(name, generator);
     options = autoRoutines.keySet().toArray(new String[0]);
+    return this;
   }
 
   /**
