@@ -158,5 +158,18 @@ export const Commands = {
   /**
    * Sets the directory path to push generated Java files to.
    */
-  selectCodegenFolder: () => invoke<string>("select_codegen_folder")
+  selectCodegenFolder: () => invoke<string>("select_codegen_folder"),
+
+  genVarsFile: (
+    trajectories: Trajectory[],
+    packageName: string,
+    isUsingChoreoLib: boolean
+  ) => invoke<string>("gen_traj_data_file", {
+    trajectories,
+    packageName,
+    isUsingChoreoLib
+  }),
+
+  genTrajDataFile(project: Project, packageName: string) =>
+    invoke<string>
 };

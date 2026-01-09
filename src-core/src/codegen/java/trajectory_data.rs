@@ -1,5 +1,6 @@
 use crate::spec::trajectory::{Sample, TrajectoryFile};
 const TRAJ_DATA_FILENAME: &str = "ChoreoTraj";
+
 #[derive(Clone)]
 struct Pose2d {
     x: f64,
@@ -23,6 +24,7 @@ impl Pose2d {
         )
     }
 }
+
 #[derive(Clone)]
 struct TrajEntry {
     var_name: String,
@@ -157,8 +159,7 @@ pub fn generate_traj_data_file(
         .collect::<Vec<String>>()
         .join(",\n\t");
     format!(
-        r#"
-package {package_name};
+        r#"package {package_name};
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -180,7 +181,6 @@ public record {TRAJ_DATA_FILENAME}(
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {{
-
     {traj_list}
 
     /**

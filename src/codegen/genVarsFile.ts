@@ -7,7 +7,6 @@ export const VARS_FILENAME = "ChoreoVars";
 
 // Generates a Java file containing variables defined in the Choreo GUI.
 export async function genVarsFile(project: Project, packageName: string): Promise<string> {
-  return invoke("gen_vars_file", {project, packageName});
   const content: string[] = [];
   content.push(`package ${packageName};`);
   content.push(`

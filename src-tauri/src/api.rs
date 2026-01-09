@@ -256,15 +256,18 @@ pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
 
 #[tauri::command]
 pub fn gen_traj_data_file(
+    file_path: String,
     trajectories: Vec<TrajectoryFile>,
     package_name: String,
     is_using_choreo_lib: bool,
-) -> TauriResult<String> {
-    debug_result!(ChoreoResult::Ok(generate_traj_data_file(
+) -> ChoreoResult<()> {
+    let content = generate_traj_data_file(
         trajectories,
         package_name,
         is_using_choreo_lib
-    )));
+    );
+    fs::write(file_path, content.as_bytes())?;
+    Ok(())
 }
 
 #[tauri::command]

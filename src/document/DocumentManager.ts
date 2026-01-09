@@ -64,11 +64,9 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
-import { genVarsFile, VARS_FILENAME } from "../codegen/genVarsFile";
-import {
-  genTrajDataFile,
-  TRAJ_DATA_FILENAME
-} from "../codegen/genTrajDataFile";
+
+const TRAJ_DATA_FILENAME = "ChoreoTraj";
+const VARS_FILENAME = "ChoreoVars";
 
 export type OpenFilePayload = {
   name: string;

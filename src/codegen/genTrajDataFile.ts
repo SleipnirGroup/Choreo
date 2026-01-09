@@ -2,7 +2,9 @@ import { invoke } from "@tauri-apps/api/core";
 import {
   Trajectory
 } from "../document/schema/DocumentTypes";
+
 export const TRAJ_DATA_FILENAME = "ChoreoTraj";
+
 export async function genTrajDataFile(
   trajectories: Trajectory[],
   packageName: string,
