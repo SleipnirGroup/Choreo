@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { isExpr } from "../../document/2025/DocumentTypes";
+import { isExpr } from "../../document/schema/DocumentTypes";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import BooleanInput from "../input/BooleanInput";

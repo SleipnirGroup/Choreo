@@ -16,12 +16,12 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
           private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
@@ -34,12 +34,12 @@ jobs:
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.6.2
+      - run: pnpm install prettier@3.7.4
       - name: Update version
         run: |
           ./update_version.py ${{ github.event.inputs.tag }}

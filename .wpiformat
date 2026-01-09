@@ -1,0 +1,3 @@
+cppHeaderFileInclude {
+  \.h$
+}

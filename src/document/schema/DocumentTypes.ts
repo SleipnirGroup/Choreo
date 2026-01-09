@@ -58,12 +58,20 @@ export interface RobotConfig<T extends ExprOrNumber> {
   differentialTrackWidth: T;
 }
 
+export interface CodeGenConfig {
+  root: string | null;
+  genVars: boolean;
+  genTrajData: boolean;
+  useChoreoLib: boolean;
+}
+
 export interface Project {
   name: string;
   type: SampleType;
   version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
+  codegen: CodeGenConfig;
 }
 
 export interface Waypoint<T extends ExprOrNumber> {
@@ -113,13 +121,18 @@ export interface DifferentialSample {
   omega: number;
   al: number;
   ar: number;
+  alpha: number;
   fl: number;
   fr: number;
 }
 
 export interface ProgressUpdate {
-  type: "swerveTrajectory" | "differentialTrajectory";
-  update: SwerveSample[] | DifferentialSample[] | string;
+  type:
+    | "swerveTrajectory"
+    | "differentialTrajectory"
+    | "diagnosticText"
+    | "intervalCounts";
+  update: SwerveSample[] | DifferentialSample[] | string | number[];
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {
@@ -130,6 +143,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 
 export type SampleType = "Swerve" | "Differential";
 export interface Output {
+  config: RobotConfig<number> | null;
   sampleType: SampleType | undefined;
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];

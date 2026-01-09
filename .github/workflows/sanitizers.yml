@@ -1,4 +1,4 @@
-name: TrajoptLib / Sanitizers
+name: Sanitizers
 
 on: [pull_request, push]
 
@@ -24,21 +24,18 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
-
-      - name: Install LLVM 19
+      - name: Install LLVM 21
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 19 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 200
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 200
+          sudo ./llvm.sh 21 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 200
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 200
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV

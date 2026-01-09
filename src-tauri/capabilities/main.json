@@ -10,6 +10,7 @@
     "core:event:allow-unlisten",
     "core:path:allow-basename",
     "core:path:allow-dirname",
+    "core:path:allow-join",
     "core:webview:allow-internal-toggle-devtools",
     "core:window:allow-close",
     "core:window:allow-destroy",
@@ -17,7 +18,6 @@
     "dialog:allow-ask",
     "dialog:allow-confirm",
     "dialog:allow-open",
-    "dialog:allow-save",
-    "os:allow-os-type"
+    "dialog:allow-save"
   ]
 }

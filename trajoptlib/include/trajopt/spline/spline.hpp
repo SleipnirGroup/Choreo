@@ -12,12 +12,10 @@
 
 namespace trajopt {
 
-/**
- * Represents a two-dimensional parametric spline that interpolates between two
- * points.
- *
- * @tparam Degree The degree of the spline.
- */
+/// Represents a two-dimensional parametric spline that interpolates between two
+/// points.
+///
+/// @tparam Degree The degree of the spline.
 template <int Degree>
 class Spline {
  public:
@@ -26,13 +24,11 @@ class Spline {
 
   virtual ~Spline() = default;
 
-  /**
-   * Represents a control vector for a spline.
-   *
-   * Each element in each array represents the value of the derivative at the
-   * index. For example, the value of x[2] is the second derivative in the x
-   * dimension.
-   */
+  /// Represents a control vector for a spline.
+  ///
+  /// Each element in each array represents the value of the derivative at the
+  /// index. For example, the value of x[2] is the second derivative in the x
+  /// dimension.
   struct ControlVector {
     /// The x components of the control vector.
     std::array<double, (Degree + 1) / 2> x;
@@ -41,12 +37,10 @@ class Spline {
     std::array<double, (Degree + 1) / 2> y;
   };
 
-  /**
-   * Gets the pose and curvature at some point t on the spline.
-   *
-   * @param t The point t
-   * @return The pose and curvature at that point.
-   */
+  /// Gets the pose and curvature at some point t on the spline.
+  ///
+  /// @param t The point t
+  /// @return The pose and curvature at that point.
   std::optional<PoseWithCurvature> get_point(double t) const {
     Eigen::Vector<double, Degree + 1> polynomial_bases;
 
@@ -91,25 +85,19 @@ class Spline {
         curvature};
   }
 
-  /**
-   * Returns the coefficients of the spline.
-   *
-   * @return The coefficients of the spline.
-   */
+  /// Returns the coefficients of the spline.
+  ///
+  /// @return The coefficients of the spline.
   virtual const Eigen::Matrix<double, 6, Degree + 1>& coefficients() const = 0;
 
-  /**
-   * Returns the initial control vector that created this spline.
-   *
-   * @return The initial control vector that created this spline.
-   */
+  /// Returns the initial control vector that created this spline.
+  ///
+  /// @return The initial control vector that created this spline.
   virtual const ControlVector& get_initial_control_vector() const = 0;
 
-  /**
-   * Returns the final control vector that created this spline.
-   *
-   * @return The final control vector that created this spline.
-   */
+  /// Returns the final control vector that created this spline.
+  ///
+  /// @return The final control vector that created this spline.
   virtual const ControlVector& get_final_control_vector() const = 0;
 };
 

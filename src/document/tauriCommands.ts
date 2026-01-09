@@ -1,11 +1,16 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Expr, Project, RobotConfig, Trajectory } from "./2025/DocumentTypes";
+import { Expr, Project, RobotConfig, Trajectory } from "./schema/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
 export type ChoreoError = { type: string; content: string };
 export type ChoreoResult<T> = T | ChoreoError;
 export const Commands = {
   guessIntervals: (config: RobotConfig<Expr>, trajectory: Trajectory) =>
     invoke<number[]>("guess_control_interval_counts", { config, trajectory }),
+
+  /**
+   * @returns The estimate of available parallelism from Rust's std::thread
+   */
+  getWorkerCount: () => invoke<number>("get_worker_count"),
 
   /**
    * Generates a `Trajectory` using the specified `Project` and `Trajectory`.
@@ -130,6 +135,16 @@ export const Commands = {
    */
   trajectoryUpToDate: (trajectory: Trajectory) =>
     invoke<boolean>("trajectory_up_to_date", { trajectory }),
+
+  /**
+   * Returns if the `Trajectory` robot config snapshot is are equivalent.
+   *
+   * @param trajectory The `Trajectory` to check
+   * @returns true if the parameters and snapshots are equivalent, false if not.
+   */
+  configMatches: (config1: RobotConfig<number>, config2: RobotConfig<number>) =>
+    invoke<boolean>("config_matches", { config1, config2 }),
+
   /**
    * If the application was opened via CLI and a file was specified, this will return the path of that file.
    *
@@ -141,5 +156,22 @@ export const Commands = {
    * Opens the platforms file explorer to the directory holding a newly generated diagnostic zip file.
    */
   openDiagnosticZip: (project: Project, trajectories: Trajectory[]) =>
-    invoke<void>("open_diagnostic_file", { project, trajectories })
+    invoke<void>("open_diagnostic_file", { project, trajectories }),
+
+  /**
+   * Writes Java file content to a specified path.
+   */
+  writeJavaFile: (content: string, filePath: string) =>
+    invoke<void>("write_java_file", { content, filePath }),
+
+  /**
+   * Deletes Java file content from a specified path.
+   */
+  deleteJavaFile: (filePath: string) =>
+    invoke<void>("delete_java_file", { filePath }),
+
+  /**
+   * Sets the directory path to push generated Java files to.
+   */
+  selectCodegenFolder: () => invoke<string>("select_codegen_folder")
 };

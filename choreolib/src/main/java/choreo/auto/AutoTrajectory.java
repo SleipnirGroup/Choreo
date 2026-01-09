@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import static choreo.util.ChoreoAlert.allianceNotReady;
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.Choreo.TrajectoryLogger;
@@ -17,7 +18,6 @@ import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -56,8 +56,6 @@ public class AutoTrajectory {
   private static final MultiAlert noInitialPose =
       ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
-  private static final Alert allianceNotReady =
-      ChoreoAlert.alert("Alliance used but not ready", kError);
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
@@ -424,20 +422,6 @@ public class AutoTrajectory {
    */
   public Trigger doneDelayed(double seconds) {
     return timeTrigger(seconds, inactiveTimer).and(new Trigger(routine.loop(), () -> isCompleted));
-  }
-
-  /**
-   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
-   * after one pulse.
-   *
-   * @param cycles The number of cycles to delay the trigger from rising to true.
-   * @return A trigger that is true when the trajectory is finished.
-   * @see #doneDelayed(int)
-   * @deprecated Use {@link #doneDelayed(int)} instead.
-   */
-  @Deprecated(forRemoval = true, since = "2025")
-  public Trigger done(int cycles) {
-    return doneDelayed(0.02 * cycles);
   }
 
   /**

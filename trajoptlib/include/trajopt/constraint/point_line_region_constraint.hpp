@@ -15,9 +15,7 @@
 
 namespace trajopt {
 
-/**
- * The side of the line to stay on.
- */
+/// The side of the line to stay on.
 enum class Side : uint8_t {
   /// Stay above the line.
   ABOVE,
@@ -27,22 +25,18 @@ enum class Side : uint8_t {
   ON,
 };
 
-/**
- * Point-line region constraint.
- *
- * Specifies that a point on the robot must be on one side of a line defined by
- * two points on the field
- */
+/// Point-line region constraint.
+///
+/// Specifies that a point on the robot must be on one side of a line defined by
+/// two points on the field
 class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
  public:
-  /**
-   * Constructs a PointLineRegionConstraint.
-   *
-   * @param robot_point Robot point.
-   * @param field_line_start Field line start.
-   * @param field_line_end Field line end.
-   * @param side The side to constrain the robot to.
-   */
+  /// Constructs a PointLineRegionConstraint.
+  ///
+  /// @param robot_point Robot point.
+  /// @param field_line_start Field line start.
+  /// @param field_line_end Field line end.
+  /// @param side The side to constrain the robot to.
   explicit PointLineRegionConstraint(Translation2d robot_point,
                                      Translation2d field_line_start,
                                      Translation2d field_line_end, Side side)
@@ -51,21 +45,20 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
         m_field_line_end{std::move(field_line_end)},
         m_side{side} {}
 
-  /**
-   * Applies this constraint to the given problem.
-   *
-   * @param problem The optimization problem.
-   * @param pose The robot's pose.
-   * @param linear_velocity The robot's linear velocity.
-   * @param angular_velocity The robot's angular velocity.
-   * @param linear_acceleration The robot's linear acceleration.
-   * @param angular_acceleration The robot's angular acceleration.
-   */
-  void apply(slp::Problem& problem, const Pose2v& pose,
-             [[maybe_unused]] const Translation2v& linear_velocity,
-             [[maybe_unused]] const slp::Variable& angular_velocity,
-             [[maybe_unused]] const Translation2v& linear_acceleration,
-             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+  /// Applies this constraint to the given problem.
+  ///
+  /// @param problem The optimization problem.
+  /// @param pose The robot's pose.
+  /// @param linear_velocity The robot's linear velocity.
+  /// @param angular_velocity The robot's angular velocity.
+  /// @param linear_acceleration The robot's linear acceleration.
+  /// @param angular_acceleration The robot's angular acceleration.
+  void apply(
+      slp::Problem<double>& problem, const Pose2v<double>& pose,
+      [[maybe_unused]] const Translation2v<double>& linear_velocity,
+      [[maybe_unused]] const slp::Variable<double>& angular_velocity,
+      [[maybe_unused]] const Translation2v<double>& linear_acceleration,
+      [[maybe_unused]] const slp::Variable<double>& angular_acceleration) {
     auto point = pose.translation() + m_robot_point.rotate_by(pose.rotation());
 
     // Determine which side of the start-end field line a point is on.

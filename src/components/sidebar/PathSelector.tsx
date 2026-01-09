@@ -18,15 +18,16 @@ import ExpressionInputList from "../input/ExpressionInputList";
 import GenerateInProgress from "../../assets/GenerateInProgress";
 import { SavingState } from "../../document/UIStateStore";
 import SaveInProgress from "../../assets/SaveInProgress";
+import { NameIssue } from "../../document/path/NameIsIdentifier";
 
 type Props = object;
 
 type State = object;
 
-type OptionProps = { uuid: string };
+type OptionProps = { uuid: string; selected: boolean };
 type OptionState = {
   renaming: boolean;
-  renameError: boolean;
+  renameError: NameIssue | undefined;
   name: string;
   settingsOpen: boolean;
 };
@@ -114,13 +115,16 @@ class PathSelectorIcon extends Component<
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   state = {
     renaming: false,
-    renameError: false,
+    renameError: doc.pathlist.validateName(
+      this.getPath().name,
+      this.props.uuid
+    ),
     name: this.getPath().name,
     settingsOpen: false
   };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
-    return this.props.uuid == doc.pathlist.activePathUUID;
+    return this.props.selected;
   }
   getPath() {
     return doc.pathlist.paths.get(this.props.uuid)!;
@@ -130,45 +134,42 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.nameInputRef.current!.value = this.getPath().name;
   }
   completeRename() {
-    if (!this.checkName()) {
+    if (
+      doc.pathlist.validateName(
+        this.nameInputRef.current!.value,
+        this.props.uuid
+      ) === undefined
+    ) {
       const newName = this.nameInputRef.current!.value;
       if (newName !== this.getPath().name) {
         renamePath(this.props.uuid, newName);
       }
+      this.setState({
+        renaming: false,
+        renameError: doc.pathlist.validateName(newName, this.props.uuid),
+        name: newName
+      });
+    } else {
+      this.escapeRename();
     }
-    this.escapeRename();
   }
   escapeRename() {
     this.setState({
       renaming: false,
-      renameError: false,
+      renameError: doc.pathlist.validateName(
+        this.getPath().name,
+        this.props.uuid
+      ),
       name: this.getPath().name
     });
   }
-  checkName(): boolean {
-    const inputName = this.nameInputRef.current!.value;
-    const error =
-      inputName.length == 0 ||
-      inputName.includes("/") ||
-      inputName.includes("\\") ||
-      inputName.includes(".") ||
-      this.searchForName(this.nameInputRef.current!.value);
+  checkName(inputName: string): NameIssue | undefined {
+    const error = doc.pathlist.validateName(inputName, this.props.uuid);
     this.setState({ renameError: error, name: inputName });
     return error;
   }
-  searchForName(name: string): boolean {
-    const didFind =
-      Array.from(doc.pathlist.paths.keys())
-        .filter((uuid) => uuid !== this.props.uuid)
-        .map((uuid) => doc.pathlist.paths.get(uuid)!.name)
-        .find((existingName) => existingName === name) !== undefined;
-    return didFind;
-  }
   render() {
-    // this is here to use the data we care about during actual rendering
-    // so mobx knows to rerender this component when it changes
-    this.searchForName("");
-    const selected = this.props.uuid == doc.pathlist.activePathUUID;
+    const selected = this.props.selected;
     const name = this.getPath().name;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
@@ -192,63 +193,71 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           onGenerate={() => doc.generatePath(this.props.uuid)}
           generating={this.getPath().ui.generating}
         ></PathSelectorIcon>
-        <TextField
-          className={styles.SidebarLabel}
-          variant={this.state.renaming ? "outlined" : "standard"}
-          inputRef={this.nameInputRef}
-          error={this.state.renameError}
-          style={{
-            display: "block",
-            maxWidth: "100%",
-            flexGrow: "1",
-            verticalAlign: "middle",
-            userSelect: "none",
-            height: "24px"
-          }}
-          spellCheck={false}
-          onChange={() => this.checkName()}
-          value={this.state.name}
-          onKeyDown={(event) => {
-            if (event.key == "Enter") {
-              this.nameInputRef.current!.blur();
-            }
-            if (event.key == "Escape") {
-              this.escapeRename();
-            }
-          }}
-          inputProps={{
-            readOnly: !this.state.renaming,
-            style: { userSelect: "none" }
-          }}
-          InputProps={{ disableUnderline: false }}
-          onFocus={(e) => {
-            e.preventDefault();
-          }}
-          onDoubleClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.startRename();
-            this.nameInputRef.current!.focus();
-          }}
-          onBlur={() => this.completeRename()}
-          onDoubleClickCapture={(e) => {
-            e.stopPropagation();
-            this.startRename();
-            setTimeout(() => this.nameInputRef.current!.select(), 0.001);
-          }}
-          sx={{
-            marginLeft: "-4px",
-            ".MuiInputBase-root": {
-              "&:before": {
-                borderBottom: "2px solid transparent"
-              },
-              width: "100%",
-              height: "1.5em",
+        <Tooltip
+          placement="right"
+          arrow={true}
+          disableInteractive
+          title={this.state.renameError?.uiMessage ?? ""}
+        >
+          <TextField
+            className={styles.SidebarLabel}
+            variant={"outlined"} //"outlined" : "standard"}
+            inputRef={this.nameInputRef}
+            error={this.state.renameError !== undefined}
+            style={{
+              display: "block",
+              maxWidth: "100%",
+              flexGrow: "1",
+              verticalAlign: "middle",
               userSelect: "none",
-              padding: "4px"
-            }
-          }}
-        ></TextField>
+              height: "24px"
+            }}
+            spellCheck={false}
+            onChange={() => this.checkName(this.nameInputRef.current!.value)}
+            value={this.state.name}
+            onKeyDown={(event) => {
+              if (event.key == "Enter") {
+                this.nameInputRef.current!.blur();
+              }
+              if (event.key == "Escape") {
+                this.escapeRename();
+              }
+            }}
+            inputProps={{
+              readOnly: !this.state.renaming,
+              style: { userSelect: "none", padding: 0 }
+            }}
+            InputProps={{ disableUnderline: false }}
+            onFocus={(e) => {
+              e.preventDefault();
+            }}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.startRename();
+              this.nameInputRef.current!.focus();
+            }}
+            onBlur={() => this.completeRename()}
+            onDoubleClickCapture={(e) => {
+              e.stopPropagation();
+              this.startRename();
+              setTimeout(() => this.nameInputRef.current!.select(), 0.001);
+            }}
+            sx={{
+              marginLeft: "-4px",
+              ".MuiInputBase-root": {
+                "&:before": {
+                  borderBottom: "2px solid transparent"
+                },
+                width: "100%",
+                height: "1.5em",
+                userSelect: "none",
+                padding: "4px"
+              },
+              fieldset: { borderColor: "transparent" }
+            }}
+          ></TextField>
+        </Tooltip>
         <div>
           <Tooltip disableInteractive title="Path Config">
             <IconButton
@@ -306,11 +315,16 @@ class PathSelector extends Component<Props, State> {
 
   Option = observer(PathSelectorOption);
   render() {
+    const activePath = doc.pathlist.activePathUUID;
     return (
       <div>
         <div className={styles.WaypointList}>
           {Array.from(doc.pathlist.paths.keys()).map((uuid) => (
-            <this.Option uuid={uuid} key={uuid}></this.Option>
+            <this.Option
+              uuid={uuid}
+              key={uuid}
+              selected={uuid === activePath}
+            ></this.Option>
           ))}
         </div>
       </div>

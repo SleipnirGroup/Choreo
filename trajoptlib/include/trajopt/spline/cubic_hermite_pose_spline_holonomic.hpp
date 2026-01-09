@@ -14,29 +14,25 @@
 
 namespace trajopt {
 
-/**
- * Represents a cubic pose spline, which is a specific implementation of a cubic
- * hermite spline.
- */
+/// Represents a cubic pose spline, which is a specific implementation of a
+/// cubic hermite spline.
 class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
  public:
   /// Pose2d with curvature.
   using PoseWithCurvature = std::pair<Pose2d, double>;
 
-  /**
-   * Constructs a cubic pose spline.
-   *
-   * @param x_initial_control_vector The control vector for the initial point in
-   *     the x dimension.
-   * @param x_final_control_vector The control vector for the final point in
-   *     the x dimension.
-   * @param y_initial_control_vector The control vector for the initial point in
-   *     the y dimension.
-   * @param y_final_control_vector The control vector for the final point in
-   *     the y dimension.
-   * @param r0 Initial heading.
-   * @param r1 Final heading.
-   */
+  /// Constructs a cubic pose spline.
+  ///
+  /// @param x_initial_control_vector The control vector for the initial point
+  ///     in the x dimension.
+  /// @param x_final_control_vector The control vector for the final point in
+  ///     the x dimension.
+  /// @param y_initial_control_vector The control vector for the initial point
+  ///     in the y dimension.
+  /// @param y_final_control_vector The control vector for the final point in
+  ///     the y dimension.
+  /// @param r0 Initial heading.
+  /// @param r1 Final heading.
   CubicHermitePoseSplineHolonomic(
       std::array<double, 2> x_initial_control_vector,
       std::array<double, 2> x_final_control_vector,
@@ -48,43 +44,35 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
         r0(r0),
         theta(0.0, (-r0).rotate_by(r1).radians(), 0, 0) {}
 
-  /**
-   * Return course at point t.
-   *
-   * @param t The point t
-   * @return The course at point t.
-   */
+  /// Return course at point t.
+  ///
+  /// @param t The point t
+  /// @return The course at point t.
   Rotation2d GetCourse(double t) const {
     const PoseWithCurvature spline_point =
         CubicHermiteSpline::get_point(t).value();
     return spline_point.first.rotation();
   }
 
-  /**
-   * Return heading at point t.
-   *
-   * @param t The point t
-   * @return The heading at point t.
-   */
+  /// Return heading at point t.
+  ///
+  /// @param t The point t
+  /// @return The heading at point t.
   Rotation2d get_heading(double t) const {
     return r0.rotate_by(Rotation2d{theta.get_position(t)});
   }
 
-  /**
-   * Return heading rate at point t.
-   *
-   * @param t The point t
-   * @return The heading rate at point t.
-   */
+  /// Return heading rate at point t.
+  ///
+  /// @param t The point t
+  /// @return The heading rate at point t.
   double get_heading_rate(double t) const { return theta.get_velocity(t); }
 
-  /**
-   * Gets the pose and curvature at some point t on the spline.
-   *
-   * @param t The point t
-   * @param is_differential Whether the drivetrain is a differential drive.
-   * @return The pose and curvature at that point.
-   */
+  /// Gets the pose and curvature at some point t on the spline.
+  ///
+  /// @param t The point t
+  /// @param is_differential Whether the drivetrain is a differential drive.
+  /// @return The pose and curvature at that point.
   std::optional<PoseWithCurvature> get_point(double t,
                                              bool is_differential) const {
     if (is_differential) {

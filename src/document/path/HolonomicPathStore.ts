@@ -15,7 +15,7 @@ import {
   WaypointUUID,
   type ChoreoPath,
   type Trajectory
-} from "../2025/DocumentTypes";
+} from "../schema/DocumentTypes";
 import { Env, uiState } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 import {
@@ -38,6 +38,7 @@ export function waypointIDToText(
   if (id == "last") return "End";
   return findUUIDIndex(id.uuid, points) + 1;
 }
+
 export const DEFAULT_EVENT_MARKER: EventMarker = {
   name: "Marker",
   from: {
@@ -65,6 +66,11 @@ export const HolonomicPathStore = types
   })
   .views((self) => {
     return {
+      get handle(): number {
+        return self.uuid
+          .split("")
+          .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
+      },
       canGenerate(): boolean {
         return self.params.waypoints.length >= 2 && !self.ui.generating;
       },
@@ -148,6 +154,14 @@ export const HolonomicPathStore = types
         }
 
         return self.params.waypoints[self.params.waypoints.length - 1];
+      },
+      checkUpToDate() {
+        return Promise.all([
+          Commands.trajectoryUpToDate(self.serialize),
+          self.trajectory.isConfigUpToDate()
+        ]).then(([trajectoryUpToDate, configUpToDate]) =>
+          self.ui.setUpToDate(trajectoryUpToDate && configUpToDate)
+        );
       }
     };
   })
@@ -163,9 +177,13 @@ export const HolonomicPathStore = types
             m.from.setTargetTimestamp(ser.trajectory.waypoints[index]);
           }
         });
+        ser.params.waypoints.forEach((w, i) =>
+          self.params.waypoints[i].setIntervals(w.intervals)
+        );
         self.setSnapshot(ser.snapshot);
         self.ui.setUpToDate(true);
       },
+
       deserialize(ser: Trajectory) {
         self.name = ser.name;
         self.snapshot = ser.snapshot;
@@ -175,14 +193,13 @@ export const HolonomicPathStore = types
         ser.events.forEach((m) => {
           self.addEventMarker(m);
         });
-        Commands.trajectoryUpToDate(self.serialize).then((upToDate) =>
-          self.ui.setUpToDate(upToDate)
-        );
+        self.checkUpToDate(); // spawned, non awaited promise
       }
     };
   })
   .actions((self) => {
     let autosaveDisposer: IReactionDisposer;
+    let robotConfigListenerDisposer: IReactionDisposer;
     let exporter: Env["exporter"] = (uuid) => getEnv(self)?.exporter(uuid);
     let debounceId: NodeJS.Timeout | undefined = undefined;
     const afterCreate = () => {
@@ -217,11 +234,18 @@ export const HolonomicPathStore = types
           return self.serialize;
         },
         (ser) => {
-          Commands.trajectoryUpToDate(ser).then((upToDate) =>
-            self.ui.setUpToDate(upToDate)
-          );
+          self.checkUpToDate();
           clearTimeout(debounceId);
           debounceId = setTimeout(performSave, 50);
+        }
+      );
+      let checkUpToDateDebounceId: NodeJS.Timeout | undefined = undefined;
+      robotConfigListenerDisposer = reaction(
+        () => self.trajectory.currentConfigSnapshot,
+        () => {
+          self.checkUpToDate();
+          clearTimeout(checkUpToDateDebounceId);
+          checkUpToDateDebounceId = setTimeout(() => self.checkUpToDate(), 50);
         }
       );
     };
@@ -231,6 +255,7 @@ export const HolonomicPathStore = types
     };
     const beforeDestroy = () => {
       autosaveDisposer();
+      robotConfigListenerDisposer();
       clearTimeout(debounceId);
     };
     return {
@@ -241,8 +266,9 @@ export const HolonomicPathStore = types
   });
 // TS complains of circular dependencies if we directly alias this
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface IHolonomicPathStore
-  extends Instance<typeof HolonomicPathStore> {}
+export interface IHolonomicPathStore extends Instance<
+  typeof HolonomicPathStore
+> {}
 export function getPathStore(self: IAnyStateTreeNode): IHolonomicPathStore {
   const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore);
   return path;

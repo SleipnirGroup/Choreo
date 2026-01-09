@@ -1,17 +1,18 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use std::path::PathBuf;
+use std::{fs, num::NonZero};
 
 use crate::tauri::TauriResult;
 use choreo_core::{
-    file_management::{self, create_diagnostic_file, get_log_lines, WritingResources},
+    ChoreoError, ChoreoResult,
+    file_management::{self, WritingResources, create_diagnostic_file, get_log_lines},
     generation::remote::RemoteGenerationResources,
     spec::{
+        Expr, OpenFilePayload,
         project::{ProjectFile, RobotConfig},
         trajectory::TrajectoryFile,
-        Expr, OpenFilePayload,
     },
-    ChoreoError, ChoreoResult,
 };
 use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt, FilePath};
@@ -56,6 +57,21 @@ pub async fn open_in_explorer(path: String) -> TauriResult<()> {
 }
 
 #[tauri::command]
+pub async fn select_codegen_folder(app_handle: tauri::AppHandle) -> TauriResult<String> {
+    Ok(app_handle
+        .dialog()
+        .file()
+        .set_title("Select a folder to output generated Java files")
+        .blocking_pick_folder()
+        .ok_or(ChoreoError::FileNotFound(None))?
+        .as_path()
+        .ok_or(ChoreoError::FileNotFound(None))?
+        .to_str()
+        .ok_or(ChoreoError::FileNotFound(None))?
+        .to_string())
+}
+
+#[tauri::command]
 pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<OpenFilePayload> {
     app_handle
         .dialog()
@@ -87,6 +103,33 @@ pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<Op
 }
 
 #[tauri::command]
+pub fn write_java_file(content: String, file_path: String) -> ChoreoResult<()> {
+    if !file_path.contains(".java") {
+        return Err(ChoreoError::Io(
+            "Attempted to write a non-Java file".to_string(),
+        ));
+    }
+    fs::write(file_path, content.as_bytes())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
+    if !file_path.contains(".java") {
+        return Err(ChoreoError::Io(
+            "Attempted to delete a non-Java file".to_string(),
+        ));
+    }
+    if let Ok(t) = fs::exists(file_path.clone())
+        && !t
+    {
+        return Ok(());
+    }
+    fs::remove_file(file_path)?;
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn default_project() -> TauriResult<ProjectFile> {
     Ok(ProjectFile::default())
 }
@@ -113,7 +156,7 @@ pub async fn read_trajectory(
 }
 
 #[tauri::command]
-pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<TrajectoryFile> {
+pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> TauriResult<Vec<TrajectoryFile>> {
     let resources = app_handle.state::<WritingResources>();
     let trajectories = file_management::find_all_trajectories(&resources).await;
     let mut out = vec![];
@@ -122,10 +165,16 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<Trajectory
             file_management::read_trajectory_file(&resources, trajectory_name).await;
         match trajectory_res {
             Ok(trajectory) => out.push(trajectory),
-            Err(e) => tracing::error!("{e}"),
+            Err(e) => {
+                tracing::error!("{e}");
+                // Early terminate if any are too new, and return no trajectories.
+                if let ChoreoError::SchemaTooNew(_, _, _) = e {
+                    debug_result!(Err(e));
+                }
+            }
         }
     }
-    out
+    Ok(out)
 }
 
 #[tauri::command]
@@ -163,6 +212,11 @@ pub async fn delete_trajectory(
 #[tauri::command]
 pub async fn trajectory_up_to_date(trajectory: TrajectoryFile) -> bool {
     trajectory.up_to_date()
+}
+
+#[tauri::command]
+pub async fn config_matches(config_1: RobotConfig<f64>, config_2: RobotConfig<f64>) -> bool {
+    config_1 == config_2
 }
 
 #[tauri::command]
@@ -228,4 +282,10 @@ pub fn open_diagnostic_file(
     } else {
         Err(ChoreoError::FileNotFound(None).into())
     }
+}
+
+#[tauri::command]
+pub fn get_worker_count() -> TauriResult<NonZero<usize>> {
+    // if this unwrap panics, 4 is equal to 0 and we have bigger problems.
+    std::thread::available_parallelism().or(Ok(NonZero::new(4).unwrap()))
 }

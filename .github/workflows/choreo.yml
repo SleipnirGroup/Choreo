@@ -1,4 +1,4 @@
-name: Choreo / Build
+name: Choreo
 
 on: [pull_request, push]
 
@@ -15,19 +15,19 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows-x86_64
-            os: windows-2022
+            os: windows-2025
             tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: Windows-aarch64
-            os: windows-2022
+            os: windows-2025
             tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: macOS-x86_64
-            os: macOS-14
+            os: macos-15
             tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: macOS-aarch64
-            os: macOS-14
+            os: macos-15
             tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: Linux-x86_64
@@ -38,11 +38,11 @@ jobs:
             os: ubuntu-24.04-arm
             tauri-build-flags: --target aarch64-unknown-linux-gnu -v -- --workspace --timings
 
-    name: "${{ matrix.artifact-name }}"
+    name: ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -56,9 +56,6 @@ jobs:
         run: |
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
-
-      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: runner.os == 'macOS'
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -86,9 +83,6 @@ jobs:
       - name: Set up macOS x86_64 Rust compiler
         if: matrix.artifact-name == 'macOS-x86_64'
         run: rustup target add x86_64-apple-darwin
-
-      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
-        if: runner.os == 'macOS'
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -145,14 +139,14 @@ jobs:
           zip -j ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/choreo target/aarch64-unknown-linux-gnu/release/choreo-cli
           zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact-name }}-cargo-timing.html
           path: target/cargo-timings/cargo-timing.html
 
       # Zipping manually works around upload-artifact stripping execute
       # permissions from files
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-name }}.zip
@@ -167,7 +161,7 @@ jobs:
 
     steps:
       - name: Download prebuilt binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: pkg
           pattern: "!*-cargo-timing.html"
@@ -213,9 +207,9 @@ jobs:
           unzip -o Linux-x86_64.zip
           rm Linux-x86_64.zip
           mv Linux-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Linux-x86_64-standalone.zip
-          mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
-          mv choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
-          mv choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
+          mv Choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
+          mv Choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
+          mv Choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
 
       - name: Rename Linux aarch64 artifacts
         working-directory: pkg/Linux-aarch64
@@ -223,9 +217,9 @@ jobs:
           unzip -o Linux-aarch64.zip
           rm Linux-aarch64.zip
           mv Linux-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Linux-aarch64-standalone.zip
-          mv choreo_*_aarch64.AppImage Choreo-${{ github.ref_name }}-Linux-aarch64.AppImage
-          mv choreo_*_arm64.deb Choreo-${{ github.ref_name }}-Linux-aarch64.deb
-          mv choreo-*.aarch64.rpm Choreo-${{ github.ref_name }}-Linux-aarch64.rpm
+          mv Choreo_*_aarch64.AppImage Choreo-${{ github.ref_name }}-Linux-aarch64.AppImage
+          mv Choreo_*_arm64.deb Choreo-${{ github.ref_name }}-Linux-aarch64.deb
+          mv Choreo-*.aarch64.rpm Choreo-${{ github.ref_name }}-Linux-aarch64.rpm
 
       - name: Display structure of renamed files
         run: ls -R

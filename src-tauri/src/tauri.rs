@@ -1,9 +1,9 @@
 use crate::built::BuildInfo;
 use crate::{api::*, logging};
+use choreo_core::ChoreoError;
 use choreo_core::file_management::WritingResources;
 use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
-use choreo_core::ChoreoError;
 use logging::now_str;
 use std::io::Write;
 use std::path::PathBuf;
@@ -183,7 +183,6 @@ pub fn run_tauri(project: Option<PathBuf>) {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_os::init())
         .setup(move |app| {
             app.app_handle().manage(writing_resources);
             app.app_handle().manage(remote_resources);
@@ -203,14 +202,18 @@ pub fn run_tauri(project: Option<PathBuf>) {
             guess_control_interval_counts,
             open_in_explorer,
             default_project,
+            write_java_file,
+            delete_java_file,
             read_project,
             write_project,
             write_trajectory,
             read_all_trajectory,
             open_project_dialog,
+            select_codegen_folder,
             read_trajectory,
             rename_trajectory,
             trajectory_up_to_date,
+            config_matches,
             set_deploy_root,
             get_deploy_root,
             requested_file,
@@ -221,7 +224,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             cancel_all_remote_generators,
             build_info,
             open_diagnostic_file,
-            error_message
+            error_message,
+            get_worker_count
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

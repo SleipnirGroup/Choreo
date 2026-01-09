@@ -23,10 +23,8 @@ public class PoseFlippingTest {
   AutoFactory factoryFlip;
   AutoFactory factoryNoFlip;
 
-  /**
-   * Test for a pose that flips when flipping is enabled and alliance is red, is unflipped whenever
-   * flipping is disabled, and is empty when flipping is enabled and alliance is empty
-   */
+  /// Test for a pose that flips when flipping is enabled and alliance is red, is unflipped whenever
+  /// flipping is disabled, and is empty when flipping is enabled and alliance is empty
   void testPoseProperlyFlipped(
       Pose2d unflipped, Pose2d flipped, Supplier<Optional<Pose2d>> poseToTest) {
     setAlliance(Optional.empty());

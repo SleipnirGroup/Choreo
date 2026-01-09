@@ -4,7 +4,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
-import { WaypointUUID } from "../../document/2025/DocumentTypes";
+import { WaypointUUID } from "../../document/schema/DocumentTypes";
 import { doc } from "../../document/DocumentManager";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import {

@@ -53,6 +53,7 @@ def load_differential_trajectory_string(
             float(sample["omega"]),
             float(sample["al"]),
             float(sample["ar"]),
+            float(sample["alpha"]),
             float(sample["fl"]),
             float(sample["fr"]),
         )

@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType};
+use super::{Expr, SnapshottableType, trajectory::DriveType, upgraders::upgrade_project_file};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -35,7 +35,7 @@ pub struct Variables {
     pub expressions: BTreeMap<String, Variable>,
     pub poses: BTreeMap<String, PoseVariable>,
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct Bumper<T: SnapshottableType> {
     pub front: T,
     pub side: T,
@@ -51,7 +51,7 @@ impl<T: SnapshottableType> Bumper<T> {
         }
     }
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub struct Module<T: SnapshottableType> {
     pub x: T,
     pub y: T,
@@ -65,6 +65,7 @@ impl<T: SnapshottableType> Module<T> {
         }
     }
 }
+
 impl Module<f64> {
     #[must_use]
     pub fn translation(&self) -> Translation2d {
@@ -78,7 +79,7 @@ impl Module<f64> {
         self.x.hypot(self.y)
     }
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RobotConfig<T: SnapshottableType> {
     // front left
@@ -142,6 +143,15 @@ impl RobotConfig<f64> {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct CodeGenConfig {
+    pub root: Option<String>,
+    pub gen_vars: bool,
+    pub gen_traj_data: bool,
+    pub use_choreo_lib: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ProjectFile {
     pub name: String,
     pub version: u32,
@@ -151,6 +161,7 @@ pub struct ProjectFile {
     pub config: RobotConfig<Expr>,
     #[serde(default)]
     pub generation_features: Vec<String>,
+    pub codegen: CodeGenConfig,
 }
 
 impl ProjectFile {
@@ -200,6 +211,12 @@ impl Default for ProjectFile {
                 differential_track_width: Expr::new("22 in", 0.2794 * 2.0),
             },
             generation_features: Vec::new(),
+            codegen: CodeGenConfig {
+                root: None,
+                gen_vars: true,
+                gen_traj_data: true,
+                use_choreo_lib: true,
+            },
         }
     }
 }

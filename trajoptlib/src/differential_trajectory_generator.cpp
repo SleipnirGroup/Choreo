@@ -35,9 +35,9 @@ inline Translation2d wheel_to_chassis_speeds(double vl, double vr) {
   return Translation2d{(vl + vr) / 2, 0.0};
 }
 
-inline Translation2v wheel_to_chassis_speeds(slp::Variable vl,
-                                             slp::Variable vr) {
-  return Translation2v{(vl + vr) / 2, 0.0};
+inline Translation2v<double> wheel_to_chassis_speeds(slp::Variable<double> vl,
+                                                     slp::Variable<double> vr) {
+  return Translation2v<double>{(vl + vr) / 2, 0.0};
 }
 
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
@@ -58,9 +58,11 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   //   v = (vₗ + vᵣ) / 2
   //   ω = (vᵣ - vₗ) / (2r_b)
 
-  auto f = [this](const slp::VariableMatrix& x,
-                  const slp::VariableMatrix& u) -> slp::VariableMatrix {
-    slp::VariableMatrix xdot{5};
+  auto f =
+      [this](
+          const slp::VariableMatrix<double>& x,
+          const slp::VariableMatrix<double>& u) -> slp::VariableMatrix<double> {
+    slp::VariableMatrix<double> xdot{5};
 
     const auto& m = path.drivetrain.mass;
     double r_b = path.drivetrain.trackwidth / 2;
@@ -71,8 +73,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
         {1.0 / m - r_b * r_b / J, 1.0 / m + r_b * r_b / J}};
 
     auto v = (x[3] + x[4]) / 2.0;
-    xdot[0] = v * cos(x[2]);  // NOLINT
-    xdot[1] = v * sin(x[2]);  // NOLINT
+    xdot[0] = v * cos(x[2]);
+    xdot[1] = v * sin(x[2]);
     xdot[2] = (x[4] - x[3]) / path.drivetrain.trackwidth;
     xdot.segment(3, 2) = B * u;
 
@@ -82,7 +84,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   auto initial_guess = path_builder.calculate_spline_initial_guess();
 
   problem.add_callback(
-      [this, handle = handle](const slp::IterationInfo&) -> bool {
+      [this, handle = handle](const slp::IterationInfo<double>&) -> bool {
         constexpr int fps = 60;
         constexpr std::chrono::duration<double> time_per_frame{1.0 / fps};
 
@@ -135,19 +137,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     dts.emplace_back(problem.decision_variable());
   }
 
+  constexpr int num_wheels = 2;
+
   // Minimize total time
-  const double max_force =
-      path.drivetrain.wheel_max_torque * 2 / path.drivetrain.wheel_radius;
-  const auto max_accel = max_force / path.drivetrain.mass;
-  const double max_drivetrain_velocity =
+  const double chassis_max_force = path.drivetrain.wheel_max_torque *
+                                   num_wheels / path.drivetrain.wheel_radius;
+  const double chassis_max_a = chassis_max_force / path.drivetrain.mass;
+  const double chassis_max_v =
       path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
-  const auto max_ang_vel =
-      max_drivetrain_velocity * 2 / path.drivetrain.trackwidth;
-  const auto max_ang_accel = max_accel * 2 / path.drivetrain.trackwidth;
+  const double chassis_max_ω = chassis_max_v * (path.drivetrain.trackwidth / 2);
+  const double chassis_max_α = chassis_max_a * (path.drivetrain.trackwidth / 2);
   for (size_t sgmt_index = 0; sgmt_index < Ns.size(); ++sgmt_index) {
-    auto N_sgmt = Ns.at(sgmt_index);
-    const auto sgmt_start = get_index(Ns, sgmt_index);
-    const auto sgmt_end = get_index(Ns, sgmt_index + 1);
+    size_t N_sgmt = Ns.at(sgmt_index);
+    size_t sgmt_start = get_index(Ns, sgmt_index);
+    size_t sgmt_end = get_index(Ns, sgmt_index + 1);
 
     if (N_sgmt == 0) {
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
@@ -155,29 +158,24 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       }
     } else {
       // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-      const auto dx =
+      const double dx =
           initial_guess.x.at(sgmt_end) - initial_guess.x.at(sgmt_start);
-      const auto dy =
+      const double dy =
           initial_guess.y.at(sgmt_end) - initial_guess.y.at(sgmt_start);
-      const auto dist = std::hypot(dx, dy);
-      const auto θ_0 = initial_guess.heading.at(sgmt_start);
-      const auto θ_1 = initial_guess.heading.at(sgmt_end);
-      const auto dθ = std::abs(angle_modulus(θ_1 - θ_0));
+      const double dist = std::hypot(dx, dy);
+      const double θ_0 = initial_guess.heading.at(sgmt_start);
+      const double θ_1 = initial_guess.heading.at(sgmt_end);
+      const double dθ = std::abs(angle_modulus(θ_1 - θ_0));
 
-      auto max_linear_vel = max_drivetrain_velocity;
-
-      const auto angular_time =
-          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel);
-      max_linear_vel = std::min(max_linear_vel, dist / angular_time);
-
-      const auto linear_time =
-          calculate_trapezoidal_time(dist, max_linear_vel, max_accel);
+      const double angular_time =
+          calculate_trapezoidal_time(dθ, chassis_max_ω, chassis_max_α);
+      const double linear_time = calculate_trapezoidal_time(
+          dist, std::min(chassis_max_v, dist / angular_time), chassis_max_a);
       const double sgmt_time = angular_time + linear_time;
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
         auto& dt = dts.at(index);
-        problem.subject_to(dt >= 0);
-        problem.subject_to(dt <= 3);
+        problem.subject_to(slp::bounds(0, dt, 3));
         dt.set_value(sgmt_time / N_sgmt);
       }
     }
@@ -230,45 +228,44 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   // Apply wheel power constraints
   for (size_t index = 0; index < samp_tot; ++index) {
-    double max_wheel_velocity = path.drivetrain.wheel_radius *
-                                path.drivetrain.wheel_max_angular_velocity;
+    const double v_max = path.drivetrain.wheel_radius *
+                         path.drivetrain.wheel_max_angular_velocity;
 
     // −vₘₐₓ < vₗ < vₘₐₓ
-    problem.subject_to(-max_wheel_velocity < vl.at(index));
-    problem.subject_to(vl.at(index) < max_wheel_velocity);
-
     // −vₘₐₓ < vᵣ < vₘₐₓ
-    problem.subject_to(-max_wheel_velocity < vr.at(index));
-    problem.subject_to(vr.at(index) < max_wheel_velocity);
+    problem.subject_to(slp::bounds(-v_max, vl.at(index), v_max));
+    problem.subject_to(slp::bounds(-v_max, vr.at(index), v_max));
 
     // τ = r x F
     // F = τ/r
-    double max_wheel_force =
+    const double wheel_max_force =
         path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
 
     // friction = μmg
-    double max_friction_force =
-        path.drivetrain.wheel_cof * path.drivetrain.mass * 9.8;
+    const double normal_force_per_wheel =
+        path.drivetrain.mass * 9.8 / num_wheels;
+    const double wheel_max_friction_force =
+        path.drivetrain.wheel_cof * normal_force_per_wheel;
 
-    double max_force = std::min(max_wheel_force, max_friction_force);
+    const double F_max = std::min(wheel_max_force, wheel_max_friction_force);
 
     // −Fₘₐₓ < Fₗ < Fₘₐₓ
-    problem.subject_to(-max_force < Fl.at(index));
-    problem.subject_to(Fl.at(index) < max_force);
+    problem.subject_to(slp::bounds(-F_max, Fl.at(index), F_max));
 
     // −Fₘₐₓ < Fᵣ < Fₘₐₓ
-    problem.subject_to(-max_force < Fr.at(index));
-    problem.subject_to(Fr.at(index) < max_force);
+    problem.subject_to(slp::bounds(-F_max, Fr.at(index), F_max));
   }
 
   for (size_t wpt_index = 0; wpt_index < wpt_cnt; ++wpt_index) {
     // First index of next wpt - 1
     size_t index = get_index(Ns, wpt_index, 0);
 
-    Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-    Translation2v v_k = wheel_to_chassis_speeds(vl.at(index), vr.at(index));
+    Pose2v<double> pose_k{x.at(index), y.at(index), {θ.at(index)}};
+    Translation2v<double> v_k =
+        wheel_to_chassis_speeds(vl.at(index), vr.at(index));
     auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-    Translation2v a_k = wheel_to_chassis_speeds(al.at(index), ar.at(index));
+    Translation2v<double> a_k =
+        wheel_to_chassis_speeds(al.at(index), ar.at(index));
     auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
     for (auto& constraint : path.waypoints.at(wpt_index).waypoint_constraints) {
@@ -283,10 +280,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     size_t end_index = get_index(Ns, sgmt_index + 1, 0);
 
     for (size_t index = start_index; index < end_index; ++index) {
-      Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-      Translation2v v_k = wheel_to_chassis_speeds(vl.at(index), vr.at(index));
+      Pose2v<double> pose_k{x.at(index), y.at(index), {θ.at(index)}};
+      Translation2v<double> v_k =
+          wheel_to_chassis_speeds(vl.at(index), vr.at(index));
       auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-      Translation2v a_k = wheel_to_chassis_speeds(al.at(index), ar.at(index));
+      Translation2v<double> a_k =
+          wheel_to_chassis_speeds(al.at(index), ar.at(index));
       auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
       for (auto& constraint :
@@ -358,7 +357,7 @@ DifferentialSolution
 DifferentialTrajectoryGenerator::construct_differential_solution() {
   auto get_value = [](auto& var) { return var.value(); };
 
-  auto vector_value = [&](std::vector<slp::Variable>& row) {
+  auto vector_value = [&](std::vector<slp::Variable<double>>& row) {
     return row | std::views::transform(get_value) |
            std::ranges::to<std::vector>();
   };
@@ -366,6 +365,10 @@ DifferentialTrajectoryGenerator::construct_differential_solution() {
   std::vector<double> ω;
   for (size_t sample = 0; sample < vl.size(); ++sample) {
     ω.push_back((vr.at(sample).value() - vl.at(sample).value()) / trackwidth);
+  }
+  std::vector<double> α;
+  for (size_t sample = 0; sample < al.size(); ++sample) {
+    α.push_back((ar.at(sample).value() - al.at(sample).value()) / trackwidth);
   }
   return DifferentialSolution{
       vector_value(dts),
@@ -377,6 +380,7 @@ DifferentialTrajectoryGenerator::construct_differential_solution() {
       ω,
       vector_value(al),
       vector_value(ar),
+      α,
       vector_value(Fl),
       vector_value(Fr),
   };

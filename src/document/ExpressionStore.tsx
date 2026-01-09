@@ -34,9 +34,14 @@ import {
   Variables as DocVariables,
   Expr,
   isExpr
-} from "./2025/DocumentTypes";
+} from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { tracing } from "./tauriTracing";
+import {
+  addErrorMessages,
+  isValidIdentifier,
+  NameIssue
+} from "./path/NameIsIdentifier";
 
 export const math = create(all, { predictable: true });
 
@@ -83,6 +88,13 @@ export const Units = {
 // not sure why the alias above doesn't work
 math.createUnit("rpm", "1 RPM");
 
+export function isMathJSReserved(name: string): NameIssue | undefined {
+  //@ts-expect-error indexing `math`
+  if (math[name] !== undefined || math.Unit.isValuelessUnit(name)) {
+    return addErrorMessages({ kind: "IsMathJSDefined", name });
+  }
+  return undefined;
+}
 export const DimensionNames = [
   "Number",
   "Length",
@@ -214,15 +226,23 @@ export const ExpressionStore = types
   }))
   .actions((self) => ({
     findReplaceVariable(find: string, replace: string) {
-      self.expr = self.expr.transform(function (node, _path, _parent) {
-        if (isSymbolNode(node) && node.name === find) {
-          const clone = (node as SymbolNode).clone();
-          clone.name = replace;
-          return clone;
-        } else {
-          return node;
+      let didReplace = false;
+
+      const transformedExpr = self.expr.transform(
+        function (node, _path, _parent) {
+          if (isSymbolNode(node) && node.name === find) {
+            const clone = (node as SymbolNode).clone();
+            clone.name = replace;
+            didReplace = true;
+            return clone;
+          } else {
+            return node;
+          }
         }
-      });
+      );
+      if (didReplace) {
+        self.expr = transformedExpr;
+      }
     },
     deserialize(serial: Expr) {
       self.expr = math.parse(serial.exp);
@@ -640,6 +660,15 @@ export const Variables = types
     get sortedPoseNames(): Array<string> {
       return this.sortedPoses.map(([_varUUID, { name }]) => name);
     },
+    get maxNameLength(): number {
+      const poseNames = Array.from(self.poses.values()).map(
+        (v) => v.name.length
+      );
+      const expNames = Array.from(self.expressions.values()).map(
+        (v) => v.name.length
+      );
+      return Math.min(17, Math.max(...poseNames, ...expNames, 7));
+    },
     hasName(name: string) {
       return (
         Array.from(self.expressions).some(
@@ -711,21 +740,13 @@ export const Variables = types
       return result;
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
-    validateName(name: string, selfName: string): boolean {
+    validateName(name: string, selfName: string): NameIssue | undefined {
       const notAlreadyExists = name === selfName || !self.hasName(name);
-      return (
-        notAlreadyExists &&
-        name.length != 0 &&
-        math.parse.isAlpha(name[0], "", name[1]) &&
-        name
-          .split("")
-          .every(
-            (_c, i, arr) =>
-              math.parse.isAlpha(arr[i], arr[i - 1], arr[i + 1]) ||
-              math.parse.isDigit(arr[i])
-          ) &&
-        !["mod", "to", "in", "and", "xor", "or", "not", "end"].includes(name)
-      );
+      if (!notAlreadyExists) {
+        return addErrorMessages({ kind: "Exists", name });
+      }
+      const issue = isValidIdentifier(name) ?? isMathJSReserved(name);
+      return issue;
     }
   }))
   .actions((self) => ({

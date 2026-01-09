@@ -11,7 +11,7 @@ jobs:
     name: "Format"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -22,7 +22,7 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 21
@@ -50,18 +50,18 @@ jobs:
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.6.2
+      - run: pnpm install prettier@3.7.4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
 
-      - run: pip3 install wpiformat==2025.34
+      - run: pip3 install wpiformat==2025.79
 
       - run: pnpm run fmt
 
@@ -74,7 +74,7 @@ jobs:
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: wpiformat fixes
           path: wpiformat-fixes.patch
@@ -90,9 +90,9 @@ jobs:
 
   tsc:
     name: "TypeScript compiler"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -100,7 +100,7 @@ jobs:
         with:
           version: 9
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 18.x
           cache: "pnpm"
@@ -112,7 +112,7 @@ jobs:
     name: "ChoreoLib clang-tidy"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -124,11 +124,11 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
 
-      - run: pip3 install wpiformat==2025.34
+      - run: pip3 install wpiformat==2025.79
 
       - name: Create compile_commands.json
         working-directory: choreolib
@@ -143,17 +143,17 @@ jobs:
 
       - name: Run clang-tidy debug
         working-directory: choreolib
-        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug
 
       - name: Run clang-tidy release
         working-directory: choreolib
-        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release
 
   trajoptlib-tidy:
     name: "TrajoptLib clang-tidy"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -165,22 +165,22 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: 3.14
 
-      - name: Install LLVM 18
+      - name: Install LLVM 21
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 18 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 200
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 200
+          sudo ./llvm.sh 21 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 200
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 200
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
-      - run: pip3 install wpiformat==2025.34
+      - run: pip3 install wpiformat==2025.79
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
@@ -191,5 +191,5 @@ jobs:
         working-directory: trajoptlib
 
       - name: Run clang-tidy
-        run: wpiformat -f . -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23 -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23
         working-directory: trajoptlib
