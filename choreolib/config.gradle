@@ -8,7 +8,7 @@ nativeUtils.withCrossLinuxArm64()
 nativeUtils {
     wpi {
         configureDependencies {
-            wpiVersion = "2026.+"
+            wpiVersion = "2026.1.1"
             niLibVersion = "2026.1.0"
         }
     }
