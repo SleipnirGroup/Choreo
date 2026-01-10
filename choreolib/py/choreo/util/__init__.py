@@ -96,10 +96,11 @@ FLIPPER_MAP: Dict[int, FlipperType] = {
     2023: FlipperType.MIRRORED,
     2024: FlipperType.MIRRORED,
     2025: FlipperType.ROTATE_AROUND,
+    2026: FlipperType.ROTATE_AROUND
 }
 
 
-DEFAULT_YEAR = 2025
+DEFAULT_YEAR = 2026
 
 
 def get_flipper_for_year(year: int = DEFAULT_YEAR):
