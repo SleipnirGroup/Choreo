@@ -1,7 +1,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use std::path::PathBuf;
-use std::{fs, path::Path, num::NonZero};
+use std::{fs, num::NonZero, path::Path};
 
 use crate::tauri::{TauriChoreoError, TauriResult};
 use base64::Engine as _;

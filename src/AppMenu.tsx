@@ -34,10 +34,6 @@ import {
 import SettingsModal from "./components/config/SettingsModal";
 import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
-import { invoke } from "@tauri-apps/api/core";
-import { CustomFieldData } from "./document/schema/DocumentTypes";
-import { ViewData } from "./document/UIData";
-import { defaultFieldData } from "./components/field/svg/fields/JSONFieldImage";
 
 type Props = object;
 
