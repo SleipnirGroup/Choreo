@@ -6,7 +6,6 @@ use std::{fs, path::Path, num::NonZero};
 use crate::tauri::{TauriChoreoError, TauriResult};
 use base64::Engine as _;
 use base64::engine::general_purpose;
-use choreo_core::spec::field::FieldJSON;
 use choreo_core::tokio;
 use choreo_core::{
     ChoreoError, ChoreoResult,
