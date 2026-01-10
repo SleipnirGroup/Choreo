@@ -17,7 +17,6 @@ use choreo_core::{
         project::{ProjectFile, RobotConfig},
         trajectory::TrajectoryFile,
     },
-    tokio::sync::futures,
 };
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
@@ -104,7 +103,7 @@ pub async fn select_field_json(app_handle: tauri::AppHandle) -> TauriResult<GetF
         .as_path()
         .ok_or(TauriChoreoError::from(ChoreoError::FileNotFound(None)))?;
     let project_location = get_deploy_root(app_handle).await?;
-    debug_result!(get_field_json_image(field_json_path, &Path::new(&project_location)).await);
+    debug_result!(get_field_json_image(field_json_path, Path::new(&project_location)).await);
 }
 
 pub async fn make_field_image_src(field_image_path: &Path) -> ChoreoResult<String> {
@@ -148,7 +147,7 @@ pub async fn get_field_json_image(
 
     if let Some(field_image_path) = field_json_path
         .parent()
-        .map(|parent| parent.join(&field_image_name))
+        .map(|parent| parent.join(field_image_name))
     {
         if let Ok(true) = tokio::fs::try_exists(&field_image_path).await {
             if let Some(extension) = field_image_path
