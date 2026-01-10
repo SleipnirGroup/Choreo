@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize};
 
+pub mod field;
 pub mod project;
 pub mod project_schema_version;
 pub mod traj_schema_version;

@@ -225,6 +225,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
             build_info,
             open_diagnostic_file,
             error_message,
+            select_field_json,
             get_worker_count
         ])
         .run(tauri::generate_context!())

@@ -18,6 +18,8 @@ import {
   navbarIndexToConstraintKey
 } from "./UIData";
 import { tracing } from "./tauriTracing";
+import { CustomFieldData } from "./schema/DocumentTypes";
+import { defaultFieldData } from "../components/field/svg/fields/JSONFieldImage";
 
 export enum SavingState {
   SAVED = "saved",
@@ -27,6 +29,7 @@ export enum SavingState {
 }
 export const UIStateStore = types
   .model("UIStateStore", {
+    customField: types.frozen<CustomFieldData>(defaultFieldData),
     //The transform matrix between mouse event clientX/Y and field coordinates
     fieldMatrix: types.frozen<DOMMatrix>(
       //identity, because there's apparently no factory for it
@@ -119,6 +122,9 @@ export const UIStateStore = types
     };
   })
   .actions((self: any) => ({
+    setCustomFieldData(data: CustomFieldData) {
+      self.customField = data;
+    },
     setFieldMatrix(matrix: DOMMatrix) {
       self.fieldMatrix = matrix;
     },
