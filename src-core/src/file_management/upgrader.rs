@@ -162,8 +162,16 @@ impl Upgrader {
     }
 
     pub fn upgrade(&self, jdata: JsonValue) -> ChoreoResult<JsonValue> {
-        let version =
-            get_version(&jdata).ok_or(ChoreoError::Json("Invalid JSON version".to_string()))?;
+        let version = get_version(&jdata)
+            .ok_or(ChoreoError::Json("Invalid JSON version".to_string()))?
+            as usize;
+        if version > self.actions.len() {
+            return Err(ChoreoError::SchemaTooNew(
+                version,
+                self.actions.len(),
+                "".to_string(),
+            ));
+        }
         let mut editor = Editor::new(jdata);
         for action in &self.actions[version as usize..] {
             action.upgrade(&mut editor)?;

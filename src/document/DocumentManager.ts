@@ -662,18 +662,29 @@ export async function openProject(projectPath: OpenFilePayload) {
     const trajectories: Trajectory[] = [];
     await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
+    let readProjectError = undefined;
+    let readAllTrajectoryError = undefined;
+    // We have to wait for both to complete before cleaning up, because we can't cancel them.
+    // For example if readProject errors, cleanup will reset the deploy root before
+    // readAllTrajectory is done using it.
     await Promise.allSettled([
       Commands.readProject(name)
         .then((p) => (project = p))
-        .catch(tracing.error),
+        .catch((e) => (readProjectError = e)),
       Commands.readAllTrajectory()
         .then((paths) =>
           paths.forEach((path) => {
             trajectories.push(path);
           })
         )
-        .catch(tracing.error)
+        .catch((e) => (readAllTrajectoryError = e))
     ]);
+    if (readProjectError) {
+      throw readProjectError;
+    }
+    if (readAllTrajectoryError) {
+      throw readAllTrajectoryError;
+    }
 
     if (project === undefined) {
       throw "Internal error. Check console logs.";
