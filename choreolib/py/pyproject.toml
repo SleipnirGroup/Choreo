@@ -6,7 +6,7 @@ readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE.txt"]
 requires-python = ">=3.9"
-dependencies = ["numpy", "wpilib"]
+dependencies = ["numpy", "wpilib>=2025.1.1,<2027"]
 
   [[project.authors]]
   name = "Choreo Development Team"
