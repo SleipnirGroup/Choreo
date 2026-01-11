@@ -43,17 +43,17 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
+        relative_path=Path("choreolib/vendor_jsons/ChoreoLib2026.json"),
         version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
+        relative_path=Path("choreolib/vendor_jsons/ChoreoLib2026.json"),
         version_path=["javaDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2026Beta.json"),
+        relative_path=Path("choreolib/vendor_jsons/ChoreoLib2026.json"),
         version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),
@@ -162,7 +162,7 @@ def update_version(version: str) -> None:
                 tomlkit.dump(og, f)
         else:
             raise ValueError(f"Unsupported file format: {location.file_format}")
-    subprocess.check_call(["pnpm", "prettier", "--write", "."])
+    # subprocess.check_call(["pnpm", "prettier", "--write", "."])
 
 
 if __name__ == "__main__":

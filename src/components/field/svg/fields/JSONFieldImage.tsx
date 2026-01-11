@@ -69,19 +69,20 @@ export default class CustomFieldImage extends Component<Props, State> {
       fieldJSON["size-pixels"][1]
     ].map(pxToM);
     return (
-      <><g
-        id="layer1"
-        transform={`scale(1, -1), translate(${-fieldLengthM * originFractionX}, ${fieldWidthM * originFractionY})`}
-      >
-        <image
-          x={-leftM}
-          y={-bottomM}
-          width={fullLengthM}
-          height={fullWidthM}
-          href={customField.fieldImageBase64}
-          style={{ opacity: `${this.props.opacity}%` }}
-        />
-      </g>
+      <>
+        <g
+          id="layer1"
+          transform={`scale(1, -1), translate(${-fieldLengthM * originFractionX}, ${fieldWidthM * originFractionY})`}
+        >
+          <image
+            x={-leftM}
+            y={-bottomM}
+            width={fullLengthM}
+            height={fullWidthM}
+            href={customField.fieldImageBase64}
+            style={{ opacity: `${this.props.opacity}%` }}
+          />
+        </g>
       </>
     );
   }
