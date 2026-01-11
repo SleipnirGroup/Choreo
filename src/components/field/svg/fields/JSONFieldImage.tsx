@@ -1,6 +1,8 @@
+/// <reference types="vite-plugin-svgr/client" />
 import { Component } from "react";
 import { FtToM, InToM } from "../../../../util/UnitConversions";
 import defaultFieldImage from "./FieldImage2026.svg";
+import Field2026 from "./FieldImage2026.svg?react";
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 import {
   CustomFieldData,
@@ -70,18 +72,20 @@ export default class CustomFieldImage extends Component<Props, State> {
     ].map(pxToM);
     return (
       <>
+        <g transform="translate(-0.5 -0.5)"><Field2026></Field2026></g>
         <g
           id="layer1"
           transform={`scale(1, -1), translate(${-fieldLengthM * originFractionX}, ${fieldWidthM * originFractionY})`}
         >
-          <image
+          
+          {/* <image
             x={-leftM}
             y={-bottomM}
             width={fullLengthM}
             height={fullWidthM}
             href={customField.fieldImageBase64}
             style={{ opacity: `${this.props.opacity}%` }}
-          />
+          /> */}
         </g>
       </>
     );
