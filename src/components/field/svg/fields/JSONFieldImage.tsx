@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { FtToM, InToM } from "../../../../util/UnitConversions";
-import defaultFieldImage from "./FieldImage2025.svg";
+import defaultFieldImage from "./FieldImage2026.svg";
 import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
 import {
   CustomFieldData,
@@ -30,7 +30,7 @@ function converter(unit: "meter" | "foot" | "inch"): (value: number) => number {
 }
 
 const defaultFieldJSON: FieldJSON = {
-  game: "Reefscape",
+  game: "Rebuilt",
   "field-unit": "meter",
   "field-corners": {
     "bottom-right": [FIELD_LENGTH + 0.5, FIELD_WIDTH + 0.5],
@@ -38,11 +38,11 @@ const defaultFieldJSON: FieldJSON = {
   },
   "field-size": [FIELD_LENGTH, FIELD_WIDTH],
   "size-pixels": [FIELD_LENGTH + 1, FIELD_WIDTH + 1],
-  "field-image": "FieldImage2025.svg",
+  "field-image": "FieldImage2026.svg",
   "origin-fraction": [0, 0]
 };
 export const defaultFieldData: CustomFieldData = {
-  fieldJson: defaultFieldJSON,
+  fieldJson: defaultFieldJSON as FieldJSON,
   fieldImageBase64: defaultFieldImage,
   fieldJSONRelativePath: undefined
 };
@@ -68,21 +68,22 @@ export default class CustomFieldImage extends Component<Props, State> {
       fieldJSON["size-pixels"][0],
       fieldJSON["size-pixels"][1]
     ].map(pxToM);
-
     return (
-      <g
-        id="layer1"
-        transform={`scale(1, -1), translate(${-fieldLengthM * originFractionX}, ${fieldWidthM * originFractionY})`}
-      >
-        <image
-          x={-leftM}
-          y={-bottomM}
-          width={fullLengthM}
-          height={fullWidthM}
-          href={customField.fieldImageBase64}
-          style={{ opacity: `${this.props.opacity}%` }}
-        />
-      </g>
+      <>
+        <g
+          id="layer1"
+          transform={`scale(1, -1), translate(${-fieldLengthM * originFractionX}, ${fieldWidthM * originFractionY})`}
+        >
+          <image
+            x={-leftM}
+            y={-bottomM}
+            width={fullLengthM}
+            height={fullWidthM}
+            href={customField.fieldImageBase64}
+            style={{ opacity: `${this.props.opacity}%` }}
+          />
+        </g>
+      </>
     );
   }
 }

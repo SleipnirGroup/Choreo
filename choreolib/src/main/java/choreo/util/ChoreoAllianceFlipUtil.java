@@ -98,11 +98,12 @@ public class ChoreoAllianceFlipUtil {
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
           put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
+          put(2025, new YearInfo(Flipper.ROTATE_AROUND, 17.548, 8.052));
+          put(2026, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
 
-  private static YearInfo activeYear = flipperMap.get(2025);
+  private static YearInfo activeYear = flipperMap.get(2026);
 
   /** Default constructor. */
   private ChoreoAllianceFlipUtil() {}
