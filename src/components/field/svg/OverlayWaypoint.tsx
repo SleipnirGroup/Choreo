@@ -64,12 +64,12 @@ class OverlayWaypoint extends Component<Props, State> {
             }
           ></path>
           <clipPath id={this.appendIndexID("clip", index)}>
-            <use xlinkHref={`#${this.appendIndexID("bumpers", index)}`} />
+            <use href={`#${this.appendIndexID("bumpers", index)}`} />
           </clipPath>
         </defs>
 
         <use
-          xlinkHref={`#${this.appendIndexID("bumpers", index)}`}
+          href={`#${this.appendIndexID("bumpers", index)}`}
           clipPath={`url(#${this.appendIndexID("clip", index)})`}
           stroke={strokeColor}
           strokeWidth={strokeWidthPx * uiState.fieldScalingFactor}
