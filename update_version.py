@@ -162,7 +162,7 @@ def update_version(version: str) -> None:
                 tomlkit.dump(og, f)
         else:
             raise ValueError(f"Unsupported file format: {location.file_format}")
-    # subprocess.check_call(["pnpm", "prettier", "--write", "."])
+    subprocess.check_call(["pnpm", "prettier", "--write", "."])
 
 
 if __name__ == "__main__":
