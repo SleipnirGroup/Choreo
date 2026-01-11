@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-svgr/client" />
 import {
   Popover,
   ToggleButton,
@@ -31,7 +32,7 @@ import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import * as FieldDimensions from "./fields/FieldDimensions";
-import JSONFieldImage from "./fields/JSONFieldImage";
+import Field2026 from "./fields/FieldImage2026.svg?react";
 
 type Props = object;
 
@@ -240,10 +241,9 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                <JSONFieldImage
-                  opacity={100}
-                  customField={uiState.customField}
-                />
+                <g transform="translate(-0.5 -0.5)">
+                  <Field2026></Field2026>
+                </g>
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
