@@ -1,6 +1,4 @@
-use crate::spec::project::{ProjectFile, Dimension, Variable};
-
-
+use crate::{codegen::java::validate_name::validate_name, spec::project::{Dimension, ProjectFile, Variable}};
 
 struct JavaUnitData {
     java_type: &'static str,
@@ -58,16 +56,25 @@ fn from(dimension: Dimension) -> Option<JavaUnitData> {
 fn format_variable(name: &String, variable: &Variable) -> String {
     let val = variable.var.val;
     let opt_unit_data = Option::<JavaUnitData>::from(variable.dimension);
-    match opt_unit_data {
-        Some(JavaUnitData {java_type, base_unit}) => format!("\tpublic static final {java_type} {name} = Units.{base_unit}.of({val});"),
-        None => format!("\tpublic static final double {name} = {val};"),
-    }
-    
+    let def = match opt_unit_data {
+        Some(JavaUnitData {java_type, base_unit}) => format!("public static final {java_type} {name} = Units.{base_unit}.of({val});"),
+        None => format!("public static final double {name} = {val};"),
+    };
+    let err_msg = match validate_name(name) {
+        Ok(_) => String::new(),
+        Err(e) => e.javadoc_comment()
+    };
+    format!("\t{err_msg}{def}")
 }
 const VARS_FILENAME: &str = "ChoreoVars";
 
 pub fn generate_vars_file(project: ProjectFile, package_name: String) -> String {
-    let variable_defs = project.variables.expressions.iter().map(|(name, variable)|format_variable(name, variable)).collect::<Vec<String>>().join("\n");
+    let variable_defs = 
+      project.variables.expressions
+        .iter()
+        .map(|(name, variable)| format_variable(name, variable))
+        .collect::<Vec<String>>()
+        .join("\n");
     format!(r#"package {package_name};
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;

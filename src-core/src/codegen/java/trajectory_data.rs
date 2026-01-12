@@ -1,4 +1,4 @@
-use crate::spec::trajectory::{Sample, TrajectoryFile};
+use crate::{codegen::java::validate_name::validate_name, spec::trajectory::{Sample, TrajectoryFile}};
 const TRAJ_DATA_FILENAME: &str = "ChoreoTraj";
 
 #[derive(Clone)]
@@ -97,8 +97,12 @@ impl TrajEntry {
         let total_time_secs = self.total_time_secs;
         let first_pose = self.first_pose.to_java_code();
         let last_pose = self.last_pose.to_java_code();
+        let err_msg = match validate_name(var_name) {
+            Ok(_) => String::new(),
+            Err(e) => e.javadoc_comment()
+        };
         format!(
-            r#"public static final ChoreoTraj {var_name} = new ChoreoTraj(
+            r#"{err_msg}public static final ChoreoTraj {var_name} = new ChoreoTraj(
     "{traj_name}",
     {segment},
     {total_time_secs},
