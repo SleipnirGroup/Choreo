@@ -11,7 +11,7 @@ To use ChoreoLib in your robot code, it must first be installed as a vendor libr
     === "Release"
 
         ```
-        https://lib.choreo.autos/dep/ChoreoLib2025.json
+        https://choreo.autos/lib/ChoreoLib2026.json
         ```
 
 === "Python"
