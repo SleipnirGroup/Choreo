@@ -15,7 +15,7 @@ Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronou
 
     ---
 
-    Each trajectory takes full advantage of the drivetrain's performance, while obeying its dynamics constraints.
+    Each trajectory takes full advantage of the swerve or differential drivetrain's performance, while obeying its dynamics constraints.
 
 
 -   :octicons-sparkle-fill-16:{ .lg .middle } __Easy UI__
