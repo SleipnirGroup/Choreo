@@ -160,16 +160,23 @@ export const Commands = {
    */
   selectCodegenFolder: () => invoke<string>("select_codegen_folder"),
 
-  genVarsFile: (
+  genTrajDataFile: (
+    filePath: string,
     trajectories: Trajectory[],
     packageName: string,
     isUsingChoreoLib: boolean
-  ) => invoke<string>("gen_traj_data_file", {
+  ) => invoke<void>("gen_traj_data_file", {
     trajectories,
     packageName,
     isUsingChoreoLib
   }),
 
-  genTrajDataFile(project: Project, packageName: string) =>
-    invoke<string>
+  genVarsFile: (
+    filePath: string,
+    project: Project, 
+    packageName: string
+  ) => invoke<void>("gen_vars", {
+    project,
+    packageName
+  })
 };

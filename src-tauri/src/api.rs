@@ -105,17 +105,6 @@ pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<Op
 }
 
 #[tauri::command]
-pub fn write_java_file(content: String, file_path: String) -> ChoreoResult<()> {
-    if !file_path.contains(".java") {
-        return Err(ChoreoError::Io(
-            "Attempted to write a non-Java file".to_string(),
-        ));
-    }
-    fs::write(file_path, content.as_bytes())?;
-    Ok(())
-}
-
-#[tauri::command]
 pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
     if !file_path.contains(".java") {
         return Err(ChoreoError::Io(
@@ -272,13 +261,13 @@ pub fn gen_traj_data_file(
 
 #[tauri::command]
 pub fn gen_vars_file(
+    file_path: String,
     project: ProjectFile,
-    package_name: String
-) -> TauriResult<String> {
-    debug_result!(ChoreoResult::Ok(generate_vars_file(
-        project,
-        package_name
-    )));
+    package_name: String,
+) -> ChoreoResult<()> {
+  let content = generate_vars_file(project, package_name);
+  fs::write(file_path, content.as_bytes())?;
+  Ok(())
 }
 
 #[tauri::command]

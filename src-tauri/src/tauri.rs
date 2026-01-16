@@ -202,7 +202,6 @@ pub fn run_tauri(project: Option<PathBuf>) {
             guess_control_interval_counts,
             open_in_explorer,
             default_project,
-            write_java_file,
             delete_java_file,
             read_project,
             write_project,

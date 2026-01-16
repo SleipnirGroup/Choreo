@@ -94,7 +94,6 @@ const PYTHON_KEYWORDS: [&str; 35] = [
   "for",
   "not"
 ];
-
 pub enum NameErr {
   Empty,
   Exists(String),

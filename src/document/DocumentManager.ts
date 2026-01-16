@@ -884,21 +884,22 @@ export async function genJavaFiles() {
   const tasks = [];
   if (doc.codegen.genVars) {
     tasks.push(
-      genVarsFile(doc.serializeChor(), codeGenPkg).then((content)=>
-      Commands.writeJavaFile(
-        content,
-        `${rootPath}/${VARS_FILENAME}.java`
+      Commands.genVarsFile(
+        `${rootPath}/${VARS_FILENAME}.java`, 
+        doc.serializeChor(), 
+        codeGenPkg
       )
-    ));
+    );
   }
   if (doc.codegen.genTrajData) {
-    tasks.push(genTrajDataFile(
-      trajectories,
-      codeGenPkg,
-      doc.codegen.useChoreoLib
-    ).then((content) =>
-      Commands.writeJavaFile(content, `${rootPath}/${TRAJ_DATA_FILENAME}.java`)
-    ));
+    tasks.push(
+      Commands.genTrajDataFile(
+        `${rootPath}/${TRAJ_DATA_FILENAME}.java`,
+        trajectories,
+        codeGenPkg,
+        doc.codegen.useChoreoLib
+      )
+    );
   }
   await toast.promise(Promise.all(tasks), {
     error: {
