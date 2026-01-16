@@ -1,6 +1,6 @@
 {
   "name": "choreo",
-  "version": "2026.0.0-beta-1",
+  "version": "2026.0.1",
   "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
   "homepage": "https://github.com/SleipnirGroup/Choreo",
   "bugs": {
@@ -46,7 +46,8 @@
     "mst-middlewares": "^6.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "vite-plugin-svgr": "^4.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",

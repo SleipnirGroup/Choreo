@@ -143,6 +143,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 
 export type SampleType = "Swerve" | "Differential";
 export interface Output {
+  config: RobotConfig<number> | null;
   sampleType: SampleType | undefined;
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
@@ -191,4 +192,31 @@ export interface EventMarker {
   name: string;
   from: EventMarkerData;
   event: Command;
+}
+
+export type FieldJSON = {
+  game: string;
+
+  "field-image": string;
+  "size-pixels": [number, number];
+
+  "field-corners": {
+    "top-left": [number, number];
+
+    "bottom-right": [number, number];
+  };
+
+  "field-size": [number, number];
+
+  "field-unit": "meter" | "foot" | "inch";
+  // (0,_) means X origin is on left side.
+  // (_, 0) means Y origin is on bottom
+  // (1,_) means X origin is on right side.
+  // (_, 1) means Y origin is on top
+  "origin-fraction": [number, number];
+};
+export interface CustomFieldData {
+  fieldImageBase64: string;
+  fieldJson: FieldJSON;
+  fieldJSONRelativePath: string | undefined;
 }

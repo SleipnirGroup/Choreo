@@ -98,11 +98,12 @@ public class ChoreoAllianceFlipUtil {
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
           put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
+          put(2025, new YearInfo(Flipper.ROTATE_AROUND, 17.548, 8.052));
+          put(2026, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
 
-  private static YearInfo activeYear = flipperMap.get(2025);
+  private static YearInfo activeYear = flipperMap.get(2026);
 
   /** Default constructor. */
   private ChoreoAllianceFlipUtil() {}
@@ -245,11 +246,14 @@ public class ChoreoAllianceFlipUtil {
    */
   public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
       Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, boolean doFlip) {
+    if (poseOpt.isEmpty()) {
+      return () -> Optional.empty();
+    }
+    Optional<Pose2d> flippedPose = poseOpt.map(ChoreoAllianceFlipUtil::flip);
+
     return () ->
         doFlip
-            ? allianceOpt
-                .get()
-                .flatMap(ally -> poseOpt.map(pose -> ally == Alliance.Red ? flip(pose) : pose))
+            ? allianceOpt.get().flatMap(ally -> ally == Alliance.Red ? flippedPose : poseOpt)
             : poseOpt;
   }
 
@@ -268,14 +272,16 @@ public class ChoreoAllianceFlipUtil {
       Optional<Translation2d> translationOpt,
       Supplier<Optional<Alliance>> allianceOpt,
       boolean doFlip) {
+    if (translationOpt.isEmpty()) {
+      return () -> Optional.empty();
+    }
+    Optional<Translation2d> flippedTranslation = translationOpt.map(ChoreoAllianceFlipUtil::flip);
+
     return () ->
         doFlip
             ? allianceOpt
                 .get()
-                .flatMap(
-                    ally ->
-                        translationOpt.map(
-                            translation -> ally == Alliance.Red ? flip(translation) : translation))
+                .flatMap(ally -> ally == Alliance.Red ? flippedTranslation : translationOpt)
             : translationOpt;
   }
 }

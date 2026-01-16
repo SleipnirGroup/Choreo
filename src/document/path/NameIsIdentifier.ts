@@ -154,16 +154,13 @@ export function internalIsIdentifier(
   // deduplication for string arrays in https://stackoverflow.com/a/9229821
   const alreadyFlaggedCharacters: Record<string, boolean> = {};
   const invalidCharacters = name
-    .matchAll(RegExp("[^A-Za-z0-9_]", "g"))
-    .map((match) => match[0])
-    .filter(function (item) {
+    .match(RegExp("[^A-Za-z0-9_]", "g"))
+    ?.filter(function (item) {
       return alreadyFlaggedCharacters[item] !== undefined
         ? false
         : (alreadyFlaggedCharacters[item] = true);
-    })
-    .toArray();
-
-  if (invalidCharacters.length > 0) {
+    });
+  if (invalidCharacters != null && invalidCharacters.length > 0) {
     return { kind: "InvalidCharacter", name, character: invalidCharacters };
   }
   if (JAVA_KEYWORDS.includes(name)) return { kind: "IsJavaKeyword", name };

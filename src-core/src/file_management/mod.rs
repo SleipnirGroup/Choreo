@@ -199,7 +199,13 @@ pub async fn read_trajectory_file(
         .join(&name)
         .with_extension(TrajectoryFile::EXTENSION);
     let contents = fs::read_to_string(&path).await?;
-    let mut path = TrajectoryFile::from_content(&contents)?;
+    let mut path = TrajectoryFile::from_content(&contents).map_err(|e| {
+        if let ChoreoError::SchemaTooNew(actual, expected, _) = e {
+            ChoreoError::SchemaTooNew(actual, expected, format!("{}.traj", name))
+        } else {
+            e
+        }
+    })?;
     // this will keep the name of the `Path` in sync with the file name
     path.name = name;
     Ok(path)
@@ -298,7 +304,13 @@ pub async fn read_projectfile(
         .join(&name)
         .with_extension("chor");
     let contents = fs::read_to_string(&path).await?;
-    let mut project = ProjectFile::from_content(&contents)?;
+    let mut project = ProjectFile::from_content(&contents).map_err(|e| {
+        if let ChoreoError::SchemaTooNew(actual, expected, _) = e {
+            ChoreoError::SchemaTooNew(actual, expected, format!("{}.chor", name))
+        } else {
+            e
+        }
+    })?;
     project.name = name;
     Ok(project)
 }

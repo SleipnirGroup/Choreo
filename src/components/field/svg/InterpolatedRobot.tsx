@@ -56,12 +56,12 @@ class InterpolatedRobot extends Component<Props, State> {
             d={doc.robotConfig.bumperSVGElement()}
           ></path>
           <clipPath id={"robot-clip"}>
-            <use xlinkHref={"#robot-bumpers"} />
+            <use href={"#robot-bumpers"} />
           </clipPath>
         </defs>
 
         <use
-          xlinkHref={"#robot-bumpers"}
+          href={"#robot-bumpers"}
           clipPath={"url(#robot-clip)"}
           stroke={"white"}
           strokeWidth={5 * uiState.fieldScalingFactor}

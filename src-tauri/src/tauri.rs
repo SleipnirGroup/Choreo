@@ -212,6 +212,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
             read_trajectory,
             rename_trajectory,
             trajectory_up_to_date,
+            config_matches,
             set_deploy_root,
             get_deploy_root,
             requested_file,
@@ -225,6 +226,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             error_message,
             gen_traj_data_file,
             gen_vars_file
+            select_field_json,
+            get_worker_count
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

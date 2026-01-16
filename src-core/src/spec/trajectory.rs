@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
+use crate::spec::project::RobotConfig;
+
 use super::{Expr, SnapshottableType, upgraders::upgrade_traj_file};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
@@ -422,6 +424,7 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
+    pub config: Option<RobotConfig<f64>>,
     /// The sample type of this trajectory.
     /// Must match the type in samples if that list is non-empty
     /// Only None if trajectory was never generated.
@@ -477,6 +480,15 @@ impl TrajectoryFile {
             false
         }
     }
+
+    pub fn config_up_to_date(&self, config: &RobotConfig<f64>) -> bool {
+        // Can't use is_some_and due to its move semantics.
+        if let Some(snap) = &self.trajectory.config {
+            snap == config
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -521,7 +533,7 @@ pub enum PplibCommand {
 
 #[cfg(test)]
 mod tests {
-    use crate::spec::TRAJ_SCHEMA_VERSION;
+    use crate::spec::{TRAJ_SCHEMA_VERSION, project::ProjectFile};
 
     use super::*;
     fn test_trajectory() -> TrajectoryFile {
@@ -550,6 +562,7 @@ mod tests {
                 waypoints: Vec::new(),
                 samples: Vec::new(),
                 splits: Vec::new(),
+                config: Some(ProjectFile::default().config.snapshot()),
             },
             events: Vec::new(),
         }

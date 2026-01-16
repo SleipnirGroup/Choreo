@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -38,22 +37,43 @@ import java.util.function.Supplier;
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
  */
 public class AutoChooser implements Sendable {
-  static final String NONE_NAME = "Nothing";
+  private final String DO_NOTHING_NAME;
   private static final Alert selectedNonexistentAuto =
       ChoreoAlert.alert("Selected an auto that isn't an option", kError);
 
-  private final HashMap<String, Supplier<Command>> autoRoutines =
-      new HashMap<>(Map.of(NONE_NAME, Commands::none));
+  private final HashMap<String, Supplier<Command>> autoRoutines = new HashMap<>();
 
-  private String selected = NONE_NAME;
-  private String[] options = new String[] {NONE_NAME};
+  private String selected;
+  private String[] options = new String[] {};
 
   private Optional<Alliance> allianceAtGeneration = Optional.empty();
-  private String nameAtGeneration = NONE_NAME;
+  private String nameAtGeneration;
   private Command generatedCommand = Commands.none();
 
   /** Constructs a new {@link AutoChooser}. */
-  public AutoChooser() {}
+  public AutoChooser() {
+    this("Nothing");
+  }
+
+  /**
+   * Constructs a new {@link AutoChooser} with the given name for the do-nothing default option.
+   *
+   * @param doNothingName The option name for the default choice.
+   */
+  public AutoChooser(String doNothingName) {
+    DO_NOTHING_NAME = doNothingName;
+    nameAtGeneration = DO_NOTHING_NAME;
+    generatedCommand = Commands.none();
+    addCmd(DO_NOTHING_NAME, Commands::none);
+    select(DO_NOTHING_NAME);
+  }
+
+  /**
+   * @return the name of the default do-nothing option.
+   */
+  public String getDefaultName() {
+    return DO_NOTHING_NAME;
+  }
 
   /**
    * Select a new option in the chooser.
@@ -76,8 +96,8 @@ public class AutoChooser implements Sendable {
     }
     boolean dsValid = DriverStation.isDisabled() && DriverStation.getAlliance().isPresent();
     if (dsValid || force) {
-      if (!autoRoutines.containsKey(selected) && !selected.equals(NONE_NAME)) {
-        selected = NONE_NAME;
+      if (!autoRoutines.containsKey(selected) && !selected.equals(DO_NOTHING_NAME)) {
+        selected = DO_NOTHING_NAME;
         selectedNonexistentAuto.set(true);
       } else {
         selectedNonexistentAuto.set(false);
@@ -87,7 +107,7 @@ public class AutoChooser implements Sendable {
       generatedCommand = autoRoutines.get(nameAtGeneration).get().withName(nameAtGeneration);
     } else {
       allianceAtGeneration = Optional.empty();
-      nameAtGeneration = NONE_NAME;
+      nameAtGeneration = DO_NOTHING_NAME;
       generatedCommand = Commands.none();
     }
     return nameAtGeneration;
@@ -123,10 +143,12 @@ public class AutoChooser implements Sendable {
    *
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
+   * @return This {@link AutoChooser} instance, to allow for method chaining.
    */
-  public void addRoutine(String name, Supplier<AutoRoutine> generator) {
+  public AutoChooser addRoutine(String name, Supplier<AutoRoutine> generator) {
     autoRoutines.put(name, () -> generator.get().cmd());
     options = autoRoutines.keySet().toArray(new String[0]);
+    return this;
   }
 
   /**
@@ -153,11 +175,13 @@ public class AutoChooser implements Sendable {
    *
    * @param name The name of the autonomous command.
    * @param generator The function that generates an autonomous command.
+   * @return This {@link AutoChooser} instance, to allow for method chaining.
    * @see AutoChooser#addRoutine
    */
-  public void addCmd(String name, Supplier<Command> generator) {
+  public AutoChooser addCmd(String name, Supplier<Command> generator) {
     autoRoutines.put(name, generator);
     options = autoRoutines.keySet().toArray(new String[0]);
+    return this;
   }
 
   /**
@@ -187,7 +211,7 @@ public class AutoChooser implements Sendable {
    * @return The currently selected command.
    */
   public Command selectedCommand() {
-    if (RobotBase.isSimulation() && nameAtGeneration == NONE_NAME) {
+    if (RobotBase.isSimulation() && nameAtGeneration == DO_NOTHING_NAME) {
       select(selected, true);
     }
     return generatedCommand;
@@ -197,7 +221,7 @@ public class AutoChooser implements Sendable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("String Chooser");
     builder.publishConstBoolean(".controllable", true);
-    builder.publishConstString("default", NONE_NAME);
+    builder.publishConstString("default", DO_NOTHING_NAME);
     builder.addStringArrayProperty("options", () -> options, null);
     builder.addStringProperty("selected", null, this::select);
     builder.addStringProperty("active", () -> select(selected), null);

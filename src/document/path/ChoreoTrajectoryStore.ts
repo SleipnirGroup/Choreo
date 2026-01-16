@@ -1,21 +1,30 @@
-import { Instance, types } from "mobx-state-tree";
+import { getEnv, Instance, types } from "mobx-state-tree";
 import {
   DifferentialSample,
   SampleType,
   type SwerveSample,
-  Output
+  Output,
+  RobotConfig
 } from "../schema/DocumentTypes";
+import { Env } from "../DocumentManager";
+import { Commands } from "../tauriCommands";
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/
 // to see all the places that change with every schema upgrade.
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
+    config: types.maybeNull(types.frozen<RobotConfig<number>>()),
     sampleType: types.maybe(types.frozen<SampleType>()),
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
     splits: types.frozen<number[]>()
   })
+  .views((self) => ({
+    get currentConfigSnapshot(): RobotConfig<number> {
+      return getEnv<Env>(self).getConfigSnapshot();
+    }
+  }))
   .views((self) => ({
     get fullTrajectory(): SwerveSample[] | DifferentialSample[] {
       return self.samples;
@@ -70,15 +79,24 @@ export const ChoreoTrajectoryStore = types
     },
     get serialize(): Output {
       return {
+        config: self.config,
         sampleType: self.sampleType,
         waypoints: self.waypoints,
         samples: self.samples,
         splits: self.splits
       };
+    },
+    async isConfigUpToDate(): Promise<boolean> {
+      return (
+        self.config !== null &&
+        self.config !== undefined &&
+        (await Commands.configMatches(self.config, self.currentConfigSnapshot))
+      );
     }
   }))
   .actions((self) => ({
     deserialize(ser: Output) {
+      self.config = ser.config ?? null;
       self.sampleType = ser.sampleType;
       self.waypoints = ser.waypoints;
       self.splits = ser.splits;

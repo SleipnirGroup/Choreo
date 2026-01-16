@@ -1,6 +1,6 @@
 {
  "name":"test",
- "version":2,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":2.6185336112976074, "y":6.034867286682129, "heading":0.0, "intervals":16, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -25,6 +25,29 @@
   }
  },
  "trajectory":{
+    "config":{
+    "frontLeft":{
+        "x":0.2794,
+        "y":0.2794
+    },
+    "backLeft":{
+        "x":-0.2794,
+        "y":0.2794
+    },
+    "mass":68.0388555,
+    "inertia":6.0,
+    "gearing":6.5,
+    "radius":0.0508,
+    "vmax":628.3185307179587,
+    "tmax":1.2,
+    "cof":1.5,
+    "bumper":{
+        "front":0.4064,
+        "side":0.4064,
+        "back":0.4064
+    },
+    "differentialTrackWidth":0.5588
+  },
   "sampleType":"Swerve",
   "waypoints":[0.0,1.3926677138988457],
   "samples":[

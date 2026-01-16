@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-svgr/client" />
 import {
   Popover,
   ToggleButton,
@@ -30,8 +31,8 @@ import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
-import FieldImage2025 from "./fields/FieldImage2025";
 import * as FieldDimensions from "./fields/FieldDimensions";
+import Field2026 from "./fields/FieldImage2026.svg";
 
 type Props = object;
 
@@ -240,7 +241,11 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                <FieldImage2025 />
+                <g
+                  transform={`scale(1 -1) translate(-0.5, ${-FieldDimensions.FIELD_WIDTH - 0.5})`}
+                >
+                  <Field2026></Field2026>
+                </g>
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
