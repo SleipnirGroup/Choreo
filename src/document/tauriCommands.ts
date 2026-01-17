@@ -165,12 +165,6 @@ export const Commands = {
     invoke<void>("open_diagnostic_file", { project, trajectories }),
 
   /**
-   * Writes Java file content to a specified path.
-   */
-  writeJavaFile: (content: string, filePath: string) =>
-    invoke<void>("write_java_file", { content, filePath }),
-
-  /**
    * Deletes Java file content from a specified path.
    */
   deleteJavaFile: (filePath: string) =>
@@ -182,24 +176,19 @@ export const Commands = {
   selectCodegenFolder: () => invoke<string>("select_codegen_folder"),
 
   genTrajDataFile: (
-    filePath: string,
+    project: Project,
     trajectories: Trajectory[],
     packageName: string,
-    isUsingChoreoLib: boolean
   ) => invoke<void>("gen_traj_data_file", {
+    project,
     trajectories,
-    packageName,
-    isUsingChoreoLib
+    packageName
   }),
 
   genVarsFile: (
-    filePath: string,
     project: Project, 
     packageName: string
-  ) => invoke<void>("gen_vars", {
-    project,
-    packageName
-  }),
+  ) => invoke<void>("gen_vars_file", { project, packageName }),
   
   selectFieldJSON: () => invoke<CustomFieldData>("select_field_json")
 };

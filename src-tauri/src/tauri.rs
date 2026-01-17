@@ -225,7 +225,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
             open_diagnostic_file,
             error_message,
             gen_traj_data_file,
-            gen_vars_file
+            gen_vars_file,
             select_field_json,
             get_worker_count
         ])

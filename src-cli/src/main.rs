@@ -1,14 +1,10 @@
 #![allow(dead_code)]
 use std::{
-    path::PathBuf,
-    process::exit,
-    thread::{self, JoinHandle},
+    fs, path::PathBuf, process::exit, sync::{Arc, Mutex}, thread::{self, JoinHandle}
 };
 
 use choreo_core::{
-    ChoreoError,
-    file_management::{self, WritingResources},
-    generation::generate::generate,
+    codegen::java::{get_package_name::get_package_name, trajectory_data::{traj_file_contents, TRAJ_DATA_FILENAME}}, file_management::{self, WritingResources}, generation::generate::generate, spec::trajectory::TrajectoryFile, ChoreoError
 };
 use clap::Parser;
 
@@ -142,13 +138,14 @@ impl Cli {
         project_path: PathBuf,
         mut trajectory_names: Vec<String>,
     ) {
+        let deploy_root = 
+            project_path
+                .parent()
+                .expect("project path should have a parent directory");
         // set the deploy path to the project directory
         file_management::set_deploy_path(
             &resources,
-            project_path
-                .parent()
-                .expect("project path should have a parent directory")
-                .to_path_buf(),
+            deploy_root.to_path_buf(),
         )
         .await;
 
@@ -175,6 +172,8 @@ impl Cli {
         }
 
         let mut thread_handles: Vec<JoinHandle<()>> = Vec::new();
+        let trajectories = 
+          Arc::new(Mutex::new(Vec::<TrajectoryFile>::new()));
 
         // generate trajectories
         for (i, trajectory_name) in trajectory_names.iter().enumerate() {
@@ -184,6 +183,7 @@ impl Cli {
                 project.name
             );
 
+            let trajectories_window = Arc::clone(&trajectories);
             let trajectory =
                 file_management::read_trajectory_file(&resources, trajectory_name.to_string())
                     .await
@@ -204,9 +204,10 @@ impl Cli {
                             let write_result = runtime.block_on(
                                 file_management::write_trajectory_file_immediately(
                                     &cln_resources,
-                                    new_trajectory,
+                                    &new_trajectory,
                                 ),
                             );
+                            // cargo run -p choreo-cli -- --chor C:\Users\Daniel_Chen\IdeaProjects\FRC2026\src\main\deploy\choreo\Autos.chor --all-trajectory -g
                             match write_result {
                                 Ok(_) => {
                                     tracing::info!(
@@ -224,6 +225,10 @@ impl Cli {
                                     );
                                 }
                             }
+                            trajectories_window
+                                .lock()
+                                .expect("Internal Choreo Thread has panicked; see stack trace.")
+                                .push(new_trajectory);
                         }
                         Err(e) => {
                             tracing::error!(
@@ -245,6 +250,19 @@ impl Cli {
                     tracing::error!("Failed to join thread: {:?}", e);
                 }
             }
+        }
+        if let Some(codegen_root) = &project.codegen.root && 
+           let Some(deploy_root_str) = deploy_root.to_str() &&
+           let Some(pkg_name) = get_package_name(&project) 
+        {
+            let trajectories_vec = 
+              Arc::try_unwrap(trajectories)
+                .expect("Generation threads did not finish.")
+                .into_inner()
+                .expect("Generation threads did not finish.");            
+            let file_path = format!("{deploy_root_str}/{codegen_root}/{TRAJ_DATA_FILENAME}.java"); 
+            let content = traj_file_contents(trajectories_vec,pkg_name, project.codegen.use_choreo_lib);
+            fs::write(file_path, content).expect("Failed to write Code Generation Files.");
         }
     }
 }

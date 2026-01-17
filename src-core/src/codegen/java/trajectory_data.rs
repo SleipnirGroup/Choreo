@@ -1,5 +1,5 @@
 use crate::{codegen::java::validate_name::validate_name, spec::trajectory::{Sample, TrajectoryFile}};
-const TRAJ_DATA_FILENAME: &str = "ChoreoTraj";
+pub const TRAJ_DATA_FILENAME: &str = "ChoreoTraj";
 
 #[derive(Clone)]
 struct Pose2d {
@@ -130,12 +130,11 @@ const CHOREOLIB_HELPER_IMPORTS: &str = r#"// If these imports cause errors becau
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;"#;
 
-pub fn generate_traj_data_file(
+pub fn traj_file_contents(
     trajs: Vec<TrajectoryFile>,
     package_name: String,
     is_using_choreolib: bool,
 ) -> String {
-    println!("gen_traj_data_file");
     let trajectories = trajs
         .iter()
         .map(Vec::<TrajEntry>::from)

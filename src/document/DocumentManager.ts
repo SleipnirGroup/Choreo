@@ -660,29 +660,18 @@ export async function openProject(projectPath: OpenFilePayload) {
     const trajectories: Trajectory[] = [];
     await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
-    let readProjectError = undefined;
-    let readAllTrajectoryError = undefined;
-    // We have to wait for both to complete before cleaning up, because we can't cancel them.
-    // For example if readProject errors, cleanup will reset the deploy root before
-    // readAllTrajectory is done using it.
     await Promise.allSettled([
       Commands.readProject(name)
         .then((p) => (project = p))
-        .catch((e) => (readProjectError = e)),
+        .catch(tracing.error),
       Commands.readAllTrajectory()
         .then((paths) =>
           paths.forEach((path) => {
             trajectories.push(path);
           })
         )
-        .catch((e) => (readAllTrajectoryError = e))
+        .catch(tracing.error)
     ]);
-    if (readProjectError) {
-      throw readProjectError;
-    }
-    if (readAllTrajectoryError) {
-      throw readAllTrajectoryError;
-    }
 
     if (project === undefined) {
       throw "Internal error. Check console logs.";
@@ -895,22 +884,11 @@ export async function genJavaFiles() {
   );
   const tasks = [];
   if (doc.codegen.genVars) {
-    tasks.push(
-      Commands.genVarsFile(
-        `${rootPath}/${VARS_FILENAME}.java`, 
-        doc.serializeChor(), 
-        codeGenPkg
-      )
-    );
+    tasks.push(Commands.genVarsFile(doc.serializeChor(), codeGenPkg));
   }
   if (doc.codegen.genTrajData) {
     tasks.push(
-      Commands.genTrajDataFile(
-        `${rootPath}/${TRAJ_DATA_FILENAME}.java`,
-        trajectories,
-        codeGenPkg,
-        doc.codegen.useChoreoLib
-      )
+      Commands.genTrajDataFile(doc.serializeChor(), trajectories, codeGenPkg)
     );
   }
   await toast.promise(Promise.all(tasks), {

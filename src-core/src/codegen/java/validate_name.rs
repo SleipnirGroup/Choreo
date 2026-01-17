@@ -138,7 +138,7 @@ impl NameErr {
 
   pub fn javadoc_comment(&self) -> String {
     format!(
-      "/** ERROR: {}. {} */\n\t",
+      "/** ERROR: {}. {} */\n",
       &self.ui_msg(), &self.codegen_msg()
     )
   }
