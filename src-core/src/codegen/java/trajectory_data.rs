@@ -1,4 +1,7 @@
-use crate::{codegen::java::validate_name::validate_name, spec::trajectory::{Sample, TrajectoryFile}};
+use crate::{
+    codegen::java::validate_name::validate_name,
+    spec::trajectory::{Sample, TrajectoryFile},
+};
 pub const TRAJ_DATA_FILENAME: &str = "ChoreoTraj";
 
 #[derive(Clone)]
@@ -99,7 +102,7 @@ impl TrajEntry {
         let last_pose = self.last_pose.to_java_code();
         let err_msg = match validate_name(var_name) {
             Ok(_) => String::new(),
-            Err(e) => e.javadoc_comment()
+            Err(e) => e.javadoc_comment(),
         };
         format!(
             r#"{err_msg}public static final ChoreoTraj {var_name} = new ChoreoTraj(

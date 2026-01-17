@@ -1,8 +1,11 @@
-use crate::{codegen::java::validate_name::validate_name, spec::project::{Dimension, PoseVariable, ProjectFile, Variable}};
+use crate::{
+    codegen::java::validate_name::validate_name,
+    spec::project::{Dimension, PoseVariable, ProjectFile, Variable},
+};
 
 struct JavaUnitData {
     java_type: &'static str,
-    base_unit: &'static str
+    base_unit: &'static str,
 }
 impl From<Dimension> for Option<JavaUnitData> {
     fn from(dimension: Dimension) -> Option<JavaUnitData> {
@@ -10,43 +13,43 @@ impl From<Dimension> for Option<JavaUnitData> {
             Dimension::Number => None,
             Dimension::Length => Some(JavaUnitData {
                 java_type: "Distance",
-                base_unit: "Meters"
+                base_unit: "Meters",
             }),
             Dimension::LinVel => Some(JavaUnitData {
                 java_type: "LinearVelocity",
-                base_unit: "MetersPerSecond"
+                base_unit: "MetersPerSecond",
             }),
             Dimension::LinAcc => Some(JavaUnitData {
                 java_type: "LinearAcceleration",
-                base_unit: "MetersPerSecondPerSecond"
+                base_unit: "MetersPerSecondPerSecond",
             }),
             Dimension::Angle => Some(JavaUnitData {
                 java_type: "Angle",
-                base_unit: "Radians"
+                base_unit: "Radians",
             }),
             Dimension::AngVel => Some(JavaUnitData {
                 java_type: "AngularVelocity",
-                base_unit: "RadiansPerSecond"
+                base_unit: "RadiansPerSecond",
             }),
             Dimension::AngAcc => Some(JavaUnitData {
                 java_type: "AngularAcceleration",
-                base_unit: "RadiansPerSecondPerSecond"
+                base_unit: "RadiansPerSecondPerSecond",
             }),
             Dimension::Time => Some(JavaUnitData {
                 java_type: "Time",
-                base_unit: "Seconds"
+                base_unit: "Seconds",
             }),
             Dimension::Mass => Some(JavaUnitData {
                 java_type: "Mass",
-                base_unit: "Kilograms"
+                base_unit: "Kilograms",
             }),
             Dimension::Torque => Some(JavaUnitData {
                 java_type: "Torque",
-                base_unit: "NewtonMeters"
+                base_unit: "NewtonMeters",
             }),
             Dimension::MoI => Some(JavaUnitData {
                 java_type: "MomentOfInertia",
-                base_unit: "KilogramSquareMeters"
+                base_unit: "KilogramSquareMeters",
             }),
         }
     }
@@ -56,44 +59,50 @@ fn format_variable(name: &String, variable: &Variable) -> String {
     let val = (variable.var.val * 1e7).round() / 1e7;
     let opt_unit_data: Option<JavaUnitData> = Option::<JavaUnitData>::from(variable.dimension);
     let def = match opt_unit_data {
-        Some(JavaUnitData {java_type, base_unit}) => format!("public static final {java_type} {name} = Units.{base_unit}.of({val});"),
+        Some(JavaUnitData {
+            java_type,
+            base_unit,
+        }) => format!("public static final {java_type} {name} = Units.{base_unit}.of({val});"),
         None => format!("public static final double {name} = {val};"),
     };
     let err_msg = match validate_name(name) {
         Ok(_) => String::new(),
-        Err(e) => e.javadoc_comment() + "\t"
+        Err(e) => e.javadoc_comment() + "\t",
     };
     format!("\t{err_msg}{def}")
 }
 
 fn format_pose_variable(name: &String, variable: &PoseVariable) -> String {
-  let x = (variable.x.val * 1e7).round() / 1e7;
-  let y = (variable.y.val * 1e7).round() / 1e7;
-  let rot = (variable.heading.val * 1e7).round() / 1e7;
-  let value: String = format!("new Pose2d({x}, {y}, Rotation2d.fromRadians({rot}))");
-  let err_msg = match validate_name(name) {
-      Ok(_) => String::new(),
-      Err(e) => e.javadoc_comment() + "\t\t"
-  };
-  format!("\t\t{err_msg}public static final Pose2d {name} = {value};")
+    let x = (variable.x.val * 1e7).round() / 1e7;
+    let y = (variable.y.val * 1e7).round() / 1e7;
+    let rot = (variable.heading.val * 1e7).round() / 1e7;
+    let value: String = format!("new Pose2d({x}, {y}, Rotation2d.fromRadians({rot}))");
+    let err_msg = match validate_name(name) {
+        Ok(_) => String::new(),
+        Err(e) => e.javadoc_comment() + "\t\t",
+    };
+    format!("\t\t{err_msg}public static final Pose2d {name} = {value};")
 }
 
 pub const VARS_FILENAME: &str = "ChoreoVars";
 
 pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String {
-    let variable_defs = 
-      project.variables.expressions
+    let variable_defs = project
+        .variables
+        .expressions
         .iter()
         .map(|(name, variable)| format_variable(name, variable))
         .collect::<Vec<String>>()
         .join("\n");
-    let pose_variable_defs = 
-      project.variables.poses
+    let pose_variable_defs = project
+        .variables
+        .poses
         .iter()
         .map(|(name, variable)| format_pose_variable(name, variable))
         .collect::<Vec<String>>()
         .join("\n");
-    format!(r#"package {package_name};
+    format!(
+        r#"package {package_name};
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -112,5 +121,6 @@ public final class {VARS_FILENAME} {{
 {pose_variable_defs}
     }}
 }}
-"#)
+"#
+    )
 }

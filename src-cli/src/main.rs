@@ -1,10 +1,21 @@
 #![allow(dead_code)]
 use std::{
-    fs, path::PathBuf, process::exit, sync::{Arc, Mutex}, thread::{self, JoinHandle}
+    fs,
+    path::PathBuf,
+    process::exit,
+    sync::{Arc, Mutex},
+    thread::{self, JoinHandle},
 };
 
 use choreo_core::{
-    codegen::java::{get_package_name::get_package_name, trajectory_data::{traj_file_contents, TRAJ_DATA_FILENAME}}, file_management::{self, WritingResources}, generation::generate::generate, spec::trajectory::TrajectoryFile, ChoreoError
+    ChoreoError,
+    codegen::java::{
+        get_package_name::get_package_name,
+        trajectory_data::{TRAJ_DATA_FILENAME, traj_file_contents},
+    },
+    file_management::{self, WritingResources},
+    generation::generate::generate,
+    spec::trajectory::TrajectoryFile,
 };
 use clap::Parser;
 
@@ -138,16 +149,11 @@ impl Cli {
         project_path: PathBuf,
         mut trajectory_names: Vec<String>,
     ) {
-        let deploy_root = 
-            project_path
-                .parent()
-                .expect("project path should have a parent directory");
+        let deploy_root = project_path
+            .parent()
+            .expect("project path should have a parent directory");
         // set the deploy path to the project directory
-        file_management::set_deploy_path(
-            &resources,
-            deploy_root.to_path_buf(),
-        )
-        .await;
+        file_management::set_deploy_path(&resources, deploy_root.to_path_buf()).await;
 
         // read the project file
         let project = file_management::read_projectfile(
@@ -172,8 +178,7 @@ impl Cli {
         }
 
         let mut thread_handles: Vec<JoinHandle<()>> = Vec::new();
-        let trajectories = 
-          Arc::new(Mutex::new(Vec::<TrajectoryFile>::new()));
+        let trajectories = Arc::new(Mutex::new(Vec::<TrajectoryFile>::new()));
 
         // generate trajectories
         for (i, trajectory_name) in trajectory_names.iter().enumerate() {
@@ -251,17 +256,17 @@ impl Cli {
                 }
             }
         }
-        if let Some(codegen_root) = &project.codegen.root && 
-           let Some(deploy_root_str) = deploy_root.to_str() &&
-           let Some(pkg_name) = get_package_name(&project) 
+        if let Some(codegen_root) = &project.codegen.root
+            && let Some(deploy_root_str) = deploy_root.to_str()
+            && let Some(pkg_name) = get_package_name(&project)
         {
-            let trajectories_vec = 
-              Arc::try_unwrap(trajectories)
+            let trajectories_vec = Arc::try_unwrap(trajectories)
                 .expect("Generation threads did not finish.")
                 .into_inner()
-                .expect("Generation threads did not finish.");            
-            let file_path = format!("{deploy_root_str}/{codegen_root}/{TRAJ_DATA_FILENAME}.java"); 
-            let content = traj_file_contents(trajectories_vec,pkg_name, project.codegen.use_choreo_lib);
+                .expect("Generation threads did not finish.");
+            let file_path = format!("{deploy_root_str}/{codegen_root}/{TRAJ_DATA_FILENAME}.java");
+            let content =
+                traj_file_contents(trajectories_vec, pkg_name, project.codegen.use_choreo_lib);
             fs::write(file_path, content).expect("Failed to write Code Generation Files.");
         }
     }

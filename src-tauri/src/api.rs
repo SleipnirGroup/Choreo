@@ -6,9 +6,9 @@ use std::{fs, num::NonZero, path::Path};
 use crate::tauri::{TauriChoreoError, TauriResult};
 use base64::Engine as _;
 use base64::engine::general_purpose;
+use choreo_core::codegen::java::choreo_vars::{VARS_FILENAME, vars_file_contents};
+use choreo_core::codegen::java::trajectory_data::{TRAJ_DATA_FILENAME, traj_file_contents};
 use choreo_core::tokio;
-use choreo_core::codegen::java::trajectory_data::{traj_file_contents, TRAJ_DATA_FILENAME};
-use choreo_core::codegen::java::choreo_vars::{vars_file_contents, VARS_FILENAME};
 use choreo_core::{
     ChoreoError, ChoreoResult,
     file_management::{self, WritingResources, create_diagnostic_file, get_log_lines},
@@ -373,14 +373,13 @@ pub async fn gen_traj_data_file(
     trajectories: Vec<TrajectoryFile>,
     package_name: String,
 ) -> ChoreoResult<()> {
-    if let Some(codegen_root) = project.codegen.root && let Ok(deploy_root) = get_deploy_root(app_handle).await {
-      let file_path = format!("{deploy_root}/{codegen_root}/{TRAJ_DATA_FILENAME}.java"); 
-      let content = traj_file_contents(
-          trajectories,
-          package_name,
-          project.codegen.use_choreo_lib
-      );
-      fs::write(file_path, content)?;
+    if let Some(codegen_root) = project.codegen.root
+        && let Ok(deploy_root) = get_deploy_root(app_handle).await
+    {
+        let file_path = format!("{deploy_root}/{codegen_root}/{TRAJ_DATA_FILENAME}.java");
+        let content =
+            traj_file_contents(trajectories, package_name, project.codegen.use_choreo_lib);
+        fs::write(file_path, content)?;
     }
     Ok(())
 }
@@ -391,13 +390,15 @@ pub async fn gen_vars_file(
     project: ProjectFile,
     package_name: String,
 ) -> ChoreoResult<()> {
-  let codegen_root_opt = project.codegen.root.clone();
-  if let Some(codegen_root) = codegen_root_opt && let Ok(deploy_root) = get_deploy_root(app_handle).await {
-      let file_path = format!("{deploy_root}/{codegen_root}/{VARS_FILENAME}.java"); 
-      let content = vars_file_contents(&project, package_name);
-      fs::write(file_path, content)?;
-  }
-  Ok(())
+    let codegen_root_opt = project.codegen.root.clone();
+    if let Some(codegen_root) = codegen_root_opt
+        && let Ok(deploy_root) = get_deploy_root(app_handle).await
+    {
+        let file_path = format!("{deploy_root}/{codegen_root}/{VARS_FILENAME}.java");
+        let content = vars_file_contents(&project, package_name);
+        fs::write(file_path, content)?;
+    }
+    Ok(())
 }
 
 #[tauri::command]

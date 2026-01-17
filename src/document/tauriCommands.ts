@@ -178,17 +178,16 @@ export const Commands = {
   genTrajDataFile: (
     project: Project,
     trajectories: Trajectory[],
-    packageName: string,
-  ) => invoke<void>("gen_traj_data_file", {
-    project,
-    trajectories,
-    packageName
-  }),
-
-  genVarsFile: (
-    project: Project, 
     packageName: string
-  ) => invoke<void>("gen_vars_file", { project, packageName }),
-  
+  ) =>
+    invoke<void>("gen_traj_data_file", {
+      project,
+      trajectories,
+      packageName
+    }),
+
+  genVarsFile: (project: Project, packageName: string) =>
+    invoke<void>("gen_vars_file", { project, packageName }),
+
   selectFieldJSON: () => invoke<CustomFieldData>("select_field_json")
 };
