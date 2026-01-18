@@ -211,7 +211,6 @@ impl Cli {
                                     &cln_resources,
                                     &new_trajectory,
                                 ));
-                            // cargo run -p choreo-cli -- --chor C:\Users\Daniel_Chen\IdeaProjects\FRC2026\src\main\deploy\choreo\Autos.chor --all-trajectory -g
                             match write_result {
                                 Ok(_) => {
                                     tracing::info!(
