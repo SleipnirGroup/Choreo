@@ -288,6 +288,35 @@ pub enum Sample {
         fr: f64,
     },
 }
+impl Sample {
+    pub fn t(&self) -> f64 {
+        match self {
+            Sample::Swerve { t, .. } => *t,
+            Sample::DifferentialDrive { t, .. } => *t,
+        }
+    }
+
+    pub fn x(&self) -> f64 {
+        match self {
+            Sample::Swerve { x, .. } => *x,
+            Sample::DifferentialDrive { x, .. } => *x,
+        }
+    }
+
+    pub fn y(&self) -> f64 {
+        match self {
+            Sample::Swerve { y, .. } => *y,
+            Sample::DifferentialDrive { y, .. } => *y,
+        }
+    }
+
+    pub fn heading(&self) -> f64 {
+        match self {
+            Sample::Swerve { heading, .. } => *heading,
+            Sample::DifferentialDrive { heading, .. } => *heading,
+        }
+    }
+}
 fn round(input: f64) -> f64 {
     let factor = 100_000.0;
     let result = (input * factor).round() / factor;

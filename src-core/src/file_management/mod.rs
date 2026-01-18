@@ -148,14 +148,7 @@ pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
 
 pub async fn write_trajectory_file(
     resources: &WritingResources,
-    trajectory_file: TrajectoryFile,
-) -> ChoreoResult<()> {
-    write_trajectory_file_immediately(resources, trajectory_file).await
-}
-
-pub async fn write_trajectory_file_immediately(
-    resources: &WritingResources,
-    trajectory_file: TrajectoryFile,
+    trajectory_file: &TrajectoryFile,
 ) -> ChoreoResult<()> {
     let file = resources
         .get_deploy_path()
@@ -260,7 +253,7 @@ pub async fn rename_trajectory_file(
     let old_name = old_trajectory_file.name.clone();
     old_trajectory_file.name.clone_from(&new_name);
 
-    write_trajectory_file(resources, old_trajectory_file.clone()).await?;
+    write_trajectory_file(resources, &old_trajectory_file).await?;
 
     tracing::info!(
         "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",

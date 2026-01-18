@@ -24,6 +24,8 @@ mod integration_tests;
 
 pub use error::ChoreoError;
 
+/// The API for generating robot code files
+pub mod codegen;
 /// The API for managing choreo files.
 pub mod file_management;
 /// The API for generating trajectories.

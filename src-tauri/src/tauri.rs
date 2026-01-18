@@ -202,7 +202,6 @@ pub fn run_tauri(project: Option<PathBuf>) {
             guess_control_interval_counts,
             open_in_explorer,
             default_project,
-            write_java_file,
             delete_java_file,
             read_project,
             write_project,
@@ -225,6 +224,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             build_info,
             open_diagnostic_file,
             error_message,
+            gen_traj_data_file,
+            gen_vars_file,
             select_field_json,
             get_worker_count
         ])
