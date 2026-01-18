@@ -870,26 +870,16 @@ export async function saveProject() {
 }
 
 export async function genJavaFiles() {
-  const codeGenPkg = doc.codegen.javaPkg;
-  if (!doc.codegen.root || !codeGenPkg) {
-    return;
-  }
-  const rootPath = await path.join(
-    await Commands.getDeployRoot(),
-    doc.codegen.root
-  );
-  tracing.info("Generating Java Files at " + rootPath);
+  if (!doc.codegen.root) return;
   const trajectories = [...doc.pathlist.paths.values()].map(
     (it) => it.serialize
   );
   const tasks = [];
   if (doc.codegen.genVars) {
-    tasks.push(Commands.genVarsFile(doc.serializeChor(), codeGenPkg));
+    tasks.push(Commands.genVarsFile(doc.serializeChor()));
   }
   if (doc.codegen.genTrajData) {
-    tasks.push(
-      Commands.genTrajDataFile(doc.serializeChor(), trajectories, codeGenPkg)
-    );
+    tasks.push(Commands.genTrajDataFile(doc.serializeChor(), trajectories));
   }
   await toast.promise(Promise.all(tasks), {
     error: {

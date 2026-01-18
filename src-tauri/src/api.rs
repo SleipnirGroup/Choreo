@@ -7,6 +7,7 @@ use crate::tauri::{TauriChoreoError, TauriResult};
 use base64::Engine as _;
 use base64::engine::general_purpose;
 use choreo_core::codegen::java::choreo_vars::{VARS_FILENAME, vars_file_contents};
+use choreo_core::codegen::java::get_package_name;
 use choreo_core::codegen::java::trajectory_data::{TRAJ_DATA_FILENAME, traj_file_contents};
 use choreo_core::tokio;
 use choreo_core::{
@@ -371,12 +372,13 @@ pub async fn gen_traj_data_file(
     app_handle: tauri::AppHandle,
     project: ProjectFile,
     trajectories: Vec<TrajectoryFile>,
-    package_name: String,
 ) -> ChoreoResult<()> {
-    if let Some(codegen_root) = project.codegen.root
+    if let Some(package_name) = get_package_name(&project)
+        && let Some(codegen_root) = &project.codegen.root
         && let Ok(deploy_root) = get_deploy_root(app_handle).await
     {
         let file_path = format!("{deploy_root}/{codegen_root}/{TRAJ_DATA_FILENAME}.java");
+        tracing::debug!("Generating java file at {file_path}.");
         let content =
             traj_file_contents(trajectories, package_name, project.codegen.use_choreo_lib);
         fs::write(file_path, content)?;
@@ -385,16 +387,13 @@ pub async fn gen_traj_data_file(
 }
 
 #[tauri::command]
-pub async fn gen_vars_file(
-    app_handle: tauri::AppHandle,
-    project: ProjectFile,
-    package_name: String,
-) -> ChoreoResult<()> {
-    let codegen_root_opt = project.codegen.root.clone();
-    if let Some(codegen_root) = codegen_root_opt
+pub async fn gen_vars_file(app_handle: tauri::AppHandle, project: ProjectFile) -> ChoreoResult<()> {
+    if let Some(package_name) = get_package_name(&project)
+        && let Some(codegen_root) = &project.codegen.root
         && let Ok(deploy_root) = get_deploy_root(app_handle).await
     {
         let file_path = format!("{deploy_root}/{codegen_root}/{VARS_FILENAME}.java");
+        tracing::debug!("Generating java file at {file_path}.");
         let content = vars_file_contents(&project, package_name);
         fs::write(file_path, content)?;
     }

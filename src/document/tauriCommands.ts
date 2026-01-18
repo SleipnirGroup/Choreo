@@ -175,19 +175,17 @@ export const Commands = {
    */
   selectCodegenFolder: () => invoke<string>("select_codegen_folder"),
 
-  genTrajDataFile: (
-    project: Project,
-    trajectories: Trajectory[],
-    packageName: string
-  ) =>
-    invoke<void>("gen_traj_data_file", {
-      project,
-      trajectories,
-      packageName
-    }),
+  /**
+   * Generates a file containing the start pose, end pose,
+   * total time, and name of every choreo trajectory as a static constant.
+   */
+  genTrajDataFile: (project: Project, trajectories: Trajectory[]) =>
+    invoke<void>("gen_traj_data_file", { project, trajectories }),
 
-  genVarsFile: (project: Project, packageName: string) =>
-    invoke<void>("gen_vars_file", { project, packageName }),
+  /**
+   * Generates a file containing every variable defined within choreo's GUI.
+   */
+  genVarsFile: (project: Project) => invoke<void>("gen_vars_file", { project }),
 
   selectFieldJSON: () => invoke<CustomFieldData>("select_field_json")
 };

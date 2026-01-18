@@ -10,7 +10,7 @@ use std::{
 use choreo_core::{
     ChoreoError,
     codegen::java::{
-        get_package_name::get_package_name,
+        get_package_name,
         trajectory_data::{TRAJ_DATA_FILENAME, traj_file_contents},
     },
     file_management::{self, WritingResources},
@@ -206,12 +206,11 @@ impl Cli {
                                     .enable_all()
                                     .build()
                                     .expect("Failed to build tokio runtime");
-                            let write_result = runtime.block_on(
-                                file_management::write_trajectory_file(
+                            let write_result =
+                                runtime.block_on(file_management::write_trajectory_file(
                                     &cln_resources,
                                     &new_trajectory,
-                                ),
-                            );
+                                ));
                             // cargo run -p choreo-cli -- --chor C:\Users\Daniel_Chen\IdeaProjects\FRC2026\src\main\deploy\choreo\Autos.chor --all-trajectory -g
                             match write_result {
                                 Ok(_) => {
