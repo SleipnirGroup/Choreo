@@ -177,7 +177,7 @@ export const Commands = {
 
   /**
    * Generates a file containing the start pose, end pose,
-   * total time, and name of every choreo trajectory as a static constant.
+   * total time, and name of every Choreo trajectory as a static constant.
    */
   genTrajDataFile: (project: Project, trajectories: Trajectory[]) =>
     invoke<void>("gen_traj_data_file", { project, trajectories }),
