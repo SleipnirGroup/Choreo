@@ -114,9 +114,9 @@ mod generate {
                                 .build()
                                 .expect("Failed to build tokio runtime");
                             let write_result = runtime.block_on(
-                                file_management::write_trajectory_file_immediately(
+                                file_management::write_trajectory_file(
                                     &cln_resources,
-                                    new_trajectory,
+                                    &new_trajectory,
                                 ),
                             );
                             match write_result {

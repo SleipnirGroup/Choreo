@@ -150,13 +150,6 @@ pub async fn write_trajectory_file(
     resources: &WritingResources,
     trajectory_file: &TrajectoryFile,
 ) -> ChoreoResult<()> {
-    write_trajectory_file_immediately(resources, trajectory_file).await
-}
-
-pub async fn write_trajectory_file_immediately(
-    resources: &WritingResources,
-    trajectory_file: &TrajectoryFile,
-) -> ChoreoResult<()> {
     let file = resources
         .get_deploy_path()
         .await?
