@@ -183,7 +183,7 @@ export const Commands = {
     invoke<void>("gen_traj_data_file", { project, trajectories }),
 
   /**
-   * Generates a file containing every variable defined within choreo's GUI.
+   * Generates a file containing every variable defined within Choreo's GUI.
    */
   genVarsFile: (project: Project) => invoke<void>("gen_vars_file", { project }),
 
