@@ -118,10 +118,10 @@ const CHOREOLIB_HELPERS = `
 `.trimEnd();
 
 const CHOREOLIB_HELPER_IMPORTS = `
-// If these imports cause errors because you're not using ChoreoLib,
-// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+// If the imports above cause errors because you're not using ChoreoLib,
+// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
 `.trimStart();
 
 export function genTrajDataFile(
