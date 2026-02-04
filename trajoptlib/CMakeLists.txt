@@ -59,7 +59,7 @@ set(BUILD_EXAMPLES OFF)
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    GIT_TAG v0.3.4
+    GIT_TAG v0.4.0
     GIT_SHALLOW ON
     SYSTEM
 )
