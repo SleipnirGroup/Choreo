@@ -152,11 +152,10 @@ pub struct CodeGenConfig {
 
 impl CodeGenConfig {
     pub fn get_root(&self) -> Option<String> {
-        let root = self.root.as_ref().map(
-            |r| r
-                .replace("\\", std::path::MAIN_SEPARATOR_STR)
+        let root = self.root.as_ref().map(|r| {
+            r.replace("\\", std::path::MAIN_SEPARATOR_STR)
                 .replace("/", std::path::MAIN_SEPARATOR_STR)
-            );
+        });
         tracing::debug!("Codegen root: {:?}", root);
         root
     }
