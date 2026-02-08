@@ -254,7 +254,7 @@ impl Cli {
                 }
             }
         }
-        if let Some(codegen_root) = &project.codegen.root
+        if let Some(codegen_root) = project.codegen.get_root()
             && let Some(deploy_root_str) = deploy_root.to_str()
             && let Some(pkg_name) = get_package_name(&project)
         {
