@@ -374,7 +374,7 @@ pub async fn gen_traj_data_file(
     trajectories: Vec<TrajectoryFile>,
 ) -> ChoreoResult<()> {
     if let Some(package_name) = get_package_name(&project)
-        && let Some(codegen_root) = &project.codegen.root
+        && let Some(codegen_root) = project.codegen.get_root()
         && let Ok(deploy_root) = get_deploy_root(app_handle).await
     {
         let file_path = format!("{deploy_root}/{codegen_root}/{TRAJ_DATA_FILENAME}.java");
@@ -389,7 +389,7 @@ pub async fn gen_traj_data_file(
 #[tauri::command]
 pub async fn gen_vars_file(app_handle: tauri::AppHandle, project: ProjectFile) -> ChoreoResult<()> {
     if let Some(package_name) = get_package_name(&project)
-        && let Some(codegen_root) = &project.codegen.root
+        && let Some(codegen_root) = project.codegen.get_root()
         && let Ok(deploy_root) = get_deploy_root(app_handle).await
     {
         let file_path = format!("{deploy_root}/{codegen_root}/{VARS_FILENAME}.java");
