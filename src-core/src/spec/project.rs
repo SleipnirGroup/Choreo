@@ -144,10 +144,21 @@ impl RobotConfig<f64> {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CodeGenConfig {
-    pub root: Option<String>,
+    root: Option<String>,
     pub gen_vars: bool,
     pub gen_traj_data: bool,
     pub use_choreo_lib: bool,
+}
+
+impl CodeGenConfig {
+    pub fn get_root(&self) -> Option<String> {
+        let root = self.root.as_ref().map(|r| {
+            r.replace("\\", std::path::MAIN_SEPARATOR_STR)
+                .replace("/", std::path::MAIN_SEPARATOR_STR)
+        });
+        tracing::debug!("Codegen root: {:?}", root);
+        root
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

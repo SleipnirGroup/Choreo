@@ -165,12 +165,6 @@ export const Commands = {
     invoke<void>("open_diagnostic_file", { project, trajectories }),
 
   /**
-   * Writes Java file content to a specified path.
-   */
-  writeJavaFile: (content: string, filePath: string) =>
-    invoke<void>("write_java_file", { content, filePath }),
-
-  /**
    * Deletes Java file content from a specified path.
    */
   deleteJavaFile: (filePath: string) =>
@@ -180,6 +174,18 @@ export const Commands = {
    * Sets the directory path to push generated Java files to.
    */
   selectCodegenFolder: () => invoke<string>("select_codegen_folder"),
+
+  /**
+   * Generates a file containing the start pose, end pose,
+   * total time, and name of every Choreo trajectory as a static constant.
+   */
+  genTrajDataFile: (project: Project, trajectories: Trajectory[]) =>
+    invoke<void>("gen_traj_data_file", { project, trajectories }),
+
+  /**
+   * Generates a file containing every variable defined within Choreo's GUI.
+   */
+  genVarsFile: (project: Project) => invoke<void>("gen_vars_file", { project }),
 
   selectFieldJSON: () => invoke<CustomFieldData>("select_field_json")
 };
