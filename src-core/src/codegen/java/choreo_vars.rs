@@ -92,18 +92,24 @@ pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String
         .map(|(name, variable)| format_variable(name, variable))
         .collect::<Vec<String>>()
         .join("\n");
-    let pose_variable_defs = project
+    let pose_variables = project
         .variables
         .poses
         .iter()
         .map(|(name, variable)| format_pose_variable(name, variable))
-        .collect::<Vec<String>>()
-        .join("\n");
+        .collect::<Vec<String>>();
+    let pose_variable_defs = pose_variables.join("\n");
+    let pose_imports = if pose_variables.is_empty() {
+        ""
+    } else {
+        "
+      import edu.wpi.first.math.geometry.Pose2d;
+      import edu.wpi.first.math.geometry.Rotation2d;
+      "
+    };
     format!(
         r#"package {package_name};
-
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+{pose_imports}
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
 

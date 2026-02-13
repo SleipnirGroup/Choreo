@@ -130,8 +130,7 @@ const CHOREOLIB_HELPERS: &str = r#"
 const CHOREOLIB_HELPER_IMPORTS: &str = r#"import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 // If the 2 imports above cause errors because you're not using ChoreoLib,
-// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
-"#;
+// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings."#;
 
 pub fn traj_file_contents(
     trajs: Vec<TrajectoryFile>,

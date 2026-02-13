@@ -645,55 +645,77 @@ export async function openProjectSelectFeedback() {
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
-  const dir = projectPath.dir;
-  const name = projectPath.name.split(".")[0];
-  let project: Project | undefined = undefined;
-  const trajectories: Trajectory[] = [];
-  await Commands.cancelAll();
-  await Commands.setDeployRoot(dir);
-  let readProjectError = undefined;
-  let readAllTrajectoryError = undefined;
-  // We have to wait for both to complete before cleaning up, because we can't cancel them.
-  // For example if readProject errors, cleanup will reset the deploy root before
-  // readAllTrajectory is done using it.
-  await Promise.allSettled([
-    Commands.readProject(name)
-      .then((p) => (project = p))
-      .catch((e) => (readProjectError = e)),
-    Commands.readAllTrajectory()
-      .then((paths) =>
-        paths.forEach((path) => {
-          trajectories.push(path);
-        })
-      )
-      .catch((e) => (readAllTrajectoryError = e))
-  ]);
-  if (readProjectError) {
-    throw readProjectError;
-  }
-  if (readAllTrajectoryError) {
-    throw readAllTrajectoryError;
-  }
-
-  if (project === undefined) {
-    throw "Internal error. Check console logs.";
-  }
-  doc.deserializeChor(project);
-  pathNamesReactionDisposer?.(); // prevents the reaction from triggering for every addPath()
-  doc.pathlist.deleteAll();
-  trajectories.forEach((trajectory) => {
-    doc.pathlist.addPath(trajectory.name, true, trajectory);
-  });
-  startPathNamesReaction();
-  uiState.setSaveFileDir(dir);
-  uiState.setProjectName(name);
-  localStorage.setItem(
-    LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-    JSON.stringify({ dir, name })
+  // Capture the state prior to the deserialization
+  const originalRoot = await Commands.getDeployRoot();
+  const originalSnapshot = getSnapshot(doc);
+  const originalUiState = getSnapshot(uiState);
+  const originalHistory = getSnapshot(doc.history);
+  const originalLastOpenedItem = localStorage.getItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION
   );
-  doc.history.clear();
-  uiState.setProjectSavingState(SavingState.SAVED);
-  uiState.setProjectSavingTime(new Date());
+  try {
+    const dir = projectPath.dir;
+    const name = projectPath.name.split(".")[0];
+    let project: Project | undefined = undefined;
+    const trajectories: Trajectory[] = [];
+    await Commands.cancelAll();
+    await Commands.setDeployRoot(dir);
+    let readProjectError = undefined;
+    let readAllTrajectoryError = undefined;
+    // We have to wait for both to complete before cleaning up, because we can't cancel them.
+    // For example if readProject errors, cleanup will reset the deploy root before
+    // readAllTrajectory is done using it.
+    await Promise.allSettled([
+      Commands.readProject(name)
+        .then((p) => (project = p))
+        .catch((e) => (readProjectError = e)),
+      Commands.readAllTrajectory()
+        .then((paths) =>
+          paths.forEach((path) => {
+            trajectories.push(path);
+          })
+        )
+        .catch((e) => (readAllTrajectoryError = e))
+    ]);
+    if (readProjectError) {
+      throw readProjectError;
+    }
+    if (readAllTrajectoryError) {
+      throw readAllTrajectoryError;
+    }
+
+    if (project === undefined) {
+      throw "Internal error. Check console logs.";
+    }
+    doc.deserializeChor(project);
+    pathNamesReactionDisposer?.(); // prevents the reaction from triggering for every addPath()
+    doc.pathlist.deleteAll();
+    trajectories.forEach((trajectory) => {
+      doc.pathlist.addPath(trajectory.name, true, trajectory);
+    });
+    startPathNamesReaction();
+    uiState.setSaveFileDir(dir);
+    uiState.setProjectName(name);
+    localStorage.setItem(
+      LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+      JSON.stringify({ dir, name })
+    );
+    doc.history.clear();
+    uiState.setProjectSavingState(SavingState.SAVED);
+    uiState.setProjectSavingTime(new Date());
+  } catch (e) {
+    await Commands.setDeployRoot(originalRoot);
+    if (originalLastOpenedItem != null) {
+      localStorage.setItem(
+        LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+        originalLastOpenedItem
+      );
+    }
+    applySnapshot(doc, originalSnapshot);
+    applySnapshot(uiState, originalUiState);
+    applySnapshot(doc.history, originalHistory);
+    throw e;
+  }
 }
 
 export async function generateAndExport(uuid: string) {

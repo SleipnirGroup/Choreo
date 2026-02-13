@@ -63,6 +63,7 @@ const PYTHON_KEYWORDS: [&str; 35] = [
     "while", "async", "except", "lambda", "with", "await", "finally", "nonlocal", "yield", "break",
     "for", "not",
 ];
+
 pub enum NameErr {
     Empty,
     Exists(String),

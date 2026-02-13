@@ -3,7 +3,7 @@ import { CodeGenConfig } from "./schema/DocumentTypes";
 import { path } from "@tauri-apps/api";
 import { toast } from "react-toastify";
 
-const PATH_SEP_REGEX = new RegExp(path.sep(), "g");
+const PATH_SEP_REGEX = /[/\\\\]/g;
 
 export const CodeGenStore = types
   .model("CodeGenStore", {
