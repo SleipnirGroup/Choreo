@@ -1,11 +1,13 @@
-pub mod choreo_vars;
-pub mod trajectory_data;
-pub mod validate_name;
+mod choreo_vars;
+mod trajectory_data;
+
+pub use choreo_vars::vars_file_contents;
+pub use trajectory_data::traj_file_contents;
 
 use crate::spec::project::ProjectFile;
 use std::path;
 
-pub fn get_package_name(project_file: &ProjectFile) -> Option<String> {
+pub fn codegen_package_name(project_file: &ProjectFile) -> Option<String> {
     let sep = path::MAIN_SEPARATOR_STR.to_owned() + "java" + path::MAIN_SEPARATOR_STR;
     let root = project_file.codegen.root.as_ref()?;
     let path_segments: Vec<&str> = root.split(&sep).collect();

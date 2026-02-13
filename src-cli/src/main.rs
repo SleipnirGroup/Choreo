@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use std::{
     fs,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::exit,
     sync::{Arc, Mutex},
     thread::{self, JoinHandle},
@@ -9,10 +9,7 @@ use std::{
 
 use choreo_core::{
     ChoreoError,
-    codegen::java::{
-        get_package_name,
-        trajectory_data::{TRAJ_DATA_FILENAME, traj_file_contents},
-    },
+    codegen::{TRAJ_DATA_FILENAME, java},
     file_management::{self, WritingResources},
     generation::generate::generate,
     spec::trajectory::TrajectoryFile,
@@ -256,15 +253,20 @@ impl Cli {
         }
         if let Some(codegen_root) = &project.codegen.root
             && let Some(deploy_root_str) = deploy_root.to_str()
-            && let Some(pkg_name) = get_package_name(&project)
+            && let Some(pkg_name) = java::codegen_package_name(&project)
         {
             let trajectories_vec = Arc::try_unwrap(trajectories)
                 .expect("Generation threads did not finish.")
                 .into_inner()
                 .expect("Generation threads did not finish.");
-            let file_path = format!("{deploy_root_str}/{codegen_root}/{TRAJ_DATA_FILENAME}.java");
-            let content =
-                traj_file_contents(trajectories_vec, pkg_name, project.codegen.use_choreo_lib);
+            let file_path = Path::new(deploy_root_str)
+                .join(codegen_root)
+                .join(format!("{TRAJ_DATA_FILENAME}.java"));
+            let content = java::traj_file_contents(
+                trajectories_vec,
+                pkg_name,
+                project.codegen.use_choreo_lib,
+            );
             fs::write(file_path, content).expect("Failed to write Code Generation Files.");
         }
     }

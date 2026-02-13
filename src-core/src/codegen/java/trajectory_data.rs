@@ -1,8 +1,7 @@
 use crate::{
-    codegen::java::validate_name::validate_name,
+    codegen::{TRAJ_DATA_FILENAME, validate_name::validate_name},
     spec::trajectory::{Sample, TrajectoryFile},
 };
-pub const TRAJ_DATA_FILENAME: &str = "ChoreoTraj";
 
 #[derive(Clone)]
 struct Pose2d {

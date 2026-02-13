@@ -1,5 +1,5 @@
 use crate::{
-    codegen::java::validate_name::validate_name,
+    codegen::{VARS_FILENAME, validate_name::validate_name},
     spec::project::{Dimension, PoseVariable, ProjectFile, Variable},
 };
 
@@ -83,8 +83,6 @@ fn format_pose_variable(name: &String, variable: &PoseVariable) -> String {
     };
     format!("\t\t{err_msg}public static final Pose2d {name} = {value};")
 }
-
-pub const VARS_FILENAME: &str = "ChoreoVars";
 
 pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String {
     let variable_defs = project
