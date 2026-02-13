@@ -64,11 +64,9 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
-import { genVarsFile, VARS_FILENAME } from "../codegen/genVarsFile";
-import {
-  genTrajDataFile,
-  TRAJ_DATA_FILENAME
-} from "../codegen/genTrajDataFile";
+
+const TRAJ_DATA_FILENAME = "ChoreoTraj";
+const VARS_FILENAME = "ChoreoVars";
 
 export type OpenFilePayload = {
   name: string;
@@ -883,38 +881,21 @@ export async function saveProject() {
 }
 
 export async function genJavaFiles() {
-  const codeGenPkg = doc.codegen.javaPkg;
-  if (!doc.codegen.root || !codeGenPkg) {
-    return;
-  }
-  const rootPath = await path.join(
-    await Commands.getDeployRoot(),
-    doc.codegen.root
-  );
-  tracing.info("Generating Java Files at " + rootPath);
+  if (!doc.codegen.root) return;
   const trajectories = [...doc.pathlist.paths.values()].map(
     (it) => it.serialize
   );
   const tasks = [];
   if (doc.codegen.genVars) {
-    tasks.push(
-      Commands.writeJavaFile(
-        genVarsFile(doc.serializeChor(), codeGenPkg),
-        `${rootPath}/${VARS_FILENAME}.java`
-      )
-    );
+    tasks.push(Commands.genVarsFile(doc.serializeChor()));
   }
   if (doc.codegen.genTrajData) {
-    tasks.push(
-      Commands.writeJavaFile(
-        genTrajDataFile(trajectories, codeGenPkg, doc.codegen.useChoreoLib),
-        `${rootPath}/${TRAJ_DATA_FILENAME}.java`
-      )
-    );
+    tasks.push(Commands.genTrajDataFile(doc.serializeChor(), trajectories));
   }
   await toast.promise(Promise.all(tasks), {
     error: {
       render(toastProps: ToastContentProps<ChoreoError>) {
+        console.error(toastProps.data.content);
         return `Java files did not generate. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
       }
     }

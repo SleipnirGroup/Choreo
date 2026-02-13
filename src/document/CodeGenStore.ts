@@ -3,6 +3,8 @@ import { CodeGenConfig } from "./schema/DocumentTypes";
 import { path } from "@tauri-apps/api";
 import { toast } from "react-toastify";
 
+const PATH_SEP_REGEX = /[/\\\\]/g;
+
 export const CodeGenStore = types
   .model("CodeGenStore", {
     root: types.maybeNull(types.string),
@@ -35,7 +37,7 @@ export const CodeGenStore = types
   }))
   .actions((self) => ({
     setRoot(root: string) {
-      self.root = root;
+      self.root = root.replace(PATH_SEP_REGEX, "/");
     },
     setGenVars(genVars: boolean) {
       self.genVars = genVars;

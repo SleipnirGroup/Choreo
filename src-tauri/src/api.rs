@@ -6,6 +6,7 @@ use std::{fs, num::NonZero, path::Path};
 use crate::tauri::{TauriChoreoError, TauriResult};
 use base64::Engine as _;
 use base64::engine::general_purpose;
+use choreo_core::codegen::{TRAJ_DATA_FILENAME, VARS_FILENAME, java};
 use choreo_core::tokio;
 use choreo_core::{
     ChoreoError, ChoreoResult,
@@ -215,17 +216,6 @@ pub async fn open_project_dialog(app_handle: tauri::AppHandle) -> TauriResult<Op
 }
 
 #[tauri::command]
-pub fn write_java_file(content: String, file_path: String) -> ChoreoResult<()> {
-    if !file_path.contains(".java") {
-        return Err(ChoreoError::Io(
-            "Attempted to write a non-Java file".to_string(),
-        ));
-    }
-    fs::write(file_path, content.as_bytes())?;
-    Ok(())
-}
-
-#[tauri::command]
 pub fn delete_java_file(file_path: String) -> ChoreoResult<()> {
     if !file_path.contains(".java") {
         return Err(ChoreoError::Io(
@@ -295,7 +285,7 @@ pub async fn write_trajectory(
     trajectory: TrajectoryFile,
 ) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_trajectory_file(&resources, trajectory).await
+    file_management::write_trajectory_file(&resources, &trajectory).await
 }
 
 #[tauri::command]
@@ -373,6 +363,43 @@ pub fn cancel_remote_generator(app_handle: tauri::AppHandle, handle: i64) -> Tau
 pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     remote_resources.kill_all();
+}
+
+#[tauri::command]
+pub async fn gen_traj_data_file(
+    app_handle: tauri::AppHandle,
+    project: ProjectFile,
+    trajectories: Vec<TrajectoryFile>,
+) -> ChoreoResult<()> {
+    if let Some(package_name) = java::codegen_package_name(&project)
+        && let Some(codegen_root) = project.codegen.get_root()
+        && let Ok(deploy_root) = get_deploy_root(app_handle).await
+    {
+        let file_path = Path::new(&deploy_root)
+            .join(codegen_root)
+            .join(format!("{TRAJ_DATA_FILENAME}.java"));
+        tracing::debug!("Generating java file at {:?}.", file_path);
+        let content =
+            java::traj_file_contents(trajectories, package_name, project.codegen.use_choreo_lib);
+        fs::write(file_path, content)?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn gen_vars_file(app_handle: tauri::AppHandle, project: ProjectFile) -> ChoreoResult<()> {
+    if let Some(package_name) = java::codegen_package_name(&project)
+        && let Some(codegen_root) = project.codegen.get_root()
+        && let Ok(deploy_root) = get_deploy_root(app_handle).await
+    {
+        let file_path = Path::new(&deploy_root)
+            .join(codegen_root)
+            .join(format!("{VARS_FILENAME}.java"));
+        tracing::debug!("Generating java file at {:?}.", file_path);
+        let content = java::vars_file_contents(&project, package_name);
+        fs::write(file_path, content)?;
+    }
+    Ok(())
 }
 
 #[tauri::command]

@@ -577,6 +577,7 @@ dependencies = [
  "fastrand",
  "futures-util",
  "ipc-channel",
+ "regex",
  "serde",
  "serde_json",
  "tempfile",
