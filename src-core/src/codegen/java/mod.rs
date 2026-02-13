@@ -9,7 +9,7 @@ use std::path;
 
 pub fn codegen_package_name(project_file: &ProjectFile) -> Option<String> {
     let sep = path::MAIN_SEPARATOR_STR.to_owned() + "java" + path::MAIN_SEPARATOR_STR;
-    let root = project_file.codegen.root.as_ref()?;
+    let root = project_file.codegen.get_root()?;
     let path_segments: Vec<&str> = root.split(&sep).collect();
     if path_segments.len() == 1 {
         None
