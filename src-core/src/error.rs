@@ -36,7 +36,7 @@ pub enum ChoreoError {
     NoDeployPath,
     #[error("Heading Conflict error: waypoint {0} - {1}")]
     HeadingConflict(usize, String),
-    #[error("Remote Generation Error: {0}")]
+    #[error("{0}")]
     RemoteGenerationError(Box<ChoreoError>),
     #[error("Update Choreo. File version too new: {0} > {1} on {2}")]
     SchemaTooNew(usize, usize, String),
