@@ -102,13 +102,12 @@ pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String
     let pose_imports = if pose_variables.is_empty() {
         ""
     } else {
-        "
-      import edu.wpi.first.math.geometry.Pose2d;
-      import edu.wpi.first.math.geometry.Rotation2d;
-      "
+        "import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;"
     };
     format!(
-        r#"package {package_name};
+        r#"// spotless:off
+package {package_name};
 {pose_imports}
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
@@ -125,6 +124,7 @@ public final class {VARS_FILENAME} {{
 {pose_variable_defs}
     }}
 }}
+// spotless:on
 "#
     )
 }

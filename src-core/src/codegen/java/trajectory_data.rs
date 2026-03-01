@@ -164,7 +164,8 @@ pub fn traj_file_contents(
         .collect::<Vec<String>>()
         .join(",\n\t");
     format!(
-        r#"package {package_name};
+        r#"// spotless:off
+package {package_name};
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -209,6 +210,7 @@ public record {TRAJ_DATA_FILENAME}(
     }}
     {extra_helpers}
 }}
+// spotless:on
 "#
     )
 }
