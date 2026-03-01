@@ -298,12 +298,6 @@ export const DocumentStore = types
           toast.error("Tried to generate unknown path.");
         }
         return toast.promise(self.generatePath(activePathUUID), {
-          success: {
-            render({ data, toastProps }) {
-              return `Generated "${pathName}"`;
-            }
-          },
-
           error: {
             render({ data, toastProps }) {
               tracing.error("generatePathWithToasts:", data);

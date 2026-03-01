@@ -726,10 +726,9 @@ export async function generateAndExport(uuid: string) {
 
 export async function generateWithToastsAndExport(uuid: string) {
   tracing.debug("generateWithToastsAndExport", uuid);
-  const pathName = doc.pathlist.paths.get(uuid)?.name;
+
   await doc.generatePathWithToasts(uuid);
   await toast.promise(writeTrajectory(uuid), {
-    success: `Saved "${pathName}" to ${uiState.projectDir}.`,
     error: {
       render(toastProps) {
         tracing.error(toastProps.data);

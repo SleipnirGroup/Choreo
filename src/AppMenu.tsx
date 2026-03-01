@@ -52,7 +52,6 @@ class AppMenu extends Component<Props, State> {
   CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
     const handleAction = async function () {
       await navigator.clipboard.writeText(data);
-      toast.success("Copied to clipboard");
     };
 
     return (
