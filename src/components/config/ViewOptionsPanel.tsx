@@ -1,9 +1,4 @@
-import {
-  AspectRatio,
-  Close,
-  Gradient,
-  Visibility
-} from "@mui/icons-material";
+import { AspectRatio, Close, Gradient, Visibility } from "@mui/icons-material";
 import {
   IconButton,
   Menu,
