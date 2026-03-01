@@ -1,5 +1,5 @@
 import { path, window as tauriWindow } from "@tauri-apps/api";
-import { ask, confirm, save } from "@tauri-apps/plugin-dialog";
+import { ask, save } from "@tauri-apps/plugin-dialog";
 import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
@@ -627,21 +627,21 @@ export async function setupEventListeners() {
 }
 
 export async function openProjectSelectFeedback() {
-  confirm("You may lose unsaved or not generated changes. Continue?", {
-    title: "Choreo",
-    kind: "warning"
-  }).then((proceed) => {
-    if (proceed) {
-      Commands.openProjectDialog().then((filepath) =>
-        openProject(filepath).catch((err) => {
-          tracing.error(
-            `Failed to open Choreo file '${filepath.name}': ${err}`
-          );
-          toast.error(`Failed to open Choreo file '${filepath.name}': ${err}`);
-        })
-      );
-    }
-  });
+  if (
+    !uiState.hasSaveLocation &&
+    (await ask("Do you want to save this project first?", {
+      title: "Choreo",
+      kind: "warning"
+    }))
+  ) {
+    await saveProjectDialog();
+  }
+  await Commands.openProjectDialog().then((filepath) =>
+    openProject(filepath).catch((err) => {
+      tracing.error(`Failed to open Choreo file '${filepath.name}': ${err}`);
+      toast.error(`Failed to open Choreo file '${filepath.name}': ${err}`);
+    })
+  );
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
