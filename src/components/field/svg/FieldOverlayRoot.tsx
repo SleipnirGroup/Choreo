@@ -343,8 +343,8 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <use
                   x="0"
                   y="0"
-                  width="16.541"
-                  height="8.0692"
+                  width={FieldDimensions.FIELD_LENGTH}
+                  height={FieldDimensions.FIELD_WIDTH}
                   href="#toFlipPath"
                 ></use>
               </g>
@@ -416,13 +416,13 @@ class FieldOverlayRoot extends Component<Props, State> {
             {layers[ViewLayers.FlippedPath] && (
               <g
                 id="flippedRobot"
-                transform="translate(16.541 8.0692) rotate(180)"
+                transform={`translate(${FieldDimensions.FIELD_LENGTH} ${FieldDimensions.FIELD_WIDTH}) rotate(180)`}
               >
                 <use
                   x="0"
                   y="0"
-                  width="16.541"
-                  height="8.0692"
+                  width={FieldDimensions.FIELD_LENGTH}
+                  height={FieldDimensions.FIELD_WIDTH}
                   href="#toFlipRobot"
                 ></use>
               </g>
