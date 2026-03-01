@@ -37,6 +37,7 @@ class SwerveConfigPanel extends Component<Props, State> {
           number={config.backLeft.x}
           maxWidthCharacters={8}
           titleTooltip="X coordinate of back modules (negative)"
+          valid={(number) => number.defaultUnitMagnitude <= 0}
         />
 
         <ExpressionInput
