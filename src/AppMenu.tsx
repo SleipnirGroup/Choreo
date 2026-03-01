@@ -22,7 +22,6 @@ import { path } from "@tauri-apps/api";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { toast } from "react-toastify";
 import {
   newProject,
   saveProjectDialog,
