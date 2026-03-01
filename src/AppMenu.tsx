@@ -22,7 +22,6 @@ import { path } from "@tauri-apps/api";
 import { ask } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { toast } from "react-toastify";
 import {
   newProject,
   saveProjectDialog,
@@ -52,7 +51,6 @@ class AppMenu extends Component<Props, State> {
   CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
     const handleAction = async function () {
       await navigator.clipboard.writeText(data);
-      toast.success("Copied to clipboard");
     };
 
     return (

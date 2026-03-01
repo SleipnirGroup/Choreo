@@ -155,16 +155,17 @@ pub fn traj_file_contents(
     let traj_list = trajectories
         .iter()
         .map(TrajEntry::to_java_code)
-        .map(|item| item.replace("\n", "\n\t"))
+        .map(|item| item.replace("\n", "\n    "))
         .collect::<Vec<String>>()
-        .join("\n\t");
+        .join("\n    ");
     let traj_map = trajectories
         .iter()
-        .map(|entry| format!("\tMap.entry(\"{}\", {})", entry.map_name, entry.var_name))
+        .map(|entry| format!("    Map.entry(\"{}\", {})", entry.map_name, entry.var_name))
         .collect::<Vec<String>>()
-        .join(",\n\t");
+        .join(",\n    ");
     format!(
-        r#"package {package_name};
+        r#"// spotless:off
+package {package_name};
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -209,6 +210,7 @@ public record {TRAJ_DATA_FILENAME}(
     }}
     {extra_helpers}
 }}
+// spotless:on
 "#
     )
 }

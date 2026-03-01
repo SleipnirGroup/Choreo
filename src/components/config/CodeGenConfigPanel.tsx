@@ -81,6 +81,9 @@ function CodeGenConfigPanel() {
             style={{ gap: 10 }}
           />
         </Stack>
+        <p>We recommend excluding</p>
+        <pre>'**/ChoreoVars.java', '**/ChoreoTraj.java'</pre>
+        <p>from your code formatting.</p>
       </Stack>
     </div>
   );

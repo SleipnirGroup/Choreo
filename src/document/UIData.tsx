@@ -6,7 +6,8 @@ import {
   Room,
   Route,
   ScatterPlot,
-  SquareOutlined
+  SquareOutlined,
+  Flip
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
@@ -148,6 +149,12 @@ export const ViewData = {
     index: 5,
     name: "Focus",
     icon: <CropFree />,
+    default: false
+  },
+  FlippedPath: {
+    index: 6,
+    name: "Flipped Trajectory",
+    icon: <Flip />,
     default: false
   }
 };

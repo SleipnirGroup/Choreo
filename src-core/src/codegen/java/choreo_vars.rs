@@ -67,9 +67,9 @@ fn format_variable(name: &String, variable: &Variable) -> String {
     };
     let err_msg = match validate_name(name) {
         Ok(_) => String::new(),
-        Err(e) => e.javadoc_comment() + "\t",
+        Err(e) => e.javadoc_comment() + "    ",
     };
-    format!("\t{err_msg}{def}")
+    format!("    {err_msg}{def}")
 }
 
 fn format_pose_variable(name: &String, variable: &PoseVariable) -> String {
@@ -79,9 +79,9 @@ fn format_pose_variable(name: &String, variable: &PoseVariable) -> String {
     let value: String = format!("new Pose2d({x}, {y}, Rotation2d.fromRadians({rot}))");
     let err_msg = match validate_name(name) {
         Ok(_) => String::new(),
-        Err(e) => e.javadoc_comment() + "\t\t",
+        Err(e) => e.javadoc_comment() + "        ",
     };
-    format!("\t\t{err_msg}public static final Pose2d {name} = {value};")
+    format!("        {err_msg}public static final Pose2d {name} = {value};")
 }
 
 pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String {
@@ -102,13 +102,12 @@ pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String
     let pose_imports = if pose_variables.is_empty() {
         ""
     } else {
-        "
-      import edu.wpi.first.math.geometry.Pose2d;
-      import edu.wpi.first.math.geometry.Rotation2d;
-      "
+        "import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;"
     };
     format!(
-        r#"package {package_name};
+        r#"// spotless:off
+package {package_name};
 {pose_imports}
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
@@ -125,6 +124,7 @@ public final class {VARS_FILENAME} {{
 {pose_variable_defs}
     }}
 }}
+// spotless:on
 "#
     )
 }

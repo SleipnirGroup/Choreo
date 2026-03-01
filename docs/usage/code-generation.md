@@ -5,6 +5,10 @@ To enable or disable this feature, simply go to the "Code Generation" tab in the
 
     These generated Java files do not depend on ChoreoLib to work. They will be perfectly compatible with any Java project.
 
+!!! tip
+
+    We recommend excluding `'**/ChoreoVars.java'` and `'**/ChoreoTraj.java'` from any Java formatter set up in your robot code. Choreo's generated files are readable, but will likely not match your formatter's rules.
+
 
 > **NOTE**
 To make this code generation possible, Choreo requires that trajectory names are valid variable names (identifiers) in C++, Python, and Java. **Trajectory names can only contain letters (a-z, A-Z), numbers (0-9), and the underscore character (_). They cannot begin with a number.**

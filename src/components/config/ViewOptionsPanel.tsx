@@ -1,10 +1,4 @@
-import {
-  AspectRatio,
-  Close,
-  Functions,
-  Gradient,
-  Visibility
-} from "@mui/icons-material";
+import { AspectRatio, Close, Gradient, Visibility } from "@mui/icons-material";
 import {
   IconButton,
   Menu,
@@ -20,6 +14,7 @@ import { ViewItemData } from "../../document/UIData";
 import styles from "./WaypointConfigPanel.module.css";
 import { PathGradients } from "./robotconfig/PathGradient";
 import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel";
+import Variable from "../../assets/Variable";
 
 type Props = object;
 
@@ -123,7 +118,7 @@ class ViewOptionsPanel extends Component<Props, State> {
                 uiState.setVariablesPanelOpen(!uiState.variablesPanelOpen);
               }}
             >
-              {uiState.variablesPanelOpen ? <Close /> : <Functions />}
+              {uiState.variablesPanelOpen ? <Close /> : <Variable />}
             </IconButton>
           </Tooltip>
         </div>
