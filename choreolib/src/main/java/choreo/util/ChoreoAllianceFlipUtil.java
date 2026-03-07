@@ -130,7 +130,7 @@ public class ChoreoAllianceFlipUtil {
   /**
    * Set the year to determine the Alliance Coordinate Flipper to use.
    *
-   * @param year The year to set the flipper to. [2020 - 2024]
+   * @param year The year to set the flipper to. [2020 - 2026]
    */
   public static void setYear(int year) {
     if (!flipperMap.containsKey(year)) {
