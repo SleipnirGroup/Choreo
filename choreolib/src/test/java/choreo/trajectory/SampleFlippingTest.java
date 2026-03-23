@@ -210,8 +210,25 @@ public class SampleFlippingTest {
             9.0,
             new double[] {10.0, 11.0, 12.0, 13.0},
             new double[] {14.0, 15.0, 16.0, 17.0});
+    DifferentialSample differentialSample =
+        new DifferentialSample(
+            0.0,
+            FIELD_LENGTH_2026 - 1.0,
+            2.0,
+            Math.PI - 3.0,
+            5.0,
+            4.0,
+            -6.0,
+            8.0,
+            7.0,
+            -9.0,
+            11.0,
+            10.0);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
     assertEquals(sample.mirrorX().mirrorX(), sample);
     assertEquals(sample.mirrorY().mirrorY(), sample);
+
+    assertEquals(differentialSample.mirrorX().mirrorX(), differentialSample);
+    assertEquals(differentialSample.mirrorY().mirrorY(), differentialSample);
   }
 }
