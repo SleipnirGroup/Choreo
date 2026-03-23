@@ -278,7 +278,17 @@ public class AutoTrajectory {
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorX() {
-    return new AutoTrajectory(name, (Trajectory<SampleType>)trajectory.mirrorX(), poseSupplier, resetOdometry, (Consumer<SampleType>)controller, allianceCtx, (TrajectoryLogger<SampleType>)trajectoryLogger, driveSubsystem, routine, bindings);
+    return new AutoTrajectory(
+        name,
+        (Trajectory<SampleType>) trajectory.mirrorX(),
+        poseSupplier,
+        resetOdometry,
+        (Consumer<SampleType>) controller,
+        allianceCtx,
+        (TrajectoryLogger<SampleType>) trajectoryLogger,
+        driveSubsystem,
+        routine,
+        bindings);
   }
 
   /**
@@ -289,7 +299,17 @@ public class AutoTrajectory {
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorY() {
-    return new AutoTrajectory(name, (Trajectory<SampleType>)trajectory.mirrorY(), poseSupplier, resetOdometry, (Consumer<SampleType>)controller, allianceCtx, (TrajectoryLogger<SampleType>)trajectoryLogger, driveSubsystem, routine, bindings);
+    return new AutoTrajectory(
+        name,
+        (Trajectory<SampleType>) trajectory.mirrorY(),
+        poseSupplier,
+        resetOdometry,
+        (Consumer<SampleType>) controller,
+        allianceCtx,
+        (TrajectoryLogger<SampleType>) trajectoryLogger,
+        driveSubsystem,
+        routine,
+        bindings);
   }
 
   /**
