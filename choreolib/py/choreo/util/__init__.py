@@ -1,9 +1,7 @@
 import math
 from enum import Enum
-from typing import *
 
 from choreo.util.field_dimensions import FIELD_LENGTH, FIELD_WIDTH
-from wpimath.geometry import Pose2d
 
 
 class FlipperType(Enum):
@@ -91,7 +89,7 @@ class RotateAroundFlipper:
         return math.pi + heading
 
 
-FLIPPER_MAP: Dict[int, FlipperType] = {
+FLIPPER_MAP: dict[int, FlipperType] = {
     2022: FlipperType.ROTATE_AROUND,
     2023: FlipperType.MIRRORED,
     2024: FlipperType.MIRRORED,
