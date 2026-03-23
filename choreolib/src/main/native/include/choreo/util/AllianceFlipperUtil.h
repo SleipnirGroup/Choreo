@@ -2,122 +2,102 @@
 
 #pragma once
 
-#include <array>
 #include <numbers>
-#include <utility>
 
 #include <units/angle.h>
 #include <units/length.h>
 
 #include "choreo/util/FieldDimensions.h"
-#include "choreo/util/Map.h"
 
 namespace choreo::util {
 
-enum class FlipperType { Mirrored, RotateAround };
+class Flipper {
+ public:
+  enum class Kind { MirroredX, MirroredY, RotatedAround };
 
-/// X becomes fieldLength - x, leaves the y coordinate unchanged, and heading
-/// becomes pi - heading.
-struct MirroredFlipper {
-  /// Whether pose should be mirrored.
-  static constexpr bool isMirrored = true;
+  constexpr Flipper(Kind kind, units::meter_t fieldLength,
+                    units::meter_t fieldWidth)
+      : m_kind(kind), m_fieldLength(fieldLength), m_fieldWidth(fieldWidth) {}
 
-  /// Flips the X coordinate.
-  ///
-  /// @param x The X coordinate to flip.
-  /// @return The flipped X coordinate.
-  static constexpr units::meter_t FlipX(units::meter_t x) {
-    return fieldLength - x;
+  static constexpr Flipper MirroredX(units::meter_t fieldLength,
+                                     units::meter_t fieldWidth) {
+    return Flipper(Kind::MirroredX, fieldLength, fieldWidth);
   }
 
-  /// Flips the Y coordinate.
-  ///
-  /// @param y The Y coordinate to flip.
-  /// @return The flipped Y coordinate.
-  static constexpr units::meter_t FlipY(units::meter_t y) { return y; }
+  static constexpr Flipper MirroredY(units::meter_t fieldLength,
+                                     units::meter_t fieldWidth) {
+    return Flipper(Kind::MirroredY, fieldLength, fieldWidth);
+  }
 
-  /// Flips the heading.
-  ///
-  /// @param heading The heading to flip.
-  /// @return The flipped heading.
-  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
+  static constexpr Flipper RotatedAround(units::meter_t fieldLength,
+                                         units::meter_t fieldWidth) {
+    return Flipper(Kind::RotatedAround, fieldLength, fieldWidth);
+  }
+
+  static constexpr Flipper FRC_CURRENT() {
+    return RotatedAround(fieldLength, fieldWidth);
+  }
+
+  constexpr units::meter_t GetFieldLength() const { return m_fieldLength; }
+  constexpr units::meter_t GetFieldWidth() const { return m_fieldWidth; }
+  constexpr Kind GetKind() const { return m_kind; }
+
+  constexpr bool IsMirroredX() const { return m_kind == Kind::MirroredX; }
+  constexpr bool IsMirroredY() const { return m_kind == Kind::MirroredY; }
+  constexpr bool IsRotatedAround() const {
+    return m_kind == Kind::RotatedAround;
+  }
+
+  constexpr units::meter_t FlipX(units::meter_t x) const {
+    if (IsMirroredY()) {
+      return x;
+    }
+    return m_fieldLength - x;
+  }
+
+  constexpr units::meter_t FlipY(units::meter_t y) const {
+    if (IsMirroredX()) {
+      return y;
+    }
+    return m_fieldWidth - y;
+  }
+
+  constexpr units::radian_t FlipHeading(units::radian_t heading) const {
+    if (IsMirroredY()) {
+      return -heading;
+    }
+    if (IsRotatedAround()) {
+      return units::radian_t{std::numbers::pi} + heading;
+    }
     return units::radian_t{std::numbers::pi} - heading;
   }
+
+ private:
+  Kind m_kind;
+  units::meter_t m_fieldLength;
+  units::meter_t m_fieldWidth;
 };
 
-/// X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes
-/// pi - heading.
-struct RotateAroundFlipper {
-  /// Whether pose should be mirrored.
-  static constexpr bool isMirrored = false;
+inline Flipper activeAllianceFlip = Flipper::FRC_CURRENT();
+inline Flipper activeMirrorY =
+    Flipper::MirroredY(activeAllianceFlip.GetFieldLength(),
+                       activeAllianceFlip.GetFieldWidth());
+inline Flipper activeMirrorX =
+    Flipper::MirroredX(activeAllianceFlip.GetFieldLength(),
+                       activeAllianceFlip.GetFieldWidth());
 
-  /// Flips the X coordinate.
-  ///
-  /// @param x The X coordinate to flip.
-  /// @return The flipped X coordinate.
-  static constexpr units::meter_t FlipX(units::meter_t x) {
-    return fieldLength - x;
-  }
+inline const Flipper& GetFlipper() { return activeAllianceFlip; }
 
-  /// Flips the Y coordinate.
-  ///
-  /// @param y The Y coordinate to flip.
-  /// @return The flipped Y coordinate.
-  static constexpr units::meter_t FlipY(units::meter_t y) {
-    return fieldWidth - y;
-  }
+inline const Flipper& GetMirrorX() { return activeMirrorX; }
 
-  /// Flips the heading.
-  ///
-  /// @param heading The heading to flip.
-  /// @return The flipped heading.
-  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
-    return units::radian_t{std::numbers::pi} + heading;
-  }
-};
+inline const Flipper& GetMirrorY() { return activeMirrorY; }
 
-inline constexpr Map flipperMap{
-    std::array{std::pair{2022, FlipperType::RotateAround},
-               std::pair{2023, FlipperType::Mirrored},
-               std::pair{2024, FlipperType::Mirrored},
-               std::pair{2025, FlipperType::RotateAround},
-               std::pair{2026, FlipperType::RotateAround}}};
-
-inline constexpr int kDefaultYear = 2026;
-
-/// A utility to standardize flipping of coordinate data based on the current
-/// alliance across different years.
-///
-/// Grabs the instance of the flipper for the supplied template parameter. Will
-/// not compile if an invalid year is supplied.
-///
-/// @tparam Year The field year. Defaults to the current year.
-template <int Year = kDefaultYear>
-constexpr auto GetFlipperForYear() {
-  constexpr bool yearInMap = [] {
-    try {
-      [[maybe_unused]]
-      auto checked = flipperMap.at(Year);
-      return true;
-    } catch (...) {
-      return false;
-    }
-  }();
-
-  if constexpr (!yearInMap) {
-    static_assert(yearInMap, "Year not found in flipperMap");
-  } else {
-    constexpr auto flipperType = flipperMap.at(Year);
-    if constexpr (flipperType == FlipperType::RotateAround) {
-      return RotateAroundFlipper{};
-    } else if constexpr (flipperType == FlipperType::Mirrored) {
-      return MirroredFlipper{};
-    } else {
-      static_assert(flipperType == FlipperType::RotateAround ||
-                        flipperType == FlipperType::Mirrored,
-                    "Invalid FlipperType in flipperMap");
-    }
-  }
+inline void SetFlipper(const Flipper& flipper) {
+  activeAllianceFlip = flipper;
+  activeMirrorY =
+      Flipper::MirroredY(flipper.GetFieldLength(), flipper.GetFieldWidth());
+  activeMirrorX =
+      Flipper::MirroredX(flipper.GetFieldLength(), flipper.GetFieldWidth());
 }
 
 }  // namespace choreo::util

@@ -1,13 +1,13 @@
 // Copyright (c) Choreo contributors
 
 #include <iostream>
+#include <numbers>
 
 #include <gtest/gtest.h>
 #include <units/force.h>
-#include <wpi/json.h>
 
+#include "choreo/trajectory/DifferentialSample.h"
 #include "choreo/trajectory/SwerveSample.h"
-#include "choreo/trajectory/Trajectory.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 using namespace choreo;
@@ -26,7 +26,7 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
                         0_rad_per_s_sq,
                         {0_N, 0_N, 0_N, 0_N},
                         {0_N, 0_N, 0_N, 0_N}};
-    SwerveSample mirrored2024{0_s,
+    SwerveSample mirrored2026{0_s,
                               util::fieldLength - 0_m,
                               0_m,
                               units::radian_t{std::numbers::pi} - 0_rad,
@@ -38,7 +38,7 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
                               0_rad_per_s_sq,
                               {0_N, 0_N, 0_N, 0_N},
                               {0_N, 0_N, 0_N, 0_N}};
-    SwerveSample rotated2022{0_s,
+    SwerveSample rotated2026{0_s,
                              util::fieldLength - 0_m,
                              util::fieldWidth - 0_m,
                              units::radian_t{std::numbers::pi} + 0_rad,
@@ -51,8 +51,14 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
                              {0_N, 0_N, 0_N, 0_N},
                              {0_N, 0_N, 0_N, 0_N}};
 
-    ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
-    ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);
+    util::SetFlipper(
+        util::Flipper::MirroredX(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == mirrored2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
+    util::SetFlipper(
+        util::Flipper::RotatedAround(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == rotated2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
@@ -73,7 +79,7 @@ TEST(SampleFlippingTest, SwerveSample) {
                         9_rad_per_s_sq,
                         {10_N, 11_N, 12_N, 13_N},
                         {14_N, 15_N, 16_N, 17_N}};
-    SwerveSample mirrored2024{0_s,
+    SwerveSample mirrored2026{0_s,
                               util::fieldLength - 1_m,
                               2_m,
                               units::radian_t{std::numbers::pi} - 3_rad,
@@ -85,7 +91,7 @@ TEST(SampleFlippingTest, SwerveSample) {
                               -9_rad_per_s_sq,
                               {-11_N, -10_N, -13_N, -12_N},
                               {15_N, 14_N, 17_N, 16_N}};
-    SwerveSample rotated2022{0_s,
+    SwerveSample rotated2026{0_s,
                              util::fieldLength - 1_m,
                              util::fieldWidth - 2_m,
                              units::radian_t{std::numbers::pi} + 3_rad,
@@ -98,8 +104,14 @@ TEST(SampleFlippingTest, SwerveSample) {
                              {-10_N, -11_N, -12_N, -13_N},
                              {-14_N, -15_N, -16_N, -17_N}};
 
-    ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
-    ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);
+    util::SetFlipper(
+        util::Flipper::MirroredX(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == mirrored2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
+    util::SetFlipper(
+        util::Flipper::RotatedAround(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == rotated2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
@@ -111,14 +123,14 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
     DifferentialSample sample{
         0_s,         0_m,      0_m,      0_rad,          0_mps, 0_mps,
         0_rad_per_s, 0_mps_sq, 0_mps_sq, 0_rad_per_s_sq, 0_N,   0_N};
-    DifferentialSample mirrored2024{
+    DifferentialSample mirrored2026{
         0_s,         util::fieldLength - 0_m,
         0_m,         units::radian_t{std::numbers::pi} - 0_rad,
         0_mps,       0_mps,
         0_rad_per_s, 0_mps_sq,
         0_mps_sq,    0_rad_per_s_sq,
         0_N,         0_N};
-    DifferentialSample rotated2022{0_s,
+    DifferentialSample rotated2026{0_s,
                                    util::fieldLength - 0_m,
                                    util::fieldWidth - 0_m,
                                    units::radian_t{std::numbers::pi} + 0_rad,
@@ -131,8 +143,14 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
                                    0_N,
                                    0_N};
 
-    ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
-    ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);
+    util::SetFlipper(
+        util::Flipper::MirroredX(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == mirrored2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
+    util::SetFlipper(
+        util::Flipper::RotatedAround(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == rotated2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
@@ -144,14 +162,14 @@ TEST(SampleFlippingTest, DifferentialSample) {
     DifferentialSample sample{
         0_s,         1_m,      2_m,      3_rad,          4_mps, 5_mps,
         6_rad_per_s, 7_mps_sq, 8_mps_sq, 9_rad_per_s_sq, 10_N,  11_N};
-    DifferentialSample mirrored2024{
+    DifferentialSample mirrored2026{
         0_s,          util::fieldLength - 1_m,
         2_m,          units::radian_t{std::numbers::pi} - 3_rad,
         5_mps,        4_mps,
         -6_rad_per_s, 8_mps_sq,
         7_mps_sq,     -9_rad_per_s_sq,
         11_N,         10_N};
-    DifferentialSample rotated2022{0_s,
+    DifferentialSample rotated2026{0_s,
                                    util::fieldLength - 1_m,
                                    util::fieldWidth - 2_m,
                                    units::radian_t{std::numbers::pi} + 3_rad,
@@ -164,8 +182,14 @@ TEST(SampleFlippingTest, DifferentialSample) {
                                    10_N,
                                    11_N};
 
-    ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
-    ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);
+    util::SetFlipper(
+        util::Flipper::MirroredX(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == mirrored2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
+    util::SetFlipper(
+        util::Flipper::RotatedAround(util::fieldLength, util::fieldWidth));
+    ASSERT_TRUE(sample.Flipped() == rotated2026);
+    ASSERT_TRUE(sample.MirrorX() == mirrored2026);
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
@@ -187,7 +211,8 @@ TEST(SampleFlippingTest, BothMirrorEqualsRotation) {
                         {10_N, 11_N, 12_N, 13_N},
                         {14_N, 15_N, 16_N, 17_N}};
 
-    ASSERT_TRUE(sample.MirrorX().MirrorY() == sample.Flipped<>());
+    util::SetFlipper(util::Flipper::FRC_CURRENT());
+    ASSERT_TRUE(sample.MirrorX().MirrorY() == sample.Flipped());
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
@@ -212,6 +237,8 @@ TEST(SampleFlippingTest, MirrorIsInverse) {
         0_s,         1_m,      2_m,      3_rad,          4_mps, 5_mps,
         6_rad_per_s, 7_mps_sq, 8_mps_sq, 9_rad_per_s_sq, 10_N,  11_N};
 
+    util::SetFlipper(
+        util::Flipper::MirroredX(util::fieldLength, util::fieldWidth));
     ASSERT_TRUE(sample.MirrorX().MirrorX() == sample);
     ASSERT_TRUE(sample.MirrorY().MirrorY() == sample);
     ASSERT_TRUE(differentialSample.MirrorX().MirrorX() == differentialSample);

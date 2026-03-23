@@ -1,12 +1,10 @@
 from math import pi
 
 from choreo.trajectory import DifferentialSample, SwerveSample
-from choreo.util import field_dimensions
+from choreo.util import Flipper, field_dimensions, set_flipper
 
-# Not accurate, but ChoreoLib doesn't actually keep old field dimensions
-FIELD_LENGTH_2022 = field_dimensions.FIELD_LENGTH
-FIELD_LENGTH_2024 = field_dimensions.FIELD_LENGTH
-FIELD_WIDTH_2022 = field_dimensions.FIELD_WIDTH
+FIELD_LENGTH = field_dimensions.FIELD_LENGTH
+FIELD_WIDTH = field_dimensions.FIELD_WIDTH
 
 
 def test_swerve_sample():
@@ -24,9 +22,9 @@ def test_swerve_sample():
         [10.0, 11.0, 12.0, 13.0],
         [14.0, 15.0, 16.0, 17.0],
     )
-    mirrored2024 = SwerveSample(
+    mirrored = SwerveSample(
         0.0,
-        FIELD_LENGTH_2024 - 1.0,
+        FIELD_LENGTH - 1.0,
         2.0,
         pi - 3.0,
         -4.0,
@@ -38,10 +36,10 @@ def test_swerve_sample():
         [-11.0, -10.0, -13.0, -12.0],
         [15.0, 14.0, 17.0, 16.0],
     )
-    rotated2022 = SwerveSample(
+    rotated = SwerveSample(
         0.0,
-        FIELD_LENGTH_2022 - 1.0,
-        FIELD_WIDTH_2022 - 2.0,
+        FIELD_LENGTH - 1.0,
+        FIELD_WIDTH - 2.0,
         pi + 3.0,
         -4.0,
         -5.0,
@@ -53,15 +51,19 @@ def test_swerve_sample():
         [-14.0, -15.0, -16.0, -17.0],
     )
 
-    assert sample.flipped(2024) == mirrored2024
-    assert sample.flipped(2022) == rotated2022
+    set_flipper(Flipper.mirrored_x(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == mirrored
+    assert sample.mirror_x() == mirrored
+    set_flipper(Flipper.rotated_around(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == rotated
+    assert sample.mirror_x() == mirrored
 
 
 def test_zero_swerve_sample():
     sample = SwerveSample(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [0, 0, 0, 0], [0, 0, 0, 0])
-    mirrored2024 = SwerveSample(
+    mirrored = SwerveSample(
         0,
-        FIELD_LENGTH_2024 - 0,
+        FIELD_LENGTH - 0,
         0,
         pi - 0,
         0,
@@ -73,10 +75,10 @@ def test_zero_swerve_sample():
         [-0.0, -0.0, -0.0, -0.0],
         [0, 0, 0, 0],
     )
-    rotated2022 = SwerveSample(
+    rotated = SwerveSample(
         0,
-        FIELD_LENGTH_2022,
-        FIELD_WIDTH_2022,
+        FIELD_LENGTH,
+        FIELD_WIDTH,
         pi,
         0,
         0,
@@ -88,17 +90,21 @@ def test_zero_swerve_sample():
         [-0.0, -0.0, -0.0, -0.0],
     )
 
-    assert sample.flipped(2024) == mirrored2024
-    assert sample.flipped(2022) == rotated2022
+    set_flipper(Flipper.mirrored_x(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == mirrored
+    assert sample.mirror_x() == mirrored
+    set_flipper(Flipper.rotated_around(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == rotated
+    assert sample.mirror_x() == mirrored
 
 
 def test_differential_sample():
     sample = DifferentialSample(
         0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0
     )
-    mirrored2024 = DifferentialSample(
+    mirrored = DifferentialSample(
         0.0,
-        FIELD_LENGTH_2024 - 1.0,
+        FIELD_LENGTH - 1.0,
         2.0,
         pi - 3.0,
         5.0,
@@ -110,10 +116,10 @@ def test_differential_sample():
         11.0,
         10.0,
     )
-    rotated2022 = DifferentialSample(
+    rotated = DifferentialSample(
         0.0,
-        FIELD_LENGTH_2022 - 1.0,
-        FIELD_WIDTH_2022 - 2.0,
+        FIELD_LENGTH - 1.0,
+        FIELD_WIDTH - 2.0,
         pi + 3.0,
         4.0,
         5.0,
@@ -125,15 +131,19 @@ def test_differential_sample():
         11.0,
     )
 
-    assert sample.flipped(2024) == mirrored2024
-    assert sample.flipped(2022) == rotated2022
+    set_flipper(Flipper.mirrored_x(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == mirrored
+    assert sample.mirror_x() == mirrored
+    set_flipper(Flipper.rotated_around(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == rotated
+    assert sample.mirror_x() == mirrored
 
 
 def test_zero_differential_sample():
     sample = DifferentialSample(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    mirrored2024 = DifferentialSample(
+    mirrored = DifferentialSample(
         0.0,
-        FIELD_LENGTH_2024 - 0,
+        FIELD_LENGTH - 0,
         0.0,
         pi - 0.0,
         0.0,
@@ -145,10 +155,10 @@ def test_zero_differential_sample():
         0.0,
         0.0,
     )
-    rotated2022 = DifferentialSample(
+    rotated = DifferentialSample(
         0.0,
-        FIELD_LENGTH_2022,
-        FIELD_WIDTH_2022,
+        FIELD_LENGTH,
+        FIELD_WIDTH,
         pi,
         0.0,
         0.0,
@@ -160,8 +170,12 @@ def test_zero_differential_sample():
         0.0,
     )
 
-    assert sample.flipped(2024) == mirrored2024
-    assert sample.flipped(2022) == rotated2022
+    set_flipper(Flipper.mirrored_x(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == mirrored
+    assert sample.mirror_x() == mirrored
+    set_flipper(Flipper.rotated_around(FIELD_LENGTH, FIELD_WIDTH))
+    assert sample.flipped() == rotated
+    assert sample.mirror_x() == mirrored
 
 
 def test_both_mirror_equals_rotation():
@@ -180,6 +194,7 @@ def test_both_mirror_equals_rotation():
         [14.0, 15.0, 16.0, 17.0],
     )
 
+    set_flipper(Flipper.frc_current())
     assert sample.mirror_x().mirror_y() == sample.flipped()
 
 
@@ -202,6 +217,7 @@ def test_mirror_is_inverse():
         0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0
     )
 
+    set_flipper(Flipper.mirrored_x(FIELD_LENGTH, FIELD_WIDTH))
     assert sample.mirror_x().mirror_x() == sample
     assert sample.mirror_y().mirror_y() == sample
     assert differential_sample.mirror_x().mirror_x() == differential_sample

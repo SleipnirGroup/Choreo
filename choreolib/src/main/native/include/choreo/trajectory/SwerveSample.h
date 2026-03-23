@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
+#include <numbers>
 #include <type_traits>
 
 #include <frc/kinematics/ChassisSpeeds.h>
@@ -89,14 +89,12 @@ class SwerveSample {
     return frc::ChassisSpeeds{vx, vy, omega};
   }
 
-  /// Returns the current sample flipped based on the field year.
+  /// Returns the current sample flipped using the active alliance flipper.
   ///
-  /// @tparam Year The field year.
   /// @return SwerveSample that is flipped based on the field layout.
-  template <int Year = util::kDefaultYear>
-  constexpr SwerveSample Flipped() const {
-    constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
-    if constexpr (flipper.isMirrored) {
+  SwerveSample Flipped() const {
+    const auto& flipper = choreo::util::GetFlipper();
+    if (flipper.IsMirroredX()) {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),
                           flipper.FlipY(y),
@@ -117,6 +115,21 @@ class SwerveSample {
                           // -FR, -FL, -BR, -BL
                           {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
                            moduleForcesY[2]}};
+    } else if (flipper.IsMirroredY()) {
+      return SwerveSample{timestamp,
+                          flipper.FlipX(x),
+                          flipper.FlipY(y),
+                          flipper.FlipHeading(heading),
+                          vx,
+                          -vy,
+                          -omega,
+                          ax,
+                          -ay,
+                          -alpha,
+                          {moduleForcesX[1], moduleForcesX[0], moduleForcesX[3],
+                           moduleForcesX[2]},
+                          {-moduleForcesY[1], -moduleForcesY[0],
+                           -moduleForcesY[3], -moduleForcesY[2]}};
     } else {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),
@@ -138,11 +151,12 @@ class SwerveSample {
   /// Returns the current sample mirrored across the field width.
   ///
   /// @return SwerveSample mirrored across the field width.
-  constexpr SwerveSample MirrorX() const {
+  SwerveSample MirrorX() const {
+    const auto& flipper = util::GetMirrorX();
     return SwerveSample{timestamp,
-                        util::fieldLength - x,
-                        y,
-                        units::radian_t{std::numbers::pi} - heading,
+                        flipper.FlipX(x),
+                        flipper.FlipY(y),
+                        flipper.FlipHeading(heading),
                         -vx,
                         vy,
                         -omega,
@@ -158,11 +172,12 @@ class SwerveSample {
   /// Returns the current sample mirrored across the field length.
   ///
   /// @return SwerveSample mirrored across the field length.
-  constexpr SwerveSample MirrorY() const {
+  SwerveSample MirrorY() const {
+    const auto& flipper = util::GetMirrorY();
     return SwerveSample{timestamp,
-                        x,
-                        util::fieldWidth - y,
-                        -heading,
+                        flipper.FlipX(x),
+                        flipper.FlipY(y),
+                        flipper.FlipHeading(heading),
                         vx,
                         -vy,
                         -omega,
@@ -240,8 +255,10 @@ class SwerveSample {
   ///
   /// @param other The other SwerveSample.
   /// @return True for equality.
-  bool operator==(const SwerveSample& other) const {
+  constexpr bool operator==(const SwerveSample& other) const {
     constexpr double epsilon = 1e-6;
+    constexpr double kPi = std::numbers::pi;
+    constexpr double kTwoPi = 2.0 * kPi;
 
     auto compare_units = [epsilon](const auto& a, const auto& b) {
       using UnitType =
@@ -253,14 +270,21 @@ class SwerveSample {
       return std::equal(arr1.begin(), arr1.end(), arr2.begin(), compare_units);
     };
 
-        auto compare_angle = [epsilon](units::radian_t a, units::radian_t b) {
-          return std::abs(std::remainder((a - b).value(), 2.0 * std::numbers::pi)) <
-            epsilon;
-        };
+    auto compare_angle = [epsilon, kPi, kTwoPi](units::radian_t a,
+                                                units::radian_t b) {
+      auto delta = (a - b).value();
+      while (delta > kPi) {
+        delta -= kTwoPi;
+      }
+      while (delta < -kPi) {
+        delta += kTwoPi;
+      }
+      return delta >= -epsilon && delta <= epsilon;
+    };
 
     return compare_units(timestamp, other.timestamp) &&
            compare_units(x, other.x) && compare_units(y, other.y) &&
-          compare_angle(heading, other.heading) &&
+           compare_angle(heading, other.heading) &&
            compare_units(vx, other.vx) && compare_units(vy, other.vy) &&
            compare_units(omega, other.omega) && compare_units(ax, other.ax) &&
            compare_units(ay, other.ay) && compare_units(alpha, other.alpha) &&
