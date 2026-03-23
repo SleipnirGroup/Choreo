@@ -193,4 +193,25 @@ public class SampleFlippingTest {
     SwerveSample rotated = sample.flipped();
     assertEquals(mirrored, rotated);
   }
+
+  @Test
+  void testMirrorIsInverse() {
+    SwerveSample sample =
+        new SwerveSample(
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            new double[] {10.0, 11.0, 12.0, 13.0},
+            new double[] {14.0, 15.0, 16.0, 17.0});
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
+    assertEquals(sample.mirrorX().mirrorX(), sample);
+    assertEquals(sample.mirrorY().mirrorY(), sample);
+  }
 }

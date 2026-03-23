@@ -297,7 +297,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     return MathUtil.isNear(this.t       , other.t, 1E-6)
         && MathUtil.isNear(this.x       , other.x, 1E-6)
         && MathUtil.isNear(this.y       , other.y, 1E-6)
-        && MathUtil.isNear(this.heading , other.heading, 1E-6)
+        && MathUtil.isNear(MathUtil.angleModulus(this.heading - other.heading), 0.0, 1E-6)
         && MathUtil.isNear(this.vx      ,  other.vx, 1E-6)
         && MathUtil.isNear(this.vy      ,  other.vy, 1E-6)
         && MathUtil.isNear(this.omega   , other.omega, 1E-6)
