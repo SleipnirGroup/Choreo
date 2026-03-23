@@ -5,6 +5,8 @@ package choreo.util;
 import static choreo.util.FieldDimensions.FIELD_LENGTH;
 import static choreo.util.FieldDimensions.FIELD_WIDTH;
 
+import choreo.trajectory.DifferentialSample;
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,7 +15,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -29,14 +30,14 @@ import java.util.function.Supplier;
  */
 public class ChoreoAllianceFlipUtil {
   /** The flipper to use for flipping coordinates. */
-  public static enum Flipper {
+  public abstract static class Flipper {
     /**
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
      */
-    MIRRORED {
+    abstract static class MirroredX extends Flipper {
       public double flipX(double x) {
-        return activeYear.fieldLength - x;
+        return getFieldLength() - x;
       }
 
       public double flipY(double y) {
@@ -46,21 +47,240 @@ public class ChoreoAllianceFlipUtil {
       public double flipHeading(double heading) {
         return Math.PI - heading;
       }
-    },
-    /** X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes PI - heading. */
-    ROTATE_AROUND {
+
+      public Rotation2d flip(Rotation2d rotation) {
+        return new Rotation2d(-rotation.getCos(), rotation.getSin());
+      }
+
+      public SwerveSample flip(SwerveSample sample) {
+        return new SwerveSample(
+            sample.t,
+            flipX(sample.x),
+            flipY(sample.y),
+            flipHeading(sample.heading),
+            -sample.vx,
+            sample.vy,
+            -sample.omega,
+            -sample.ax,
+            sample.ay,
+            -sample.alpha,
+            // FL, FR, BL, BR
+            // Mirrored
+            // -FR, -FL, -BR, -BL
+            new double[] {
+              -sample.moduleForcesX()[1],
+              -sample.moduleForcesX()[0],
+              -sample.moduleForcesX()[3],
+              -sample.moduleForcesX()[2]
+            },
+            // FL, FR, BL, BR
+            // Mirrored
+            // FR, FL, BR, BL
+            new double[] {
+              sample.moduleForcesY()[1],
+              sample.moduleForcesY()[0],
+              sample.moduleForcesY()[3],
+              sample.moduleForcesY()[2]
+            });
+      }
+
+      public DifferentialSample flip(DifferentialSample sample) {
+        return new DifferentialSample(
+            sample.t,
+            flipX(sample.x),
+            flipY(sample.y), // No-op for mirroring
+            flipHeading(sample.heading),
+            sample.vr,
+            sample.vl,
+            -sample.omega,
+            sample.ar,
+            sample.al,
+            -sample.alpha,
+            sample.fr,
+            sample.fl);
+      }
+    }
+
+    public static MirroredX mirroredX(double fieldLength, double fieldWidth) {
+      return new MirroredX() {
+        public double getFieldLength() {
+          return fieldLength;
+        }
+
+        public double getFieldWidth() {
+          return fieldWidth;
+        }
+      };
+    }
+
+    /**
+     * More used for left-right variants on the same alliance X is unchanged, Y becomes
+     * fieldWidth-y, and heading becomes -heading.
+     */
+    abstract static class MirroredY extends Flipper {
       public double flipX(double x) {
-        return activeYear.fieldLength - x;
+        return x;
       }
 
       public double flipY(double y) {
-        return activeYear.fieldWidth - y;
+        return getFieldWidth() - y;
       }
 
       public double flipHeading(double heading) {
-        return Math.PI + heading;
+        return -heading;
       }
-    };
+
+      public Rotation2d flip(Rotation2d rotation) {
+        return new Rotation2d(rotation.getCos(), -rotation.getSin());
+      }
+
+      @Override
+      public SwerveSample flip(SwerveSample sample) {
+        return new SwerveSample(
+            sample.t,
+            flipX(sample.x),
+            flipY(sample.y),
+            flipHeading(sample.heading),
+            sample.vx,
+            -sample.vy,
+            -sample.omega,
+            sample.ax,
+            -sample.ay,
+            -sample.alpha,
+            // FL, FR, BL, BR
+            // Mirrored
+            // FR, FL, BR, BL
+            new double[] {
+              sample.moduleForcesX()[1],
+              sample.moduleForcesX()[0],
+              sample.moduleForcesX()[3],
+              sample.moduleForcesX()[2]
+            },
+            // FL, FR, BL, BR
+            // Mirrored
+            // -FR, -FL, -BR, -BL
+            new double[] {
+              -sample.moduleForcesY()[1],
+              -sample.moduleForcesY()[0],
+              -sample.moduleForcesY()[3],
+              -sample.moduleForcesY()[2]
+            });
+      }
+
+      @Override
+      public DifferentialSample flip(DifferentialSample sample) {
+        return new DifferentialSample(
+            sample.t,
+            flipX(sample.x),
+            flipY(sample.y), // No-op for mirroring
+            flipHeading(sample.heading),
+            sample.vr,
+            sample.vl,
+            -sample.omega,
+            sample.ar,
+            sample.al,
+            -sample.alpha,
+            sample.fr,
+            sample.fl);
+      }
+    }
+
+    public static MirroredY mirroredY(double fieldLength, double fieldWidth) {
+      return new MirroredY() {
+        public double getFieldLength() {
+          return fieldLength;
+        }
+
+        public double getFieldWidth() {
+          return fieldWidth;
+        }
+      };
+    }
+
+    /** X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes PI + heading. */
+    abstract static class RotatedAround extends Flipper {
+      MirroredX mirrorX = mirroredX(getFieldLength(), getFieldWidth());
+      MirroredY mirrorY = mirroredY(getFieldLength(), getFieldWidth());
+
+      public double flipX(double x) {
+        return mirrorX.flipX(mirrorY.flipX(x));
+      }
+
+      public double flipY(double y) {
+        return mirrorX.flipY(mirrorY.flipY(y));
+      }
+
+      public double flipHeading(double heading) {
+        return mirrorX.flipHeading(mirrorY.flipHeading(heading));
+      }
+
+      public Rotation2d flip(Rotation2d rotation) {
+        return new Rotation2d(-rotation.getCos(), -rotation.getSin());
+      }
+
+      @Override
+      public SwerveSample flip(SwerveSample sample) {
+        return new SwerveSample(
+            sample.t,
+            flipX(sample.x),
+            flipY(sample.y),
+            flipHeading(sample.heading),
+            -sample.vx,
+            -sample.vy,
+            sample.omega,
+            -sample.ax,
+            -sample.ay,
+            sample.alpha,
+            new double[] {
+              -sample.moduleForcesX()[0],
+              -sample.moduleForcesX()[1],
+              -sample.moduleForcesX()[2],
+              -sample.moduleForcesX()[3]
+            },
+            new double[] {
+              -sample.moduleForcesY()[0],
+              -sample.moduleForcesY()[1],
+              -sample.moduleForcesY()[2],
+              -sample.moduleForcesY()[3]
+            });
+      }
+
+      @Override
+      public DifferentialSample flip(DifferentialSample sample) {
+        return new DifferentialSample(
+            sample.t,
+            flipX(sample.x),
+            flipY(sample.y),
+            flipHeading(sample.heading),
+            sample.vl,
+            sample.vr,
+            sample.omega,
+            sample.al,
+            sample.ar,
+            sample.alpha,
+            sample.fl,
+            sample.fr);
+      }
+    }
+    ;
+
+    public static RotatedAround rotatedAround(double fieldLength, double fieldWidth) {
+      return new RotatedAround() {
+        public double getFieldLength() {
+          return fieldLength;
+        }
+
+        public double getFieldWidth() {
+          return fieldWidth;
+        }
+      };
+    }
+
+    // ***** Class Definition *****/
+
+    public abstract double getFieldLength();
+
+    public abstract double getFieldWidth();
 
     /**
      * Flips the X coordinate.
@@ -85,25 +305,75 @@ public class ChoreoAllianceFlipUtil {
      * @return The flipped heading.
      */
     public abstract double flipHeading(double heading);
+
+    /**
+     * Flips a Rotation2d.
+     *
+     * @param rotation the Rotation2d to flip.
+     * @return The flipped Rotation2d.
+     */
+    public abstract Rotation2d flip(Rotation2d rotation);
+
+    public abstract SwerveSample flip(SwerveSample sample);
+
+    public abstract DifferentialSample flip(DifferentialSample sample);
+
+    public Translation2d flip(Translation2d translation) {
+      return new Translation2d(flipX(translation.getX()), flipY(translation.getY()));
+    }
+
+    /**
+     * Flips the pose.
+     *
+     * @param pose The pose to flip.
+     * @return The flipped pose.
+     */
+    public Pose2d flip(Pose2d pose) {
+      return new Pose2d(flip(pose.getTranslation()), flip(pose.getRotation()));
+    }
+
+    /**
+     * Flips the translation.
+     *
+     * @param translation The translation to flip.
+     * @return The flipped translation.
+     */
+    public Translation3d flip(Translation3d translation) {
+      return new Translation3d(
+          flipX(translation.getX()), flipY(translation.getY()), translation.getZ());
+    }
+
+    /**
+     * Flips the rotation.
+     *
+     * @param rotation The rotation to flip.
+     * @return The flipped rotation.
+     */
+    public Rotation3d flip(Rotation3d rotation) {
+      return new Rotation3d(
+          rotation.getX(), rotation.getY(), flip(rotation.toRotation2d()).getRadians());
+    }
+
+    /**
+     * Flips the pose.
+     *
+     * @param pose The pose to flip.
+     * @return The flipped pose.
+     */
+    public Pose3d flip(Pose3d pose) {
+      return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
+    }
+
+    public static Flipper FRC_CURRENT = rotatedAround(FIELD_LENGTH, FIELD_WIDTH);
   }
 
-  public static record YearInfo(Flipper flipper, double fieldLength, double fieldWidth) {}
+  private static Flipper activeAllianceFlip;
+  private static Flipper activeMirrorY;
+  private static Flipper activeMirrorX;
 
-  // TODO: Update and expand this map
-  private static final HashMap<Integer, YearInfo> flipperMap =
-      new HashMap<Integer, YearInfo>() {
-        {
-          put(2020, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2021, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2025, new YearInfo(Flipper.ROTATE_AROUND, 17.548, 8.052));
-          put(2026, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
-        }
-      };
-
-  private static YearInfo activeYear = flipperMap.get(2026);
+  static {
+    setFlipper(Flipper.FRC_CURRENT);
+  }
 
   /** Default constructor. */
   private ChoreoAllianceFlipUtil() {}
@@ -115,16 +385,15 @@ public class ChoreoAllianceFlipUtil {
    * @return The active flipper.
    */
   public static Flipper getFlipper() {
-    return activeYear.flipper;
+    return activeAllianceFlip;
   }
 
-  /**
-   * Get the active year info
-   *
-   * @return The active year info
-   */
-  public static YearInfo getActiveYearInfo() {
-    return new YearInfo(activeYear.flipper, activeYear.fieldLength, activeYear.fieldWidth);
+  public static Flipper getMirrorX() {
+    return activeMirrorX;
+  }
+
+  public static Flipper getMirrorY() {
+    return activeMirrorY;
   }
 
   /**
@@ -136,16 +405,10 @@ public class ChoreoAllianceFlipUtil {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
   }
 
-  /**
-   * Set the year to determine the Alliance Coordinate Flipper to use.
-   *
-   * @param year The year to set the flipper to. [2020 - 2026]
-   */
-  public static void setYear(int year) {
-    if (!flipperMap.containsKey(year)) {
-      throw new IllegalArgumentException("Year " + year + " is not supported.");
-    }
-    activeYear = flipperMap.get(year);
+  public static void setFlipper(Flipper flipper) {
+    activeAllianceFlip = flipper;
+    activeMirrorY = Flipper.mirroredY(flipper.getFieldLength(), flipper.getFieldWidth());
+    activeMirrorX = Flipper.mirroredX(flipper.getFieldLength(), flipper.getFieldWidth());
   }
 
   /**
@@ -155,7 +418,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped X coordinate.
    */
   public static double flipX(double x) {
-    return activeYear.flipper.flipX(x);
+    return activeAllianceFlip.flipX(x);
   }
 
   /**
@@ -165,7 +428,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped Y coordinate.
    */
   public static double flipY(double y) {
-    return activeYear.flipper.flipY(y);
+    return activeAllianceFlip.flipY(y);
   }
 
   /**
@@ -175,7 +438,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped heading.
    */
   public static double flipHeading(double heading) {
-    return activeYear.flipper.flipHeading(heading);
+    return activeAllianceFlip.flipHeading(heading);
   }
 
   /**
@@ -185,7 +448,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped translation.
    */
   public static Translation2d flip(Translation2d translation) {
-    return new Translation2d(flipX(translation.getX()), flipY(translation.getY()));
+    return activeAllianceFlip.flip(translation);
   }
 
   /**
@@ -195,10 +458,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped rotation.
    */
   public static Rotation2d flip(Rotation2d rotation) {
-    return switch (activeYear.flipper) {
-      case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
-      case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
-    };
+    return activeAllianceFlip.flip(rotation);
   }
 
   /**
@@ -208,7 +468,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped pose.
    */
   public static Pose2d flip(Pose2d pose) {
-    return new Pose2d(flip(pose.getTranslation()), flip(pose.getRotation()));
+    return activeAllianceFlip.flip(pose);
   }
 
   /**
@@ -218,8 +478,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped translation.
    */
   public static Translation3d flip(Translation3d translation) {
-    return new Translation3d(
-        flipX(translation.getX()), flipY(translation.getY()), translation.getZ());
+    return activeAllianceFlip.flip(translation);
   }
 
   /**
@@ -229,8 +488,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped rotation.
    */
   public static Rotation3d flip(Rotation3d rotation) {
-    return new Rotation3d(
-        rotation.getX(), rotation.getY(), flip(rotation.toRotation2d()).getRadians());
+    return activeAllianceFlip.flip(rotation);
   }
 
   /**
@@ -240,7 +498,15 @@ public class ChoreoAllianceFlipUtil {
    * @return The flipped pose.
    */
   public static Pose3d flip(Pose3d pose) {
-    return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
+    return activeAllianceFlip.flip(pose);
+  }
+
+  public static SwerveSample flip(SwerveSample sample) {
+    return activeAllianceFlip.flip(sample);
+  }
+
+  public static DifferentialSample flip(DifferentialSample sample) {
+    return activeAllianceFlip.flip(sample);
   }
 
   /**

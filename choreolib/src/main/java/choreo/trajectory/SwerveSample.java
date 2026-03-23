@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /** A single swerve robot sample in a Trajectory. */
 public class SwerveSample implements TrajectorySample<SwerveSample> {
@@ -199,86 +198,17 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
   @Override
   public SwerveSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              this.vy,
-              -this.omega,
-              -this.ax,
-              this.ay,
-              -this.alpha,
-              // FL, FR, BL, BR
-              // Mirrored
-              // -FR, -FL, -BR, -BL
-              new double[] {
-                -this.moduleForcesX()[1],
-                -this.moduleForcesX()[0],
-                -this.moduleForcesX()[3],
-                -this.moduleForcesX()[2]
-              },
-              // FL, FR, BL, BR
-              // Mirrored
-              // FR, FL, BR, BL
-              new double[] {
-                this.moduleForcesY()[1],
-                this.moduleForcesY()[0],
-                this.moduleForcesY()[3],
-                this.moduleForcesY()[2]
-              });
-      case ROTATE_AROUND ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              -this.vy,
-              this.omega,
-              -this.ax,
-              -this.ay,
-              this.alpha,
-              Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
-              Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
-    };
+    return ChoreoAllianceFlipUtil.flip(this);
   }
 
   @Override
   public SwerveSample mirrorY() {
-    return new SwerveSample(
-        this.t,
-        this.x,
-        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldWidth() - this.y,
-        -this.heading,
-        this.vx,
-        this.vy,
-        this.omega,
-        this.ax,
-        this.ay,
-        this.alpha,
-        this.moduleForcesX(),
-        this.moduleForcesY());
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
   }
 
   @Override
   public SwerveSample mirrorX() {
-    return new SwerveSample(
-        this.t,
-        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldLength() - this.x,
-        this.y,
-        Math.PI - this.heading,
-        this.vx,
-        this.vy,
-        this.omega,
-        this.ax,
-        this.ay,
-        this.alpha,
-        this.moduleForcesX(),
-        this.moduleForcesY());
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
   /** The struct for the SwerveSample class. */

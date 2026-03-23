@@ -171,70 +171,17 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
-          new DifferentialSample(
-              t,
-              ChoreoAllianceFlipUtil.flipX(x),
-              ChoreoAllianceFlipUtil.flipY(y), // No-op for mirroring
-              ChoreoAllianceFlipUtil.flipHeading(heading),
-              vr,
-              vl,
-              -omega,
-              ar,
-              al,
-              -alpha,
-              fr,
-              fl);
-      case ROTATE_AROUND ->
-          new DifferentialSample(
-              t,
-              ChoreoAllianceFlipUtil.flipX(x),
-              ChoreoAllianceFlipUtil.flipY(y),
-              ChoreoAllianceFlipUtil.flipHeading(heading),
-              vl,
-              vr,
-              omega,
-              al,
-              ar,
-              alpha,
-              fl,
-              fr);
-    };
+    return ChoreoAllianceFlipUtil.getFlipper().flip(this);
   }
 
   @Override
   public DifferentialSample mirrorY() {
-    return new DifferentialSample(
-        t,
-        x,
-        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldWidth() - y,
-        -heading,
-        vl,
-        vr,
-        omega,
-        al,
-        ar,
-        alpha,
-        fl,
-        fr);
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
   }
 
   @Override
   public DifferentialSample mirrorX() {
-    return new DifferentialSample(
-        t,
-        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldLength() - x,
-        y,
-        Math.PI - heading,
-        vl,
-        vr,
-        omega,
-        al,
-        ar,
-        alpha,
-        fl,
-        fr);
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
   public DifferentialSample offsetBy(double timestampOffset) {
