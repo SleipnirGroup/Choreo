@@ -202,7 +202,9 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
       problem.subject_to(x_k_1 == x_k + v_k * dt_k + a_k * 0.5 * dt_k * dt_k);
-      problem.subject_to(θ_k_1 == θ_k + Rotation2v<double>{ω_k * dt_k} + Rotation2v<double>{α_k * 0.5 * dt_k * dt_k});
+      problem.subject_to(θ_k_1 ==
+                         θ_k + Rotation2v<double>{ω_k * dt_k} +
+                             Rotation2v<double>{α_k * 0.5 * dt_k * dt_k});
       problem.subject_to(v_k_1 == v_k + a_k * dt_k);
       problem.subject_to(ω_k_1 == ω_k + α_k * dt_k);
     }
