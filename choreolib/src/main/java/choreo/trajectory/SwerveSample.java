@@ -271,14 +271,30 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
         ChoreoAllianceFlipUtil.getActiveYearInfo().fieldLength() - this.x,
         this.y,
         Math.PI - this.heading,
-        this.vx,
+        -this.vx,
         this.vy,
-        this.omega,
-        this.ax,
+        -this.omega,
+        -this.ax,
         this.ay,
-        this.alpha,
-        this.moduleForcesX(),
-        this.moduleForcesY());
+        -this.alpha,
+        // FL, FR, BL, BR
+        // Mirrored
+        // -FR, -FL, -BR, -BL
+        new double[] {
+          -this.moduleForcesX()[1],
+          -this.moduleForcesX()[0],
+          -this.moduleForcesX()[3],
+          -this.moduleForcesX()[2]
+        },
+        // FL, FR, BL, BR
+        // Mirrored
+        // FR, FL, BR, BL
+        new double[] {
+          this.moduleForcesY()[1],
+          this.moduleForcesY()[0],
+          this.moduleForcesY()[3],
+          this.moduleForcesY()[2]
+        });
   }
 
   /** The struct for the SwerveSample class. */

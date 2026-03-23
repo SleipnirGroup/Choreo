@@ -124,7 +124,7 @@ public class ChoreoAllianceFlipUtil {
    * @return The active year info
    */
   public static YearInfo getActiveYearInfo() {
-    return new YearInfo(activeYear.flipper, activeYear.fieldLength, activeYear.fieldWidth);
+    return activeYear;
   }
 
   /**
