@@ -31,6 +31,9 @@ import java.util.function.Supplier;
 public class ChoreoAllianceFlipUtil {
   /** The flipper to use for flipping coordinates. */
   public abstract static class Flipper {
+    /** Constructs a flipper. */
+    protected Flipper() {}
+
     /**
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
@@ -304,11 +307,15 @@ public class ChoreoAllianceFlipUtil {
     // ***** Class Definition *****/
 
     /**
+     * Gets the length (X axis) of the field.
+     *
      * @return the length (X axis) of the field.
      */
     public abstract double getFieldLength();
 
     /**
+     * Gets the width (Y axis) of the field.
+     *
      * @return the width (Y axis) of the field.
      */
     public abstract double getFieldWidth();

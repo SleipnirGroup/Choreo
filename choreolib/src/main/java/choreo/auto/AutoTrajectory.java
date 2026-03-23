@@ -273,6 +273,7 @@ public class AutoTrajectory {
   /**
    * Returns this auto trajectory, mirrored across the field width.
    *
+   * @param <SampleType> The type of the trajectory samples.
    * @return this auto trajectory, mirrored across the field width.
    */
   @SuppressWarnings("unchecked")
@@ -283,6 +284,7 @@ public class AutoTrajectory {
   /**
    * Returns this auto trajectory, mirrored across the field length.
    *
+   * @param <SampleType> The type of the trajectory samples.
    * @return this auto trajectory, mirrored across the field length.
    */
   @SuppressWarnings("unchecked")
