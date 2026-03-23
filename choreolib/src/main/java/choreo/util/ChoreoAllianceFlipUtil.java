@@ -101,6 +101,12 @@ public class ChoreoAllianceFlipUtil {
       }
     }
 
+    /** Creates a new flipper that mirrors across x=fieldLength/2.
+     * This is intended for alliance-based flipping in rotationally asymmetric games.
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
+     * @return a new flipper.
+     */
     public static MirroredX mirroredX(double fieldLength, double fieldWidth) {
       return new MirroredX() {
         public double getFieldLength() {
@@ -114,7 +120,7 @@ public class ChoreoAllianceFlipUtil {
     }
 
     /**
-     * More used for left-right variants on the same alliance X is unchanged, Y becomes
+     * More used for left-right variants on the same alliance. X is unchanged, Y becomes
      * fieldWidth-y, and heading becomes -heading.
      */
     abstract static class MirroredY extends Flipper {
@@ -185,6 +191,12 @@ public class ChoreoAllianceFlipUtil {
       }
     }
 
+    /** Creates a new flipper that mirrors across y=fieldWidth/2.
+     * This keeps the positions on the same alliance half, but can be used to mirror left and right sides of the field, from driver perspective.
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
+     * @return a new flipper.
+     */
     public static MirroredY mirroredY(double fieldLength, double fieldWidth) {
       return new MirroredY() {
         public double getFieldLength() {
@@ -264,6 +276,12 @@ public class ChoreoAllianceFlipUtil {
     }
     ;
 
+    /** Creates a new rotated flipper around the center of the field.
+     * This is intended for alliance-based flipping in rotationally symmetric games.
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
+     * @return A new rotated flipper around the center of the field.
+     */
     public static RotatedAround rotatedAround(double fieldLength, double fieldWidth) {
       return new RotatedAround() {
         public double getFieldLength() {
@@ -278,8 +296,9 @@ public class ChoreoAllianceFlipUtil {
 
     // ***** Class Definition *****/
 
+    /** @return the length (X axis) of the field. */
     public abstract double getFieldLength();
-
+    /** @return the width (Y axis) of the field. */
     public abstract double getFieldWidth();
 
     /**
@@ -314,10 +333,27 @@ public class ChoreoAllianceFlipUtil {
      */
     public abstract Rotation2d flip(Rotation2d rotation);
 
+    /**
+     * Flips a SwerveSample.
+     *
+     * @param sample The SwerveSample to flip.
+     * @return The flipped SwerveSample.
+     */
     public abstract SwerveSample flip(SwerveSample sample);
-
+    /**
+     * Flips a DifferentialSample.
+     *
+     * @param sample The DifferentialSample to flip.
+     * @return The flipped DifferentialSample.
+     */
     public abstract DifferentialSample flip(DifferentialSample sample);
 
+    /**
+     * Flips a Translation2d.
+     *
+     * @param translation the Translation2d to flip.
+     * @return The flipped Translation2d.
+     */
     public Translation2d flip(Translation2d translation) {
       return new Translation2d(flipX(translation.getX()), flipY(translation.getY()));
     }
@@ -363,7 +399,7 @@ public class ChoreoAllianceFlipUtil {
     public Pose3d flip(Pose3d pose) {
       return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
     }
-
+    /** The default flipper for the current FRC year. */
     public static Flipper FRC_CURRENT = rotatedAround(FIELD_LENGTH, FIELD_WIDTH);
   }
 
@@ -379,7 +415,7 @@ public class ChoreoAllianceFlipUtil {
   private ChoreoAllianceFlipUtil() {}
 
   /**
-   * Get the flipper that is currently active for flipping coordinates. It's recommended not to
+   * Get the flipper that is currently active for alliance-based flipping. It's recommended not to
    * store this locally as the flipper may change.
    *
    * @return The active flipper.
@@ -388,10 +424,22 @@ public class ChoreoAllianceFlipUtil {
     return activeAllianceFlip;
   }
 
+  /**
+   * Get the flipper that is currently active for mirroring across the Y axis. It's recommended not
+   * to store this locally as the flipper may change.
+   *
+   * @return The active mirror Y flipper.
+   */
   public static Flipper getMirrorX() {
     return activeMirrorX;
   }
 
+  /**
+   * Get the flipper that is currently active for mirroring across the X axis. It's recommended not
+   * to store this locally as the flipper may change.
+   *
+   * @return The active mirror X flipper.
+   */
   public static Flipper getMirrorY() {
     return activeMirrorY;
   }
@@ -405,6 +453,12 @@ public class ChoreoAllianceFlipUtil {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
   }
 
+  /**
+   * Sets the flipper to use for alliance-based flipping. This will also set the mirror flippers based on the new flipper.
+   * You should only need to do this if you want to change the flipping behavior from the default, which is set based on the field dimensions and symmetry for the current FRC year.
+   * It's recommended to call this in a static block in Robot or equivalent so that it's set before any flipping is done.
+   * @param flipper The new flipper to use for alliance-based flipping.
+   */
   public static void setFlipper(Flipper flipper) {
     activeAllianceFlip = flipper;
     activeMirrorY = Flipper.mirroredY(flipper.getFieldLength(), flipper.getFieldWidth());
@@ -412,7 +466,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the X coordinate.
+   * Flips the X coordinate to the other alliance.
    *
    * @param x The X coordinate to flip.
    * @return The flipped X coordinate.
@@ -422,7 +476,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the Y coordinate.
+   * Flips the Y coordinate to the other alliance.
    *
    * @param y The Y coordinate to flip.
    * @return The flipped Y coordinate.
@@ -432,7 +486,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the heading.
+   * Flips the heading to the other alliance.
    *
    * @param heading The heading to flip.
    * @return The flipped heading.
@@ -442,7 +496,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the translation.
+   * Flips the translation to the other alliance.
    *
    * @param translation The translation to flip.
    * @return The flipped translation.
@@ -452,7 +506,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the rotation.
+   * Flips the rotation to the other alliance.
    *
    * @param rotation The rotation to flip.
    * @return The flipped rotation.
@@ -462,7 +516,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the pose.
+   * Flips the pose to the other alliance.
    *
    * @param pose The pose to flip.
    * @return The flipped pose.
@@ -472,7 +526,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the translation.
+   * Flips the translation to the other alliance.
    *
    * @param translation The translation to flip.
    * @return The flipped translation.
@@ -482,7 +536,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the rotation.
+   * Flips the rotation to the other alliance.
    *
    * @param rotation The rotation to flip.
    * @return The flipped rotation.
@@ -492,7 +546,7 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Flips the pose.
+   * Flips the pose to the other alliance.
    *
    * @param pose The pose to flip.
    * @return The flipped pose.
@@ -501,10 +555,22 @@ public class ChoreoAllianceFlipUtil {
     return activeAllianceFlip.flip(pose);
   }
 
+  /**
+   * Flips the swerve sample to the other alliance.
+   *
+   * @param sample The swerve sample to flip.
+   * @return The flipped swerve sample.
+   */
   public static SwerveSample flip(SwerveSample sample) {
     return activeAllianceFlip.flip(sample);
   }
 
+  /**
+   * Flips the differential sample to the other alliance.
+   *
+   * @param sample The differential sample to flip.
+   * @return The flipped differential sample.
+   */
   public static DifferentialSample flip(DifferentialSample sample) {
     return activeAllianceFlip.flip(sample);
   }
