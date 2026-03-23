@@ -99,7 +99,7 @@ impl TrajEntry {
         let total_time_secs = self.total_time_secs;
         let first_pose = self.first_pose.to_java_code();
         let last_pose = self.last_pose.to_java_code();
-        let err_msg = match validate_name(var_name) {
+        let err_msg = match validate_name(traj_name) {
             Ok(_) => String::new(),
             Err(e) => e.javadoc_comment(),
         };
