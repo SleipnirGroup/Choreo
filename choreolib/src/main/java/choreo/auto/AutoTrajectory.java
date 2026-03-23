@@ -68,6 +68,7 @@ public class AutoTrajectory {
   private final Timer inactiveTimer = new Timer();
   private final Subsystem driveSubsystem;
   private final AutoRoutine routine;
+  private final AutoBindings bindings;
 
   /**
    * A way to create slightly less triggers for many actions. Not static as to not leak triggers
@@ -115,6 +116,7 @@ public class AutoTrajectory {
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
     this.trajectoryLogger = trajectoryLogger;
+    this.bindings = bindings;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
@@ -266,6 +268,26 @@ public class AutoTrajectory {
   public <SampleType extends TrajectorySample<SampleType>>
       Trajectory<SampleType> getRawTrajectory() {
     return (Trajectory<SampleType>) trajectory;
+  }
+
+  /**
+   * Returns this auto trajectory, mirrored across the field width.
+   *
+   * @return this auto trajectory, mirrored across the field width.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorX() {
+    return new AutoTrajectory(name, (Trajectory<SampleType>)trajectory.mirrorX(), poseSupplier, resetOdometry, (Consumer<SampleType>)controller, allianceCtx, (TrajectoryLogger<SampleType>)trajectoryLogger, driveSubsystem, routine, bindings);
+  }
+
+  /**
+   * Returns this auto trajectory, mirrored across the field length.
+   *
+   * @return this auto trajectory, mirrored across the field length.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorY() {
+    return new AutoTrajectory(name, (Trajectory<SampleType>)trajectory.mirrorY(), poseSupplier, resetOdometry, (Consumer<SampleType>)controller, allianceCtx, (TrajectoryLogger<SampleType>)trajectoryLogger, driveSubsystem, routine, bindings);
   }
 
   /**
