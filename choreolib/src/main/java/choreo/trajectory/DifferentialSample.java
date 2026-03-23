@@ -203,6 +203,40 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     };
   }
 
+  @Override
+  public DifferentialSample mirrorY() {
+    return new DifferentialSample(
+        t,
+        x,
+        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldWidth() - y,
+        -heading,
+        vl,
+        vr,
+        omega,
+        al,
+        ar,
+        alpha,
+        fl,
+        fr);
+  }
+
+  @Override
+  public DifferentialSample mirrorX() {
+    return new DifferentialSample(
+        t,
+        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldLength() - x,
+        y,
+        Math.PI - heading,
+        vl,
+        vr,
+        omega,
+        al,
+        ar,
+        alpha,
+        fl,
+        fr);
+  }
+
   public DifferentialSample offsetBy(double timestampOffset) {
     return new DifferentialSample(
         t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, alpha, fl, fr);

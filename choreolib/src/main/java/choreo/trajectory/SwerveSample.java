@@ -247,6 +247,40 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     };
   }
 
+  @Override
+  public SwerveSample mirrorY() {
+    return new SwerveSample(
+        this.t,
+        this.x,
+        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldWidth() - this.y,
+        -this.heading,
+        this.vx,
+        this.vy,
+        this.omega,
+        this.ax,
+        this.ay,
+        this.alpha,
+        this.moduleForcesX(),
+        this.moduleForcesY());
+  }
+
+  @Override
+  public SwerveSample mirrorX() {
+    return new SwerveSample(
+        this.t,
+        ChoreoAllianceFlipUtil.getActiveYearInfo().fieldLength() - this.x,
+        this.y,
+        Math.PI - this.heading,
+        this.vx,
+        this.vy,
+        this.omega,
+        this.ax,
+        this.ay,
+        this.alpha,
+        this.moduleForcesX(),
+        this.moduleForcesY());
+  }
+
   /** The struct for the SwerveSample class. */
   public static final Struct<SwerveSample> struct = new SwerveSampleStruct();
 
