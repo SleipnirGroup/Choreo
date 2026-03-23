@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoAllianceFlipUtil.Flipper;
-
 import org.junit.jupiter.api.Test;
 
 public class SampleFlippingTest {
@@ -97,9 +96,11 @@ public class SampleFlippingTest {
             new double[] {-10.0, -11.0, -12.0, -13.0},
             new double[] {-14.0, -15.0, -16.0, -17.0});
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
+    assertEquals(sample.flipped(), mirrored2026);
     assertEquals(sample.mirrorX(), mirrored2026);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.rotatedAround(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
     assertEquals(sample.flipped(), rotated2026);
+    assertEquals(sample.mirrorX(), mirrored2026);
   }
 
   @Test
@@ -123,9 +124,11 @@ public class SampleFlippingTest {
             0.0,
             0.0);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
+    assertEquals(sample.flipped(), mirrored2026);
     assertEquals(sample.mirrorX(), mirrored2026);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.rotatedAround(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
     assertEquals(sample.flipped(), rotated2026);
+    assertEquals(sample.mirrorX(), mirrored2026);
   }
 
   @Test
@@ -161,8 +164,33 @@ public class SampleFlippingTest {
             10.0,
             11.0);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
+    assertEquals(sample.flipped(), mirrored2026);
     assertEquals(sample.mirrorX(), mirrored2026);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.rotatedAround(FIELD_LENGTH_2026, FIELD_WIDTH_2026));
     assertEquals(sample.flipped(), rotated2026);
+    assertEquals(sample.mirrorX(), mirrored2026);
+  }
+
+  @Test
+  void testBothMirrorEqualsRotation() {
+    SwerveSample sample =
+        new SwerveSample(
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            new double[] {10.0, 11.0, 12.0, 13.0},
+            new double[] {14.0, 15.0, 16.0, 17.0});
+    ChoreoAllianceFlipUtil.setFlipper(Flipper.FRC_CURRENT);
+    SwerveSample mirrored = sample.mirrorX().mirrorY();
+
+    SwerveSample rotated = sample.flipped();
+    assertEquals(mirrored, rotated);
   }
 }

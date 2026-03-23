@@ -101,8 +101,10 @@ public class ChoreoAllianceFlipUtil {
       }
     }
 
-    /** Creates a new flipper that mirrors across x=fieldLength/2.
-     * This is intended for alliance-based flipping in rotationally asymmetric games.
+    /**
+     * Creates a new flipper that mirrors across x=fieldLength/2. This is intended for
+     * alliance-based flipping in rotationally asymmetric games.
+     *
      * @param fieldLength The length of the field.
      * @param fieldWidth The width of the field.
      * @return a new flipper.
@@ -191,8 +193,11 @@ public class ChoreoAllianceFlipUtil {
       }
     }
 
-    /** Creates a new flipper that mirrors across y=fieldWidth/2.
-     * This keeps the positions on the same alliance half, but can be used to mirror left and right sides of the field, from driver perspective.
+    /**
+     * Creates a new flipper that mirrors across y=fieldWidth/2. This keeps the positions on the
+     * same alliance half, but can be used to mirror left and right sides of the field, from driver
+     * perspective.
+     *
      * @param fieldLength The length of the field.
      * @param fieldWidth The width of the field.
      * @return a new flipper.
@@ -276,8 +281,10 @@ public class ChoreoAllianceFlipUtil {
     }
     ;
 
-    /** Creates a new rotated flipper around the center of the field.
-     * This is intended for alliance-based flipping in rotationally symmetric games.
+    /**
+     * Creates a new rotated flipper around the center of the field. This is intended for
+     * alliance-based flipping in rotationally symmetric games.
+     *
      * @param fieldLength The length of the field.
      * @param fieldWidth The width of the field.
      * @return A new rotated flipper around the center of the field.
@@ -296,9 +303,14 @@ public class ChoreoAllianceFlipUtil {
 
     // ***** Class Definition *****/
 
-    /** @return the length (X axis) of the field. */
+    /**
+     * @return the length (X axis) of the field.
+     */
     public abstract double getFieldLength();
-    /** @return the width (Y axis) of the field. */
+
+    /**
+     * @return the width (Y axis) of the field.
+     */
     public abstract double getFieldWidth();
 
     /**
@@ -340,6 +352,7 @@ public class ChoreoAllianceFlipUtil {
      * @return The flipped SwerveSample.
      */
     public abstract SwerveSample flip(SwerveSample sample);
+
     /**
      * Flips a DifferentialSample.
      *
@@ -399,6 +412,7 @@ public class ChoreoAllianceFlipUtil {
     public Pose3d flip(Pose3d pose) {
       return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
     }
+
     /** The default flipper for the current FRC year. */
     public static Flipper FRC_CURRENT = rotatedAround(FIELD_LENGTH, FIELD_WIDTH);
   }
@@ -454,9 +468,12 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Sets the flipper to use for alliance-based flipping. This will also set the mirror flippers based on the new flipper.
-   * You should only need to do this if you want to change the flipping behavior from the default, which is set based on the field dimensions and symmetry for the current FRC year.
-   * It's recommended to call this in a static block in Robot or equivalent so that it's set before any flipping is done.
+   * Sets the flipper to use for alliance-based flipping. This will also set the mirror flippers
+   * based on the new flipper. You should only need to do this if you want to change the flipping
+   * behavior from the default, which is set based on the field dimensions and symmetry for the
+   * current FRC year. It's recommended to call this in a static block in Robot or equivalent so
+   * that it's set before any flipping is done.
+   *
    * @param flipper The new flipper to use for alliance-based flipping.
    */
   public static void setFlipper(Flipper flipper) {
