@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <functional>
 #include <type_traits>
 
@@ -188,11 +189,28 @@ class DifferentialSample {
     }
   }
 
+  /// Returns the current sample mirrored across the field width.
+  ///
+  /// @return DifferentialSample mirrored across the field width.
+  constexpr DifferentialSample MirrorX() const {
+    return DifferentialSample(timestamp, util::fieldLength - x, y,
+                              units::radian_t{std::numbers::pi} - heading, vr,
+                              vl, -omega, ar, al, -alpha, fr, fl);
+  }
+
+  /// Returns the current sample mirrored across the field length.
+  ///
+  /// @return DifferentialSample mirrored across the field length.
+  constexpr DifferentialSample MirrorY() const {
+    return DifferentialSample(timestamp, x, util::fieldWidth - y, -heading, vr,
+                              vl, -omega, ar, al, -alpha, fr, fl);
+  }
+
   /// DifferentialSample equality operator.
   ///
   /// @param other The other DifferentialSample.
   /// @return True for equality.
-  constexpr bool operator==(const DifferentialSample& other) const {
+  bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
 
     auto compare_units = [epsilon](const auto& a, const auto& b) {
@@ -201,9 +219,14 @@ class DifferentialSample {
       return units::math::abs(a - b) < UnitType(epsilon);
     };
 
+    auto compare_angle = [epsilon](units::radian_t a, units::radian_t b) {
+      return std::abs(std::remainder((a - b).value(), 2.0 * std::numbers::pi)) <
+        epsilon;
+    };
+
     return compare_units(timestamp, other.timestamp) &&
            compare_units(x, other.x) && compare_units(y, other.y) &&
-           compare_units(heading, other.heading) &&
+           compare_angle(heading, other.heading) &&
            compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
            compare_units(omega, other.omega) && compare_units(al, other.al) &&
            compare_units(ar, other.ar) && compare_units(alpha, other.alpha) &&

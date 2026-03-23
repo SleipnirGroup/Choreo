@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <type_traits>
 
 #include <frc/kinematics/ChassisSpeeds.h>
@@ -134,6 +135,46 @@ class SwerveSample {
     }
   }
 
+  /// Returns the current sample mirrored across the field width.
+  ///
+  /// @return SwerveSample mirrored across the field width.
+  constexpr SwerveSample MirrorX() const {
+    return SwerveSample{timestamp,
+                        util::fieldLength - x,
+                        y,
+                        units::radian_t{std::numbers::pi} - heading,
+                        -vx,
+                        vy,
+                        -omega,
+                        -ax,
+                        ay,
+                        -alpha,
+                        {-moduleForcesX[1], -moduleForcesX[0], -moduleForcesX[3],
+                         -moduleForcesX[2]},
+                        {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
+                         moduleForcesY[2]}};
+  }
+
+  /// Returns the current sample mirrored across the field length.
+  ///
+  /// @return SwerveSample mirrored across the field length.
+  constexpr SwerveSample MirrorY() const {
+    return SwerveSample{timestamp,
+                        x,
+                        util::fieldWidth - y,
+                        -heading,
+                        vx,
+                        -vy,
+                        -omega,
+                        ax,
+                        -ay,
+                        -alpha,
+                        {moduleForcesX[1], moduleForcesX[0], moduleForcesX[3],
+                         moduleForcesX[2]},
+                        {-moduleForcesY[1], -moduleForcesY[0], -moduleForcesY[3],
+                         -moduleForcesY[2]}};
+  }
+
   /// Returns the current sample offset by a the time offset passed in.
   ///
   /// @param timeStampOffset time to move sample by
@@ -199,7 +240,7 @@ class SwerveSample {
   ///
   /// @param other The other SwerveSample.
   /// @return True for equality.
-  constexpr bool operator==(const SwerveSample& other) const {
+  bool operator==(const SwerveSample& other) const {
     constexpr double epsilon = 1e-6;
 
     auto compare_units = [epsilon](const auto& a, const auto& b) {
@@ -212,9 +253,14 @@ class SwerveSample {
       return std::equal(arr1.begin(), arr1.end(), arr2.begin(), compare_units);
     };
 
+        auto compare_angle = [epsilon](units::radian_t a, units::radian_t b) {
+          return std::abs(std::remainder((a - b).value(), 2.0 * std::numbers::pi)) <
+            epsilon;
+        };
+
     return compare_units(timestamp, other.timestamp) &&
            compare_units(x, other.x) && compare_units(y, other.y) &&
-           compare_units(heading, other.heading) &&
+          compare_angle(heading, other.heading) &&
            compare_units(vx, other.vx) && compare_units(vy, other.vy) &&
            compare_units(omega, other.omega) && compare_units(ax, other.ax) &&
            compare_units(ay, other.ay) && compare_units(alpha, other.alpha) &&

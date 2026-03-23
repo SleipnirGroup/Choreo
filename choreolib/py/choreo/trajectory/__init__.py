@@ -10,6 +10,15 @@ from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
 
+def _is_near(a: float, b: float, eps: float = 1e-6) -> bool:
+    return abs(a - b) < eps
+
+
+def _is_near_angle(a: float, b: float, eps: float = 1e-6) -> bool:
+    # Compare the shortest signed angle distance to handle wrapping around 2π.
+    return abs(math.atan2(math.sin(a - b), math.cos(a - b))) < eps
+
+
 def lerp(a, b, t) -> float:
     return a + (b - a) * t
 
@@ -357,6 +366,63 @@ class DifferentialSample:
                 self.fr,
             )
 
+    def mirror_y(self) -> DifferentialSample:
+        """
+        Returns the current sample mirrored across the field length.
+        """
+        return DifferentialSample(
+            self.timestamp,
+            self.x,
+            get_flipper_for_year().flip_y(self.y),
+            -self.heading,
+            self.vr,
+            self.vl,
+            -self.omega,
+            self.ar,
+            self.al,
+            -self.alpha,
+            self.fr,
+            self.fl,
+        )
+
+    def mirror_x(self) -> DifferentialSample:
+        """
+        Returns the current sample mirrored across the field width.
+        """
+        return DifferentialSample(
+            self.timestamp,
+            get_flipper_for_year().flip_x(self.x),
+            self.y,
+            math.pi - self.heading,
+            self.vr,
+            self.vl,
+            -self.omega,
+            self.ar,
+            self.al,
+            -self.alpha,
+            self.fr,
+            self.fl,
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, DifferentialSample):
+            return False
+
+        return (
+            _is_near(self.timestamp, other.timestamp)
+            and _is_near(self.x, other.x)
+            and _is_near(self.y, other.y)
+            and _is_near_angle(self.heading, other.heading)
+            and _is_near(self.vl, other.vl)
+            and _is_near(self.vr, other.vr)
+            and _is_near(self.omega, other.omega)
+            and _is_near(self.al, other.al)
+            and _is_near(self.ar, other.ar)
+            and _is_near(self.alpha, other.alpha)
+            and _is_near(self.fl, other.fl)
+            and _is_near(self.fr, other.fr)
+        )
+
 
 @dataclass
 class DifferentialTrajectory:
@@ -498,7 +564,32 @@ class DifferentialTrajectory:
             The field year (default: the current year).
         """
         return DifferentialTrajectory(
-            self.name, [x.flipped() for x in self.samples], self.splits, self.events
+            self.name,
+            [x.flipped(year) for x in self.samples],
+            self.splits,
+            self.events,
+        )
+
+    def mirror_x(self) -> DifferentialTrajectory:
+        """
+        Returns this trajectory mirrored across the field width.
+        """
+        return DifferentialTrajectory(
+            self.name,
+            [x.mirror_x() for x in self.samples],
+            self.splits,
+            self.events,
+        )
+
+    def mirror_y(self) -> DifferentialTrajectory:
+        """
+        Returns this trajectory mirrored across the field length.
+        """
+        return DifferentialTrajectory(
+            self.name,
+            [x.mirror_y() for x in self.samples],
+            self.splits,
+            self.events,
         )
 
 
@@ -652,6 +743,65 @@ class SwerveSample:
                 [-y for y in self.fy],
             )
 
+    def mirror_y(self) -> SwerveSample:
+        """
+        Returns the current sample mirrored across the field length.
+        """
+        return SwerveSample(
+            self.timestamp,
+            self.x,
+            get_flipper_for_year().flip_y(self.y),
+            -self.heading,
+            self.vx,
+            -self.vy,
+            -self.omega,
+            self.ax,
+            -self.ay,
+            -self.alpha,
+            [self.fx[1], self.fx[0], self.fx[3], self.fx[2]],
+            [-self.fy[1], -self.fy[0], -self.fy[3], -self.fy[2]],
+        )
+
+    def mirror_x(self) -> SwerveSample:
+        """
+        Returns the current sample mirrored across the field width.
+        """
+        return SwerveSample(
+            self.timestamp,
+            get_flipper_for_year().flip_x(self.x),
+            self.y,
+            math.pi - self.heading,
+            -self.vx,
+            self.vy,
+            -self.omega,
+            -self.ax,
+            self.ay,
+            -self.alpha,
+            [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
+            [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, SwerveSample):
+            return False
+
+        return (
+            _is_near(self.timestamp, other.timestamp)
+            and _is_near(self.x, other.x)
+            and _is_near(self.y, other.y)
+            and _is_near_angle(self.heading, other.heading)
+            and _is_near(self.vx, other.vx)
+            and _is_near(self.vy, other.vy)
+            and _is_near(self.omega, other.omega)
+            and _is_near(self.ax, other.ax)
+            and _is_near(self.ay, other.ay)
+            and _is_near(self.alpha, other.alpha)
+            and len(self.fx) == len(other.fx)
+            and len(self.fy) == len(other.fy)
+            and all(_is_near(a, b) for a, b in zip(self.fx, other.fx))
+            and all(_is_near(a, b) for a, b in zip(self.fy, other.fy))
+        )
+
 
 @dataclass
 class SwerveTrajectory:
@@ -795,5 +945,30 @@ class SwerveTrajectory:
             The field year (default: the current year).
         """
         return SwerveTrajectory(
-            self.name, [x.flipped() for x in self.samples], self.splits, self.events
+            self.name,
+            [x.flipped(year) for x in self.samples],
+            self.splits,
+            self.events,
+        )
+
+    def mirror_x(self) -> SwerveTrajectory:
+        """
+        Returns this trajectory mirrored across the field width.
+        """
+        return SwerveTrajectory(
+            self.name,
+            [x.mirror_x() for x in self.samples],
+            self.splits,
+            self.events,
+        )
+
+    def mirror_y(self) -> SwerveTrajectory:
+        """
+        Returns this trajectory mirrored across the field length.
+        """
+        return SwerveTrajectory(
+            self.name,
+            [x.mirror_y() for x in self.samples],
+            self.splits,
+            self.events,
         )

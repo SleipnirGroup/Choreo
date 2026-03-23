@@ -171,3 +171,53 @@ TEST(SampleFlippingTest, DifferentialSample) {
     FAIL();
   }
 }
+
+TEST(SampleFlippingTest, BothMirrorEqualsRotation) {
+  try {
+    SwerveSample sample{0_s,
+                        1_m,
+                        2_m,
+                        3_rad,
+                        4_mps,
+                        5_mps,
+                        6_rad_per_s,
+                        7_mps_sq,
+                        8_mps_sq,
+                        9_rad_per_s_sq,
+                        {10_N, 11_N, 12_N, 13_N},
+                        {14_N, 15_N, 16_N, 17_N}};
+
+    ASSERT_TRUE(sample.MirrorX().MirrorY() == sample.Flipped<>());
+  } catch (std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    FAIL();
+  }
+}
+
+TEST(SampleFlippingTest, MirrorIsInverse) {
+  try {
+    SwerveSample sample{0_s,
+                        1_m,
+                        2_m,
+                        3_rad,
+                        4_mps,
+                        5_mps,
+                        6_rad_per_s,
+                        7_mps_sq,
+                        8_mps_sq,
+                        9_rad_per_s_sq,
+                        {10_N, 11_N, 12_N, 13_N},
+                        {14_N, 15_N, 16_N, 17_N}};
+    DifferentialSample differentialSample{
+        0_s,         1_m,      2_m,      3_rad,          4_mps, 5_mps,
+        6_rad_per_s, 7_mps_sq, 8_mps_sq, 9_rad_per_s_sq, 10_N,  11_N};
+
+    ASSERT_TRUE(sample.MirrorX().MirrorX() == sample);
+    ASSERT_TRUE(sample.MirrorY().MirrorY() == sample);
+    ASSERT_TRUE(differentialSample.MirrorX().MirrorX() == differentialSample);
+    ASSERT_TRUE(differentialSample.MirrorY().MirrorY() == differentialSample);
+  } catch (std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    FAIL();
+  }
+}

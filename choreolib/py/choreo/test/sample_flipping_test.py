@@ -162,3 +162,47 @@ def test_zero_differential_sample():
 
     assert sample.flipped(2024) == mirrored2024
     assert sample.flipped(2022) == rotated2022
+
+
+def test_both_mirror_equals_rotation():
+    sample = SwerveSample(
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        [10.0, 11.0, 12.0, 13.0],
+        [14.0, 15.0, 16.0, 17.0],
+    )
+
+    assert sample.mirror_x().mirror_y() == sample.flipped()
+
+
+def test_mirror_is_inverse():
+    sample = SwerveSample(
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        [10.0, 11.0, 12.0, 13.0],
+        [14.0, 15.0, 16.0, 17.0],
+    )
+    differential_sample = DifferentialSample(
+        0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0
+    )
+
+    assert sample.mirror_x().mirror_x() == sample
+    assert sample.mirror_y().mirror_y() == sample
+    assert differential_sample.mirror_x().mirror_x() == differential_sample
+    assert differential_sample.mirror_y().mirror_y() == differential_sample

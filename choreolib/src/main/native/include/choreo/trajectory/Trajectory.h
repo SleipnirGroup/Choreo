@@ -167,6 +167,28 @@ class Trajectory {
     return Trajectory<SampleType>(name, flippedStates, splits, events);
   }
 
+  /// Returns this trajectory, mirrored across the field width.
+  ///
+  /// @return this trajectory, mirrored across the field width.
+  Trajectory<SampleType> MirrorX() const {
+    std::vector<SampleType> mirroredStates;
+    for (const auto& state : samples) {
+      mirroredStates.push_back(state.MirrorX());
+    }
+    return Trajectory<SampleType>(name, mirroredStates, splits, events);
+  }
+
+  /// Returns this trajectory, mirrored across the field length.
+  ///
+  /// @return this trajectory, mirrored across the field length.
+  Trajectory<SampleType> MirrorY() const {
+    std::vector<SampleType> mirroredStates;
+    for (const auto& state : samples) {
+      mirroredStates.push_back(state.MirrorY());
+    }
+    return Trajectory<SampleType>(name, mirroredStates, splits, events);
+  }
+
   /// Returns a vector of all events with the given name in the trajectory.
   ///
   /// @param eventName The name of the event.
