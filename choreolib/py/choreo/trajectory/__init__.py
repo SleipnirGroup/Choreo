@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TypeGuard
 
 import numpy as np
-from choreo.util import get_flipper, get_mirror_x, get_mirror_y
+from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
@@ -318,30 +318,15 @@ class DifferentialSample:
             lerp(self.fr, end_value.fr, scale),
         )
 
-    def flipped(self) -> DifferentialSample:
+    def flipped(self, year: int = DEFAULT_YEAR) -> DifferentialSample:
         """
-        Returns the current sample flipped using the active alliance flipper.
+        Returns the current sample flipped based on the field year.
 
-        Returns:
-            The flipped sample using the active flipper.
+        Parameter ``year``:
+            The field year (default: the current year).
         """
-        flipper = get_flipper()
-        if flipper.is_rotated_around():
-            return DifferentialSample(
-                self.timestamp,
-                flipper.flip_x(self.x),
-                flipper.flip_y(self.y),
-                flipper.flip_heading(self.heading),
-                self.vl,
-                self.vr,
-                self.omega,
-                self.al,
-                self.ar,
-                self.alpha,
-                self.fl,
-                self.fr,
-            )
-        else:
+        flipper = get_flipper_for_year(year)
+        if flipper.IS_MIRRORED:
             return DifferentialSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
@@ -356,71 +341,21 @@ class DifferentialSample:
                 self.fr,
                 self.fl,
             )
-
-    def mirror_y(self) -> DifferentialSample:
-        """
-        Returns the current sample mirrored across the field length.
-        """
-        flipper = get_mirror_y()
-        return DifferentialSample(
-            self.timestamp,
-            flipper.flip_x(self.x),
-            flipper.flip_y(self.y),
-            flipper.flip_heading(self.heading),
-            self.vr,
-            self.vl,
-            -self.omega,
-            self.ar,
-            self.al,
-            -self.alpha,
-            self.fr,
-            self.fl,
-        )
-
-    def mirror_x(self) -> DifferentialSample:
-        """
-        Returns the current sample mirrored across the field width.
-        """
-        flipper = get_mirror_x()
-        return DifferentialSample(
-            self.timestamp,
-            flipper.flip_x(self.x),
-            flipper.flip_y(self.y),
-            flipper.flip_heading(self.heading),
-            self.vr,
-            self.vl,
-            -self.omega,
-            self.ar,
-            self.al,
-            -self.alpha,
-            self.fr,
-            self.fl,
-        )
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, DifferentialSample):
-            return False
-        epsilon = 1e-6
-
-        return (
-            math.isclose(self.timestamp, other.timestamp, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.x, other.x, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.y, other.y, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(
-                math.remainder(self.heading - other.heading, 2.0 * math.pi),
-                0.0,
-                rel_tol=0.0,
-                abs_tol=epsilon,
+        else:
+            return DifferentialSample(
+                self.timestamp,
+                flipper.flip_x(self.x),
+                flipper.flip_y(self.y),
+                flipper.flip_heading(self.heading),
+                self.vl,
+                self.vr,
+                self.omega,
+                self.al,
+                self.ar,
+                self.alpha,
+                self.fl,
+                self.fr,
             )
-            and math.isclose(self.vl, other.vl, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.vr, other.vr, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.omega, other.omega, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.al, other.al, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.ar, other.ar, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.alpha, other.alpha, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.fl, other.fl, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.fr, other.fr, rel_tol=0.0, abs_tol=epsilon)
-        )
 
 
 @dataclass
@@ -555,40 +490,15 @@ class DifferentialTrajectory:
         """
         return [x.get_pose() for x in self.samples]
 
-    def flipped(self) -> DifferentialTrajectory:
+    def flipped(self, year: int = DEFAULT_YEAR) -> DifferentialTrajectory:
         """
-        Returns this trajectory flipped using the active alliance flipper.
+        Returns this trajectory flipped based on the field year.
 
-        Returns:
-            The flipped trajectory using the active flipper.
+        Parameter ``year``:
+            The field year (default: the current year).
         """
         return DifferentialTrajectory(
-            self.name,
-            [x.flipped() for x in self.samples],
-            self.splits,
-            self.events,
-        )
-
-    def mirror_x(self) -> DifferentialTrajectory:
-        """
-        Returns this trajectory mirrored across the field width.
-        """
-        return DifferentialTrajectory(
-            self.name,
-            [x.mirror_x() for x in self.samples],
-            self.splits,
-            self.events,
-        )
-
-    def mirror_y(self) -> DifferentialTrajectory:
-        """
-        Returns this trajectory mirrored across the field length.
-        """
-        return DifferentialTrajectory(
-            self.name,
-            [x.mirror_y() for x in self.samples],
-            self.splits,
-            self.events,
+            self.name, [x.flipped() for x in self.samples], self.splits, self.events
         )
 
 
@@ -703,15 +613,15 @@ class SwerveSample:
             [lerp(self.fy[i], end_value.fy[i], scale) for i in range(len(self.fy))],
         )
 
-    def flipped(self) -> SwerveSample:
+    def flipped(self, year: int = DEFAULT_YEAR) -> SwerveSample:
         """
-        Returns the current sample flipped using the active alliance flipper.
+        Returns the current sample flipped based on the field year.
 
-        Returns:
-            The flipped sample using the active flipper.
+        Parameter ``year``:
+            The field year (default: the current year).
         """
-        flipper = get_flipper()
-        if flipper.is_mirrored_x():
+        flipper = get_flipper_for_year(year)
+        if flipper.IS_MIRRORED:
             return SwerveSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
@@ -725,21 +635,6 @@ class SwerveSample:
                 -self.alpha,
                 [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
                 [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
-            )
-        elif flipper.is_mirrored_y():
-            return SwerveSample(
-                self.timestamp,
-                flipper.flip_x(self.x),
-                flipper.flip_y(self.y),
-                flipper.flip_heading(self.heading),
-                self.vx,
-                -self.vy,
-                -self.omega,
-                self.ax,
-                -self.ay,
-                -self.alpha,
-                [self.fx[1], self.fx[0], self.fx[3], self.fx[2]],
-                [-self.fy[1], -self.fy[0], -self.fy[3], -self.fy[2]],
             )
         else:
             return SwerveSample(
@@ -756,79 +651,6 @@ class SwerveSample:
                 [-x for x in self.fx],
                 [-y for y in self.fy],
             )
-
-    def mirror_y(self) -> SwerveSample:
-        """
-        Returns the current sample mirrored across the field length.
-        """
-        flipper = get_mirror_y()
-        return SwerveSample(
-            self.timestamp,
-            flipper.flip_x(self.x),
-            flipper.flip_y(self.y),
-            flipper.flip_heading(self.heading),
-            self.vx,
-            -self.vy,
-            -self.omega,
-            self.ax,
-            -self.ay,
-            -self.alpha,
-            [self.fx[1], self.fx[0], self.fx[3], self.fx[2]],
-            [-self.fy[1], -self.fy[0], -self.fy[3], -self.fy[2]],
-        )
-
-    def mirror_x(self) -> SwerveSample:
-        """
-        Returns the current sample mirrored across the field width.
-        """
-        flipper = get_mirror_x()
-        return SwerveSample(
-            self.timestamp,
-            flipper.flip_x(self.x),
-            flipper.flip_y(self.y),
-            flipper.flip_heading(self.heading),
-            -self.vx,
-            self.vy,
-            -self.omega,
-            -self.ax,
-            self.ay,
-            -self.alpha,
-            [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
-            [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
-        )
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, SwerveSample):
-            return False
-        epsilon = 1e-6
-
-        return (
-            math.isclose(self.timestamp, other.timestamp, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.x, other.x, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.y, other.y, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(
-                math.remainder(self.heading - other.heading, 2.0 * math.pi),
-                0.0,
-                rel_tol=0.0,
-                abs_tol=epsilon,
-            )
-            and math.isclose(self.vx, other.vx, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.vy, other.vy, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.omega, other.omega, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.ax, other.ax, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.ay, other.ay, rel_tol=0.0, abs_tol=epsilon)
-            and math.isclose(self.alpha, other.alpha, rel_tol=0.0, abs_tol=epsilon)
-            and len(self.fx) == len(other.fx)
-            and len(self.fy) == len(other.fy)
-            and all(
-                math.isclose(a, b, rel_tol=0.0, abs_tol=epsilon)
-                for a, b in zip(self.fx, other.fx)
-            )
-            and all(
-                math.isclose(a, b, rel_tol=0.0, abs_tol=epsilon)
-                for a, b in zip(self.fy, other.fy)
-            )
-        )
 
 
 @dataclass
@@ -965,38 +787,13 @@ class SwerveTrajectory:
         """
         return [x.get_pose() for x in self.samples]
 
-    def flipped(self) -> SwerveTrajectory:
+    def flipped(self, year: int = DEFAULT_YEAR) -> SwerveTrajectory:
         """
-        Returns this trajectory flipped using the active alliance flipper.
+        Returns this trajectory flipped based on the field year.
 
-        Returns:
-            The flipped trajectory using the active flipper.
+        Parameter ``year``:
+            The field year (default: the current year).
         """
         return SwerveTrajectory(
-            self.name,
-            [x.flipped() for x in self.samples],
-            self.splits,
-            self.events,
-        )
-
-    def mirror_x(self) -> SwerveTrajectory:
-        """
-        Returns this trajectory mirrored across the field width.
-        """
-        return SwerveTrajectory(
-            self.name,
-            [x.mirror_x() for x in self.samples],
-            self.splits,
-            self.events,
-        )
-
-    def mirror_y(self) -> SwerveTrajectory:
-        """
-        Returns this trajectory mirrored across the field length.
-        """
-        return SwerveTrajectory(
-            self.name,
-            [x.mirror_y() for x in self.samples],
-            self.splits,
-            self.events,
+            self.name, [x.flipped() for x in self.samples], self.splits, self.events
         )

@@ -3,7 +3,6 @@
 #pragma once
 
 #include <functional>
-#include <numbers>
 #include <type_traits>
 
 #include <Eigen/Core>
@@ -171,40 +170,22 @@ class DifferentialSample {
     };
   }
 
-  /// Returns the current sample flipped using the active alliance flipper.
+  /// Returns the current sample flipped based on the field year.
   ///
+  /// @tparam Year The field year.
   /// @return DifferentialSample that is flipped based on the field layout.
-  DifferentialSample Flipped() const {
-    const auto& flipper = choreo::util::GetFlipper();
-    if (flipper.IsRotatedAround()) {
-      return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
-                                flipper.FlipHeading(heading), vl, vr, omega, al,
-                                ar, alpha, fl, fr);
-    } else {
+  template <int Year = util::kDefaultYear>
+  constexpr DifferentialSample Flipped() const {
+    constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
+    if constexpr (flipper.isMirrored) {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
                                 flipper.FlipHeading(heading), vr, vl, -omega,
                                 ar, al, -alpha, fr, fl);
+    } else {
+      return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
+                                flipper.FlipHeading(heading), vl, vr, omega, al,
+                                ar, alpha, fl, fr);
     }
-  }
-
-  /// Returns the current sample mirrored across the field width.
-  ///
-  /// @return DifferentialSample mirrored across the field width.
-  DifferentialSample MirrorX() const {
-    const auto& flipper = util::GetMirrorX();
-    return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
-                              flipper.FlipHeading(heading), vr, vl, -omega, ar,
-                              al, -alpha, fr, fl);
-  }
-
-  /// Returns the current sample mirrored across the field length.
-  ///
-  /// @return DifferentialSample mirrored across the field length.
-  DifferentialSample MirrorY() const {
-    const auto& flipper = util::GetMirrorY();
-    return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
-                              flipper.FlipHeading(heading), vr, vl, -omega, ar,
-                              al, -alpha, fr, fl);
   }
 
   /// DifferentialSample equality operator.
@@ -213,8 +194,6 @@ class DifferentialSample {
   /// @return True for equality.
   constexpr bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
-    constexpr double kPi = std::numbers::pi;
-    constexpr double kTwoPi = 2.0 * kPi;
 
     auto compare_units = [epsilon](const auto& a, const auto& b) {
       using UnitType =
@@ -222,21 +201,9 @@ class DifferentialSample {
       return units::math::abs(a - b) < UnitType(epsilon);
     };
 
-    auto compare_angle = [epsilon, kPi, kTwoPi](units::radian_t a,
-                                                units::radian_t b) {
-      auto delta = (a - b).value();
-      while (delta > kPi) {
-        delta -= kTwoPi;
-      }
-      while (delta < -kPi) {
-        delta += kTwoPi;
-      }
-      return delta >= -epsilon && delta <= epsilon;
-    };
-
     return compare_units(timestamp, other.timestamp) &&
            compare_units(x, other.x) && compare_units(y, other.y) &&
-           compare_angle(heading, other.heading) &&
+           compare_units(heading, other.heading) &&
            compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
            compare_units(omega, other.omega) && compare_units(al, other.al) &&
            compare_units(ar, other.ar) && compare_units(alpha, other.alpha) &&

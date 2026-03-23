@@ -21,15 +21,17 @@ concept EqualityComparable = requires(const T& a, const T& b) {
 template <typename T>
 concept TrajectorySample =
     EqualityComparable<T> &&
-    requires(T t, units::second_t time, T tother) {
+    requires(T t, units::second_t time, T tother, int year) {
       { t.GetTimestamp() } -> std::same_as<units::second_t>;
       { t.GetPose() } -> std::same_as<frc::Pose2d>;
       { t.GetChassisSpeeds() } -> std::same_as<frc::ChassisSpeeds>;
       { t.OffsetBy(time) } -> std::same_as<T>;
       { t.Interpolate(tother, time) } -> std::same_as<T>;
-      { t.Flipped() } -> std::same_as<T>;
-      { t.MirrorX() } -> std::same_as<T>;
-      { t.MirrorY() } -> std::same_as<T>;
+      // FIXME: This works around a roboRIO GCC internal compiler error; it
+      // can't be fully generic
+      { t.template Flipped<2022>() } -> std::same_as<T>;
+      { t.template Flipped<2023>() } -> std::same_as<T>;
+      { t.template Flipped<2024>() } -> std::same_as<T>;
     };
 
 }  // namespace choreo

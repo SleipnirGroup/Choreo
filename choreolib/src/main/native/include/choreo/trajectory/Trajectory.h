@@ -76,14 +76,17 @@ class Trajectory {
   ///
   /// This function will return an empty optional if the trajectory is empty.
   ///
+  /// @tparam Year The field year. Defaults to the current year.
   /// @param timestamp The timestamp of this sample relative to the beginning of
   ///     the trajectory.
   /// @param mirrorForRedAlliance whether or not to return the sample mirrored.
   /// @return The SampleType at the given time.
+  template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
     if (auto state = SampleInternal(timestamp)) {
-      return mirrorForRedAlliance ? state.value().Flipped() : state;
+      return mirrorForRedAlliance ? state.value().template Flipped<Year>()
+                                  : state;
     } else {
       return {};
     }
@@ -93,15 +96,17 @@ class Trajectory {
   ///
   /// Will return an empty optional if the trajectory is empty
   ///
+  /// @tparam Year The field year. Defaults to the current year.
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The first Pose in the trajectory.
+  template <int Year = util::kDefaultYear>
   std::optional<frc::Pose2d> GetInitialPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples.front().Flipped().GetPose();
+      return samples.front().template Flipped<Year>().GetPose();
     } else {
       return samples.front().GetPose();
     }
@@ -111,15 +116,17 @@ class Trajectory {
   ///
   /// Will return an empty optional if the trajectory is empty
   ///
+  /// @tparam Year The field year. Defaults to the current year.
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The last Pose in the trajectory.
+  template <int Year = util::kDefaultYear>
   std::optional<frc::Pose2d> GetFinalPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples.back().Flipped().GetPose();
+      return samples.back().template Flipped<Year>().GetPose();
     } else {
       return samples.back().GetPose();
     }
@@ -149,35 +156,15 @@ class Trajectory {
 
   /// Returns this trajectory, mirrored across the field midline.
   ///
+  /// @tparam Year The field year. Defaults to the current year.
   /// @return this trajectory, mirrored across the field midline.
+  template <int Year = util::kDefaultYear>
   Trajectory<SampleType> Flipped() const {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
-      flippedStates.push_back(state.Flipped());
+      flippedStates.push_back(state.template Flipped<Year>());
     }
     return Trajectory<SampleType>(name, flippedStates, splits, events);
-  }
-
-  /// Returns this trajectory, mirrored across the field width.
-  ///
-  /// @return this trajectory, mirrored across the field width.
-  Trajectory<SampleType> MirrorX() const {
-    std::vector<SampleType> mirroredStates;
-    for (const auto& state : samples) {
-      mirroredStates.push_back(state.MirrorX());
-    }
-    return Trajectory<SampleType>(name, mirroredStates, splits, events);
-  }
-
-  /// Returns this trajectory, mirrored across the field length.
-  ///
-  /// @return this trajectory, mirrored across the field length.
-  Trajectory<SampleType> MirrorY() const {
-    std::vector<SampleType> mirroredStates;
-    for (const auto& state : samples) {
-      mirroredStates.push_back(state.MirrorY());
-    }
-    return Trajectory<SampleType>(name, mirroredStates, splits, events);
   }
 
   /// Returns a vector of all events with the given name in the trajectory.
