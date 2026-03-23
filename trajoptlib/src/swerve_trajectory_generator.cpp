@@ -12,6 +12,7 @@
 #include <sleipnir/optimization/problem.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 
+#include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/util/cancellation.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
@@ -197,11 +198,13 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       }
 
       // xₖ₊₁ = xₖ + vₖt + 1/2aₖt²
-      // θₖ₊₁ = θₖ + ωₖt
+      // θₖ₊₁ = θₖ + ωₖt + 1/2αₖt²
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
       problem.subject_to(x_k_1 == x_k + v_k * dt_k + a_k * 0.5 * dt_k * dt_k);
-      problem.subject_to((θ_k_1 - θ_k) == Rotation2v<double>{ω_k * dt_k});
+      problem.subject_to(θ_k_1 ==
+                         θ_k + Rotation2v<double>{ω_k * dt_k} +
+                             Rotation2v<double>{α_k * 0.5 * dt_k * dt_k});
       problem.subject_to(v_k_1 == v_k + a_k * dt_k);
       problem.subject_to(ω_k_1 == ω_k + α_k * dt_k);
     }
