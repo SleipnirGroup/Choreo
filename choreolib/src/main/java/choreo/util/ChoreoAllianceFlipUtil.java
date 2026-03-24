@@ -38,7 +38,11 @@ public class ChoreoAllianceFlipUtil {
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
      */
-    abstract static class MirroredX extends Flipper {
+    static class MirroredX extends Flipper {
+      public MirroredX(double fieldLength, double fieldWidth) {
+        super(fieldLength, fieldWidth);
+      }
+
       public double flipX(double x) {
         return getFieldLength() - x;
       }
@@ -113,22 +117,18 @@ public class ChoreoAllianceFlipUtil {
      * @return a new flipper.
      */
     public static MirroredX mirroredX(double fieldLength, double fieldWidth) {
-      return new MirroredX() {
-        public double getFieldLength() {
-          return fieldLength;
-        }
-
-        public double getFieldWidth() {
-          return fieldWidth;
-        }
-      };
+      return new MirroredX(fieldLength, fieldWidth);
     }
 
     /**
      * More used for left-right variants on the same alliance. X is unchanged, Y becomes
      * fieldWidth-y, and heading becomes -heading.
      */
-    abstract static class MirroredY extends Flipper {
+    static class MirroredY extends Flipper {
+      public MirroredY(double fieldLength, double fieldWidth) {
+        super(fieldLength, fieldWidth);
+      }
+
       public double flipX(double x) {
         return x;
       }
@@ -206,19 +206,17 @@ public class ChoreoAllianceFlipUtil {
      * @return a new flipper.
      */
     public static MirroredY mirroredY(double fieldLength, double fieldWidth) {
-      return new MirroredY() {
-        public double getFieldLength() {
-          return fieldLength;
-        }
-
-        public double getFieldWidth() {
-          return fieldWidth;
-        }
-      };
+      return new MirroredY(fieldLength, fieldWidth);
     }
 
     /** X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes PI + heading. */
-    abstract static class RotatedAround extends Flipper {
+    static class RotatedAround extends Flipper {
+      public RotatedAround(double fieldLength, double fieldWidth) {
+        super(fieldLength, fieldWidth);
+        this.mirrorX = mirroredX(fieldLength, fieldWidth);
+        this.mirrorY = mirroredY(fieldLength, fieldWidth);
+      }
+
       MirroredX mirrorX = mirroredX(getFieldLength(), getFieldWidth());
       MirroredY mirrorY = mirroredY(getFieldLength(), getFieldWidth());
 
@@ -293,32 +291,36 @@ public class ChoreoAllianceFlipUtil {
      * @return A new rotated flipper around the center of the field.
      */
     public static RotatedAround rotatedAround(double fieldLength, double fieldWidth) {
-      return new RotatedAround() {
-        public double getFieldLength() {
-          return fieldLength;
-        }
-
-        public double getFieldWidth() {
-          return fieldWidth;
-        }
-      };
+      return new RotatedAround(fieldLength, fieldWidth);
     }
 
     // ***** Class Definition *****/
+
+    double fieldLength;
+    double fieldWidth;
+
+    public Flipper(double fieldLength, double fieldWidth) {
+      this.fieldLength = fieldLength;
+      this.fieldWidth = fieldWidth;
+    }
 
     /**
      * Gets the length (X axis) of the field.
      *
      * @return the length (X axis) of the field.
      */
-    public abstract double getFieldLength();
+    public double getFieldLength() {
+      return fieldLength;
+    }
 
     /**
      * Gets the width (Y axis) of the field.
      *
      * @return the width (Y axis) of the field.
      */
-    public abstract double getFieldWidth();
+    public double getFieldWidth() {
+      return fieldWidth;
+    }
 
     /**
      * Flips the X coordinate.
