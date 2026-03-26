@@ -270,8 +270,9 @@ public class AutoFactory {
   }
 
   /**
-   * Warms up choreo to ensure that there is no delay at the start of auto.
-   * It is recommended to schedule this command in your Robot constructor, like so:
+   * Warms up choreo to ensure that there is no delay at the start of auto. It is recommended to
+   * schedule this command in your Robot constructor, like so:
+   *
    * <pre><code>
    *     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
    * </code></pre>
@@ -279,11 +280,7 @@ public class AutoFactory {
   public Command warmupCmd() {
     var autoTraj = trajectory("", voidRoutine, false);
     autoTraj.suppressWarnings();
-    return autoTraj
-            .cmd()
-            .ignoringDisable(true)
-            .withTimeout(0.5)
-            .withName("Choreo Warmup Command");
+    return autoTraj.cmd().ignoringDisable(true).withTimeout(0.5).withName("Choreo Warmup Command");
   }
 
   /**
