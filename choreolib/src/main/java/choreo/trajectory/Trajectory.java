@@ -222,6 +222,32 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
+   * Returns this trajectory, mirrored across the field width.
+   *
+   * @return this trajectory, mirrored across the field width.
+   */
+  public Trajectory<SampleType> mirrorX() {
+    var flippedStates = new ArrayList<SampleType>();
+    for (var state : samples) {
+      flippedStates.add(state.mirrorX());
+    }
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+  }
+
+  /**
+   * Returns this trajectory, mirrored across the field length.
+   *
+   * @return this trajectory, mirrored across the field length.
+   */
+  public Trajectory<SampleType> mirrorY() {
+    var flippedStates = new ArrayList<SampleType>();
+    for (var state : samples) {
+      flippedStates.add(state.mirrorY());
+    }
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+  }
+
+  /**
    * Returns a list of all events with the given name in the trajectory.
    *
    * @param eventName The name of the event.

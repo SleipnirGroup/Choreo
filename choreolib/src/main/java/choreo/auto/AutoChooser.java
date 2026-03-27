@@ -69,6 +69,8 @@ public class AutoChooser implements Sendable {
   }
 
   /**
+   * Returns the name of the default do-nothing option.
+   *
    * @return the name of the default do-nothing option.
    */
   public String getDefaultName() {

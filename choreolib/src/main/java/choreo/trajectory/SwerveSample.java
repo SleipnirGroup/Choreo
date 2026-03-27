@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /** A single swerve robot sample in a Trajectory. */
 public class SwerveSample implements TrajectorySample<SwerveSample> {
@@ -199,52 +198,17 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
   @Override
   public SwerveSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              this.vy,
-              -this.omega,
-              -this.ax,
-              this.ay,
-              -this.alpha,
-              // FL, FR, BL, BR
-              // Mirrored
-              // -FR, -FL, -BR, -BL
-              new double[] {
-                -this.moduleForcesX()[1],
-                -this.moduleForcesX()[0],
-                -this.moduleForcesX()[3],
-                -this.moduleForcesX()[2]
-              },
-              // FL, FR, BL, BR
-              // Mirrored
-              // FR, FL, BR, BL
-              new double[] {
-                this.moduleForcesY()[1],
-                this.moduleForcesY()[0],
-                this.moduleForcesY()[3],
-                this.moduleForcesY()[2]
-              });
-      case ROTATE_AROUND ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              -this.vy,
-              this.omega,
-              -this.ax,
-              -this.ay,
-              this.alpha,
-              Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
-              Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
-    };
+    return ChoreoAllianceFlipUtil.flip(this);
+  }
+
+  @Override
+  public SwerveSample mirrorY() {
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
+  }
+
+  @Override
+  public SwerveSample mirrorX() {
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
   /** The struct for the SwerveSample class. */
@@ -330,19 +294,19 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     var other = (SwerveSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vx == other.vx
-        && this.vy == other.vy
-        && this.omega == other.omega
-        && this.ax == other.ax
-        && this.ay == other.ay
-        && this.alpha == other.alpha
+    return MathUtil.isNear(this.t, other.t, 1E-6)
+        && MathUtil.isNear(this.x, other.x, 1E-6)
+        && MathUtil.isNear(this.y, other.y, 1E-6)
+        && MathUtil.isNear(this.heading, other.heading, 1E-6)
+        && MathUtil.isNear(this.vx, other.vx, 1E-6)
+        && MathUtil.isNear(this.vy, other.vy, 1E-6)
+        && MathUtil.isNear(this.omega, other.omega, 1E-6)
+        && MathUtil.isNear(this.ax, other.ax, 1E-6)
+        && MathUtil.isNear(this.ay, other.ay, 1E-6)
+        && MathUtil.isNear(this.alpha, other.alpha, 1E-6)
         && ChoreoArrayUtil.zipEquals(
-            this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
+            this.fx, other.fx, (a, b) -> MathUtil.isNear(a.doubleValue(), b.doubleValue(), 1E-6))
         && ChoreoArrayUtil.zipEquals(
-            this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
+            this.fy, other.fy, (a, b) -> MathUtil.isNear(a.doubleValue(), b.doubleValue(), 1E-6));
   }
 }
