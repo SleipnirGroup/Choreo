@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <ranges>
 #include <vector>
 
@@ -119,11 +120,12 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   constexpr int num_wheels = 4;
 
   // Minimize total time
-  const double chassis_max_force = path.drivetrain.wheel_max_torque *
+  const double chassis_max_force = path.drivetrain.motor_config.kT *
+                                   path.drivetrain.motor_config.stator_limit *
                                    num_wheels / path.drivetrain.wheel_radius;
   const double chassis_max_a = chassis_max_force / path.drivetrain.mass;
   const double chassis_max_v =
-      path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
+      path.drivetrain.wheel_radius * path.drivetrain.motor_config.free_speed;
   const double wheel_max_position_radius =
       std::ranges::max(path.drivetrain.modules, {}, &Translation2d::norm)
           .norm();
@@ -242,7 +244,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
           v_wrt_robot.x() - translation.y() * ω.at(index),
           v_wrt_robot.y() + translation.x() * ω.at(index)};
       const double v_max = path.drivetrain.wheel_radius *
-                           path.drivetrain.wheel_max_angular_velocity;
+                           path.drivetrain.motor_config.free_speed;
 
       // |v|₂² ≤ vₘₐₓ²
       problem.subject_to(v_wheel_wrt_robot.squared_norm() <= v_max * v_max);
@@ -250,10 +252,32 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v<double> module_force{Fx.at(index).at(module_index),
                                          Fy.at(index).at(module_index)};
 
+      // See
+      // https://www.chiefdelphi.com/t/psa-your-motor-curves-are-still-wrong-a-correction-to-a-whitepaper-about-current-limits/504706
+      const double stall_current = path.drivetrain.motor_config.stall_current();
+      const double free_speed = path.drivetrain.motor_config.free_speed;
+      const double free_current = path.drivetrain.motor_config.free_current;
+      const double resistance = path.drivetrain.motor_config.resistance();
+      const double percent_speed = angular_velocity / free_speed;
+      const double stall_minus_free_current = stall_current - free_current;
+      const auto max_current =
+          (-stall_minus_free_current * percent_speed +
+           sqrt((stall_minus_free_current * percent_speed) *
+                    (stall_minus_free_current * percent_speed) +
+                4 * stall_current *
+                    path.drivetrain.motor_config.supply_limit)) /
+          2;
+      const auto motor_current = stall_current * (duty_cycle - percent_speed) *
+                                     (duty_cycle - percent_speed) +
+                                 free_current * percent_speed;
+      const auto wheel_max_torque =
+          min(path.drivetrain.motor_config.stator_limit, max_current,
+              motor_current);
+
       // τ = r x F
       // F = τ/r
       const double wheel_max_force =
-          path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
+          wheel_max_torque / path.drivetrain.wheel_radius;
 
       // friction = μmg
       const double normal_force_per_wheel =
