@@ -68,6 +68,7 @@ public class DoneTest {
     assertFalse(recentlyDone);
 
     scheduler.schedule(routine.cmd());
+    scheduler.run(); // requred to mark routine active
     scheduler.schedule(traj.cmd());
     scheduler.run();
 

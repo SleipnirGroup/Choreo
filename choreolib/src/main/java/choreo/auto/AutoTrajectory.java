@@ -220,7 +220,8 @@ public class AutoTrajectory {
             this::cmdEnd,
             this::cmdIsFinished,
             driveSubsystem)
-        .withName("Trajectory_" + name);
+        .withName("Trajectory_" + name)
+        .onlyIf(routine.active());
   }
 
   /**
