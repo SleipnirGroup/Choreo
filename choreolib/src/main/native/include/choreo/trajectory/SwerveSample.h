@@ -118,7 +118,7 @@ class SwerveSample {
                         {-moduleForcesY[0], -moduleForcesY[1],
                          -moduleForcesY[2], -moduleForcesY[3]}};
   }
-  
+
   constexpr SwerveSample MirrorX() const {
     return SwerveSample{timestamp,
                         choreo::util::MirroredFlipper::FlipX(x),

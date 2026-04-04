@@ -49,6 +49,46 @@ class MirroredFlipper:
         return math.pi - heading
 
 
+class MirroredYFlipper:
+    IS_MIRRORED: bool = True
+
+    @staticmethod
+    def flip_x(x: float) -> float:
+        """
+        Flips the X coordinate.
+
+        Parameter ``x``:
+            The X coordinate to flip.
+        Returns:
+            The flipped X coordinate.
+        """
+        return x
+
+    @staticmethod
+    def flip_y(y: float) -> float:
+        """
+        Flips the Y coordinate.
+
+        Parameter ``y``:
+            The Y coordinate to flip.
+        Returns:
+            The flipped Y coordinate.
+        """
+        return FIELD_WIDTH - y
+
+    @staticmethod
+    def flip_heading(heading: float) -> float:
+        """
+        Flips the heading.
+
+        Parameter ``heading``:
+            The heading to flip.
+        Returns:
+            The flipped heading.
+        """
+        return -heading
+
+
 class RotateAroundFlipper:
     IS_MIRRORED: bool = False
 

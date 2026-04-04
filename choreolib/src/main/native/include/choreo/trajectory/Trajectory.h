@@ -50,29 +50,36 @@ class Trajectory {
     for (const auto& state : samples) {
       mirroredStates.push_back(state.template MirrorX());
     }
-    return Trajectory<SampleType>(name, mirroredStates, std::vector(splits), std::vector(events));
+    return Trajectory<SampleType>(name, mirroredStates, std::vector(splits),
+                                  std::vector(events));
   }
 
-  /// Returns this trajectory, mirrored left-to-right across the field from the driver's perspective.
+  /// Returns this trajectory, mirrored left-to-right across the field from the
+  /// driver's perspective.
   ///
-  /// @return this trajectory, mirrored left-to-right across the field from the driver's perspective.
+  /// @return this trajectory, mirrored left-to-right across the field from the
+  /// driver's perspective.
   Trajectory<SampleType> MirrorY() const {
     std::vector<SampleType> mirroredStates;
     for (const auto& state : samples) {
       mirroredStates.push_back(state.template MirrorY());
     }
-    return Trajectory<SampleType>(name, mirroredStates, std::vector(splits), std::vector(events));
+    return Trajectory<SampleType>(name, mirroredStates, std::vector(splits),
+                                  std::vector(events));
   }
 
-  /// Returns this trajectory, rotated 180 degrees around the center of the field.
+  /// Returns this trajectory, rotated 180 degrees around the center of the
+  /// field.
   ///
-  /// @return this trajectory, rotated 180 degrees around the center of the field. 
+  /// @return this trajectory, rotated 180 degrees around the center of the
+  /// field.
   Trajectory<SampleType> RotateAround() const {
     std::vector<SampleType> mirroredStates;
     for (const auto& state : samples) {
       mirroredStates.push_back(state.template RotateAround());
     }
-    return Trajectory<SampleType>(name, mirroredStates, std::vector(splits), std::vector(events));
+    return Trajectory<SampleType>(name, mirroredStates, std::vector(splits),
+                                  std::vector(events));
   }
 
   /// Returns the first SampleType in the trajectory.
@@ -197,7 +204,8 @@ class Trajectory {
     for (const auto& state : samples) {
       flippedStates.push_back(state.template Flipped<Year>());
     }
-    return Trajectory<SampleType>(name, flippedStates, std::vector(splits), std::vector(events));
+    return Trajectory<SampleType>(name, flippedStates, std::vector(splits),
+                                  std::vector(events));
   }
 
   /// Returns a vector of all events with the given name in the trajectory.
