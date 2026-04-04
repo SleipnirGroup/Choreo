@@ -188,6 +188,30 @@ class DifferentialSample {
     }
   }
 
+  constexpr DifferentialSample RotateAround() {
+    return DifferentialSample(
+        timestamp, choreo::util::RotateAroundFlipper::FlipX(x),
+        choreo::util::RotateAroundFlipper::FlipY(y),
+        choreo::util::RotateAroundFlipper::FlipHeading(heading), vl, vr, omega,
+        al, ar, alpha, fl, fr);
+  }
+
+  constexpr DifferentialSample MirrorX() {
+    return DifferentialSample(
+        timestamp, choreo::util::MirroredFlipper::FlipX(x),
+        choreo::util::MirroredFlipper::FlipY(y),
+        choreo::util::MirroredFlipper::FlipHeading(heading), vr, vl, -omega, ar,
+        al, -alpha, fr, fl);
+  }
+
+  constexpr DifferentialSample MirrorY() {
+    return DifferentialSample(
+        timestamp, choreo::util::MirroredYFlipper::FlipX(x),
+        choreo::util::MirroredYFlipper::FlipY(y),
+        choreo::util::MirroredYFlipper::FlipHeading(heading), vr, vl, -omega,
+        ar, al, -alpha, fr, fl);
+  }
+
   /// DifferentialSample equality operator.
   ///
   /// @param other The other DifferentialSample.

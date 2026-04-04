@@ -32,6 +32,9 @@ concept TrajectorySample =
       { t.template Flipped<2022>() } -> std::same_as<T>;
       { t.template Flipped<2023>() } -> std::same_as<T>;
       { t.template Flipped<2024>() } -> std::same_as<T>;
+      { t.RotateAround() } -> std::same_as<T>;
+      { t.MirrorX() } -> std::same_as<T>;
+      { t.MirrorY() } -> std::same_as<T>;
     };
 
 }  // namespace choreo

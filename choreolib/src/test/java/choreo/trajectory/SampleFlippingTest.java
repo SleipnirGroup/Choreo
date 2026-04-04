@@ -188,10 +188,17 @@ public class SampleFlippingTest {
             new double[] {10.0, 11.0, 12.0, 13.0},
             new double[] {14.0, 15.0, 16.0, 17.0});
     ChoreoAllianceFlipUtil.setFlipper(Flipper.FRC_CURRENT);
-    SwerveSample mirrored = sample.mirrorX().mirrorY();
-
-    SwerveSample rotated = sample.flipped();
-    assertEquals(mirrored, rotated);
+    SwerveSample rotated = sample.mirrorX().mirrorY();
+    assertEquals(rotated.t, 0.0);
+    assertEquals(rotated.x, FIELD_LENGTH_2026 - 1.0);
+    assertEquals(rotated.y, FIELD_WIDTH_2026 - 2.0);
+    assertEquals(rotated.heading, -(-3.0 + Math.PI));
+    assertEquals(rotated.vx, -4.0);
+    assertEquals(rotated.vy, -5.0);
+    assertEquals(rotated.omega, 6.0);
+    assertEquals(rotated.ax, -7.0);
+    assertEquals(rotated.ay, -8.0);
+    assertEquals(rotated.alpha, 9.0);
   }
 
   @Test

@@ -299,6 +299,12 @@ public class ChoreoAllianceFlipUtil {
     double fieldLength;
     double fieldWidth;
 
+    /**
+     * Constructs a flipper with the given field dimensions.
+     *
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
+     */
     public Flipper(double fieldLength, double fieldWidth) {
       this.fieldLength = fieldLength;
       this.fieldWidth = fieldWidth;
