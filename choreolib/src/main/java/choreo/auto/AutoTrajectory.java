@@ -253,7 +253,9 @@ public class AutoTrajectory {
             Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
             Commands.runOnce(
                     () -> {
-                      if (warnUser) noInitialPose.addCause(name);
+                      if (warnUser) {
+                          noInitialPose.addCause(name);
+                      }
                       routine.kill();
                     })
                 .andThen(driveSubsystem.run(() -> {})),
