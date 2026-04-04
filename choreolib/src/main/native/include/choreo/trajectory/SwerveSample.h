@@ -136,7 +136,7 @@ class SwerveSample {
                          -moduleForcesX[3], -moduleForcesX[2]},
                         // FL, FR, BL, BR
                         // Mirrored
-                        // -FR, -FL, -BR, -BL
+                        // FR, FL, BR, BL
                         {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
                          moduleForcesY[2]}};
   }
@@ -154,7 +154,7 @@ class SwerveSample {
                         -alpha,
                         // FL, FR, BL, BR
                         // Mirrored
-                        // -FR, -FL, -BR, -BL
+                        // FR, FL, BR, BL
                         {moduleForcesX[1], moduleForcesX[0], moduleForcesX[3],
                          moduleForcesX[2]},
                         // FL, FR, BL, BR
