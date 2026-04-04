@@ -209,9 +209,9 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
-   * Returns this trajectory, mirrored across the field midline.
+   * Returns this trajectory, flipped to the other alliance according to the symmetry of the field.
    *
-   * @return this trajectory, mirrored across the field midline.
+   * @return this trajectory, flipped to the other alliance according to the symmetry of the field.
    */
   public Trajectory<SampleType> flipped() {
     var flippedStates = new ArrayList<SampleType>();
@@ -222,9 +222,9 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
-   * Returns this trajectory, mirrored across the field width.
+   * Returns this trajectory, mirrored to the other alliance.
    *
-   * @return this trajectory, mirrored across the field width.
+   * @return this trajectory, mirrored to the other alliance.
    */
   public Trajectory<SampleType> mirrorX() {
     var flippedStates = new ArrayList<SampleType>();
@@ -235,11 +235,24 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
-   * Returns this trajectory, mirrored across the field length.
+   * Returns this trajectory, mirrored left-to-right from the driver's perspective.
    *
-   * @return this trajectory, mirrored across the field length.
+   * @return this trajectory, mirrored left-to-right from the driver's perspective.
    */
   public Trajectory<SampleType> mirrorY() {
+    var flippedStates = new ArrayList<SampleType>();
+    for (var state : samples) {
+      flippedStates.add(state.mirrorY());
+    }
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+  }
+
+  /**
+   * Returns this trajectory, rotated 180 degrees around the field center.
+   *
+   * @return this trajectory, rotated 180 degrees around the field center.
+   */
+  public Trajectory<SampleType> rotateAround() {
     var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
       flippedStates.add(state.mirrorY());

@@ -5,7 +5,13 @@ from dataclasses import dataclass
 from typing import TypeGuard
 
 import numpy as np
-from choreo.util import DEFAULT_YEAR, get_flipper_for_year, RotateAroundFlipper, MirroredFlipper, MirroredYFlipper
+from choreo.util import (
+    DEFAULT_YEAR,
+    MirroredFlipper,
+    MirroredYFlipper,
+    RotateAroundFlipper,
+    get_flipper_for_year,
+)
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
@@ -332,6 +338,9 @@ class DifferentialSample:
             return self.rotate_around()
 
     def mirror_x(self) -> DifferentialSample:
+        """
+        Returns the current sample, mirrored to the other alliance.
+        """
         return DifferentialSample(
             self.timestamp,
             MirroredFlipper.flip_x(self.x),
@@ -348,6 +357,9 @@ class DifferentialSample:
         )
 
     def mirror_y(self) -> DifferentialSample:
+        """
+        Returns the current sample, mirrored left-to-right from the driver's perspective.
+        """
         return DifferentialSample(
             self.timestamp,
             MirroredYFlipper.flip_x(self.x),
@@ -364,6 +376,9 @@ class DifferentialSample:
         )
 
     def rotate_around(self) -> DifferentialSample:
+        """
+        Returns the current sample, rotated 180 degrees around the field center.
+        """
         return DifferentialSample(
             self.timestamp,
             RotateAroundFlipper.flip_x(self.x),
@@ -676,6 +691,9 @@ class SwerveSample:
             return self.rotate_around()
 
     def mirror_x(self) -> SwerveSample:
+        """
+        Returns the current sample, mirrored to the other alliance.
+        """
         return SwerveSample(
             self.timestamp,
             MirroredFlipper.flip_x(self.x),
@@ -692,6 +710,9 @@ class SwerveSample:
         )
 
     def mirror_y(self) -> SwerveSample:
+        """
+        Returns the current sample, mirrored left-to-right from the driver's perspective.
+        """
         return SwerveSample(
             self.timestamp,
             MirroredYFlipper.flip_x(self.x),
@@ -708,6 +729,9 @@ class SwerveSample:
         )
 
     def rotate_around(self) -> SwerveSample:
+        """
+        Returns the current sample, rotated 180 degrees around the field center.
+        """
         return SwerveSample(
             self.timestamp,
             RotateAroundFlipper.flip_x(self.x),

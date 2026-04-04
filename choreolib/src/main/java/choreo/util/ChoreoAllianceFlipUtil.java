@@ -435,6 +435,7 @@ public class ChoreoAllianceFlipUtil {
   private static Flipper activeAllianceFlip;
   private static Flipper activeMirrorY;
   private static Flipper activeMirrorX;
+  private static Flipper activeRotateAround;
 
   static {
     setFlipper(Flipper.FRC_CURRENT);
@@ -454,23 +455,33 @@ public class ChoreoAllianceFlipUtil {
   }
 
   /**
-   * Get the flipper that is currently active for mirroring across the Y axis. It's recommended not
-   * to store this locally as the flipper may change.
+   * Get the flipper that is currently active for mirroring to the other alliance. It's recommended
+   * not to store this locally as the flipper may change.
    *
-   * @return The active mirror Y flipper.
+   * @return The active alliance-mirroring flipper.
    */
   public static Flipper getMirrorX() {
     return activeMirrorX;
   }
 
   /**
-   * Get the flipper that is currently active for mirroring across the X axis. It's recommended not
-   * to store this locally as the flipper may change.
+   * Get the flipper that is currently active for mirroring left-to-right from the driver's
+   * perspective. It's recommended not to store this locally as the flipper may change.
    *
-   * @return The active mirror X flipper.
+   * @return The active left-right mirror flipper.
    */
   public static Flipper getMirrorY() {
     return activeMirrorY;
+  }
+
+  /**
+   * Get the flipper that is currently active for rotating around the field center. It's recommended
+   * not to store this locally as the flipper may change.
+   *
+   * @return The active rotate-around flipper.
+   */
+  public static Flipper getRotateAround() {
+    return activeRotateAround;
   }
 
   /**
@@ -495,6 +506,7 @@ public class ChoreoAllianceFlipUtil {
     activeAllianceFlip = flipper;
     activeMirrorY = Flipper.mirroredY(flipper.getFieldLength(), flipper.getFieldWidth());
     activeMirrorX = Flipper.mirroredX(flipper.getFieldLength(), flipper.getFieldWidth());
+    activeRotateAround = Flipper.rotatedAround(flipper.getFieldLength(), flipper.getFieldWidth());
   }
 
   /**

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -250,11 +251,25 @@ public class AutoFactory {
    *
    * @see AutoRoutine#trajectory(Trajectory)
    */
-  @SuppressWarnings("unchecked")
   <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
       Trajectory<ST> trajectory, AutoRoutine routine, boolean useBindings) {
+    return trajectory(trajectory, routine, useBindings, Function.identity());
+  }
+
+  /**
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
+   *
+   * @see AutoRoutine#trajectory(Trajectory)
+   */
+  @SuppressWarnings("unchecked")
+  <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
+      Trajectory<ST> trajectory,
+      AutoRoutine routine,
+      boolean useBindings,
+      Function<Trajectory<ST>, Trajectory<ST>> trajectoryTransform) {
     // type solidify everything
-    final Trajectory<ST> solidTrajectory = trajectory;
+    final Trajectory<ST> solidTrajectory = trajectoryTransform.apply(trajectory);
     final Consumer<ST> solidController = (Consumer<ST>) this.controller;
     return new AutoTrajectory(
         trajectory.name(),

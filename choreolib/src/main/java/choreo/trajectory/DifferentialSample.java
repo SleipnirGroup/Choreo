@@ -184,6 +184,11 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
+  @Override
+  public DifferentialSample rotateAround() {
+    return ChoreoAllianceFlipUtil.getRotateAround().flip(this);
+  }
+
   public DifferentialSample offsetBy(double timestampOffset) {
     return new DifferentialSample(
         t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, alpha, fl, fr);

@@ -211,6 +211,11 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
+  @Override
+  public SwerveSample rotateAround() {
+    return ChoreoAllianceFlipUtil.getRotateAround().flip(this);
+  }
+
   /** The struct for the SwerveSample class. */
   public static final Struct<SwerveSample> struct = new SwerveSampleStruct();
 

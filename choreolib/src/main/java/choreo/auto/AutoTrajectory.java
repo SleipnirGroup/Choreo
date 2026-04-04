@@ -271,10 +271,12 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns this auto trajectory, mirrored across the field width.
+   * Returns this auto trajectory, mirrored to the other alliance.
    *
-   * @param <SampleType> The type of the trajectory samples.
-   * @return this auto trajectory, mirrored across the field width.
+   * @param <SampleType> The type of the trajectory samples. Due to Java limitations, you have to
+   *     specify the sample type again here even if it was already specified when creating the
+   *     AutoTrajectory.
+   * @return this auto trajectory, mirrored to the other alliance.
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorX() {
@@ -292,16 +294,41 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns this auto trajectory, mirrored across the field length.
+   * Returns this auto trajectory, mirrored left-to-right from the driver's perspective.
    *
-   * @param <SampleType> The type of the trajectory samples.
-   * @return this auto trajectory, mirrored across the field length.
+   * @param <SampleType> The type of the trajectory samples. Due to Java limitations, you have to
+   *     specify the sample type again here even if it was already specified when creating the
+   *     AutoTrajectory.
+   * @return this auto trajectory, mirrored left-to-right from the driver's perspective.
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorY() {
     return new AutoTrajectory(
         name,
         (Trajectory<SampleType>) trajectory.mirrorY(),
+        poseSupplier,
+        resetOdometry,
+        (Consumer<SampleType>) controller,
+        allianceCtx,
+        (TrajectoryLogger<SampleType>) trajectoryLogger,
+        driveSubsystem,
+        routine,
+        bindings);
+  }
+
+  /**
+   * Returns this auto trajectory, rotated 180 degrees around the field center.
+   *
+   * @param <SampleType> The type of the trajectory samples. Due to Java limitations, you have to
+   *     specify the sample type again here even if it was already specified when creating the
+   *     AutoTrajectory.
+   * @return this auto trajectory, rotated 180 degrees around the field center.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory rotateAround() {
+    return new AutoTrajectory(
+        name,
+        (Trajectory<SampleType>) trajectory.rotateAround(),
         poseSupplier,
         resetOdometry,
         (Consumer<SampleType>) controller,

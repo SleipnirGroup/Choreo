@@ -36,25 +36,32 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
   ChassisSpeeds getChassisSpeeds();
 
   /**
-   * Returns this sample, mirrored across the field midline.
+   * Returns this sample, flipped to the other alliance according to the symmetry of the field.
    *
-   * @return this sample, mirrored across the field midline.
+   * @return this sample, flipped to the other alliance according to the symmetry of the field.
    */
   Self flipped();
 
   /**
-   * Returns this sample, mirrored across the field length.
+   * Returns this sample, mirrored left-to-right from the driver's perspective.
    *
-   * @return this sample, mirrored across the field length.
+   * @return this sample, mirrored left-to-right from the driver's perspective.
    */
   Self mirrorY();
 
   /**
-   * Returns this sample, mirrored across the field width.
+   * Returns this sample, mirrored to the other alliance.
    *
-   * @return this sample, mirrored across the field width.
+   * @return this sample, mirrored to the other alliance.
    */
   Self mirrorX();
+
+  /**
+   * Returns this sample, rotated 180 degrees around the field center.
+   *
+   * @return this sample, rotated 180 degrees around the field center.
+   */
+  Self rotateAround();
 
   /**
    * Returns this sample, offset by the given timestamp.
