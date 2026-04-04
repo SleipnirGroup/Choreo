@@ -433,8 +433,8 @@ public class ChoreoAllianceFlipUtil {
   }
 
   private static Flipper activeAllianceFlip;
-  private static Flipper activeMirrorY;
   private static Flipper activeMirrorX;
+  private static Flipper activeMirrorY;
   private static Flipper activeRotateAround;
 
   static {
@@ -504,8 +504,8 @@ public class ChoreoAllianceFlipUtil {
    */
   public static void setFlipper(Flipper flipper) {
     activeAllianceFlip = flipper;
-    activeMirrorY = Flipper.mirroredY(flipper.getFieldLength(), flipper.getFieldWidth());
     activeMirrorX = Flipper.mirroredX(flipper.getFieldLength(), flipper.getFieldWidth());
+    activeMirrorY = Flipper.mirroredY(flipper.getFieldLength(), flipper.getFieldWidth());
     activeRotateAround = Flipper.rotatedAround(flipper.getFieldLength(), flipper.getFieldWidth());
   }
 

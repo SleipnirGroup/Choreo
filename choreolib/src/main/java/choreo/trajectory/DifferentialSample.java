@@ -175,13 +175,13 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   @Override
-  public DifferentialSample mirrorY() {
-    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
+  public DifferentialSample mirrorX() {
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
   @Override
-  public DifferentialSample mirrorX() {
-    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
+  public DifferentialSample mirrorY() {
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
   }
 
   @Override

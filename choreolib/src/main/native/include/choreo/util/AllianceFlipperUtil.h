@@ -45,6 +45,8 @@ struct MirroredFlipper {
   }
 };
 
+/// X is unchanged, y becomes fieldWidth - y, and heading
+/// becomes -heading.
 struct MirroredYFlipper {
   /// Whether pose should be mirrored.
   static constexpr bool isMirrored = true;

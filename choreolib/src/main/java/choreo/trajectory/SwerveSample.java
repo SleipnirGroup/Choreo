@@ -202,13 +202,13 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   }
 
   @Override
-  public SwerveSample mirrorY() {
-    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
+  public SwerveSample mirrorX() {
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
   }
 
   @Override
-  public SwerveSample mirrorX() {
-    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
+  public SwerveSample mirrorY() {
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
   }
 
   @Override

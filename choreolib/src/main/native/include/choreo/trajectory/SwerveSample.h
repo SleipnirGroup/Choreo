@@ -102,23 +102,9 @@ class SwerveSample {
     }
   }
 
-  constexpr SwerveSample RotateAround() const {
-    return SwerveSample{timestamp,
-                        choreo::util::RotateAroundFlipper::FlipX(x),
-                        choreo::util::RotateAroundFlipper::FlipY(y),
-                        choreo::util::RotateAroundFlipper::FlipHeading(heading),
-                        -vx,
-                        -vy,
-                        omega,
-                        -ax,
-                        -ay,
-                        alpha,
-                        {-moduleForcesX[0], -moduleForcesX[1],
-                         -moduleForcesX[2], -moduleForcesX[3]},
-                        {-moduleForcesY[0], -moduleForcesY[1],
-                         -moduleForcesY[2], -moduleForcesY[3]}};
-  }
-
+  /// Returns the sample, mirrored to the other alliance.
+  ///
+  /// @return the sample, mirrored to the other alliance.
   constexpr SwerveSample MirrorX() const {
     return SwerveSample{timestamp,
                         choreo::util::MirroredFlipper::FlipX(x),
@@ -142,6 +128,9 @@ class SwerveSample {
                          moduleForcesY[2]}};
   }
 
+  /// Returns the sample, mirrored left-to-right from the driver's perspective.
+  ///
+  /// @return the sample, mirrored left-to-right from the driver's perspective.
   constexpr SwerveSample MirrorY() const {
     return SwerveSample{timestamp,
                         choreo::util::MirroredYFlipper::FlipX(x),
@@ -163,6 +152,26 @@ class SwerveSample {
                         // -FR, -FL, -BR, -BL
                         {-moduleForcesY[1], -moduleForcesY[0],
                          -moduleForcesY[3], -moduleForcesY[2]}};
+  }
+
+  /// Returns the sample, rotated 180 degrees around the center of the field.
+  ///
+  /// @return the sample, rotated 180 degrees around the center of the field.
+  constexpr SwerveSample RotateAround() const {
+    return SwerveSample{timestamp,
+                        choreo::util::RotateAroundFlipper::FlipX(x),
+                        choreo::util::RotateAroundFlipper::FlipY(y),
+                        choreo::util::RotateAroundFlipper::FlipHeading(heading),
+                        -vx,
+                        -vy,
+                        omega,
+                        -ax,
+                        -ay,
+                        alpha,
+                        {-moduleForcesX[0], -moduleForcesX[1],
+                         -moduleForcesX[2], -moduleForcesX[3]},
+                        {-moduleForcesY[0], -moduleForcesY[1],
+                         -moduleForcesY[2], -moduleForcesY[3]}};
   }
 
   /// Returns the current sample offset by a the time offset passed in.

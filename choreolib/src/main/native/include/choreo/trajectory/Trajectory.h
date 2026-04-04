@@ -48,7 +48,7 @@ class Trajectory {
   Trajectory<SampleType> MirrorX() const {
     std::vector<SampleType> mirroredStates;
     for (const auto& state : samples) {
-      mirroredStates.push_back(state.template MirrorX());
+      mirroredStates.push_back(state.MirrorX());
     }
     return Trajectory<SampleType>(name, mirroredStates, std::vector(splits),
                                   std::vector(events));
@@ -62,7 +62,7 @@ class Trajectory {
   Trajectory<SampleType> MirrorY() const {
     std::vector<SampleType> mirroredStates;
     for (const auto& state : samples) {
-      mirroredStates.push_back(state.template MirrorY());
+      mirroredStates.push_back(state.MirrorY());
     }
     return Trajectory<SampleType>(name, mirroredStates, std::vector(splits),
                                   std::vector(events));
@@ -76,7 +76,7 @@ class Trajectory {
   Trajectory<SampleType> RotateAround() const {
     std::vector<SampleType> mirroredStates;
     for (const auto& state : samples) {
-      mirroredStates.push_back(state.template RotateAround());
+      mirroredStates.push_back(state.RotateAround());
     }
     return Trajectory<SampleType>(name, mirroredStates, std::vector(splits),
                                   std::vector(events));

@@ -43,18 +43,18 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
   Self flipped();
 
   /**
-   * Returns this sample, mirrored left-to-right from the driver's perspective.
-   *
-   * @return this sample, mirrored left-to-right from the driver's perspective.
-   */
-  Self mirrorY();
-
-  /**
    * Returns this sample, mirrored to the other alliance.
    *
    * @return this sample, mirrored to the other alliance.
    */
   Self mirrorX();
+
+  /**
+   * Returns this sample, mirrored left-to-right from the driver's perspective.
+   *
+   * @return this sample, mirrored left-to-right from the driver's perspective.
+   */
+  Self mirrorY();
 
   /**
    * Returns this sample, rotated 180 degrees around the field center.

@@ -188,14 +188,9 @@ class DifferentialSample {
     }
   }
 
-  constexpr DifferentialSample RotateAround() {
-    return DifferentialSample(
-        timestamp, choreo::util::RotateAroundFlipper::FlipX(x),
-        choreo::util::RotateAroundFlipper::FlipY(y),
-        choreo::util::RotateAroundFlipper::FlipHeading(heading), vl, vr, omega,
-        al, ar, alpha, fl, fr);
-  }
-
+  /// Returns the sample, mirrored to the other alliance.
+  ///
+  /// @return the sample, mirrored to the other alliance.
   constexpr DifferentialSample MirrorX() {
     return DifferentialSample(
         timestamp, choreo::util::MirroredFlipper::FlipX(x),
@@ -204,12 +199,26 @@ class DifferentialSample {
         al, -alpha, fr, fl);
   }
 
+  /// Returns the sample, mirrored left-to-right from the driver's perspective.
+  ///
+  /// @return the sample, mirrored left-to-right from the driver's perspective.
   constexpr DifferentialSample MirrorY() {
     return DifferentialSample(
         timestamp, choreo::util::MirroredYFlipper::FlipX(x),
         choreo::util::MirroredYFlipper::FlipY(y),
         choreo::util::MirroredYFlipper::FlipHeading(heading), vr, vl, -omega,
         ar, al, -alpha, fr, fl);
+  }
+
+  /// Returns the sample, rotated 180 degrees around the center of the field.
+  ///
+  /// @return the sample, rotated 180 degrees around the center of the field.
+  constexpr DifferentialSample RotateAround() {
+    return DifferentialSample(
+        timestamp, choreo::util::RotateAroundFlipper::FlipX(x),
+        choreo::util::RotateAroundFlipper::FlipY(y),
+        choreo::util::RotateAroundFlipper::FlipHeading(heading), vl, vr, omega,
+        al, ar, alpha, fl, fr);
   }
 
   /// DifferentialSample equality operator.
