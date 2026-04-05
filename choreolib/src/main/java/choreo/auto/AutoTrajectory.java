@@ -81,6 +81,9 @@ public class AutoTrajectory {
   /** If the trajectory ran to completion */
   private boolean isCompleted = false;
 
+  /** Whether to suppress warnings for this trajectory. */
+  private boolean warnUser = true;
+
   /**
    * Constructs an AutoTrajectory.
    *
@@ -203,6 +206,11 @@ public class AutoTrajectory {
         || !allianceCtx.allianceKnownOrIgnored();
   }
 
+  /** Suppresses warnings for this trajectory. */
+  void suppressWarnings() {
+    warnUser = false;
+  }
+
   /**
    * Creates a command that allocates the drive subsystem and follows the trajectory using the
    * factories control function
@@ -211,7 +219,7 @@ public class AutoTrajectory {
    */
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
-    if (trajectory.samples().isEmpty()) {
+    if (trajectory.samples().isEmpty() && warnUser) {
       return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
@@ -245,7 +253,9 @@ public class AutoTrajectory {
             Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
             Commands.runOnce(
                     () -> {
-                      noInitialPose.addCause(name);
+                      if (warnUser) {
+                        noInitialPose.addCause(name);
+                      }
                       routine.kill();
                     })
                 .andThen(driveSubsystem.run(() -> {})),
@@ -499,13 +509,17 @@ public class AutoTrajectory {
   public Trigger atTime(double timeSinceStart) {
     // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      triggerTimeNegative.addCause(name);
+      if (warnUser) {
+        triggerTimeNegative.addCause(name);
+      }
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
     if (timeSinceStart > trajectory.getTotalTime()) {
-      triggerTimeAboveMax.addCause(name);
+      if (warnUser) {
+        triggerTimeAboveMax.addCause(name);
+      }
       return offTrigger;
     }
 
@@ -551,7 +565,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
+    if (!foundEvent && warnUser) {
       eventNotFound.addCause(name);
     }
 
@@ -651,7 +665,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
+    if (!foundEvent && warnUser) {
       eventNotFound.addCause(name);
     }
 
@@ -731,7 +745,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
+    if (!foundEvent && warnUser) {
       eventNotFound.addCause(name);
     }
 
@@ -753,7 +767,7 @@ public class AutoTrajectory {
             .mapToDouble(e -> e.timestamp)
             .toArray();
 
-    if (times.length == 0) {
+    if (times.length == 0 && warnUser) {
       eventNotFound.addCause("collectEvents(" + eventName + ")");
     }
 
