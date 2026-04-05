@@ -258,7 +258,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double free_speed = path.drivetrain.motor_config.free_speed;
       const double free_current = path.drivetrain.motor_config.free_current;
       const double resistance = path.drivetrain.motor_config.resistance();
-      const double percent_speed = angular_velocity / free_speed;
+      const auto angular_velocity = v_wheel_wrt_robot.norm() / path.drivetrain.wheel_radius;
+      const auto percent_speed = angular_velocity / free_speed;
       const double stall_minus_free_current = stall_current - free_current;
       const auto max_current =
           (-stall_minus_free_current * percent_speed +
@@ -272,7 +273,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
                                  free_current * percent_speed;
       const auto wheel_max_torque =
           min(path.drivetrain.motor_config.stator_limit, max_current,
-              motor_current);
+              motor_current) * path.drivetrain.motor_config.kT;
 
       // τ = r x F
       // F = τ/r
