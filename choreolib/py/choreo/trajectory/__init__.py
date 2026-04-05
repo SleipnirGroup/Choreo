@@ -5,7 +5,13 @@ from dataclasses import dataclass
 from typing import TypeGuard
 
 import numpy as np
-from choreo.util import DEFAULT_YEAR, get_flipper_for_year
+from choreo.util import (
+    DEFAULT_YEAR,
+    MirroredFlipper,
+    MirroredYFlipper,
+    RotateAroundFlipper,
+    get_flipper_for_year,
+)
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 from wpimath.system import RKDP
@@ -197,35 +203,66 @@ class DifferentialSample:
         """
         flipper = get_flipper_for_year(year)
         if flipper.IS_MIRRORED:
-            return DifferentialSample(
-                self.timestamp,
-                flipper.flip_x(self.x),
-                flipper.flip_y(self.y),  # No-op for mirroring
-                flipper.flip_heading(self.heading),
-                self.vr,
-                self.vl,
-                -self.omega,
-                self.ar,
-                self.al,
-                -self.alpha,
-                self.fr,
-                self.fl,
-            )
+            return self.mirror_x()
         else:
-            return DifferentialSample(
-                self.timestamp,
-                flipper.flip_x(self.x),
-                flipper.flip_y(self.y),
-                flipper.flip_heading(self.heading),
-                self.vl,
-                self.vr,
-                self.omega,
-                self.al,
-                self.ar,
-                self.alpha,
-                self.fl,
-                self.fr,
-            )
+            return self.rotate_around()
+
+    def mirror_x(self) -> DifferentialSample:
+        """
+        Returns the current sample, mirrored to the other alliance.
+        """
+        return DifferentialSample(
+            self.timestamp,
+            MirroredFlipper.flip_x(self.x),
+            MirroredFlipper.flip_y(self.y),
+            MirroredFlipper.flip_heading(self.heading),
+            self.vr,
+            self.vl,
+            -self.omega,
+            self.ar,
+            self.al,
+            -self.alpha,
+            self.fr,
+            self.fl,
+        )
+
+    def mirror_y(self) -> DifferentialSample:
+        """
+        Returns the current sample, mirrored left-to-right from the driver's perspective.
+        """
+        return DifferentialSample(
+            self.timestamp,
+            MirroredYFlipper.flip_x(self.x),
+            MirroredYFlipper.flip_y(self.y),
+            MirroredYFlipper.flip_heading(self.heading),
+            self.vr,
+            self.vl,
+            -self.omega,
+            self.ar,
+            self.al,
+            -self.alpha,
+            self.fr,
+            self.fl,
+        )
+
+    def rotate_around(self) -> DifferentialSample:
+        """
+        Returns the current sample, rotated 180 degrees around the field center.
+        """
+        return DifferentialSample(
+            self.timestamp,
+            RotateAroundFlipper.flip_x(self.x),
+            RotateAroundFlipper.flip_y(self.y),
+            RotateAroundFlipper.flip_heading(self.heading),
+            self.vl,
+            self.vr,
+            self.omega,
+            self.al,
+            self.ar,
+            self.alpha,
+            self.fl,
+            self.fr,
+        )
 
 
 @dataclass
@@ -371,6 +408,33 @@ class DifferentialTrajectory:
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
         )
 
+    def mirror_x(self) -> DifferentialTrajectory:
+        """
+        Returns this trajectory mirrored to the other alliance.
+        """
+        return DifferentialTrajectory(
+            self.name, [x.mirror_x() for x in self.samples], self.splits, self.events
+        )
+
+    def mirror_y(self) -> DifferentialTrajectory:
+        """
+        Returns this trajectory mirrored left-to-right across the field from the driver's perspective.
+        """
+        return DifferentialTrajectory(
+            self.name, [x.mirror_y() for x in self.samples], self.splits, self.events
+        )
+
+    def rotate_around(self) -> DifferentialTrajectory:
+        """
+        Returns this trajectory mirrored left-to-right across the field from the driver's perspective.
+        """
+        return DifferentialTrajectory(
+            self.name,
+            [x.rotate_around() for x in self.samples],
+            self.splits,
+            self.events,
+        )
+
 
 @dataclass
 class SwerveSample:
@@ -492,35 +556,66 @@ class SwerveSample:
         """
         flipper = get_flipper_for_year(year)
         if flipper.IS_MIRRORED:
-            return SwerveSample(
-                self.timestamp,
-                flipper.flip_x(self.x),
-                flipper.flip_y(self.y),
-                flipper.flip_heading(self.heading),
-                -self.vx,
-                self.vy,
-                -self.omega,
-                -self.ax,
-                self.ay,
-                -self.alpha,
-                [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
-                [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
-            )
+            return self.mirror_x()
         else:
-            return SwerveSample(
-                self.timestamp,
-                flipper.flip_x(self.x),
-                flipper.flip_y(self.y),
-                flipper.flip_heading(self.heading),
-                -self.vx,
-                -self.vy,
-                self.omega,
-                -self.ax,
-                -self.ay,
-                self.alpha,
-                [-x for x in self.fx],
-                [-y for y in self.fy],
-            )
+            return self.rotate_around()
+
+    def mirror_x(self) -> SwerveSample:
+        """
+        Returns the current sample, mirrored to the other alliance.
+        """
+        return SwerveSample(
+            self.timestamp,
+            MirroredFlipper.flip_x(self.x),
+            MirroredFlipper.flip_y(self.y),
+            MirroredFlipper.flip_heading(self.heading),
+            -self.vx,
+            self.vy,
+            -self.omega,
+            -self.ax,
+            self.ay,
+            -self.alpha,
+            [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
+            [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
+        )
+
+    def mirror_y(self) -> SwerveSample:
+        """
+        Returns the current sample, mirrored left-to-right from the driver's perspective.
+        """
+        return SwerveSample(
+            self.timestamp,
+            MirroredYFlipper.flip_x(self.x),
+            MirroredYFlipper.flip_y(self.y),
+            MirroredYFlipper.flip_heading(self.heading),
+            self.vx,
+            -self.vy,
+            -self.omega,
+            self.ax,
+            -self.ay,
+            -self.alpha,
+            [self.fx[1], self.fx[0], self.fx[3], self.fx[2]],
+            [-self.fy[1], -self.fy[0], -self.fy[3], -self.fy[2]],
+        )
+
+    def rotate_around(self) -> SwerveSample:
+        """
+        Returns the current sample, rotated 180 degrees around the field center.
+        """
+        return SwerveSample(
+            self.timestamp,
+            RotateAroundFlipper.flip_x(self.x),
+            RotateAroundFlipper.flip_y(self.y),
+            RotateAroundFlipper.flip_heading(self.heading),
+            -self.vx,
+            -self.vy,
+            self.omega,
+            -self.ax,
+            -self.ay,
+            self.alpha,
+            [-x for x in self.fx],
+            [-y for y in self.fy],
+        )
 
 
 @dataclass
@@ -666,4 +761,31 @@ class SwerveTrajectory:
         """
         return SwerveTrajectory(
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
+        )
+
+    def mirror_x(self) -> SwerveTrajectory:
+        """
+        Returns this trajectory mirrored to the other alliance.
+        """
+        return SwerveTrajectory(
+            self.name, [x.mirror_x() for x in self.samples], self.splits, self.events
+        )
+
+    def mirror_y(self) -> SwerveTrajectory:
+        """
+        Returns this trajectory mirrored left-to-right across the field from the driver's perspective.
+        """
+        return SwerveTrajectory(
+            self.name, [x.mirror_y() for x in self.samples], self.splits, self.events
+        )
+
+    def rotate_around(self) -> SwerveTrajectory:
+        """
+        Returns this trajectory mirrored left-to-right across the field from the driver's perspective.
+        """
+        return SwerveTrajectory(
+            self.name,
+            [x.rotate_around() for x in self.samples],
+            self.splits,
+            self.events,
         )

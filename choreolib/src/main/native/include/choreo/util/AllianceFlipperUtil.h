@@ -45,6 +45,35 @@ struct MirroredFlipper {
   }
 };
 
+/// X is unchanged, y becomes fieldWidth - y, and heading
+/// becomes -heading.
+struct MirroredYFlipper {
+  /// Whether pose should be mirrored.
+  static constexpr bool isMirrored = true;
+
+  /// Flips the X coordinate.
+  ///
+  /// @param x The X coordinate to flip.
+  /// @return The flipped X coordinate.
+  static constexpr units::meter_t FlipX(units::meter_t x) { return x; }
+
+  /// Flips the Y coordinate.
+  ///
+  /// @param y The Y coordinate to flip.
+  /// @return The flipped Y coordinate.
+  static constexpr units::meter_t FlipY(units::meter_t y) {
+    return fieldWidth - y;
+  }
+
+  /// Flips the heading.
+  ///
+  /// @param heading The heading to flip.
+  /// @return The flipped heading.
+  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
+    return -heading;
+  }
+};
+
 /// X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes
 /// pi - heading.
 struct RotateAroundFlipper {
@@ -117,6 +146,17 @@ constexpr auto GetFlipperForYear() {
                         flipperType == FlipperType::Mirrored,
                     "Invalid FlipperType in flipperMap");
     }
+  }
+}
+
+template <FlipperType flipperType>
+constexpr auto GetFlipper() {
+  if constexpr (flipperType == FlipperType::RotateAround) {
+    return RotateAroundFlipper{};
+  } else if constexpr (flipperType == FlipperType::Mirrored) {
+    return MirroredFlipper{};
+  } else {
+    return MirroredYFlipper{};
   }
 }
 
