@@ -254,7 +254,7 @@ public class AutoTrajectory {
             Commands.runOnce(
                     () -> {
                       if (warnUser) {
-                          noInitialPose.addCause(name);
+                        noInitialPose.addCause(name);
                       }
                       routine.kill();
                     })
