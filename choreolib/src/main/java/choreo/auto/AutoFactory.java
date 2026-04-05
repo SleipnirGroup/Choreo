@@ -315,6 +315,51 @@ public class AutoFactory {
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
+   * @param transform A function that takes in the loaded trajectory and applies a transformation to
+   *     it, such as left-to-right mirroring.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public Command trajectoryCmd(
+      String trajectoryName,
+      final int splitIndex,
+      Function<AutoTrajectory, AutoTrajectory> transform) {
+    return transform.apply(trajectory(trajectoryName, splitIndex, voidRoutine, false)).cmd();
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
+   *
+   * <p><b>Important </b>
+   *
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param transform A function that takes in the loaded trajectory and applies a transformation to
+   *     it, such as left-to-right mirroring.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public Command trajectoryCmd(
+      String trajectoryName, Function<AutoTrajectory, AutoTrajectory> transform) {
+    return transform.apply(trajectory(trajectoryName, voidRoutine, false)).cmd();
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
+   *
+   * <p><b>Important </b>
+   *
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
