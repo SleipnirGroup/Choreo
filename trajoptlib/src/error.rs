@@ -13,6 +13,8 @@ pub enum TrajoptError {
     GloballyInfeasible,
     #[error("Factorization failed")]
     FactorizationFailed,
+    #[error("Line search failed")]
+    LineSearchFailed,
     #[error("Feasibility restoration failed")]
     FeasibilityRestorationFailed,
     #[error("Nonfinite initial guess")]
@@ -36,11 +38,12 @@ impl From<i8> for TrajoptError {
             -2 => Self::LocallyInfeasible,
             -3 => Self::GloballyInfeasible,
             -4 => Self::FactorizationFailed,
-            -5 => Self::FeasibilityRestorationFailed,
-            -6 => Self::NonfiniteInitialGuess,
-            -7 => Self::DivergingIterates,
-            -8 => Self::MaxIterationsExceeded,
-            -9 => Self::Timeout,
+            -5 => Self::LineSearchFailed,
+            -6 => Self::FeasibilityRestorationFailed,
+            -7 => Self::NonfiniteInitialGuess,
+            -8 => Self::DivergingIterates,
+            -9 => Self::MaxIterationsExceeded,
+            -10 => Self::Timeout,
             _ => Self::Unknown(value),
         }
     }
