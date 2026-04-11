@@ -17,7 +17,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-option(BUILD_EXAMPLES "Build examples" OFF)
+option(TRAJOPT_BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 file(GLOB_RECURSE TrajoptLib_src src/*.cpp)
@@ -128,7 +128,7 @@ if(BUILD_TESTING)
 endif()
 
 # Build examples and example tests
-if(BUILD_EXAMPLES)
+if(TRAJOPT_BUILD_EXAMPLES)
     include(SubdirList)
     subdir_list(EXAMPLES ${CMAKE_CURRENT_SOURCE_DIR}/examples)
     foreach(example ${EXAMPLES})
