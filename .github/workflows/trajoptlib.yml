@@ -47,7 +47,7 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: trajoptlib
 
-      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+      - run: cmake -B build -S . -DTRAJOPT_BUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
         if: runner.os == 'Windows'
         working-directory: trajoptlib
 
