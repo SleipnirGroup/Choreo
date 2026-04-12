@@ -38,8 +38,8 @@ On Windows, open a [Developer PowerShell](https://learn.microsoft.com/en-us/visu
 
 ```bash
 # Clone the repository
-git clone git@github.com:SleipnirGroup/TrajoptLib
-cd TrajoptLib
+git clone git@github.com:SleipnirGroup/Choreo
+cd Choreo/trajoptlib
 
 # Configure
 cmake -B build -S .
@@ -73,8 +73,8 @@ On Windows, open a [Developer PowerShell](https://learn.microsoft.com/en-us/visu
 
 ```bash
 # Clone the repository
-git clone git@github.com:SleipnirGroup/TrajoptLib
-cd TrajoptLib
+git clone git@github.com:SleipnirGroup/Choreo
+cd Choreo/trajoptlib
 
 cargo build
 ```
