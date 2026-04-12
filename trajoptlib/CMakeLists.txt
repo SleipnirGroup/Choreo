@@ -17,8 +17,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-option(TRAJOPT_BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(TRAJOPT_BUILD_EXAMPLES "Build examples" OFF)
 
 file(GLOB_RECURSE TrajoptLib_src src/*.cpp)
 list(FILTER TrajoptLib_src EXCLUDE REGEX rust_ffi.cpp)
@@ -50,23 +50,14 @@ if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     FetchContent_MakeAvailable(Catch2)
 endif()
 
-set(BUILD_TESTING_SAVE ${BUILD_TESTING})
-set(BUILD_EXAMPLES_SAVE ${BUILD_EXAMPLES})
-
-set(BUILD_TESTING OFF)
-set(BUILD_EXAMPLES OFF)
-
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    GIT_TAG v0.5.2
+    GIT_TAG v0.5.3
     GIT_SHALLOW ON
     SYSTEM
 )
 FetchContent_MakeAvailable(Sleipnir)
-
-set(BUILD_TESTING ${BUILD_TESTING_SAVE})
-set(BUILD_EXAMPLES ${BUILD_EXAMPLES_SAVE})
 
 target_link_libraries(TrajoptLib PUBLIC Sleipnir::Sleipnir)
 
