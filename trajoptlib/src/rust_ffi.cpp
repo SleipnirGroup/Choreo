@@ -19,6 +19,7 @@
 #include "trajopt/constraint/point_line_region_constraint.hpp"
 #include "trajopt/geometry/translation2.hpp"
 #include "trajopt/util/cancellation.hpp"
+#include "trajopt/util/motor.hpp"
 #include "trajoptlib/src/lib.rs.h"
 
 namespace trajopt::rsffi {
@@ -30,10 +31,16 @@ void SwerveTrajectoryGenerator::set_drivetrain(
     cpp_modules.emplace_back(module.x, module.y);
   }
 
+  auto motor_config =
+      trajopt::util::MotorConfig{drivetrain.motor_config.free_speed,
+                                 drivetrain.motor_config.stall_torque,
+                                 drivetrain.motor_config.kT,
+                                 drivetrain.motor_config.kV,
+                                 drivetrain.motor_config.supply_limit,
+                                 drivetrain.motor_config.stator_limit};
   path_builder.set_drivetrain(trajopt::SwerveDrivetrain{
       drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
-      drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
-      drivetrain.wheel_cof, std::move(cpp_modules)});
+      std::move(motor_config), drivetrain.wheel_cof, std::move(cpp_modules)});
 }
 
 void SwerveTrajectoryGenerator::set_bumpers(double front, double left,

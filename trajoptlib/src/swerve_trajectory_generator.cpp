@@ -8,12 +8,14 @@
 #include <chrono>
 #include <cmath>
 #include <ranges>
+#include <sleipnir/autodiff/variable.hpp>
 #include <vector>
 
 #include <sleipnir/optimization/problem.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/geometry/rotation2.hpp"
+#include "trajopt/geometry/translation2.hpp"
 #include "trajopt/util/cancellation.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
@@ -243,53 +245,47 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v<double> v_wheel_wrt_robot{
           v_wrt_robot.x() - translation.y() * ω.at(index),
           v_wrt_robot.y() + translation.x() * ω.at(index)};
-      const double v_max = path.drivetrain.wheel_radius *
-                           path.drivetrain.motor_config.free_speed;
-
-      // |v|₂² ≤ vₘₐₓ²
-      problem.subject_to(v_wheel_wrt_robot.squared_norm() <= v_max * v_max);
-
       Translation2v<double> module_force{Fx.at(index).at(module_index),
                                          Fy.at(index).at(module_index)};
+      auto F_wrt_robot = module_force.rotate_by(-θ_k);
 
-      // See
-      // https://www.chiefdelphi.com/t/psa-your-motor-curves-are-still-wrong-a-correction-to-a-whitepaper-about-current-limits/504706
-      const double stall_current = path.drivetrain.motor_config.stall_current();
-      const double free_speed = path.drivetrain.motor_config.free_speed;
-      const double free_current = path.drivetrain.motor_config.free_current;
-      const double resistance = path.drivetrain.motor_config.resistance();
-      const auto angular_velocity = v_wheel_wrt_robot.norm() / path.drivetrain.wheel_radius;
-      const auto percent_speed = angular_velocity / free_speed;
-      const double stall_minus_free_current = stall_current - free_current;
-      const auto max_current =
-          (-stall_minus_free_current * percent_speed +
-           sqrt((stall_minus_free_current * percent_speed) *
-                    (stall_minus_free_current * percent_speed) +
-                4 * stall_current *
-                    path.drivetrain.motor_config.supply_limit)) /
-          2;
-      const auto motor_current = stall_current * (duty_cycle - percent_speed) *
-                                     (duty_cycle - percent_speed) +
-                                 free_current * percent_speed;
-      const auto wheel_max_torque =
-          min(path.drivetrain.motor_config.stator_limit, max_current,
-              motor_current) * path.drivetrain.motor_config.kT;
+      const auto kV = path.drivetrain.motor_config.kV;
+      const auto R = path.drivetrain.motor_config.resistance();
+      const auto I_supply_limit = path.drivetrain.motor_config.supply_limit;
+      const auto I_stator_limit = path.drivetrain.motor_config.stator_limit;
+      const auto v_supply = 12;
+      Translation2v<double> v_volts_wrt_robot = v_wheel_wrt_robot * kV;
+      auto proj_v_F = v_wheel_wrt_robot * (F_wrt_robot.dot(v_wheel_wrt_robot)) /
+                      (v_wheel_wrt_robot.squared_norm());
 
-      // τ = r x F
-      // F = τ/r
-      const double wheel_max_force =
-          wheel_max_torque / path.drivetrain.wheel_radius;
+      const auto omega =
+          v_wheel_wrt_robot.norm() / path.drivetrain.wheel_radius;
+      auto I_stator = problem.decision_variable();
+      auto v = I_stator * R + omega * kV;
 
-      // friction = μmg
-      const double normal_force_per_wheel =
-          path.drivetrain.mass * 9.8 / num_wheels;
-      const double wheel_max_friction_force =
-          path.drivetrain.wheel_cof * normal_force_per_wheel;
+      problem.subject_to(slp::abs(v) <= v_supply);
+      problem.subject_to(slp::abs((2 * v - omega * kV) * (2 * v - omega * kV) -
+                                  (omega * kV) * (omega * kV)) <=
+                         4 * I_supply_limit * R * v_supply);
+      problem.subject_to(slp::abs(v - omega * kV) <= I_stator_limit * R);
 
-      const double F_max = std::min(wheel_max_force, wheel_max_friction_force);
+      const auto wheel_max_torque = I_stator * path.drivetrain.motor_config.kT;
 
-      // |F|₂² ≤ Fₘₐₓ²
-      problem.subject_to(module_force.squared_norm() <= F_max * F_max);
+      // // τ = r x F
+      // // F = τ/r
+      // const auto wheel_max_force =
+      //     wheel_max_torque / path.drivetrain.wheel_radius;
+      //
+      // // friction = μmg
+      // const double normal_force_per_wheel =
+      //     path.drivetrain.mass * 9.8 / num_wheels;
+      // const double wheel_max_friction_force =
+      //     path.drivetrain.wheel_cof * normal_force_per_wheel;
+      //
+      // const auto F_max = slp::min(wheel_max_force, wheel_max_friction_force);
+      //
+      // // |F|₂² ≤ Fₘₐₓ²
+      // problem.subject_to(module_force.squared_norm() <= F_max * F_max);
     }
 
     // Apply dynamics constraints
