@@ -37,7 +37,7 @@ target_include_directories(
         $<INSTALL_INTERFACE:include>
 )
 
-if(BUILD_TESTING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     # Catch2 dependency
     FetchContent_Declare(
         Catch2
@@ -103,14 +103,14 @@ install(
     DESTINATION lib/cmake/TrajoptLib
 )
 
-if(BUILD_TESTING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     enable_testing()
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     include(Catch)
 endif()
 get_cmake_property(IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 # Build TrajoptLib tests
-if(BUILD_TESTING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     file(GLOB_RECURSE trajoptlib_test_src test/src/*.cpp)
     add_executable(trajoptlib_test ${trajoptlib_test_src})
     compiler_flags(trajoptlib_test)
@@ -144,7 +144,8 @@ if(TRAJOPT_BUILD_EXAMPLES)
 
         # Build example test if files exist for it
         if(
-            BUILD_TESTING
+            PROJECT_IS_TOP_LEVEL
+            AND BUILD_TESTING
             AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
         )
             file(GLOB_RECURSE test_sources examples/${example}/test/*.cpp)
