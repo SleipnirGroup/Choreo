@@ -128,6 +128,12 @@ export const Dimensions = {
     unit: Units.Meter,
     icon: () => <Straighten></Straighten>
   },
+  Current: {
+    type: "Current",
+    name: "Electric Current",
+    unit: Units.Amp,
+    icon: () => <Straighten></Straighten>
+  },
   Angle: {
     type: "Angle",
     name: "Angle",

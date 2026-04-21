@@ -165,6 +165,14 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           x: vars().createExpression(config.backLeft.x, "Length"),
           y: vars().createExpression(config.backLeft.y, "Length")
         },
+        motor_config: {
+          free_speed: vars().createExpression(config.motor_config.free_speed, "AngVel"),
+          stall_torque: vars().createExpression(config.motor_config.stall_torque, "Torque"),
+          kT: vars().createExpression(config.motor_config.kT, "TorquePerAmp"),
+          kV: vars().createExpression(config.motor_config.kV, "VoltagePerAngVel"),
+          supply_limit: vars().createExpression(config.motor_config.supply_limit, "Current"),
+          stator_limit: vars().createExpression(config.motor_config.stator_limit, "Current"),
+        },
         differentialTrackWidth: vars().createExpression(
           config.differentialTrackWidth,
           "Length"

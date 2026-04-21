@@ -42,6 +42,30 @@ pub struct Bumper<T: SnapshottableType> {
     pub back: T,
 }
 
+#[allow(non_snake_case)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
+pub struct MotorConfig<T: SnapshottableType> {
+    pub free_speed: T,
+    pub stall_torque: T,
+    pub kT: T,
+    pub kV: T,
+    pub supply_limit: T,
+    pub stator_limit: T,
+}
+
+impl<T: SnapshottableType> MotorConfig<T> {
+    pub fn snapshot(&self) -> MotorConfig<f64> {
+        MotorConfig {
+            free_speed: self.free_speed.snapshot(),
+            stall_torque: self.stall_torque.snapshot(),
+            kT: self.kT.snapshot(),
+            kV: self.kV.snapshot(),
+            supply_limit: self.supply_limit.snapshot(),
+            stator_limit: self.stator_limit.snapshot(),
+        }
+    }
+}
+
 impl<T: SnapshottableType> Bumper<T> {
     pub fn snapshot(&self) -> Bumper<f64> {
         Bumper {
@@ -96,6 +120,7 @@ pub struct RobotConfig<T: SnapshottableType> {
     pub cof: T,
     pub bumper: Bumper<T>,
     pub differential_track_width: T,
+    pub motor_config: MotorConfig<T>,
 }
 
 impl<T: SnapshottableType> RobotConfig<T> {
@@ -112,6 +137,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
             cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
+            motor_config: self.motor_config.snapshot(),
         }
     }
 }
@@ -220,6 +246,14 @@ impl Default for ProjectFile {
                     back: Expr::new("16 in", 0.4064),
                 },
                 differential_track_width: Expr::new("22 in", 0.2794 * 2.0),
+                motor_config: MotorConfig {
+                    free_speed: Expr::new("5800 RPM", 5800.0 / 60.0),
+                    stall_torque: Expr::new("9.36 Nm", 9.36),
+                    kT: Expr::new("0.0197 Nm/A", 0.0197),
+                    kV: Expr::new("0.00206896552 V/rpm", 0.00206896552),
+                    supply_limit: Expr::new("60 A", 60.0),
+                    stator_limit: Expr::new("120 A", 120.0),
+                },
             },
             generation_features: Vec::new(),
             codegen: CodeGenConfig {

@@ -1,4 +1,4 @@
-use trajoptlib::{DifferentialDrivetrain, SwerveDrivetrain};
+use trajoptlib::{DifferentialDrivetrain, SwerveDrivetrain, MotorConfig};
 
 use crate::spec::project::RobotConfig;
 
@@ -20,15 +20,21 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
 
     fn transform(&self, generator: &mut trajoptlib::SwerveTrajectoryGenerator) {
         let config = &self.config;
+        let motor_config = config.motor_config;
         let drivetrain = SwerveDrivetrain {
             mass: config.mass,
             moi: config.inertia,
             wheel_radius: config.radius,
-            // rad per sec
-            wheel_max_angular_velocity: config.vmax / config.gearing,
-            wheel_max_torque: config.tmax * config.gearing,
             wheel_cof: config.cof,
             modules: config.module_translations(),
+            motor_config: MotorConfig {
+                free_speed: motor_config.free_speed / config.gearing,
+                stall_torque: motor_config.stall_torque * config.gearing,
+                kT: motor_config.kT * config.gearing,
+                kV: motor_config.kV / config.gearing,
+                supply_limit: motor_config.supply_limit,
+                stator_limit: motor_config.stator_limit,
+            },
         };
 
         generator.set_drivetrain(&drivetrain);
