@@ -106,7 +106,8 @@ export const DimensionNames = [
   "Time",
   "Mass",
   "Torque",
-  "MoI"
+  "MoI",
+  "Current"
 ] as const;
 export type DimensionName = (typeof DimensionNames)[number];
 export type Dimension<T> = {
@@ -126,12 +127,6 @@ export const Dimensions = {
     type: "Length",
     name: "Length",
     unit: Units.Meter,
-    icon: () => <Straighten></Straighten>
-  },
-  Current: {
-    type: "Current",
-    name: "Electric Current",
-    unit: Units.Amp,
     icon: () => <Straighten></Straighten>
   },
   Angle: {
@@ -187,6 +182,12 @@ export const Dimensions = {
     unit: Units.NewtonMeter,
     icon: () => <Torque></Torque>,
     type: "Torque"
+  },
+  Current: {
+    type: "Current",
+    name: "Electric Current",
+    unit: Units.Amp,
+    icon: () => <Straighten></Straighten>
   }
 } as const satisfies {
   [key in DimensionName]: Dimension<key>;
