@@ -174,6 +174,7 @@ mod project_file {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
         upgrader.add_version_action(up_1_2);
+        upgrader.add_version_action(up_2_3);
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
@@ -186,6 +187,9 @@ mod project_file {
         editor.set_path("codegen.genVars", true)?;
         editor.set_path("codegen.genTrajData", true)?;
         editor.set_path("codegen.useChoreoLib", true)?;
+        Ok(())
+    }
+    fn up_2_3(_editor: &mut Editor) -> ChoreoResult<()> {
         Ok(())
     }
 

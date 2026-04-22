@@ -65,7 +65,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
   cof: T;
   bumper: Bumper<T>;
   differentialTrackWidth: T;
-  motor_config: MotorConfig<T>;
+  motorConfig: MotorConfig<T>;
 }
 
 export interface CodeGenConfig {

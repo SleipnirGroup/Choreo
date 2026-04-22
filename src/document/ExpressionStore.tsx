@@ -83,7 +83,11 @@ export const Units = {
   Newton: math.unit("N"),
   NewtonMeter: math.unit("N*m"),
   Kg: math.unit("kg"),
-  RPM: math.createUnit("RPM", "1 cycle/min", { aliases: ["rpm"] })
+  RPM: math.createUnit("RPM", "1 cycle/min", { aliases: ["rpm"] }),
+  Amp: math.unit("A"),
+  NewtonMeterPerAmp: math.unit("N*m/A"),
+  Volt: math.unit("V"),
+  VoltPerRPM: math.unit("V/RPM"),
 };
 // not sure why the alias above doesn't work
 math.createUnit("rpm", "1 RPM");
@@ -107,7 +111,10 @@ export const DimensionNames = [
   "Mass",
   "Torque",
   "MoI",
-  "Current"
+  "Current",
+  "TorquePerCurrent",
+  "Voltage",
+  "VoltagePerAngVel"
 ] as const;
 export type DimensionName = (typeof DimensionNames)[number];
 export type Dimension<T> = {
@@ -187,6 +194,24 @@ export const Dimensions = {
     type: "Current",
     name: "Electric Current",
     unit: Units.Amp,
+    icon: () => <Straighten></Straighten>
+  },
+  TorquePerCurrent: {
+    type: "TorquePerCurrent",
+    name: "Torque Per Current",
+    unit: Units.NewtonMeterPerAmp,
+    icon: () => <Straighten></Straighten>
+  },
+  Voltage: {
+    type: "Voltage",
+    name: "Electric Voltage",
+    unit: Units.Volt,
+    icon: () => <Straighten></Straighten>
+  },
+  VoltagePerAngVel: {
+    type: "VoltagePerAngVel",
+    name: "Voltage per angular velocity",
+    unit: Units.VoltPerRPM,
     icon: () => <Straighten></Straighten>
   }
 } as const satisfies {

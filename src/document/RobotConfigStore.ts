@@ -44,11 +44,11 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
     exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
     val: DEFAULT_WHEELBASE
   },
-  motor_config: {
+  motorConfig: {
+    stall_torque: { exp: "9.36 N * m", val: 9.36 },
     free_speed: { exp: "5800 RPM", val: 5800.0 / 60.0 },
-    stall_torque: { exp: "9.36 Nm", val: 9.36 },
-    kT: { exp: "0.0197 Nm/A", val: 0.0197 },
-    kV: { exp: "0.00206896552 V/rpm", val: 0.00206896552 },
+    kT: { exp: "0.0197 N * m / A", val: 0.0197 },
+    kV: { exp: "0.00206896552 V / RPM", val: 0.00206896552 },
     supply_limit: { exp: "60 A", val: 60.0 },
     stator_limit: { exp: "120 A", val: 120.0 }
   },
@@ -185,7 +185,7 @@ export const RobotConfigStore = types
     frontLeft: ModuleStore,
     backLeft: ModuleStore,
     differentialTrackWidth: ExpressionStore,
-    motor_config: MotorConfigStore,
+    motorConfig: MotorConfigStore,
     identifier: types.identifier
   })
   .views((self) => {
@@ -208,7 +208,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.serialize,
           frontLeft: self.frontLeft.serialize,
           backLeft: self.backLeft.serialize,
-          motor_config: self.motor_config.serialize,
+          motorConfig: self.motorConfig.serialize,
           differentialTrackWidth: self.differentialTrackWidth.serialize
         };
       },
@@ -242,7 +242,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.snapshot,
           frontLeft: self.frontLeft.snapshot,
           backLeft: self.backLeft.snapshot,
-          motor_config: self.motor_config.snapshot,
+          motorConfig: self.motorConfig.snapshot,
           differentialTrackWidth: self.differentialTrackWidth.value
         };
       }
@@ -261,7 +261,7 @@ export const RobotConfigStore = types
         self.bumper.deserialize(config.bumper);
         self.frontLeft.deserialize(config.frontLeft);
         self.backLeft.deserialize(config.backLeft);
-        self.motor_config.deserialize(config.motor_config);
+        self.motorConfig.deserialize(config.motorConfig);
         self.differentialTrackWidth.deserialize(config.differentialTrackWidth);
       }
     };

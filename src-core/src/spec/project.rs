@@ -248,8 +248,8 @@ impl Default for ProjectFile {
                 differential_track_width: Expr::new("22 in", 0.2794 * 2.0),
                 motor_config: MotorConfig {
                     free_speed: Expr::new("5800 RPM", 5800.0 / 60.0),
-                    stall_torque: Expr::new("9.36 Nm", 9.36),
-                    kT: Expr::new("0.0197 Nm/A", 0.0197),
+                    stall_torque: Expr::new("9.36 N * m", 9.36),
+                    kT: Expr::new("0.0197 N * m/A", 0.0197),
                     kV: Expr::new("0.00206896552 V/rpm", 0.00206896552),
                     supply_limit: Expr::new("60 A", 60.0),
                     stator_limit: Expr::new("120 A", 120.0),

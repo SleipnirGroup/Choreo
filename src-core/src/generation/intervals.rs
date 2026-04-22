@@ -8,9 +8,9 @@ pub fn guess_control_interval_counts(
     config: &RobotConfig<f64>,
     params: &Parameters<f64>,
 ) -> ChoreoResult<Vec<usize>> {
-    if config.wheel_max_torque() <= 0.0 {
+    if config.motor_config.snapshot().stall_torque <= 0.0 {
         return Err(ChoreoError::sign("Wheel max torque", "positive"));
-    } else if config.wheel_max_velocity() <= 0.0 {
+    } else if config.motor_config.snapshot().free_speed <= 0.0 {
         return Err(ChoreoError::sign("Wheel max velocity", "positive"));
     } else if config.mass <= 0.0 {
         return Err(ChoreoError::sign("Robot mass", "positive"));
@@ -45,10 +45,11 @@ pub fn guess_control_interval_count(
             let dy = next.y - this.y;
             let distance = dx.hypot(dy);
             let mut dtheta = angle_modulus(next.heading - this.heading).abs();
-            let max_force = config.wheel_max_torque() / config.radius;
+            let motor_config = config.motor_config.snapshot();
+            let max_force = motor_config.stall_torque * motor_config.stall_torque / config.radius;
 
             // Default to robotConfig's max velocity and acceleration
-            let mut max_linear_vel = config.wheel_max_velocity() * config.radius;
+            let mut max_linear_vel = motor_config.free_speed * config.radius;
             let mut max_linear_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
             // find max wheel position radius for calculating max angular velocity
@@ -107,7 +108,7 @@ pub fn guess_control_interval_count(
                     .expect("Module expected when finding minimum width.");
                 min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
             }
-            let dt_ceiling = min_width / (config.wheel_max_velocity() * config.radius);
+            let dt_ceiling = min_width / (motor_config.free_speed * config.radius);
             let dt = dt_ceiling.min(params.target_dt);
             let linear_time =
                 calculate_trapezoidal_time(distance, max_linear_vel, max_linear_accel);
