@@ -247,45 +247,52 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
           v_wrt_robot.y() + translation.x() * ω.at(index)};
       Translation2v<double> module_force{Fx.at(index).at(module_index),
                                          Fy.at(index).at(module_index)};
-      auto F_wrt_robot = module_force.rotate_by(-θ_k);
 
       const auto kV = path.drivetrain.motor_config.kV;
       const auto R = path.drivetrain.motor_config.resistance();
       const auto I_supply_limit = path.drivetrain.motor_config.supply_limit;
       const auto I_stator_limit = path.drivetrain.motor_config.stator_limit;
-      const auto v_supply = 12;
+      const auto v_supply = 12.0;
       Translation2v<double> v_volts_wrt_robot = v_wheel_wrt_robot * kV;
-      auto proj_v_F = v_wheel_wrt_robot * (F_wrt_robot.dot(v_wheel_wrt_robot)) /
-                      (v_wheel_wrt_robot.squared_norm());
+
+      // auto F_wrt_robot = module_force.rotate_by(-θ_k);
+      // auto proj_v_F = v_wheel_wrt_robot * (F_wrt_robot.dot(v_wheel_wrt_robot)) /
+      //                 (v_wheel_wrt_robot.squared_norm());
 
       const auto omega =
-          v_wheel_wrt_robot.norm() / path.drivetrain.wheel_radius;
+          slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-9) / path.drivetrain.wheel_radius;
       auto I_stator = problem.decision_variable();
       auto v = I_stator * R + omega * kV;
 
-      problem.subject_to(slp::abs(v) <= v_supply);
-      problem.subject_to(slp::abs((2 * v - omega * kV) * (2 * v - omega * kV) -
-                                  (omega * kV) * (omega * kV)) <=
+      problem.subject_to(slp::bounds(-v_supply, v, v_supply));
+      problem.subject_to(I_stator <= I_stator_limit);
+
+      problem.subject_to(-((2 * v - omega * kV) * (2 * v - omega * kV) -
+                          (omega * kV) * (omega * kV)) <=
                          4 * I_supply_limit * R * v_supply);
-      problem.subject_to(slp::abs(v - omega * kV) <= I_stator_limit * R);
+      problem.subject_to(((2 * v - omega * kV) * (2 * v - omega * kV) -
+                    (omega * kV) * (omega * kV)) <=
+                    4 * I_supply_limit * R * v_supply);
+      
+      problem.subject_to(v - omega * kV <= I_stator_limit * R);
+      problem.subject_to(-(v - omega * kV) <= I_stator_limit * R);
 
-      const auto wheel_max_torque = I_stator * path.drivetrain.motor_config.kT;
+      auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-9);
 
-      // // τ = r x F
-      // // F = τ/r
-      // const auto wheel_max_force =
-      //     wheel_max_torque / path.drivetrain.wheel_radius;
-      //
-      // // friction = μmg
-      // const double normal_force_per_wheel =
-      //     path.drivetrain.mass * 9.8 / num_wheels;
-      // const double wheel_max_friction_force =
-      //     path.drivetrain.wheel_cof * normal_force_per_wheel;
-      //
-      // const auto F_max = slp::min(wheel_max_force, wheel_max_friction_force);
-      //
-      // // |F|₂² ≤ Fₘₐₓ²
-      // problem.subject_to(module_force.squared_norm() <= F_max * F_max);
+      // τ = r x F
+      // F = τ/r
+      // force in direction of wheel velocity must equal torque from motor
+      // force in perpendicular direction is unconstrained (frictional?)
+      auto F_longitudinal = module_force.dot(v_wheel_wrt_robot) / v_norm;
+      problem.subject_to(F_longitudinal == (I_stator * path.drivetrain.motor_config.kT) / path.drivetrain.wheel_radius);
+
+      // friction = μmg
+      const double normal_force_per_wheel = path.drivetrain.mass * 9.8 / num_wheels;
+      const double wheel_max_friction_force = path.drivetrain.wheel_cof * normal_force_per_wheel;
+      
+      // |F|₂² ≤ Fₘₐₓ²
+      // total force (friction + motor) must not slip
+      problem.subject_to(module_force.squared_norm() <= wheel_max_friction_force * wheel_max_friction_force);
     }
 
     // Apply dynamics constraints

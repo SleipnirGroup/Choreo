@@ -1,4 +1,4 @@
-use trajoptlib::{DifferentialDrivetrain, SwerveDrivetrain, MotorConfig};
+use trajoptlib::{DifferentialDrivetrain, MotorConfig, SwerveDrivetrain};
 
 use crate::spec::project::RobotConfig;
 
@@ -31,7 +31,7 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
                 free_speed: motor_config.free_speed / config.gearing,
                 stall_torque: motor_config.stall_torque * config.gearing,
                 kT: motor_config.kT * config.gearing,
-                kV: motor_config.kV / config.gearing,
+                kV: motor_config.kV * config.gearing,
                 supply_limit: motor_config.supply_limit,
                 stator_limit: motor_config.stator_limit,
             },
