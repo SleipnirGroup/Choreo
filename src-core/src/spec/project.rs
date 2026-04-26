@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, f64::consts::PI};
 
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
@@ -250,7 +250,7 @@ impl Default for ProjectFile {
                     free_speed: Expr::new("5800 RPM", 5800.0 / 60.0),
                     stall_torque: Expr::new("9.36 N * m", 9.36),
                     kT: Expr::new("0.0197 N * m/A", 0.0197),
-                    kV: Expr::new("0.00206896552 V/rpm", 0.00206896552),
+                    kV: Expr::new("0.00206896552 V/rpm", 0.00206896552 * 60.0 / (2.0 * PI)),
                     supply_limit: Expr::new("60 A", 60.0),
                     stator_limit: Expr::new("120 A", 120.0),
                 },
