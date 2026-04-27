@@ -252,12 +252,11 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const auto R = path.drivetrain.motor_config.resistance();
       const auto I_supply_limit = path.drivetrain.motor_config.supply_limit;
       const auto I_stator_limit = path.drivetrain.motor_config.stator_limit;
-      const auto v_supply = 12.0;
-      Translation2v<double> v_volts_wrt_robot = v_wheel_wrt_robot * kV;
+      const auto kT_over_r = path.drivetrain.motor_config.kT / path.drivetrain.wheel_radius;
+      const auto kV_over_r = kV / path.drivetrain.wheel_radius;
+      constexpr double v_supply = 12.0;
 
       auto F_wrt_robot = module_force.rotate_by(-θ_k);
-      // auto proj_v_F = v_wheel_wrt_robot * (F_wrt_robot.dot(v_wheel_wrt_robot)) /
-      //                 (v_wheel_wrt_robot.squared_norm());
 
       // friction = μmg
       const double normal_force_per_wheel = path.drivetrain.mass * 9.8 / num_wheels;
@@ -269,79 +268,25 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double C_scrub = 0.1;
       auto F_drag = C_scrub * (F_lateral_sq / normal_force_per_wheel);
 
-      const auto omega =
-          slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-9) / path.drivetrain.wheel_radius;
-      auto I_stator = problem.decision_variable();
-      auto I_motor = I_stator + F_drag * path.drivetrain.wheel_radius / path.drivetrain.motor_config.kT;
+      // motor force is force in wheel direction + force to overcome drag from scrub
+      auto I_motor = (F_longitudinal + F_drag) / kT_over_r;
 
-      auto v = I_motor * R + omega * kV;
+      auto V_emf = v_norm * kV_over_r;
+      auto V_motor = I_motor * R + V_emf;
 
-      problem.subject_to(slp::bounds(-v_supply, v, v_supply));
-      problem.subject_to(I_motor <= I_stator_limit);
+      // stator
+      problem.subject_to(slp::bounds(-I_stator_limit, I_motor, I_stator_limit));
 
-      problem.subject_to(-((2 * v - omega * kV) * (2 * v - omega * kV) -
-                          (omega * kV) * (omega * kV)) <=
-                         4 * I_supply_limit * R * v_supply);
-      problem.subject_to(((2 * v - omega * kV) * (2 * v - omega * kV) -
-                    (omega * kV) * (omega * kV)) <=
-                    4 * I_supply_limit * R * v_supply);
-      
-      problem.subject_to(v - omega * kV <= I_stator_limit * R);
-      problem.subject_to(-(v - omega * kV) <= I_stator_limit * R);
+      // supply voltage
+      problem.subject_to(slp::bounds(-v_supply, V_motor, v_supply));
 
-      // τ = r x F
-      // F = τ/r
-      // force in direction of wheel velocity must equal torque from motor
-      // force in perpendicular direction is unconstrained (frictional?)
-      problem.subject_to(F_longitudinal == (I_stator * path.drivetrain.motor_config.kT) / path.drivetrain.wheel_radius);
-      
+      // supply current
+      auto P_elec = V_motor * I_motor;
+      problem.subject_to(P_elec <= I_supply_limit * v_supply);
+
       // |F|₂² ≤ Fₘₐₓ²
-      // total force (friction + motor) must not slip
+      // total force must not slip
       problem.subject_to(module_force.squared_norm() <= wheel_max_friction_force * wheel_max_friction_force);
-
-      // Map 1D motor constants to coefficients
-      // const auto kV = path.drivetrain.motor_config.kV;
-      // const auto R = path.drivetrain.motor_config.resistance();
-      // const auto I_supply_limit = path.drivetrain.motor_config.supply_limit;
-      // const auto I_stator_limit = path.drivetrain.motor_config.stator_limit;
-      // const auto kT_over_r = path.drivetrain.motor_config.kT / path.drivetrain.wheel_radius;
-      // const auto kV_over_r = kV / path.drivetrain.wheel_radius;
-      // constexpr double v_supply = 12.0;
-
-      // // 1. Calculate 2D Equivalent Vectors
-      // Translation2v<double> I_eq{
-      //     module_force.x() / kT_over_r,
-      //     module_force.y() / kT_over_r
-      // };
-
-      // Translation2v<double> V_emf{
-      //     v_wheel_wrt_robot.x() * kV_over_r,
-      //     v_wheel_wrt_robot.y() * kV_over_r
-      // };
-
-      // Translation2v<double> V_motor{
-      //     I_eq.x() * R + V_emf.x(),
-      //     I_eq.y() * R + V_emf.y()
-      // };
-
-      // // 2. Stator Current Limit (SOC Formulation)
-      // // ||I_eq||^2 <= I_stator_limit^2 
-      // problem.subject_to(I_eq.squared_norm() <= I_stator_limit * I_stator_limit);
-
-      // // 3. Voltage Limit (Handles both Driving & Braking)
-      // // ||V_motor||^2 <= V_supply^2
-      // problem.subject_to(V_motor.squared_norm() <= v_supply * v_supply);
-
-      // // 4. Supply Current Limit (Electrical Power Bound)
-      // // P_elec = V_motor dot I_eq 
-      // // This cleanly equates to exactly: I^2*R + Mechanical_Power*(kV/kT)
-      // auto P_elec = V_motor.x() * I_eq.x() + V_motor.y() * I_eq.y();
-      // problem.subject_to(P_elec <= I_supply_limit * v_supply);
-
-      // // 5. Friction Limit (Unchanged)
-      // const double normal_force_per_wheel = path.drivetrain.mass * 9.8 / num_wheels;
-      // const double wheel_max_friction_force = path.drivetrain.wheel_cof * normal_force_per_wheel;
-      // problem.subject_to(module_force.squared_norm() <= wheel_max_friction_force * wheel_max_friction_force);
     }
 
     // Apply dynamics constraints
