@@ -256,6 +256,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v<double> v_volts_wrt_robot = v_wheel_wrt_robot * kV;
 
       auto F_wrt_robot = module_force.rotate_by(-θ_k);
+      auto F_wrt_robot_mag = slp::sqrt(F_wrt_robot.squared_norm() + 1e-9);
       // auto proj_v_F = v_wheel_wrt_robot * (F_wrt_robot.dot(v_wheel_wrt_robot)) /
       //                 (v_wheel_wrt_robot.squared_norm());
 
@@ -265,9 +266,9 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-9);
       auto F_longitudinal = F_wrt_robot.dot(v_wheel_wrt_robot) / v_norm;
-      auto F_lateral_sq = F_wrt_robot.squared_norm() - F_longitudinal * F_longitudinal;
+      auto F_lateral = F_wrt_robot_mag - F_longitudinal;
       const double C_scrub = 0.05;
-      auto F_drag = C_scrub * (F_lateral_sq / normal_force_per_wheel);
+      auto F_drag = C_scrub * (F_lateral / normal_force_per_wheel);
 
       const auto omega =
           slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-9) / path.drivetrain.wheel_radius;
