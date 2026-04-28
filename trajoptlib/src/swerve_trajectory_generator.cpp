@@ -262,11 +262,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double normal_force_per_wheel = path.drivetrain.mass * 9.8 / num_wheels;
       const double wheel_max_friction_force = path.drivetrain.wheel_cof * normal_force_per_wheel;
 
-      auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-9);
+      auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-6);
       auto F_longitudinal = F_wrt_robot.dot(v_wheel_wrt_robot) / v_norm;
-      auto F_lateral_sq = F_wrt_robot.squared_norm() - F_longitudinal * F_longitudinal;
-      const double C_scrub = 0.1;
-      auto F_drag = C_scrub * (F_lateral_sq / normal_force_per_wheel);
+      auto F_lateral = F_wrt_robot.dot(v_wheel_wrt_robot.rotate_by(Rotation2<double>{0.0, 1.0})) / v_norm;
+      // f_drag = f_lateral * alpha
+      // alpha is slip angle between velocity direction and force direction
+      // approximating sin(alpha) = alpha we get alpha = f_lateral / f_norm
+      // then f_drag = f_lateral * alpha = f_lateral * f_lateral / f_norm
+      auto F_norm_sq = F_wrt_robot.squared_norm();
+      // numerical trick to smooth near zero
+      const double smoothing_factor = 1e-4;
+      auto F_drag = (F_lateral * F_lateral) * slp::sqrt(F_norm_sq + 1e-6) / (F_norm_sq + smoothing_factor);
 
       // motor force is force in wheel direction + force to overcome drag from scrub
       auto I_motor = (F_longitudinal + F_drag) / kT_over_r;
