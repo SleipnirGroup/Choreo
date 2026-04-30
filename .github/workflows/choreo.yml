@@ -47,7 +47,7 @@ jobs:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -85,7 +85,7 @@ jobs:
         run: rustup target add x86_64-apple-darwin
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@v0.0.10
       - name: Cargo test
         run: cargo test --release
         env:
@@ -139,14 +139,14 @@ jobs:
           zip -j ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/choreo target/aarch64-unknown-linux-gnu/release/choreo-cli
           zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}-cargo-timing.html
           path: target/cargo-timings/cargo-timing.html
 
       # Zipping manually works around upload-artifact stripping execute
       # permissions from files
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-name }}.zip
@@ -161,7 +161,7 @@ jobs:
 
     steps:
       - name: Download prebuilt binaries
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: pkg
           pattern: "!*-cargo-timing.html"

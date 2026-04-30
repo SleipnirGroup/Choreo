@@ -46,7 +46,7 @@ jobs:
             libxdo-dev \
             wget
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -74,7 +74,7 @@ jobs:
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wpiformat fixes
           path: wpiformat-fixes.patch
@@ -96,7 +96,7 @@ jobs:
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 9
 

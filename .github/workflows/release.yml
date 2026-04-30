@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
           private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
@@ -30,7 +30,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install tomlkit
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
 
@@ -45,7 +45,7 @@ jobs:
           ./update_version.py ${{ github.event.inputs.tag }}
           pnpm run fmtJs
           cargo update -w
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Update version numbers to ${{ github.event.inputs.tag }}
           tagging_message: ${{ github.event.inputs.tag }}

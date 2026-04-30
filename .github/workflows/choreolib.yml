@@ -56,7 +56,7 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -125,7 +125,7 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -139,7 +139,7 @@ jobs:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ChoreoLib-json
           path: choreolib/ChoreoLib2026Beta.json
@@ -168,7 +168,7 @@ jobs:
         working-directory: ./choreolib/py
       - run: mypy --pretty --show-column-numbers choreolib/py
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: Python
           path: ./choreolib/py/dist
@@ -184,7 +184,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: "Python"
