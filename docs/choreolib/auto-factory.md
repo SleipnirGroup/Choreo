@@ -294,7 +294,7 @@ public class Robot extends TimedRobot {
         autoChooser.addCmd("Example Auto Command", this::exampleAutoCommand);
 
         // Put the auto chooser on the dashboard
-        SmartDashboard.putData(autoChooser);
+        SmartDashboard.putData("Auto Chooser", autoChooser);
 
         // Schedule the selected auto during the autonomous period
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
