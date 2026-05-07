@@ -60,7 +60,7 @@ TRAJ_SCHEMA_VERSION = {version}""",
     # C++ ChoreoLib
     Location(
         relative_path=Path(
-            "choreolib/src/main/native/include/choreo/util/TrajSchemaVersion.h"
+            "choreolib/src/main/native/include/choreo/util/TrajSchemaVersion.hpp"
         ),
         template=lambda version: f"""// Copyright (c) Choreo contributors
 

@@ -5,7 +5,7 @@
 #include <wpi/SymbolExports.h>
 #include <wpi/struct/Struct.h>
 
-#include "choreo/trajectory/SwerveSample.h"
+#include "choreo/trajectory/SwerveSample.hpp"
 
 template <>
 struct wpi::Struct<choreo::SwerveSample> {
