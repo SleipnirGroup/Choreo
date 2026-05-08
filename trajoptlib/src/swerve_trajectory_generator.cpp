@@ -263,7 +263,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double wheel_max_friction_force = path.drivetrain.wheel_cof * normal_force_per_wheel;
 
       auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-6);
-      auto F_longitudinal = F_wrt_robot.dot(v_wheel_wrt_robot) / v_norm;
+      auto F_dot_v = F_wrt_robot.dot(v_wheel_wrt_robot);
+      auto F_longitudinal = F_dot_v / v_norm;
       auto F_lateral = F_wrt_robot.dot(v_wheel_wrt_robot.rotate_by(Rotation2<double>{0.0, 1.0})) / v_norm;
       // f_drag = f_lateral * alpha
       // alpha is slip angle between velocity direction and force direction
@@ -276,16 +277,16 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       // motor force is force in wheel direction + force to overcome drag from scrub
       auto I_motor = (F_longitudinal + F_drag) / kT_over_r;
-      // limit braking force to within allowed motor regen current
-      auto I_propulsive = F_longitudinal / kT_over_r;
 
       auto V_emf = v_norm * kV_over_r;
       auto V_motor = I_motor * R + V_emf;
 
       // stator
-      // guaranteed I_propulsive <= I_motor since F_drag >= 0
-      // thus -I_stator_limit <= I_propulsive <= I_motor <= I_stator_limit
-      problem.subject_to(-I_stator_limit <= I_propulsive);
+      // -I_stator_limit ≤ I_propulsive ≤ I_motor ≤ I_stator_limit
+      // I_propulsive = F_long/kT_over_r ≥ -I_stator_limit
+      //              = F_dot_v / (v_norm * kT_over_r) ≥ -I_stator_limit
+      //              = F_dot_v + I_stator_limit * kT_over_r * v_norm ≥ 0
+      problem.subject_to(F_dot_v + I_stator_limit * kT_over_r * v_norm >= 0);
       problem.subject_to(I_motor <= I_stator_limit);
 
       // supply voltage
