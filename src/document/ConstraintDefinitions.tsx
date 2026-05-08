@@ -7,7 +7,7 @@ import {
   SystemUpdateAlt
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
-import { Expr } from "./2025/DocumentTypes";
+import { Expr } from "./schema/DocumentTypes";
 import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
 import KeepInLane from "../assets/KeepInLane";
 

@@ -2,9 +2,11 @@
 
 #include <numbers>
 
-#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <trajopt/geometry/pose2.hpp>
+
+using Catch::Matchers::WithinAbs;
 
 inline constexpr double deg2rad(double deg) {
   return deg * std::numbers::pi / 180.0;
@@ -23,9 +25,9 @@ TEST_CASE("Pose2d - rotate_by", "[Pose2d]") {
   double s = rotation.sin();
   CHECK(rotated.x() == c * x - s * y);
   CHECK(rotated.y() == s * x + c * y);
-  CHECK(rotated.rotation().degrees() ==
-        Catch::Approx(initial.rotation().degrees() + rotation.degrees())
-            .margin(1e-9));
+  CHECK_THAT(
+      rotated.rotation().degrees(),
+      WithinAbs(initial.rotation().degrees() + rotation.degrees(), 1e-9));
 }
 
 TEST_CASE("Pose2d - Constexpr", "[Pose2d]") {

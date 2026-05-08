@@ -2,9 +2,11 @@
 
 #include <vector>
 
-#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
+
+using Catch::Matchers::WithinAbs;
 
 TEST_CASE("SwervePathBuilder - Linear initial guess", "[SwervePathBuilder]") {
   using namespace trajopt;
@@ -46,6 +48,6 @@ TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
 
   REQUIRE(result.size() == expected.size());
   for (size_t i = 0; i < expected.size(); ++i) {
-    CHECK(result[i] == Catch::Approx(expected[i]).margin(1e-15));
+    CHECK_THAT(result[i], WithinAbs(expected[i], 1e-15));
   }
 }

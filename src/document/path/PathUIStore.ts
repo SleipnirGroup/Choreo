@@ -1,5 +1,5 @@
 import { types, getEnv, Instance } from "mobx-state-tree";
-import { DifferentialSample, type SwerveSample } from "../2025/DocumentTypes";
+import { DifferentialSample, type SwerveSample } from "../schema/DocumentTypes";
 import { Env } from "../DocumentManager";
 import { SavingState } from "../UIStateStore";
 
@@ -17,7 +17,9 @@ export const PathUIStore = types
   })
   .actions((self) => ({
     setSavingState(state: SavingState) {
-      self.savingState = state;
+      getEnv<Env>(self).withoutUndo(() => {
+        self.savingState = state;
+      });
     },
     setUpToDate(upToDate: boolean) {
       getEnv<Env>(self).withoutUndo(() => {

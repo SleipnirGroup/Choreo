@@ -12,12 +12,12 @@ mod tauri;
 
 use std::fs;
 
-use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
+use choreo_core::generation::remote::{RemoteArgs, remote_generate_child};
 
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();
     if args.len() > 2 {
-        panic!("Unsupoorted arguments: {:?}", args);
+        panic!("Unsupoorted arguments: {args:?}");
     }
 
     if let Some(arg) = args.get(1) {
@@ -33,7 +33,7 @@ fn main() {
                     tauri::run_tauri(Some(path));
                 }
                 Err(e) => {
-                    panic!("Failed to canonicalize {} : {:?}", arg, e);
+                    panic!("Failed to canonicalize {arg} : {e:?}");
                 }
             }
         }

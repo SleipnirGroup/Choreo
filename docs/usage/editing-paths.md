@@ -8,7 +8,8 @@ Waypoints are an ordered position that you'd like to hit on your path. There are
 
 To add a waypoint, select the type of waypoint from the waypoints navbar on the top to get started, then click on the field where you want it. Your waypoints will show up on the sidebar. A yellow dot represents the currently selected waypoint, green for the starting waypoint, and red for the ending waypoint.
 
-To change the type of an existing waypoint, use the options on the waypoint configuration panel, under the X, Y, and θ
+To change the type of an existing waypoint, use the options on the waypoint configuration panel, under the X, Y, and θ.
+
 !!! tip
     Use the keys `1`, `2`, and `3` to select the pose, translation, and empty waypoints for adding.
 
@@ -165,6 +166,7 @@ Event markers in Choreo are placed based on time offset before/after a specified
 When the trajectory is (re)generated, the marker will appear at the proper timestamp and be saved to the .traj file.
 
 Changes to the time offset will reflect in the .traj file immediately, relative to the timestamp of the targeted waypoint as of the last generation.
+
 !!! tip You can see the waypoints as they were in the last generation by turning on the "Samples" view layer. You can then turn off "Waypoints" if the current waypoints obstruct the small waypoints from the "Samples" layer.
 ![Samples view layer](../media/samples-layer-wpts.png)
 
@@ -181,9 +183,8 @@ You can create paths by chaining waypoints together. Check out [Controls & Short
     You can cancel the path generation by pressing control and clicking the red "X" once it has started.
 
 !!! tip
-    If there is an error generating a path, check to make sure your waypoints can physically work.
-
-!!! tip
-    If there is an error generating a path, check to make sure your config units are correct.
+    If there is an error generating a path, check to make sure your:
+    1. Waypoints can physically work.
+    2. Config units are correct.
 
 ![Generating Path Gif](../media/generating_path.gif)

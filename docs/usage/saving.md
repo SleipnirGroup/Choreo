@@ -55,7 +55,7 @@ This exports a .zip file with your project `.chor` and `.traj` files, as well as
 
 ## Project Details
 
-If you have saved your choreo file correctly, you should see the following:
+If you have saved your Choreo file correctly, you should see the following:
 
 ![Project Info](../media/project_info.png)
 

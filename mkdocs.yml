@@ -96,6 +96,7 @@ nav:
       - Saving: usage/saving.md
       - View Options Panel: usage/view-options-panel.md
       - Estimating Moment of Inertia: usage/estimating-moi.md
+      - Code Generation: usage/code-generation.md
   - ChoreoLib:
       - Getting Started: choreolib/getting-started.md
       - Auto Factory: choreolib/auto-factory.md
@@ -112,3 +113,4 @@ nav:
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md
       - Sample Flipping Logic: contributing/sample-flipping.md
+      - Generation Invariants: contributing/generation-invariants.md

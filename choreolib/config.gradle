@@ -2,14 +2,13 @@ import org.gradle.internal.os.OperatingSystem
 
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withCrossSystemCore()
-nativeUtils.withCrossLinuxArm32()
 nativeUtils.withCrossLinuxArm64()
 
 nativeUtils {
     wpi {
         configureDependencies {
-            wpiVersion = "2025.+"
-            niLibVersion = "2025.0.0"
+            wpiVersion = wpilibVersion
+            opencvVersion = "4.13.0-3"
         }
     }
 }
@@ -19,12 +18,13 @@ nativeUtils.wpi.addWarningsAsErrors()
 
 nativeUtils.setSinglePrintPerPlatform()
 
-// nativeUtils.wpi.addVendorDeps()
-// nativeUtils.wpi.getVendorDeps().loadAll()
-// nativeUtils.wpi.getVendorDeps().getNativeVendor().initializeNativeDependencies()
-// nativeUtils.wpi.getVendorDeps().addVendorReposToMaven(false)
-
 model {
+    // Uncomment this, and remove lines below it to enable builds for just systemcore
+    // components {
+    //     all {
+    //         targetPlatform nativeUtils.wpi.platforms.systemcore
+    //     }
+    // }
     components {
         all {
             nativeUtils.useAllPlatforms(it)
@@ -33,7 +33,6 @@ model {
     binaries {
         withType(NativeBinarySpec).all {
             nativeUtils.usePlatformArguments(it)
-            nativeUtils.wpi.getVendorDeps().getNativeVendor().cpp(it)
         }
     }
 }
@@ -79,7 +78,7 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
         if (it in NativeLibrarySpec && stringNames.contains(it.name)) {
             it.binaries.each {
                 if (!it.buildable) return
-                    def target = nativeUtils.getPublishClassifier(it)
+                def target = nativeUtils.getPublishClassifier(it)
                 if (configMap.containsKey(target)) {
                     configMap.get(target).add(it)
                 } else {
@@ -129,7 +128,7 @@ ext.createAllCombined = { list, name, base, type, project ->
 
         list.each {
             if (it.name.endsWith('debug')) return
-                from project.zipTree(it.archiveFile)
+            from project.zipTree(it.archiveFile)
             dependsOn it
         }
     }

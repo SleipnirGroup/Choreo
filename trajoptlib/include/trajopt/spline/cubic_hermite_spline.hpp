@@ -11,25 +11,21 @@
 
 namespace trajopt {
 
-/**
- * Represents a hermite spline of degree 3.
- */
+/// Represents a hermite spline of degree 3.
 class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
  public:
-  /**
-   * Constructs a cubic hermite spline with the specified control vectors. Each
-   * control vector contains info about the location of the point and its first
-   * derivative.
-   *
-   * @param x_initial_control_vector The control vector for the initial point in
-   * the x dimension.
-   * @param x_final_control_vector The control vector for the final point in
-   * the x dimension.
-   * @param y_initial_control_vector The control vector for the initial point in
-   * the y dimension.
-   * @param y_final_control_vector The control vector for the final point in
-   * the y dimension.
-   */
+  /// Constructs a cubic hermite spline with the specified control vectors. Each
+  /// control vector contains info about the location of the point and its first
+  /// derivative.
+  ///
+  /// @param x_initial_control_vector The control vector for the initial point
+  ///     in the x dimension.
+  /// @param x_final_control_vector The control vector for the final point in
+  ///     the x dimension.
+  /// @param y_initial_control_vector The control vector for the initial point
+  ///     in the y dimension.
+  /// @param y_final_control_vector The control vector for the final point in
+  ///     the y dimension.
   CubicHermiteSpline(std::array<double, 2> x_initial_control_vector,
                      std::array<double, 2> x_final_control_vector,
                      std::array<double, 2> y_initial_control_vector,
@@ -96,29 +92,23 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
     }
   }
 
-  /**
-   * Returns the coefficients matrix.
-   *
-   * @return The coefficients matrix.
-   */
+  /// Returns the coefficients matrix.
+  ///
+  /// @return The coefficients matrix.
   const Eigen::Matrix<double, 6, 3 + 1>& coefficients() const override {
     return m_coefficients;
   }
 
-  /**
-   * Returns the initial control vector that created this spline.
-   *
-   * @return The initial control vector that created this spline.
-   */
+  /// Returns the initial control vector that created this spline.
+  ///
+  /// @return The initial control vector that created this spline.
   const ControlVector& get_initial_control_vector() const override {
     return m_initial_control_vector;
   }
 
-  /**
-   * Returns the final control vector that created this spline.
-   *
-   * @return The final control vector that created this spline.
-   */
+  /// Returns the final control vector that created this spline.
+  ///
+  /// @return The final control vector that created this spline.
   const ControlVector& get_final_control_vector() const override {
     return m_final_control_vector;
   }

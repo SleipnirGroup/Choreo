@@ -13,7 +13,7 @@ import {
   GroupCommand,
   NamedCommand,
   WaitCommand
-} from "./2025/DocumentTypes";
+} from "./schema/DocumentTypes";
 import { Env, EnvConstructors } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 

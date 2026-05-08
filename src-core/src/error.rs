@@ -36,8 +36,10 @@ pub enum ChoreoError {
     NoDeployPath,
     #[error("Heading Conflict error: waypoint {0} - {1}")]
     HeadingConflict(usize, String),
-    #[error("Remote Generation Error: {0}")]
+    #[error("{0}")]
     RemoteGenerationError(Box<ChoreoError>),
+    #[error("Update Choreo. File version too new: {0} > {1} on {2}")]
+    SchemaTooNew(usize, usize, String),
 }
 
 impl ChoreoError {
@@ -47,20 +49,18 @@ impl ChoreoError {
     }
 
     pub fn sign<T: std::fmt::Display>(actual: T, expected: T) -> Self {
-        Self::Calculation(format!("Sign error: {} should be {}", actual, expected))
+        Self::Calculation(format!("Sign error: {actual} should be {expected}"))
     }
 
     pub fn out_of_bounds<T: std::fmt::Display>(actual: T, expected: T) -> Self {
         Self::Calculation(format!(
-            "Out Of Bounds error: {} should be {}",
-            actual, expected
+            "Out Of Bounds error: {actual} should be {expected}"
         ))
     }
 
     pub fn inequality<T: std::fmt::Display>(actual: T, expected: T) -> Self {
         Self::Calculation(format!(
-            "Inequality error: {} wasn't equal to {}",
-            actual, expected
+            "Inequality error: {actual} wasn't equal to {expected}"
         ))
     }
 }

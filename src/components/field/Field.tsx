@@ -123,11 +123,7 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(_event) => {
-                Commands.cancel(
-                  activePath.uuid
-                    .split("")
-                    .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0)
-                );
+                Commands.cancel(activePath.handle);
               }}
               disabled={activePath.canGenerate()}
             >

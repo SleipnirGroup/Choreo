@@ -12,9 +12,7 @@
 
 namespace trajopt {
 
-/**
- * A path waypoint.
- */
+/// A path waypoint.
 struct TRAJOPT_DLLEXPORT Waypoint {
   /// Instantaneous constraints at the waypoint.
   std::vector<Constraint> waypoint_constraints;
@@ -23,12 +21,10 @@ struct TRAJOPT_DLLEXPORT Waypoint {
   std::vector<Constraint> segment_constraints;
 };
 
-/**
- * A path.
- *
- * @tparam Drivetrain The drivetrain type (e.g., swerve, differential).
- * @tparam Solution The solution type (e.g., swerve, differential).
- */
+/// A path.
+///
+/// @tparam Drivetrain The drivetrain type (e.g., swerve, differential).
+/// @tparam Solution The solution type (e.g., swerve, differential).
 template <typename Drivetrain, typename Solution>
 struct TRAJOPT_DLLEXPORT Path {
   /// Waypoints along the path.

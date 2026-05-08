@@ -4,11 +4,10 @@ use crate::ChoreoResult;
 
 mod traj_file {
     use crate::spec::trajectory::Trajectory;
-    #[allow(unused_imports)] // Remove when an upgrader function is added
     use crate::{
+        ChoreoResult,
         file_management::upgrader::{Editor, Upgrader},
         spec::TRAJ_SCHEMA_VERSION,
-        ChoreoResult,
     };
     use std::sync::LazyLock;
 
@@ -17,15 +16,23 @@ mod traj_file {
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
+        upgrader.add_version_action(up_1_2);
+        upgrader.add_version_action(up_2_3);
         // Ensure the new upgrader is added here
         upgrader
     }
-
-    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+    /// To devs adding new schema versions:
+    /// If the change adds/exposes a new field in the trajectory sample,
+    /// the upgrade process includes calling this function, which deletes the generation output.
+    /// The new field likely can't be derived from other .traj contents, so the upgrader does
+    /// not have enough information to autopopulate it without regenerating.
+    /// No other upgrader work is needed to accommodate new sample fields.
+    fn clear_generation_result(editor: &mut Editor) -> ChoreoResult<()> {
         // Clear generated output
         editor.set_path_serialize(
             "trajectory",
             Trajectory {
+                config: None,
                 sample_type: None,
                 waypoints: vec![],
                 samples: vec![],
@@ -34,11 +41,23 @@ mod traj_file {
         )
     }
 
+    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+
+    fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+
+    fn up_2_3(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
-        use crate::spec::TRAJ_SCHEMA_VERSION;
         use crate::ChoreoResult;
+        use crate::spec::TRAJ_SCHEMA_VERSION;
+        use crate::spec::upgraders::testing_shared::{FileType, get_contents};
 
         use crate::spec::trajectory::TrajectoryFile;
         // beta6 is technically the same spec as 0, but with a string version number
@@ -66,6 +85,24 @@ mod traj_file {
         #[test]
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_trajectory("1", "swerve")
+        }
+
+        #[test]
+        pub fn test_2_differential() -> ChoreoResult<()> {
+            test_trajectory("2", "differential")
+        }
+        #[test]
+        pub fn test_2_swerve() -> ChoreoResult<()> {
+            test_trajectory("2", "swerve")
+        }
+
+        #[test]
+        pub fn test_3_differential() -> ChoreoResult<()> {
+            test_trajectory("3", "differential")
+        }
+        #[test]
+        pub fn test_3_swerve() -> ChoreoResult<()> {
+            test_trajectory("3", "swerve")
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
@@ -126,9 +163,9 @@ mod project_file {
     use std::sync::LazyLock;
 
     use crate::{
+        ChoreoResult,
         file_management::upgrader::{Editor, Upgrader},
         spec::{Expr, PROJECT_SCHEMA_VERSION},
-        ChoreoResult,
     };
 
     pub(super) static PROJECT_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
@@ -136,7 +173,7 @@ mod project_file {
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
-
+        upgrader.add_version_action(up_1_2);
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
@@ -144,12 +181,19 @@ mod project_file {
     fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         editor.set_path_serialize("config.cof", Expr::new("1.5", 1.5))
     }
+    fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        editor.set_path("codegen.root", Option::<String>::None)?;
+        editor.set_path("codegen.genVars", true)?;
+        editor.set_path("codegen.genTrajData", true)?;
+        editor.set_path("codegen.useChoreoLib", true)?;
+        Ok(())
+    }
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
-        use crate::spec::PROJECT_SCHEMA_VERSION;
         use crate::ChoreoResult;
+        use crate::spec::PROJECT_SCHEMA_VERSION;
+        use crate::spec::upgraders::testing_shared::{FileType, get_contents};
 
         use crate::spec::project::ProjectFile;
 
@@ -189,6 +233,14 @@ mod project_file {
         #[test]
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_project("1", "swerve")
+        }
+        #[test]
+        pub fn test_2_differential() -> ChoreoResult<()> {
+            test_project("2", "differential")
+        }
+        #[test]
+        pub fn test_2_swerve() -> ChoreoResult<()> {
+            test_project("2", "swerve")
         }
     }
 }

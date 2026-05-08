@@ -3,7 +3,7 @@ import {
   EventMarker,
   EventMarkerData,
   WaypointUUID
-} from "./2025/DocumentTypes";
+} from "./schema/DocumentTypes";
 import { CommandStore } from "./CommandStore";
 import { WaypointScope } from "./ConstraintStore";
 import { Env, EnvConstructors } from "./DocumentManager";

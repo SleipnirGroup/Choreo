@@ -1,3 +1,4 @@
+/// <reference types="vite-plugin-svgr/client" />
 import {
   Popover,
   ToggleButton,
@@ -7,7 +8,7 @@ import {
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
+import { Expr, Waypoint } from "../../../document/schema/DocumentTypes";
 import { ConstraintKey } from "../../../document/ConstraintDefinitions";
 import { IConstraintStoreKeyed } from "../../../document/ConstraintStore";
 import { doc, uiState } from "../../../document/DocumentManager";
@@ -30,8 +31,8 @@ import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
-import FieldImage2025 from "./fields/FieldImage2025";
 import * as FieldDimensions from "./fields/FieldDimensions";
+import Field2026 from "./fields/FieldImage2026.svg";
 
 type Props = object;
 
@@ -240,7 +241,11 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                <FieldImage2025 />
+                <g
+                  transform={`scale(1 -1) translate(-0.5, ${-FieldDimensions.FIELD_WIDTH - 0.5})`}
+                >
+                  <Field2026></Field2026>
+                </g>
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
@@ -318,16 +323,32 @@ class FieldOverlayRoot extends Component<Props, State> {
               )}
             {/* Line paths */}
             {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
-            {layers[ViewLayers.Trajectory] && (
-              <FieldGeneratedLines></FieldGeneratedLines>
+            <g id="toFlipPath">
+              {layers[ViewLayers.Trajectory] && (
+                <FieldGeneratedLines></FieldGeneratedLines>
+              )}
+              {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+                <FieldSamples></FieldSamples>
+              )}
+              {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+                <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
+              )}
+              <FieldEventMarkers></FieldEventMarkers>
+            </g>
+            {layers[ViewLayers.FlippedPath] && (
+              <g
+                id="flippedPath"
+                transform="translate(16.541 8.0692) rotate(180)"
+              >
+                <use
+                  x="0"
+                  y="0"
+                  width={FieldDimensions.FIELD_LENGTH}
+                  height={FieldDimensions.FIELD_WIDTH}
+                  href="#toFlipPath"
+                ></use>
+              </g>
             )}
-            {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
-              <FieldSamples></FieldSamples>
-            )}
-            {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
-              <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
-            )}
-            <FieldEventMarkers></FieldEventMarkers>
             {layers[ViewLayers.Waypoints] &&
               doc.pathlist.activePath.params.waypoints
                 .map((point, index) => {
@@ -385,10 +406,26 @@ class FieldOverlayRoot extends Component<Props, State> {
                   lineColor="white"
                 ></FieldConstraintDisplayLayer>
               )}
-            {layers[ViewLayers.Trajectory] && (
-              <InterpolatedRobot
-                timestamp={uiState.pathAnimationTimestamp}
-              ></InterpolatedRobot>
+            <g id="toFlipRobot">
+              {layers[ViewLayers.Trajectory] && (
+                <InterpolatedRobot
+                  timestamp={uiState.pathAnimationTimestamp}
+                ></InterpolatedRobot>
+              )}
+            </g>
+            {layers[ViewLayers.FlippedPath] && (
+              <g
+                id="flippedRobot"
+                transform={`translate(${FieldDimensions.FIELD_LENGTH} ${FieldDimensions.FIELD_WIDTH}) rotate(180)`}
+              >
+                <use
+                  x="0"
+                  y="0"
+                  width={FieldDimensions.FIELD_LENGTH}
+                  height={FieldDimensions.FIELD_WIDTH}
+                  href="#toFlipRobot"
+                ></use>
+              </g>
             )}
           </g>
         </FieldMatrixContext.Provider>

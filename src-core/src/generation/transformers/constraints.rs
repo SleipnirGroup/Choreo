@@ -19,7 +19,7 @@ pub struct ConstraintSetter {
     guess_points: Vec<usize>,
     constraint_idx: Vec<ConstraintIDX<f64>>,
     /// A vector of remaining waypoints matching the indexing scheme of constraint_idx
-    waypoint_idx: Vec<Waypoint<f64>>
+    waypoint_idx: Vec<Waypoint<f64>>,
 }
 
 impl ConstraintSetter {
@@ -29,7 +29,8 @@ impl ConstraintSetter {
         let mut waypoint_idx = Vec::<Waypoint<f64>>::new();
         let num_wpts = context.params.waypoints.len();
 
-        context.params
+        context
+            .params
             .waypoints
             .iter()
             .enumerate()
@@ -85,7 +86,7 @@ impl ConstraintSetter {
         FeatureLockedTransformer::always(Self {
             guess_points,
             constraint_idx,
-            waypoint_idx
+            waypoint_idx,
         })
     }
 }
@@ -126,7 +127,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         generator.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         generator.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                     }
-                },
+                }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                     None => generator.wpt_keep_in_circle(from, x, y, r),
                     Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
@@ -138,26 +139,17 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
-                },
-                ConstraintData::KeepInLane {
-                    tolerance
-                } => {
-                    if let Some(idx_to) = to_opt {
-                        if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                            if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                                generator.sgmt_keep_in_lane(
-                                    from,
-                                    idx_to,
-                                    wpt_from.x,
-                                    wpt_from.y,
-                                    wpt_to.x,
-                                    wpt_to.y,
-                                    tolerance,
-                                );
-                            }
-                        }
+                }
+                ConstraintData::KeepInLane { tolerance } => {
+                    if let Some(idx_to) = to_opt
+                        && let Some(wpt_from) = self.waypoint_idx.get(from)
+                        && let Some(wpt_to) = self.waypoint_idx.get(idx_to)
+                    {
+                        generator.sgmt_keep_in_lane(
+                            from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y, tolerance,
+                        );
                     }
-                },
+                }
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
                     None => generator.wpt_keep_out_circle(from, x, y, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
@@ -216,26 +208,17 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
-                },
-                ConstraintData::KeepInLane {
-                    tolerance
-                } => {
-                    if let Some(idx_to) = to_opt {
-                        if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                            if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                                generator.sgmt_keep_in_lane(
-                                    from,
-                                    idx_to,
-                                    wpt_from.x,
-                                    wpt_from.y,
-                                    wpt_to.x,
-                                    wpt_to.y,
-                                    tolerance,
-                                );
-                            }
-                        }
+                }
+                ConstraintData::KeepInLane { tolerance } => {
+                    if let Some(idx_to) = to_opt
+                        && let Some(wpt_from) = self.waypoint_idx.get(from)
+                        && let Some(wpt_to) = self.waypoint_idx.get(idx_to)
+                    {
+                        generator.sgmt_keep_in_lane(
+                            from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y, tolerance,
+                        );
                     }
-                },
+                }
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
                     None => generator.wpt_keep_out_circle(from, x, y, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),

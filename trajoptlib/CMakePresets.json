@@ -32,7 +32,7 @@
       "binaryDir": "build",
       "generator": "Ninja",
       "cacheVariables": {
-        "BUILD_EXAMPLES": "ON"
+        "TRAJOPT_BUILD_EXAMPLES": "ON"
       }
     },
     {
@@ -43,7 +43,7 @@
       "binaryDir": "build",
       "inherits": "with-sccache",
       "cacheVariables": {
-        "BUILD_EXAMPLES": "ON"
+        "TRAJOPT_BUILD_EXAMPLES": "ON"
       }
     }
   ]

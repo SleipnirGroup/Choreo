@@ -3,18 +3,20 @@
 #include <cmath>
 #include <numbers>
 
-#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <trajopt/geometry/translation2.hpp>
+
+using Catch::Matchers::WithinAbs;
 
 TEST_CASE("Translation2d - Polar constructor", "[Translation2d]") {
   trajopt::Translation2d one{std::numbers::sqrt2 * 1.0,
                              trajopt::Rotation2d{std::numbers::pi / 4}};
-  CHECK(one.x() == Catch::Approx(1.0).margin(1e-9));
-  CHECK(one.y() == Catch::Approx(1.0).margin(1e-9));
+  CHECK_THAT(one.x(), WithinAbs(1.0, 1e-9));
+  CHECK_THAT(one.y(), WithinAbs(1.0, 1e-9));
 
   trajopt::Translation2d two{2.0, trajopt::Rotation2d{std::numbers::pi / 3}};
-  CHECK(two.x() == Catch::Approx(1.0).margin(1e-9));
+  CHECK_THAT(two.x(), WithinAbs(1.0, 1e-9));
   CHECK(two.y() == std::numbers::sqrt3);
 }
 
@@ -67,7 +69,7 @@ TEST_CASE("Translation2d - RotateBy", "[Translation2d]") {
   const auto rotated =
       another.rotate_by(trajopt::Rotation2d{std::numbers::pi / 2});
 
-  CHECK(rotated.x() == Catch::Approx(0.0).margin(1e-9));
+  CHECK_THAT(rotated.x(), WithinAbs(0.0, 1e-9));
   CHECK(rotated.y() == 3.0);
 }
 
@@ -76,16 +78,14 @@ TEST_CASE("Translation2d - Angle", "[Translation2d]") {
   const trajopt::Translation2d two{2.0, 5.0};
 
   const auto one_angle = one.angle();
-  CHECK(one_angle.cos() == Catch::Approx(1.0 / std::sqrt(10.0)).margin(1e-15));
-  CHECK(one_angle.sin() == Catch::Approx(3.0 / std::sqrt(10.0)).margin(1e-15));
-  CHECK(one_angle.radians() ==
-        Catch::Approx(std::atan2(3.0, 1.0)).margin(1e-15));
+  CHECK_THAT(one_angle.cos(), WithinAbs(1.0 / std::sqrt(10.0), 1e-15));
+  CHECK_THAT(one_angle.sin(), WithinAbs(3.0 / std::sqrt(10.0), 1e-15));
+  CHECK_THAT(one_angle.radians(), WithinAbs(std::atan2(3.0, 1.0), 1e-15));
 
   const auto two_angle = two.angle();
-  CHECK(two_angle.cos() == Catch::Approx(2.0 / std::sqrt(29.0)).margin(1e-15));
-  CHECK(two_angle.sin() == Catch::Approx(5.0 / std::sqrt(29.0)).margin(1e-15));
-  CHECK(two_angle.radians() ==
-        Catch::Approx(std::atan2(5.0, 2.0)).margin(1e-15));
+  CHECK_THAT(two_angle.cos(), WithinAbs(2.0 / std::sqrt(29.0), 1e-15));
+  CHECK_THAT(two_angle.sin(), WithinAbs(5.0 / std::sqrt(29.0), 1e-15));
+  CHECK_THAT(two_angle.radians(), WithinAbs(std::atan2(5.0, 2.0), 1e-15));
 }
 
 TEST_CASE("Translation2d - Dot", "[Translation2d]") {

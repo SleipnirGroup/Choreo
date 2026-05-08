@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/Trajectory.h"
+#include "choreo/trajectory/Trajectory.hpp"
 
 #include <string>
 

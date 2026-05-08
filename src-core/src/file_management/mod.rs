@@ -7,7 +7,7 @@ use std::{
 use serde::Serialize;
 use tokio::{
     fs,
-    sync::{mpsc::UnboundedSender, Mutex, Notify},
+    sync::{Mutex, Notify, mpsc::UnboundedSender},
 };
 
 use crate::{ChoreoError, ChoreoResult, ResultExt};
@@ -148,14 +148,7 @@ pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
 
 pub async fn write_trajectory_file(
     resources: &WritingResources,
-    trajectory_file: TrajectoryFile,
-) -> ChoreoResult<()> {
-    write_trajectory_file_immediately(resources, trajectory_file).await
-}
-
-pub async fn write_trajectory_file_immediately(
-    resources: &WritingResources,
-    trajectory_file: TrajectoryFile,
+    trajectory_file: &TrajectoryFile,
 ) -> ChoreoResult<()> {
     let file = resources
         .get_deploy_path()
@@ -199,7 +192,13 @@ pub async fn read_trajectory_file(
         .join(&name)
         .with_extension(TrajectoryFile::EXTENSION);
     let contents = fs::read_to_string(&path).await?;
-    let mut path = TrajectoryFile::from_content(&contents)?;
+    let mut path = TrajectoryFile::from_content(&contents).map_err(|e| {
+        if let ChoreoError::SchemaTooNew(actual, expected, _) = e {
+            ChoreoError::SchemaTooNew(actual, expected, format!("{}.traj", name))
+        } else {
+            e
+        }
+    })?;
     // this will keep the name of the `Path` in sync with the file name
     path.name = name;
     Ok(path)
@@ -254,7 +253,7 @@ pub async fn rename_trajectory_file(
     let old_name = old_trajectory_file.name.clone();
     old_trajectory_file.name.clone_from(&new_name);
 
-    write_trajectory_file(resources, old_trajectory_file.clone()).await?;
+    write_trajectory_file(resources, &old_trajectory_file).await?;
 
     tracing::info!(
         "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",
@@ -298,7 +297,13 @@ pub async fn read_projectfile(
         .join(&name)
         .with_extension("chor");
     let contents = fs::read_to_string(&path).await?;
-    let mut project = ProjectFile::from_content(&contents)?;
+    let mut project = ProjectFile::from_content(&contents).map_err(|e| {
+        if let ChoreoError::SchemaTooNew(actual, expected, _) = e {
+            ChoreoError::SchemaTooNew(actual, expected, format!("{}.chor", name))
+        } else {
+            e
+        }
+    })?;
     project.name = name;
     Ok(project)
 }
@@ -310,12 +315,11 @@ pub async fn find_all_trajectories(resources: &WritingResources) -> Vec<String> 
     if let Ok(mut dir) = fs::read_dir(&deploy_dir).await {
         while let Ok(Some(entry)) = dir.next_entry().await {
             let path = entry.path();
-            if let Some(extension) = path.extension() {
-                if extension.eq_ignore_ascii_case("traj") {
-                    if let Some(p) = path.file_stem().map(|p| p.to_string_lossy()) {
-                        out.push(p.to_string());
-                    }
-                }
+            if let Some(extension) = path.extension()
+                && extension.eq_ignore_ascii_case("traj")
+                && let Some(p) = path.file_stem().map(|p| p.to_string_lossy())
+            {
+                out.push(p.to_string());
             }
         }
     }

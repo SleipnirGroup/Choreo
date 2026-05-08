@@ -4,6 +4,6 @@
 package choreo.util;
 
 class FieldDimensions {
-  static final double FIELD_LENGTH = 17.548;
-  static final double FIELD_WIDTH = 8.052;
+  static final double FIELD_LENGTH = 16.541;
+  static final double FIELD_WIDTH = 8.0692;
 }

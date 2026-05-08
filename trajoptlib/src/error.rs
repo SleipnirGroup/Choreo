@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 // Error messages and codes from:
-// https://github.com/SleipnirGroup/Sleipnir/blob/4e07c8835dc589e496a66d3320e0990668fea268/include/sleipnir/optimization/solver/exit_status.hpp
+// https://github.com/SleipnirGroup/Sleipnir/blob/v0.5.0/include/sleipnir/optimization/solver/exit_status.hpp
 
 #[derive(Debug, Error)]
 pub enum TrajoptError {
@@ -15,8 +15,10 @@ pub enum TrajoptError {
     FactorizationFailed,
     #[error("Line search failed")]
     LineSearchFailed,
-    #[error("Nonfinite initial cost or constraints")]
-    NonfiniteInitialCostOrConstraints,
+    #[error("Feasibility restoration failed")]
+    FeasibilityRestorationFailed,
+    #[error("Nonfinite initial guess")]
+    NonfiniteInitialGuess,
     #[error("Diverging iterates")]
     DivergingIterates,
     #[error("Max iterations exceeded")]
@@ -37,10 +39,11 @@ impl From<i8> for TrajoptError {
             -3 => Self::GloballyInfeasible,
             -4 => Self::FactorizationFailed,
             -5 => Self::LineSearchFailed,
-            -6 => Self::NonfiniteInitialCostOrConstraints,
-            -7 => Self::DivergingIterates,
-            -8 => Self::MaxIterationsExceeded,
-            -9 => Self::Timeout,
+            -6 => Self::FeasibilityRestorationFailed,
+            -7 => Self::NonfiniteInitialGuess,
+            -8 => Self::DivergingIterates,
+            -9 => Self::MaxIterationsExceeded,
+            -10 => Self::Timeout,
             _ => Self::Unknown(value),
         }
     }

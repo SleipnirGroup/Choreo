@@ -1,5 +1,5 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
-import { Expr, Waypoint } from "./2025/DocumentTypes";
+import { Expr, Waypoint } from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { NavbarItemData } from "./UIData";

@@ -1,16 +1,13 @@
 [package]
 name = "trajoptlib"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 cxx = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-thiserror = "2.0.12"
+thiserror = "2.0.17"
 
 [build-dependencies]
 cmake = "0.1"
 cxx-build = "1.0"
-
-[[example]]
-name = "swerve"

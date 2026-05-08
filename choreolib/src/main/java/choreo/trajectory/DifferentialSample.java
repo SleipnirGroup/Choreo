@@ -3,25 +3,23 @@
 package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.numbers.N6;
-import edu.wpi.first.math.system.NumericalIntegration;
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import org.wpilib.math.numbers.N6;
+import org.wpilib.math.system.NumericalIntegration;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.util.struct.Struct;
+
 import java.nio.ByteBuffer;
 import java.util.function.BiFunction;
 
 /** A single differential drive robot sample in a Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
-  /** The usage reporting identifier for loading a differential trajectory. */
-  public static final String USAGE_REPORT = "ChoreoLib/DifferentialTrajectory";
-
   /** The timestamp of this sample relative to the beginning of the trajectory. */
   public final double t;
 
@@ -49,6 +47,9 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   /** The acceleration of the right side in m/s². */
   public final double ar;
 
+  /** The chassis angular acceleration in rad/s². */
+  public final double alpha;
+
   /** The force of the left side in Newtons. */
   public final double fl;
 
@@ -67,6 +68,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * @param omega The chassis angular velocity in rad/s.
    * @param al The acceleration of the left side in m/s².
    * @param ar The acceleration of the right side in m/s².
+   * @param alpha The chassis angular acceleration in rad/s².
    * @param fl The force of the left side in Newtons.
    * @param fr The force of the right side in Newtons.
    */
@@ -80,6 +82,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       double omega,
       double al,
       double ar,
+      double alpha,
       double fl,
       double fr) {
     this.t = timestamp;
@@ -91,6 +94,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     this.omega = omega;
     this.al = al;
     this.ar = ar;
+    this.alpha = alpha;
     this.fl = fl;
     this.fr = fr;
   }
@@ -109,11 +113,11 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * Returns the field-relative chassis speeds of this sample.
    *
    * @return the field-relative chassis speeds of this sample.
-   * @see edu.wpi.first.math.kinematics.DifferentialDriveKinematics#toChassisSpeeds
+   * @see org.wpilib.math.kinematics.DifferentialDriveKinematics#toChassisVelocities
    */
   @Override
-  public ChassisSpeeds getChassisSpeeds() {
-    return new ChassisSpeeds((vl + vr) / 2, 0, omega);
+  public ChassisVelocities getChassisVelocities() {
+    return new ChassisVelocities((vl + vr) / 2, 0, omega);
   }
 
   @Override
@@ -125,15 +129,12 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     // states
     Matrix<N6, N1> initialState = VecBuilder.fill(x, y, heading, vl, vr, omega);
 
-    double width = (vr - vl) / omega;
-    BiFunction<Matrix<N6, N1>, Matrix<N2, N1>, Matrix<N6, N1>> f =
+    BiFunction<Matrix<N6, N1>, Matrix<N3, N1>, Matrix<N6, N1>> f =
         (state, input) -> {
           //  state =  [x, y, θ, vₗ, vᵣ, ω]
-          //  input =  [aₗ, aᵣ]
+          //  input =  [aₗ, aᵣ, α]
           //
           //  v = (vₗ + vᵣ)/2
-          //  ω = (vᵣ − vₗ)/width
-          //  α = (aᵣ − aₗ)/width
           //
           //  ẋ = v cosθ
           //  ẏ = v sinθ
@@ -147,66 +148,51 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           var ω = state.get(5, 0);
           var al = input.get(0, 0);
           var ar = input.get(1, 0);
+          var α = input.get(2, 0);
           var v = (vl + vr) / 2;
-          var α = (ar - al) / width;
           return VecBuilder.fill(v * Math.cos(θ), v * Math.sin(θ), ω, al, ar, α);
         };
 
     double τ = timestamp - this.t;
-    var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar), τ);
-
-    double dt = endValue.t - this.t;
-    double jl = (endValue.al - this.al) / dt;
-    double jr = (endValue.ar - this.ar) / dt;
+    var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar, alpha), τ);
 
     return new DifferentialSample(
-        MathUtil.interpolate(this.t, endValue.t, scale),
+        this.t + (endValue.t - this.t) * scale,
         sample.get(0, 0),
         sample.get(1, 0),
         sample.get(2, 0),
         sample.get(3, 0),
         sample.get(4, 0),
         sample.get(5, 0),
-        this.al + jl * τ,
-        this.ar + jr * τ,
-        MathUtil.interpolate(this.fl, endValue.fl, scale),
-        MathUtil.interpolate(this.fr, endValue.fr, scale));
+        this.al,
+        this.ar,
+        this.alpha,
+        this.fl + (endValue.fl - this.fl) * scale,
+        this.fr + (endValue.fr - this.fr) * scale);
   }
 
   public DifferentialSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
-          new DifferentialSample(
-              t,
-              ChoreoAllianceFlipUtil.flipX(x),
-              ChoreoAllianceFlipUtil.flipY(y), // No-op for mirroring
-              ChoreoAllianceFlipUtil.flipHeading(heading),
-              vr,
-              vl,
-              -omega,
-              ar,
-              al,
-              fr,
-              fl);
-      case ROTATE_AROUND ->
-          new DifferentialSample(
-              t,
-              ChoreoAllianceFlipUtil.flipX(x),
-              ChoreoAllianceFlipUtil.flipY(y),
-              ChoreoAllianceFlipUtil.flipHeading(heading),
-              vl,
-              vr,
-              omega,
-              al,
-              ar,
-              fl,
-              fr);
-    };
+    return ChoreoAllianceFlipUtil.getFlipper().flip(this);
+  }
+
+  @Override
+  public DifferentialSample mirrorX() {
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
+  }
+
+  @Override
+  public DifferentialSample mirrorY() {
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
+  }
+
+  @Override
+  public DifferentialSample rotateAround() {
+    return ChoreoAllianceFlipUtil.getRotateAround().flip(this);
   }
 
   public DifferentialSample offsetBy(double timestampOffset) {
     return new DifferentialSample(
-        t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr);
+        t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, alpha, fl, fr);
   }
 
   /** The struct for the DifferentialSample class. */
@@ -225,7 +211,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
     @Override
     public int getSize() {
-      return Struct.kSizeDouble * 10;
+      return Struct.DOUBLE_SIZE * 10;
     }
 
     @Override
@@ -237,6 +223,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           + "double omega;"
           + "double al;"
           + "double ar;"
+          + "double alpha;"
           + "double fl;"
           + "double fr;";
     }
@@ -249,6 +236,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     @Override
     public DifferentialSample unpack(ByteBuffer bb) {
       return new DifferentialSample(
+          bb.getDouble(),
           bb.getDouble(),
           bb.getDouble(),
           bb.getDouble(),
@@ -273,6 +261,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       bb.putDouble(value.omega);
       bb.putDouble(value.al);
       bb.putDouble(value.ar);
+      bb.putDouble(value.alpha);
       bb.putDouble(value.fl);
       bb.putDouble(value.fr);
     }
@@ -285,16 +274,17 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     }
 
     var other = (DifferentialSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vl == other.vl
-        && this.vr == other.vr
-        && this.omega == other.omega
-        && this.al == other.al
-        && this.ar == other.ar
-        && this.fl == other.fl
-        && this.fr == other.fr;
+    return MathUtil.isNear(this.t, other.t, 1E-6)
+        && MathUtil.isNear(this.x, other.x, 1E-6)
+        && MathUtil.isNear(this.y, other.y, 1E-6)
+        && MathUtil.isNear(this.heading, other.heading, 1E-6)
+        && MathUtil.isNear(this.vl, other.vl, 1E-6)
+        && MathUtil.isNear(this.vr, other.vr, 1E-6)
+        && MathUtil.isNear(this.omega, other.omega, 1E-6)
+        && MathUtil.isNear(this.al, other.al, 1E-6)
+        && MathUtil.isNear(this.ar, other.ar, 1E-6)
+        && MathUtil.isNear(this.alpha, other.alpha, 1E-6)
+        && MathUtil.isNear(this.fl, other.fl, 1E-6)
+        && MathUtil.isNear(this.fr, other.fr, 1E-6);
   }
 }

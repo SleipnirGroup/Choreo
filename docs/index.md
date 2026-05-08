@@ -7,7 +7,7 @@ Welcome to the [Choreo](https://github.com/SleipnirGroup/Choreo) documentation.
 
 ## What is Choreo?
 
-Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounced /koʊˈɹiːoʊ/, like K + "Oreo") is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
+Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronounced like choreography) is a time-optimal drivetrain trajectory planner for the FIRST Robotics Competition.
 
 <div class="grid cards" markdown>
 
@@ -15,7 +15,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Each trajectory takes full advantage of the drivetrain's performance, while obeying its dynamics constraints.
+    Each trajectory takes full advantage of the swerve or differential drivetrain's performance, while obeying its dynamics constraints.
 
 
 -   :octicons-sparkle-fill-16:{ .lg .middle } __Easy UI__

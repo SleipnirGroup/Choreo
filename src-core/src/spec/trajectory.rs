@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
+use crate::spec::project::RobotConfig;
+
+use super::{Expr, SnapshottableType, upgraders::upgrade_traj_file};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -281,18 +283,44 @@ pub enum Sample {
         omega: f64,
         al: f64,
         ar: f64,
+        alpha: f64,
         fl: f64,
         fr: f64,
     },
 }
+impl Sample {
+    pub fn t(&self) -> f64 {
+        match self {
+            Sample::Swerve { t, .. } => *t,
+            Sample::DifferentialDrive { t, .. } => *t,
+        }
+    }
+
+    pub fn x(&self) -> f64 {
+        match self {
+            Sample::Swerve { x, .. } => *x,
+            Sample::DifferentialDrive { x, .. } => *x,
+        }
+    }
+
+    pub fn y(&self) -> f64 {
+        match self {
+            Sample::Swerve { y, .. } => *y,
+            Sample::DifferentialDrive { y, .. } => *y,
+        }
+    }
+
+    pub fn heading(&self) -> f64 {
+        match self {
+            Sample::Swerve { heading, .. } => *heading,
+            Sample::DifferentialDrive { heading, .. } => *heading,
+        }
+    }
+}
 fn round(input: f64) -> f64 {
     let factor = 100_000.0;
     let result = (input * factor).round() / factor;
-    if result == -0.0 {
-        0.0
-    } else {
-        result
-    }
+    if result == -0.0 { 0.0 } else { result }
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
@@ -341,6 +369,7 @@ impl From<&DifferentialTrajectorySample> for Sample {
             omega: round(differential_sample.angular_velocity),
             al: round(differential_sample.acceleration_l),
             ar: round(differential_sample.acceleration_r),
+            alpha: round(differential_sample.angular_acceleration),
             fl: round(differential_sample.force_l),
             fr: round(differential_sample.force_r),
         }
@@ -395,6 +424,7 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
+    pub config: Option<RobotConfig<f64>>,
     /// The sample type of this trajectory.
     /// Must match the type in samples if that list is non-empty
     /// Only None if trajectory was never generated.
@@ -450,6 +480,15 @@ impl TrajectoryFile {
             false
         }
     }
+
+    pub fn config_up_to_date(&self, config: &RobotConfig<f64>) -> bool {
+        // Can't use is_some_and due to its move semantics.
+        if let Some(snap) = &self.trajectory.config {
+            snap == config
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -494,7 +533,7 @@ pub enum PplibCommand {
 
 #[cfg(test)]
 mod tests {
-    use crate::spec::TRAJ_SCHEMA_VERSION;
+    use crate::spec::{TRAJ_SCHEMA_VERSION, project::ProjectFile};
 
     use super::*;
     fn test_trajectory() -> TrajectoryFile {
@@ -523,6 +562,7 @@ mod tests {
                 waypoints: Vec::new(),
                 samples: Vec::new(),
                 splits: Vec::new(),
+                config: Some(ProjectFile::default().config.snapshot()),
             },
             events: Vec::new(),
         }

@@ -2,12 +2,13 @@
 
 package choreo.auto;
 
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.hardware.hal.AllianceStationID;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.simulation.DriverStationSim;
+
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -16,11 +17,11 @@ public class AutoTestHelper {
       boolean useAllianceFlipping, AtomicReference<Pose2d> robotPose) {
     // AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
     return new AutoFactory(
-        () -> robotPose.get(),
-        newPose -> robotPose.set(newPose),
+        robotPose::get,
+        robotPose::set,
         sample -> robotPose.set(sample.getPose()),
         useAllianceFlipping,
-        new Subsystem() {},
+        new Mechanism() {},
         (sample, isStart) -> {});
   }
 
@@ -38,15 +39,15 @@ public class AutoTestHelper {
         alliance
             .map(
                 all -> {
-                  if (all.equals(Alliance.Blue)) {
-                    return AllianceStationID.Blue1;
+                  if (all.equals(Alliance.BLUE)) {
+                    return AllianceStationID.BLUE_1;
                   } else {
-                    return AllianceStationID.Red1;
+                    return AllianceStationID.RED_1;
                   }
                 })
-            .orElse(AllianceStationID.Unknown);
+            .orElse(AllianceStationID.UNKNOWN);
     DriverStationSim.setAllianceStationId(id);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
+    DriverStationBackend.refreshData();
   }
 }

@@ -9,8 +9,8 @@ use std::{
 use zip;
 
 use crate::{
-    spec::{project::ProjectFile, trajectory::TrajectoryFile},
     ChoreoError, ChoreoResult,
+    spec::{project::ProjectFile, trajectory::TrajectoryFile},
 };
 
 fn tmpname(prefix: &str, suffix: &str, rand_len: usize) -> OsString {
@@ -85,7 +85,7 @@ pub fn get_log_lines(log_dir: Option<PathBuf>) -> Vec<String> {
                             String::new()
                         })
                         .lines()
-                        .map(|line| format!("{:}\n", line))
+                        .map(|line| format!("{line}\n"))
                         .collect::<Vec<String>>(),
                     Err(e) => {
                         tracing::error!("{e}");

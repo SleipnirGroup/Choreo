@@ -6,15 +6,15 @@
 #include <units/force.h>
 #include <wpi/json.h>
 
-#include "choreo/trajectory/SwerveSample.h"
-#include "choreo/trajectory/Trajectory.h"
+#include "choreo/trajectory/SwerveSample.hpp"
+#include "choreo/trajectory/Trajectory.hpp"
 
 using namespace choreo;
 
 constexpr std::string_view swerveTrajectoryString =
     R"({
  "name":"New Path",
- "version":0,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":0.0, "y":0.0, "heading":0.0, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -38,6 +38,29 @@ constexpr std::string_view swerveTrajectoryString =
     {"from":1, "to":2, "data":{"type":"PointAt", "props":{"x":["1.5 m",1.5], "y":["4 m",4.0], "tolerance":["1 deg",0.017453292519943295], "flip":false}}}]
  },
  "trajectory":{
+   "config":{
+    "frontLeft":{
+        "x":0.2794,
+        "y":0.2794
+    },
+    "backLeft":{
+        "x":-0.2794,
+        "y":0.2794
+    },
+    "mass":68.0388555,
+    "inertia":6.0,
+    "gearing":6.5,
+    "radius":0.0508,
+    "vmax":628.3185307179587,
+    "tmax":1.2,
+    "cof":1.5,
+    "bumper":{
+        "front":0.4064,
+        "side":0.4064,
+        "back":0.4064
+    },
+    "differentialTrackWidth":0.5588
+  },
   "sampleType":"Swerve",
   "waypoints":[0.0,0.1,0.2,0.3],
   "samples":[

@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use serde::Serialize;
 use serde_json::error::Result;
-use serde_json::{ser::Formatter, Serializer};
+use serde_json::{Serializer, ser::Formatter};
 
 /// This structure pretty prints a JSON value to make it human readable.
 /// Variant from serde formatter:

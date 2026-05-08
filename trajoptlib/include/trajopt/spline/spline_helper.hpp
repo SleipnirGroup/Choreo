@@ -13,21 +13,17 @@
 
 namespace trajopt {
 
-/**
- * Helper class that is used to generate cubic and quintic splines from user
- * provided waypoints.
- */
+/// Helper class that is used to generate cubic and quintic splines from
+/// user-provided waypoints.
 class TRAJOPT_DLLEXPORT SplineHelper {
  public:
-  /**
-   * Returns 2 cubic control vectors from a set of exterior waypoints and
-   * interior translations.
-   *
-   * @param start              The starting pose.
-   * @param interior_waypoints The interior waypoints.
-   * @param end                The ending pose.
-   * @return 2 cubic control vectors.
-   */
+  /// Returns 2 cubic control vectors from a set of exterior waypoints and
+  /// interior translations.
+  ///
+  /// @param start The starting pose.
+  /// @param interior_waypoints The interior waypoints.
+  /// @param end The ending pose.
+  /// @return 2 cubic control vectors.
   static std::array<Spline<3>::ControlVector, 2>
   cubic_control_vectors_from_waypoints(
       const Pose2d& start, const std::vector<Translation2d>& interior_waypoints,
@@ -46,23 +42,20 @@ class TRAJOPT_DLLEXPORT SplineHelper {
     return {initial_control_vector, final_control_vector};
   }
 
-  /**
-   * Returns a set of cubic splines corresponding to the provided control
-   * vectors. The user is free to set the direction of the start and end
-   * point. The directions for the middle waypoints are determined
-   * automatically to ensure continuous curvature throughout the path.
-   *
-   * The derivation for the algorithm used can be found here:
-   * <https://www.uio.no/studier/emner/matnat/ifi/nedlagte-emner/INF-MAT4350/h08/undervisningsmateriale/chap7alecture.pdf>
-   *
-   * @param start The starting control vector.
-   * @param waypoints The middle waypoints. This can be left blank if you
-   * only wish to create a path with two waypoints.
-   * @param end The ending control vector.
-   *
-   * @return A vector of cubic hermite splines that interpolate through the
-   * provided waypoints.
-   */
+  /// Returns a set of cubic splines corresponding to the provided control
+  /// vectors. The user is free to set the direction of the start and end point.
+  /// The directions for the middle waypoints are determined automatically to
+  /// ensure continuous curvature throughout the path.
+  ///
+  /// The derivation for the algorithm used can be found here:
+  /// <https://www.uio.no/studier/emner/matnat/ifi/nedlagte-emner/INF-MAT4350/h08/undervisningsmateriale/chap7alecture.pdf>
+  ///
+  /// @param start The starting control vector.
+  /// @param waypoints The middle waypoints. This can be left blank if you only
+  ///     wish to create a path with two waypoints.
+  /// @param end The ending control vector.
+  /// @return A vector of cubic hermite splines that interpolate through the
+  ///     provided waypoints.
   static std::vector<CubicHermiteSpline> cubic_splines_from_control_vectors(
       const Spline<3>::ControlVector& start,
       std::vector<Translation2d> waypoints,
@@ -173,15 +166,13 @@ class TRAJOPT_DLLEXPORT SplineHelper {
             {point.y(), scalar * point.rotation().sin()}};
   }
 
-  /**
-   * Thomas algorithm for solving tridiagonal systems Af = d.
-   *
-   * @param a the values of A above the diagonal
-   * @param b the values of A on the diagonal
-   * @param c the values of A below the diagonal
-   * @param d the vector on the rhs
-   * @param solution_vector the unknown (solution) vector, modified in-place
-   */
+  /// Thomas algorithm for solving tridiagonal systems Af = d.
+  ///
+  /// @param a the values of A above the diagonal
+  /// @param b the values of A on the diagonal
+  /// @param c the values of A below the diagonal
+  /// @param d the vector on the rhs
+  /// @param solution_vector the unknown (solution) vector, modified in-place
   static void thomas_algorithm(const std::vector<double>& a,
                                const std::vector<double>& b,
                                const std::vector<double>& c,

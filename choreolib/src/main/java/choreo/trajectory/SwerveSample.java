@@ -4,19 +4,16 @@ package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoArrayUtil;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.util.struct.Struct;
+
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /** A single swerve robot sample in a Trajectory. */
 public class SwerveSample implements TrajectorySample<SwerveSample> {
-  /** The usage reporting identifier for loading a swerve trajectory. */
-  public static final String USAGE_REPORT = "ChoreoLib/SwerveTrajectory";
-
   private static final double[] EMPTY_MODULE_FORCES = new double[] {0, 0, 0, 0};
 
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
@@ -141,8 +138,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   }
 
   @Override
-  public ChassisSpeeds getChassisSpeeds() {
-    return new ChassisSpeeds(vx, vy, omega);
+  public ChassisVelocities getChassisVelocities() {
+    return new ChassisVelocities(vx, vy, omega);
   }
 
   @Override
@@ -152,42 +149,31 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
     for (int i = 0; i < 4; ++i) {
-      interp_fx[i] =
-          MathUtil.interpolate(this.moduleForcesX()[i], endValue.moduleForcesX()[i], scale);
-      interp_fy[i] =
-          MathUtil.interpolate(this.moduleForcesY()[i], endValue.moduleForcesY()[i], scale);
+      interp_fx[i] = this.moduleForcesX()[i] + (endValue.moduleForcesX()[i] - this.moduleForcesX()[i]) * scale;
+      interp_fy[i] = this.moduleForcesY()[i] + (endValue.moduleForcesY()[i] - this.moduleForcesY()[i]) * scale;
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations are changing between
     // states
     //
-    //   Δt = tₖ₊₁ − tₖ
     //   τ = timestamp − tₖ
     //
-    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
-    //   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
-    //   a(τ) = aₖ + jₖτ
-    //
-    // where jₖ = (aₖ₊₁ − aₖ)/Δt
-    double dt = endValue.t - this.t;
+    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ²
+    //   v(τ) = vₖ + aₖτ
     double τ = timestamp - this.t;
     double τ2 = τ * τ;
-    double τ3 = τ * τ * τ;
-    double jx = (endValue.ax - this.ax) / dt;
-    double jy = (endValue.ay - this.ay) / dt;
-    double η = (endValue.alpha - this.alpha) / dt;
     return new SwerveSample(
         timestamp,
-        this.x + this.vx * τ + 0.5 * this.ax * τ2 + 1.0 / 6.0 * jx * τ3,
-        this.y + this.vy * τ + 0.5 * this.ay * τ2 + 1.0 / 6.0 * jy * τ3,
-        this.heading + this.omega * τ + 0.5 * this.alpha * τ2 + 1.0 / 6.0 * η * τ3,
-        this.vx + this.ax * τ + 0.5 * jx * τ2,
-        this.vy + this.ay * τ + 0.5 * jy * τ2,
-        this.omega + this.alpha * τ + 0.5 * η * τ2,
-        this.ax + jx * τ,
-        this.ay + jy * τ,
-        this.alpha + η * τ,
+        this.x + this.vx * τ + 0.5 * this.ax * τ2,
+        this.y + this.vy * τ + 0.5 * this.ay * τ2,
+        this.heading + this.omega * τ + 0.5 * this.alpha * τ2,
+        this.vx + this.ax * τ,
+        this.vy + this.ay * τ,
+        this.omega + this.alpha * τ,
+        this.ax,
+        this.ay,
+        this.alpha,
         interp_fx,
         interp_fy);
   }
@@ -211,52 +197,22 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
   @Override
   public SwerveSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              this.vy,
-              -this.omega,
-              -this.ax,
-              this.ay,
-              -this.alpha,
-              // FL, FR, BL, BR
-              // Mirrored
-              // -FR, -FL, -BR, -BL
-              new double[] {
-                -this.moduleForcesX()[1],
-                -this.moduleForcesX()[0],
-                -this.moduleForcesX()[3],
-                -this.moduleForcesX()[2]
-              },
-              // FL, FR, BL, BR
-              // Mirrored
-              // FR, FL, BR, BL
-              new double[] {
-                this.moduleForcesY()[1],
-                this.moduleForcesY()[0],
-                this.moduleForcesY()[3],
-                this.moduleForcesY()[2]
-              });
-      case ROTATE_AROUND ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              -this.vy,
-              this.omega,
-              -this.ax,
-              -this.ay,
-              this.alpha,
-              Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
-              Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
-    };
+    return ChoreoAllianceFlipUtil.flip(this);
+  }
+
+  @Override
+  public SwerveSample mirrorX() {
+    return ChoreoAllianceFlipUtil.getMirrorX().flip(this);
+  }
+
+  @Override
+  public SwerveSample mirrorY() {
+    return ChoreoAllianceFlipUtil.getMirrorY().flip(this);
+  }
+
+  @Override
+  public SwerveSample rotateAround() {
+    return ChoreoAllianceFlipUtil.getRotateAround().flip(this);
   }
 
   /** The struct for the SwerveSample class. */
@@ -275,7 +231,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
     @Override
     public int getSize() {
-      return Struct.kSizeDouble * 18;
+      return Struct.DOUBLE_SIZE * 18;
     }
 
     @Override
@@ -342,19 +298,19 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     var other = (SwerveSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vx == other.vx
-        && this.vy == other.vy
-        && this.omega == other.omega
-        && this.ax == other.ax
-        && this.ay == other.ay
-        && this.alpha == other.alpha
+    return MathUtil.isNear(this.t, other.t, 1E-6)
+        && MathUtil.isNear(this.x, other.x, 1E-6)
+        && MathUtil.isNear(this.y, other.y, 1E-6)
+        && MathUtil.isNear(this.heading, other.heading, 1E-6)
+        && MathUtil.isNear(this.vx, other.vx, 1E-6)
+        && MathUtil.isNear(this.vy, other.vy, 1E-6)
+        && MathUtil.isNear(this.omega, other.omega, 1E-6)
+        && MathUtil.isNear(this.ax, other.ax, 1E-6)
+        && MathUtil.isNear(this.ay, other.ay, 1E-6)
+        && MathUtil.isNear(this.alpha, other.alpha, 1E-6)
         && ChoreoArrayUtil.zipEquals(
-            this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
+            this.fx, other.fx, (a, b) -> MathUtil.isNear(a.doubleValue(), b.doubleValue(), 1E-6))
         && ChoreoArrayUtil.zipEquals(
-            this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
+            this.fy, other.fy, (a, b) -> MathUtil.isNear(a.doubleValue(), b.doubleValue(), 1E-6));
   }
 }

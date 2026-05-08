@@ -8,36 +8,95 @@ use trajoptlib::{
 };
 
 use crate::{
+    ChoreoResult, ResultExt,
+    generation::{
+        generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK},
+        heading::adjust_headings,
+    },
     spec::{
         project::ProjectFile,
-        trajectory::{DriveType, Parameters, Sample, TrajectoryFile},
+        trajectory::{DriveType, Parameters, Sample, Trajectory, TrajectoryFile},
     },
-    ChoreoResult,
 };
 
 use super::intervals::guess_control_interval_counts;
 
-macro_rules! add_transformers (
-    ($module:ident : $($transformer:ident),*) => {
-        mod $module;
-        $(pub use $module::$transformer;)*
+// Add transformers
+mod callback;
+mod constraints;
+mod drivetrain_and_bumpers;
+mod interval_count;
+use crate::spec::trajectory::ConstraintScope;
+pub use callback::CallbackSetter;
+pub use constraints::ConstraintSetter;
+pub use drivetrain_and_bumpers::DrivetrainAndBumpersSetter;
+pub use interval_count::IntervalCountSetter;
+
+pub fn set_initial_guess(params: &mut Parameters<f64>) {
+    fn not_initial_guess_wpt(params: &mut Parameters<f64>, idx: usize) {
+        let wpt = &mut params.waypoints[idx];
+        wpt.is_initial_guess = false;
+    }
+    let waypoint_count = params.waypoints.len();
+    for waypoint in params.waypoints.iter_mut() {
+        waypoint.is_initial_guess = true;
+    }
+    for constraint in params.snapshot().constraints {
+        let from = constraint.from.get_idx(waypoint_count);
+        let to = constraint
+            .to
+            .as_ref()
+            .and_then(|id| id.get_idx(waypoint_count));
+
+        if let Some(from_idx) = from {
+            let valid_wpt = to.is_none();
+            let valid_sgmt = to.is_some();
+            // Check for valid scope
+            if match constraint.data.scope() {
+                ConstraintScope::Waypoint => valid_wpt,
+                ConstraintScope::Segment => valid_sgmt,
+                ConstraintScope::Both => valid_wpt || valid_sgmt,
+            } {
+                not_initial_guess_wpt(params, from_idx);
+                if let Some(to_idx) = to
+                    && to_idx != from_idx
+                {
+                    not_initial_guess_wpt(params, to_idx);
+                }
+            }
+        }
+    }
+}
+
+fn update_control_intervals(params: &mut Parameters<f64>, counts_vec: &Vec<usize>) {
+    // set the intervals on the waypoints correctly (instead of copying counts_vec through everything)
+    params
+        .waypoints
+        .iter_mut()
+        .zip(counts_vec)
+        .for_each(|(waypoint, counts)| {
+            waypoint.intervals = *counts;
+        });
+}
+
+fn send_interval_counts(counts: Vec<usize>, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        let _ = tx
+            .send(LocalProgressUpdate::from(counts).handled(handle))
+            .trace_warn();
     };
-);
-
-add_transformers!(interval_count: IntervalCountSetter);
-add_transformers!(drivetrain_and_bumpers: DrivetrainAndBumpersSetter);
-add_transformers!(constraints: ConstraintSetter);
-add_transformers!(callback: CallbackSetter);
-
+}
 pub(super) struct GenerationContext {
     pub project: ProjectFile,
     pub params: Parameters<f64>,
+    pub counts_vec: Vec<usize>,
     pub handle: i64,
 }
 
 pub(super) struct TrajectoryFileGenerator {
     ctx: GenerationContext,
-    trajectory_file: TrajectoryFile,
+    original_file: TrajectoryFile,
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
     differential_transformers:
         HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
@@ -45,17 +104,32 @@ pub(super) struct TrajectoryFileGenerator {
 
 impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> Self {
-        Self {
+    pub fn new(
+        project: ProjectFile,
+        trajectory_file: TrajectoryFile,
+        handle: i64,
+    ) -> ChoreoResult<Self> {
+        // Mark unconstrained empty waypoints as initial guess points.
+        // Adjust non-equality-constrained waypoint headings to fit trajectory constraints; error if impossible.
+        // Estimate control intervals
+        let mut params = trajectory_file.params.snapshot();
+        adjust_headings(&mut params)?;
+        set_initial_guess(&mut params);
+        let counts_vec = guess_control_interval_counts(&project.config.snapshot(), &params)?;
+        update_control_intervals(&mut params, &counts_vec);
+        send_interval_counts(counts_vec.clone(), handle);
+        send_interval_counts(counts_vec.clone(), handle); // TODO: the double send is to get around a bug that consumes the first message from the IPC queue
+        Ok(Self {
             ctx: GenerationContext {
                 project,
-                params: trajectory_file.params.snapshot(),
+                params,
+                counts_vec,
                 handle,
             },
-            trajectory_file,
+            original_file: trajectory_file,
             swerve_transformers: HashMap::new(),
             differential_transformers: HashMap::new(),
-        }
+        })
     }
 
     /// Add a transformer to the generator that is only applied when generating a swerve trajectory
@@ -124,6 +198,81 @@ impl TrajectoryFileGenerator {
         generator.generate(true, handle).map_err(Into::into)
     }
 
+    fn postprocess(&self, result: &[Sample]) -> TrajectoryFile {
+        let mut original_params = self.original_file.params.clone();
+        // Update the interval counts on each params waypoint.
+        original_params
+            .waypoints
+            .iter_mut()
+            .zip(&self.ctx.counts_vec)
+            .for_each(|(waypoint, counts)| {
+                if !waypoint.override_intervals {
+                    waypoint.intervals = *counts;
+                }
+            });
+        // Snapshot, capturing that interval count update
+        let snapshot = original_params.snapshot();
+        let mut original_events = self.original_file.events.clone();
+
+        // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
+        // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
+        let mut interval = 0;
+        // `intervals` contains (
+        //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
+        //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
+        //    The timestamp of the sample indexed by the previous parameter
+        // )
+        let intervals = snapshot
+            .waypoints
+            .iter()
+            .enumerate()
+            .map(|pt| {
+                let total_intervals = interval;
+                interval += pt.1.intervals;
+                (
+                    pt.0 == 0 || (pt.1.split && pt.0 != snapshot.waypoints.len() - 1),
+                    total_intervals,
+                    result.get(total_intervals).map_or(0.0, |s| match s {
+                        Sample::Swerve { t, .. } => *t,
+                        Sample::DifferentialDrive { t, .. } => *t,
+                    }),
+                )
+            })
+            .collect::<Vec<(bool, usize, f64)>>();
+
+        let waypoint_times = intervals.iter().map(|a| a.2).collect::<Vec<f64>>();
+        // Calculate splits
+        let splits = intervals
+            .iter()
+            .filter(|a| a.0) // filter by "start of split" flag
+            .map(|a| a.1) // map to associate an index in the samples array
+            .collect::<Vec<usize>>();
+
+        // update event markers' target timestamps with the corresponding timestamp from waypoint_times
+        // or None if the targeted index is None or out of bounds
+        original_events.iter_mut().for_each(|marker| {
+            marker.from.target_timestamp = marker.from.target.and_then(|idx| {
+                waypoint_times
+                    .get(idx)
+                    .copied()
+                    .or(marker.from.target_timestamp)
+            });
+        });
+        TrajectoryFile {
+            name: self.original_file.name.clone(),
+            version: self.original_file.version,
+            snapshot: Some(snapshot),
+            params: original_params,
+            trajectory: Trajectory {
+                sample_type: Some(self.ctx.project.r#type),
+                waypoints: waypoint_times,
+                samples: result.to_vec(),
+                splits,
+                config: Some(self.ctx.project.config.snapshot()),
+            },
+            events: original_events,
+        }
+    }
     /// Generate the trajectory file
     pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
@@ -141,17 +290,7 @@ impl TrajectoryFileGenerator {
                 .collect(),
         };
 
-        let counts_vec = guess_control_interval_counts(
-            &self.ctx.project.config.snapshot(),
-            &self.trajectory_file.params.snapshot(),
-        )?;
-
-        Ok(postprocess(
-            &samples,
-            self.trajectory_file,
-            self.ctx.project,
-            counts_vec,
-        ))
+        Ok(self.postprocess(&samples))
     }
 }
 
@@ -210,71 +349,4 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     fn trans(&self, generator: &mut DifferentialTrajectoryGenerator) {
         self.transform(generator);
     }
-}
-
-fn postprocess(
-    result: &[Sample],
-    mut path: TrajectoryFile,
-    project: ProjectFile,
-    counts_vec: Vec<usize>,
-) -> TrajectoryFile {
-    let mut snapshot = path.params.snapshot();
-    // Update the `intervals` field of each waypoint with the corresponding entry from `counts_vec`
-    path.params
-        .waypoints
-        .iter_mut()
-        .zip(snapshot.waypoints.iter_mut())
-        .zip(counts_vec)
-        .for_each(|w| {
-            w.0 .0.intervals = w.1;
-            w.0 .1.intervals = w.1;
-        });
-    // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
-    // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
-    let mut interval = 0;
-    // `intervals` contains (
-    //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
-    //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
-    //    The timestamp of the sample indexed by the previous parameter
-    // )
-    let intervals = snapshot
-        .waypoints
-        .iter()
-        .enumerate()
-        .map(|pt| {
-            let total_intervals = interval;
-            interval += pt.1.intervals;
-            (
-                pt.0 == 0 || (pt.1.split && pt.0 != snapshot.waypoints.len() - 1),
-                total_intervals,
-                result.get(total_intervals).map_or(0.0, |s| match s {
-                    Sample::Swerve { t, .. } => *t,
-                    Sample::DifferentialDrive { t, .. } => *t,
-                }),
-            )
-        })
-        .collect::<Vec<(bool, usize, f64)>>();
-
-    let waypoint_times = intervals.iter().map(|a| a.2).collect::<Vec<f64>>();
-    // Calculate splits
-    let splits = intervals
-        .iter()
-        .filter(|a| a.0) // filter by "start of split" flag
-        .map(|a| a.1) // map to associate an index in the samples array
-        .collect::<Vec<usize>>();
-    // copy the above into the TrajectoryFile
-    path.trajectory.sample_type = Some(project.r#type);
-    path.trajectory.splits = splits;
-    path.trajectory.samples = result.to_vec();
-    path.trajectory.waypoints = waypoint_times;
-    path.snapshot = Some(snapshot);
-    // update event markers' target timestamps with the corresponding timestamp from trajectory.waypoints
-    // or None if the targeted index is None or out of bounds
-    path.events.iter_mut().for_each(|marker| {
-        marker.from.target_timestamp = marker
-            .from
-            .target
-            .and_then(|idx| path.trajectory.waypoints.get(idx).copied());
-    });
-    path
 }
