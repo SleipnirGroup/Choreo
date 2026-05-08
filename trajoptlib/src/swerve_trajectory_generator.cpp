@@ -276,12 +276,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       // motor force is force in wheel direction + force to overcome drag from scrub
       auto I_motor = (F_longitudinal + F_drag) / kT_over_r;
+      // limit braking force to within allowed motor regen current
+      auto I_propulsive = F_longitudinal / kT_over_r;
 
       auto V_emf = v_norm * kV_over_r;
       auto V_motor = I_motor * R + V_emf;
 
       // stator
-      problem.subject_to(slp::bounds(-I_stator_limit, I_motor, I_stator_limit));
+      // guaranteed I_propulsive <= I_motor since F_drag >= 0
+      // thus -I_stator_limit <= I_propulsive <= I_motor <= I_stator_limit
+      problem.subject_to(-I_stator_limit <= I_propulsive);
+      problem.subject_to(I_motor <= I_stator_limit);
 
       // supply voltage
       problem.subject_to(slp::bounds(-v_supply, V_motor, v_supply));
