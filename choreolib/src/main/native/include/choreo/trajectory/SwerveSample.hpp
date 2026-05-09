@@ -6,6 +6,7 @@
 #include <array>
 #include <type_traits>
 
+#include "choreo/util/AllianceFlipperUtil.hpp"
 #include "wpi/math/kinematics/ChassisVelocities.hpp"
 #include "wpi/units/acceleration.hpp"
 #include "wpi/units/angle.hpp"
@@ -17,8 +18,6 @@
 #include "wpi/units/velocity.hpp"
 #include "wpi/util/MathExtras.hpp"
 #include "wpi/util/json.hpp"
-
-#include "choreo/util/AllianceFlipperUtil.hpp"
 
 using namespace wpi;
 
@@ -207,10 +206,10 @@ class SwerveSample {
     std::array<units::newton_t, 4> interpolatedForcesX;
     std::array<units::newton_t, 4> interpolatedForcesY;
     for (int i = 0; i < 4; i++) {
-      interpolatedForcesX[i] =
-          wpi::util::Lerp(moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
-      interpolatedForcesY[i] =
-          wpi::util::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
+      interpolatedForcesX[i] = wpi::util::Lerp(
+          moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
+      interpolatedForcesY[i] = wpi::util::Lerp(
+          moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly

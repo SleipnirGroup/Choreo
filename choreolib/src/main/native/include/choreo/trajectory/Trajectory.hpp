@@ -10,13 +10,12 @@
 #include <utility>
 #include <vector>
 
-#include "wpi/units/time.hpp"
-#include "wpi/util/json.hpp"
-
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/EventMarker.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/TrajectorySample.hpp"
+#include "wpi/units/time.hpp"
+#include "wpi/util/json.hpp"
 
 using namespace wpi;
 
@@ -357,9 +356,11 @@ class Trajectory {
 };
 
 void to_json(wpi::util::json& json, const Trajectory<SwerveSample>& trajectory);
-void from_json(const wpi::util::json& json, Trajectory<SwerveSample>& trajectory);
+void from_json(const wpi::util::json& json,
+               Trajectory<SwerveSample>& trajectory);
 
-void to_json(wpi::util::json& json, const Trajectory<DifferentialSample>& trajectory);
+void to_json(wpi::util::json& json,
+             const Trajectory<DifferentialSample>& trajectory);
 void from_json(const wpi::util::json& json,
                Trajectory<DifferentialSample>& trajectory);
 

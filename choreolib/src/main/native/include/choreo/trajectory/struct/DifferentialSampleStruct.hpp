@@ -2,10 +2,9 @@
 
 #pragma once
 
+#include "choreo/trajectory/DifferentialSample.hpp"
 #include "wpi/util/SymbolExports.hpp"
 #include "wpi/util/struct/Struct.hpp"
-
-#include "choreo/trajectory/DifferentialSample.hpp"
 
 template <>
 struct wpi::util::Struct<choreo::DifferentialSample> {

@@ -33,7 +33,8 @@ choreo::SwerveSample StructType::Unpack(std::span<const uint8_t> data) {
       units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
       units::meters_per_second_t{wpi::util::UnpackStruct<double, kVxOff>(data)},
       units::meters_per_second_t{wpi::util::UnpackStruct<double, kVyOff>(data)},
-      units::radians_per_second_t{wpi::util::UnpackStruct<double, kOmegaOff>(data)},
+      units::radians_per_second_t{
+          wpi::util::UnpackStruct<double, kOmegaOff>(data)},
       units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAxOff>(data)},
       units::meters_per_second_squared_t{

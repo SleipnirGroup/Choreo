@@ -3,12 +3,12 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
-#include "wpi/units/force.hpp"
-#include "wpi/util/json.hpp"
 
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/Trajectory.hpp"
 #include "choreo/util/AllianceFlipperUtil.hpp"
+#include "wpi/units/force.hpp"
+#include "wpi/util/json.hpp"
 
 using namespace wpi;
 
@@ -120,18 +120,13 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
         0_rad_per_s, 0_mps_sq,
         0_mps_sq,    0_rad_per_s_sq,
         0_N,         0_N};
-    DifferentialSample rotated2022{0_s,
-                                   0_m,
-                                   0_m,
-                                   units::radian_t{std::numbers::pi} + 0_rad,
-                                   0_mps,
-                                   0_mps,
-                                   0_rad_per_s,
-                                   0_mps_sq,
-                                   0_mps_sq,
-                                   0_rad_per_s_sq,
-                                   0_N,
-                                   0_N};
+    DifferentialSample rotated2022{
+        0_s,         0_m,
+        0_m,         units::radian_t{std::numbers::pi} + 0_rad,
+        0_mps,       0_mps,
+        0_rad_per_s, 0_mps_sq,
+        0_mps_sq,    0_rad_per_s_sq,
+        0_N,         0_N};
 
     ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
     ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);
@@ -153,18 +148,13 @@ TEST(SampleFlippingTest, DifferentialSample) {
         -6_rad_per_s, 8_mps_sq,
         7_mps_sq,     -9_rad_per_s_sq,
         11_N,         10_N};
-    DifferentialSample rotated2022{0_s,
-                                   -1_m,
-                                   -2_m,
-                                   units::radian_t{std::numbers::pi} + 3_rad,
-                                   4_mps,
-                                   5_mps,
-                                   6_rad_per_s,
-                                   7_mps_sq,
-                                   8_mps_sq,
-                                   9_rad_per_s_sq,
-                                   10_N,
-                                   11_N};
+    DifferentialSample rotated2022{
+        0_s,         -1_m,
+        -2_m,        units::radian_t{std::numbers::pi} + 3_rad,
+        4_mps,       5_mps,
+        6_rad_per_s, 7_mps_sq,
+        8_mps_sq,    9_rad_per_s_sq,
+        10_N,        11_N};
 
     ASSERT_TRUE(sample.Flipped<2024>() == mirrored2024);
     ASSERT_TRUE(sample.Flipped<2022>() == rotated2022);

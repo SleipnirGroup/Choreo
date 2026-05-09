@@ -6,7 +6,8 @@
 
 #include "wpi/util/json.hpp"
 
-void choreo::to_json(wpi::util::json& json, const SwerveSample& trajectorySample) {
+void choreo::to_json(wpi::util::json& json,
+                     const SwerveSample& trajectorySample) {
   std::array<double, 4> fx;
   std::transform(trajectorySample.moduleForcesX.begin(),
                  trajectorySample.moduleForcesX.end(), fx.begin(),
@@ -18,22 +19,16 @@ void choreo::to_json(wpi::util::json& json, const SwerveSample& trajectorySample
                  [](units::newton_t x) { return x.value(); });
 
   json = wpi::util::json::object(
-    "t", trajectorySample.timestamp.value(),
-    "x", trajectorySample.x.value(),
-    "y", trajectorySample.y.value(),
-    "heading", trajectorySample.heading.value(),
-    "vx", trajectorySample.vx.value(),
-    "vy", trajectorySample.vy.value(),
-    "omega", trajectorySample.omega.value(),
-    "ax", trajectorySample.ax.value(),
-    "ay", trajectorySample.ay.value(),
-    "alpha", trajectorySample.alpha.value(),
-    "fx", fx,
-    "fy", fy
-  );
+      "t", trajectorySample.timestamp.value(), "x", trajectorySample.x.value(),
+      "y", trajectorySample.y.value(), "heading",
+      trajectorySample.heading.value(), "vx", trajectorySample.vx.value(), "vy",
+      trajectorySample.vy.value(), "omega", trajectorySample.omega.value(),
+      "ax", trajectorySample.ax.value(), "ay", trajectorySample.ay.value(),
+      "alpha", trajectorySample.alpha.value(), "fx", fx, "fy", fy);
 }
 
-void choreo::from_json(const wpi::util::json& json, SwerveSample& trajectorySample) {
+void choreo::from_json(const wpi::util::json& json,
+                       SwerveSample& trajectorySample) {
   trajectorySample.timestamp = units::second_t{json.at("t").get_number()};
   trajectorySample.x = units::meter_t{json.at("x").get_number()};
   trajectorySample.y = units::meter_t{json.at("y").get_number()};

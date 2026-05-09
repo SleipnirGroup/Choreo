@@ -6,6 +6,8 @@
 #include <type_traits>
 
 #include <Eigen/Core>
+
+#include "choreo/util/AllianceFlipperUtil.hpp"
 #include "wpi/math/geometry/Pose2d.hpp"
 #include "wpi/math/kinematics/ChassisVelocities.hpp"
 #include "wpi/math/system/NumericalIntegration.hpp"
@@ -19,8 +21,6 @@
 #include "wpi/units/velocity.hpp"
 #include "wpi/util/MathExtras.hpp"
 #include "wpi/util/json.hpp"
-
-#include "choreo/util/AllianceFlipperUtil.hpp"
 
 using namespace wpi;
 
@@ -283,7 +283,8 @@ class DifferentialSample {
 };
 
 void to_json(wpi::util::json& json, const DifferentialSample& trajectorySample);
-void from_json(const wpi::util::json& json, DifferentialSample& trajectorySample);
+void from_json(const wpi::util::json& json,
+               DifferentialSample& trajectorySample);
 
 }  // namespace choreo
 

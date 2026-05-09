@@ -26,7 +26,9 @@ concept TrajectorySample =
     requires(T t, units::second_t time, T tother, int year) {
       { t.GetTimestamp() } -> std::same_as<units::second_t>;
       { t.GetPose() } -> std::same_as<wpi::math::Pose2d>;
-      { t.GetChassisVelocities() } -> std::same_as<wpi::math::ChassisVelocities>;
+      {
+        t.GetChassisVelocities()
+      } -> std::same_as<wpi::math::ChassisVelocities>;
       { t.OffsetBy(time) } -> std::same_as<T>;
       { t.Interpolate(tother, time) } -> std::same_as<T>;
       // FIXME: This works around a roboRIO GCC internal compiler error; it

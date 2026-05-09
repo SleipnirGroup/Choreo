@@ -9,7 +9,6 @@ import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import org.junit.jupiter.api.Test;
 
 public class SampleFlippingTest {
-
   @Test
   void testZeroSwerveSample() {
     SwerveSample sample =

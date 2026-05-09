@@ -29,7 +29,8 @@ choreo::DifferentialSample StructType::Unpack(std::span<const uint8_t> data) {
       units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
       units::meters_per_second_t{wpi::util::UnpackStruct<double, kVlOff>(data)},
       units::meters_per_second_t{wpi::util::UnpackStruct<double, kVrOff>(data)},
-      units::radians_per_second_t{wpi::util::UnpackStruct<double, kOmegaOff>(data)},
+      units::radians_per_second_t{
+          wpi::util::UnpackStruct<double, kOmegaOff>(data)},
       units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAlOff>(data)},
       units::meters_per_second_squared_t{

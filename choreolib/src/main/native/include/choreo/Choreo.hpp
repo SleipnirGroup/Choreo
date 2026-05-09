@@ -9,17 +9,17 @@
 #include <unordered_map>
 
 #include <fmt/format.h>
-#include "wpi/system/Errors.hpp"
-#include "wpi/system/Filesystem.hpp"
-#include "wpi/hal/UsageReporting.hpp"
-#include "wpi/util/MemoryBuffer.hpp"
-#include "wpi/util/json.hpp"
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/Trajectory.hpp"
 #include "choreo/trajectory/TrajectorySample.hpp"
 #include "choreo/util/TrajSchemaVersion.hpp"
+#include "wpi/hal/UsageReporting.hpp"
+#include "wpi/system/Errors.hpp"
+#include "wpi/system/Filesystem.hpp"
+#include "wpi/util/MemoryBuffer.hpp"
+#include "wpi/util/json.hpp"
 
 namespace choreo {
 
@@ -48,14 +48,14 @@ class Choreo {
     auto fileBuffer = wpi::util::MemoryBuffer::GetFile(trajectoryFileName);
     if (!fileBuffer) {
       WPILIB_ReportWarning("Could not find trajectory file: {}",
-                      trajectoryName);
+                           trajectoryName);
       return {};
     }
 
     return LoadTrajectoryString<SampleType>(
-          std::string{fileBuffer.value()->GetCharBuffer().data(),
-                      fileBuffer.value()->size()},
-          trajectoryName);
+        std::string{fileBuffer.value()->GetCharBuffer().data(),
+                    fileBuffer.value()->size()},
+        trajectoryName);
   }
 
   /// Load a trajectory from a string.
@@ -78,7 +78,7 @@ class Choreo {
     auto json = wpi::util::json::parse(trajectoryJsonString);
     if (!json) {
       WPILIB_ReportWarning("Could not parse trajectory file: {}",
-                      trajectoryName);
+                           trajectoryName);
       return {};
     }
     uint32_t version = json->at("version").get_int();
