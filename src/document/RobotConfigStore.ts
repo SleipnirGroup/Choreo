@@ -46,7 +46,7 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   },
   motorConfig: {
     stall_torque: { exp: "9.36 N * m", val: 9.36 },
-    free_speed: { exp: "5800 RPM", val: 5800.0 / 60.0 },
+    free_speed: { exp: "5800 RPM", val: (5800.0 / 60.0) * 2 * Math.PI },
     kT: { exp: "0.0197 N * m / A", val: 0.0197 },
     kV: { exp: "0.00206896552 V / RPM", val: 0.00206896552 * 60 / (2 * Math.PI) },
     supply_limit: { exp: "60 A", val: 60.0 },

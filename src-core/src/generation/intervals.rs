@@ -46,10 +46,10 @@ pub fn guess_control_interval_count(
             let distance = dx.hypot(dy);
             let mut dtheta = angle_modulus(next.heading - this.heading).abs();
             let motor_config = config.motor_config.snapshot();
-            let max_force = motor_config.kT * motor_config.stator_limit / config.radius;
+            let max_force = motor_config.kT * motor_config.stator_limit * config.gearing / config.radius;
 
             // Default to robotConfig's max velocity and acceleration
-            let mut max_linear_vel = motor_config.free_speed * config.radius;
+            let mut max_linear_vel = motor_config.free_speed * config.radius / config.gearing;
             let mut max_linear_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
             // find max wheel position radius for calculating max angular velocity
@@ -108,7 +108,7 @@ pub fn guess_control_interval_count(
                     .expect("Module expected when finding minimum width.");
                 min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
             }
-            let dt_ceiling = min_width / (motor_config.free_speed * config.radius);
+            let dt_ceiling = min_width * config.gearing / (motor_config.free_speed * config.radius);
             let dt = dt_ceiling.min(params.target_dt);
             let linear_time =
                 calculate_trapezoidal_time(distance, max_linear_vel, max_linear_accel);
