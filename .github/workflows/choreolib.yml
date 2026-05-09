@@ -20,7 +20,7 @@ jobs:
             artifact-name: Linux-x86_64
             build-options:
 
-    name: "C++ and Java - ${{ matrix.artifact-name }}"
+    name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
