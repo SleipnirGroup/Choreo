@@ -18,7 +18,7 @@ namespace choreo::util {
 
 enum class FlipperType { Mirrored, RotateAround };
 
-/// X becomes fieldLength - x, leaves the y coordinate unchanged, and heading
+/// X becomes -x, leaves the y coordinate unchanged, and heading
 /// becomes pi - heading.
 struct MirroredFlipper {
   /// Whether pose should be mirrored.
@@ -29,7 +29,7 @@ struct MirroredFlipper {
   /// @param x The X coordinate to flip.
   /// @return The flipped X coordinate.
   static constexpr units::meter_t FlipX(units::meter_t x) {
-    return fieldLength - x;
+    return -x;
   }
 
   /// Flips the Y coordinate.
@@ -47,7 +47,7 @@ struct MirroredFlipper {
   }
 };
 
-/// X is unchanged, y becomes fieldWidth - y, and heading
+/// X is unchanged, y becomes -y, and heading
 /// becomes -heading.
 struct MirroredYFlipper {
   /// Whether pose should be mirrored.
@@ -64,7 +64,7 @@ struct MirroredYFlipper {
   /// @param y The Y coordinate to flip.
   /// @return The flipped Y coordinate.
   static constexpr units::meter_t FlipY(units::meter_t y) {
-    return fieldWidth - y;
+    return -y;
   }
 
   /// Flips the heading.
@@ -76,7 +76,7 @@ struct MirroredYFlipper {
   }
 };
 
-/// X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes
+/// X becomes -x, Y becomes -y, and heading becomes
 /// pi - heading.
 struct RotateAroundFlipper {
   /// Whether pose should be mirrored.
@@ -87,7 +87,7 @@ struct RotateAroundFlipper {
   /// @param x The X coordinate to flip.
   /// @return The flipped X coordinate.
   static constexpr units::meter_t FlipX(units::meter_t x) {
-    return fieldLength - x;
+    return -x;
   }
 
   /// Flips the Y coordinate.
@@ -95,7 +95,7 @@ struct RotateAroundFlipper {
   /// @param y The Y coordinate to flip.
   /// @return The flipped Y coordinate.
   static constexpr units::meter_t FlipY(units::meter_t y) {
-    return fieldWidth - y;
+    return -y;
   }
 
   /// Flips the heading.
