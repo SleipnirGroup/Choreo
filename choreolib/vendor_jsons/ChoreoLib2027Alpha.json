@@ -1,9 +1,9 @@
 {
   "fileName": "ChoreoLib2027Alpha.json",
   "name": "ChoreoLib",
-  "version": "2027.0.0-alpha-1",
+  "version": "2027.0.0-alpha-6",
   "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
-  "frcYear": "2027_alpha1",
+  "frcYear": "2027_alpha5",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/sleipnirgroup-mvn-release/"
   ],
@@ -12,7 +12,7 @@
     {
       "groupId": "choreo",
       "artifactId": "ChoreoLib-java",
-      "version": "2027.0.0-alpha-1"
+      "version": "2027.0.0-alpha-6"
     },
     {
       "groupId": "com.google.code.gson",
@@ -25,7 +25,7 @@
     {
       "groupId": "choreo",
       "artifactId": "ChoreoLib-cpp",
-      "version": "2027.0.0-alpha-1",
+      "version": "2027.0.0-alpha-6",
       "libName": "ChoreoLib",
       "headerClassifier": "headers",
       "sharedLibrary": false,
