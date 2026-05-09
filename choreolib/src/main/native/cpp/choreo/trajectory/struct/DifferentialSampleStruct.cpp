@@ -2,7 +2,7 @@
 
 #include "choreo/trajectory/struct/DifferentialSampleStruct.hpp"
 
-#include <wpi/util/struct/Struct.h>
+#include <wpi/util/struct/Struct.hpp>
 
 namespace {
 constexpr size_t kTimestampOff = 0;

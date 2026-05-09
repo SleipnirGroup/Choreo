@@ -7,8 +7,9 @@
 #include "wpi/util/json.hpp"
 
 void choreo::to_json(wpi::util::json& json, const EventMarker& event) {
-  json = wpi::util::json{{"data", wpi::util::json{{"t", event.timestamp.value()}}},
-                   {"event", wpi::util::json{{"name", event.event}}}};
+  json = wpi::util::json::object(
+    "data", wpi::util::json::object("t", event.timestamp.value()),
+    "event", wpi::util::json::object("name", event.event));
 }
 
 void choreo::from_json(const wpi::util::json& json, EventMarker& event) {

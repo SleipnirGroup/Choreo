@@ -6,17 +6,18 @@
 
 void choreo::to_json(wpi::util::json& json,
                      const DifferentialSample& trajectorySample) {
-  json = wpi::util::json{{"t", trajectorySample.timestamp.value()},
-                   {"x", trajectorySample.x.value()},
-                   {"y", trajectorySample.y.value()},
-                   {"heading", trajectorySample.heading.value()},
-                   {"vl", trajectorySample.vl.value()},
-                   {"vr", trajectorySample.vr.value()},
-                   {"omega", trajectorySample.omega.value()},
-                   {"al", trajectorySample.al.value()},
-                   {"ar", trajectorySample.ar.value()},
-                   {"fl", trajectorySample.fl.value()},
-                   {"fr", trajectorySample.fr.value()}};
+  json = wpi::util::json::object(
+    "t", trajectorySample.timestamp.value(),
+    "x", trajectorySample.x.value(),
+    "y", trajectorySample.y.value(),
+    "heading", trajectorySample.heading.value(),
+    "vl", trajectorySample.vl.value(),
+    "vr", trajectorySample.vr.value(),
+    "omega", trajectorySample.omega.value(),
+    "al", trajectorySample.al.value(),
+    "ar", trajectorySample.ar.value(),
+    "fl", trajectorySample.fl.value(),
+    "fr", trajectorySample.fr.value());
 }
 
 void choreo::from_json(const wpi::util::json& json,
