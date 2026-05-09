@@ -63,7 +63,7 @@ jobs:
 
       - run: pip3 install wpiformat==2025.79
 
-      - name: Install SystemCore Toolchain
+      - name: Install Systemcore Toolchain
         run: ./gradlew installSystemCoreToolchain
         working-directory: choreolib
 
@@ -134,7 +134,7 @@ jobs:
 
       - run: pip3 install wpiformat==2025.79
 
-      - name: Install SystemCore Toolchain
+      - name: Install Systemcore Toolchain
         run: ./gradlew installSystemCoreToolchain
         working-directory: choreolib
 
