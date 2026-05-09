@@ -158,6 +158,12 @@ public class AutoFactory {
         (_, _) -> {});
   }
 
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
   public AutoTrajectory trajectory(String trajectoryName) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName);
@@ -170,6 +176,13 @@ public class AutoFactory {
     return trajectory(trajectory);
   }
 
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
   public AutoTrajectory trajectory(String trajectoryName, final int splitIndex) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
@@ -182,6 +195,13 @@ public class AutoFactory {
     return trajectory(trajectory);
   }
 
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param <ST> The type of the trajectory samples.
+   * @param trajectory The trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
   @SuppressWarnings("unchecked")
   public <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(Trajectory<ST> trajectory) {
     return new AutoTrajectory(
@@ -194,16 +214,6 @@ public class AutoFactory {
         (TrajectoryLogger<ST>) trajectoryLogger,
         driveMechanism,
         bindings);
-  }
-
-  /**
-   * Creates a new {@link ChoreoStateMachine}.
-   *
-   * @param name The name of the state machine.
-   * @return The state machine.
-   */
-  public ChoreoStateMachine newStateMachine(String name) {
-    return new ChoreoStateMachine(name, this);
   }
 
   /**

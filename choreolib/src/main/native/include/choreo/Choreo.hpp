@@ -9,11 +9,10 @@
 #include <unordered_map>
 
 #include <fmt/format.h>
-#include <frc/Errors.h>
-#include <frc/Filesystem.h>
-#include <frc2/command/Subsystem.h>
-#include <hal/UsageReporting.h>
-#include <wpi/MemoryBuffer.h>
+#include "wpi/system/Errors.hpp"
+#include "wpi/system/Filesystem.hpp"
+#include "wpi/hal/UsageReporting.hpp"
+#include "wpi/util/MemoryBuffer.hpp"
 #include "wpi/util/json.hpp"
 
 #include "choreo/trajectory/DifferentialSample.hpp"
@@ -53,18 +52,10 @@ class Choreo {
       return {};
     }
 
-    try {
-      return LoadTrajectoryString<SampleType>(
+    return LoadTrajectoryString<SampleType>(
           std::string{fileBuffer.value()->GetCharBuffer().data(),
                       fileBuffer.value()->size()},
           trajectoryName);
-    } catch (wpi::util::json::parse_error& ex) {
-      WPILIB_ReportWarning("Could not parse trajectory file: {}",
-                      trajectoryName);
-      WPILIB_ReportWarning("{}", ex.what());
-      return {};
-    }
-    return {};
   }
 
   /// Load a trajectory from a string.
@@ -84,14 +75,19 @@ class Choreo {
       HAL_ReportUsage("ChoreoLib/DifferentialTrajectory", 2, "");
     }
 
-    wpi::util::json json = wpi::util::json::parse(trajectoryJsonString);
-    uint32_t version = json["version"];
+    auto json = wpi::util::json::parse(trajectoryJsonString);
+    if (!json) {
+      WPILIB_ReportWarning("Could not parse trajectory file: {}",
+                      trajectoryName);
+      return {};
+    }
+    uint32_t version = json->at("version").get_int();
     if (version != kTrajSchemaVersion) {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",
                         trajectoryName, version, kTrajSchemaVersion);
     }
     Trajectory<SampleType> trajectory;
-    from_json(json, trajectory);
+    from_json(*json, trajectory);
     return trajectory;
   }
 
@@ -170,7 +166,7 @@ class Choreo {
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
 
   static inline const std::string CHOREO_DIR =
-      frc::filesystem::GetDeployDirectory() + "/choreo";
+      wpi::filesystem::GetDeployDirectory() + "/choreo";
 
   Choreo();
 };

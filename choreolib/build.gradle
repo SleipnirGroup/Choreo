@@ -147,28 +147,28 @@ model {
         }
     }
     testSuites {
-//        ChoreoLibTest {
-//            sources.cpp {
-//                source {
-//                    srcDir 'src/test/native/cpp'
-//                    include '**/*.cpp'
-//                }
-//            }
-//
-//            nativeUtils.useRequiredLibrary(it, "datalog_shared")
-//            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
-//
-//            binaries.all {
-//                def arch = it.targetPlatform.name
-//                if (systemArch == arch && it.buildType.name == 'debug') {
-//                    def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
-//                    test.dependsOn it.tasks.install
-//                    test.systemProperty 'java.library.path', filePath
-//                    test.environment 'LD_LIBRARY_PATH', filePath
-//                    test.workingDir filePath
-//                }
-//            }
-//        }
+        ChoreoLibTest {
+            sources.cpp {
+                source {
+                    srcDir 'src/test/native/cpp'
+                    include '**/*.cpp'
+                }
+            }
+
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared", "googletest_static")
+
+            binaries.all {
+                def arch = it.targetPlatform.name
+                if (systemArch == arch && it.buildType.name == 'debug') {
+                    def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                    test.dependsOn it.tasks.install
+                    test.systemProperty 'java.library.path', filePath
+                    test.environment 'LD_LIBRARY_PATH', filePath
+                    test.workingDir filePath
+                }
+            }
+        }
     }
 }
 

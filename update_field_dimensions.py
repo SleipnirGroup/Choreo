@@ -57,7 +57,7 @@ FIELD_WIDTH = {width}""",
 
 #pragma once
 
-#include "wpi/units/length.hpp>
+#include "wpi/units/length.hpp"
 
 using namespace wpi;
 

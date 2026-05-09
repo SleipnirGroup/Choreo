@@ -76,7 +76,7 @@ constexpr std::string_view swerveTrajectoryString =
  ]
 })";
 
-const wpi::util::json swerveTrajectoryJson = wpi::util::json::parse(swerveTrajectoryString);
+const wpi::util::json swerveTrajectoryJson = wpi::util::json::parse_or_throw(swerveTrajectoryString);
 
 const Trajectory<SwerveSample> correctSwerveTrajectory{
     "New Path",
@@ -112,9 +112,6 @@ TEST(TrajectoryFileTest, DeserializeSwerveTrajectory) {
     Trajectory<SwerveSample> deserializedSwerveTrajectory =
         swerveTrajectoryJson.get<Trajectory<SwerveSample>>();
     ASSERT_EQ(correctSwerveTrajectory, deserializedSwerveTrajectory);
-  } catch (wpi::util::json::parse_error& e) {
-    std::cerr << "JSON parse error: " << e.what() << std::endl;
-    FAIL();
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
