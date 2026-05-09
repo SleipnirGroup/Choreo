@@ -46,14 +46,14 @@ public class TrajectoryCmdTest {
 
     for (int i = 0; i < 149; i++) {
       scheduler.run();
-      assertTrue(scheduler.isScheduled(trajectoryCmd));
+      assertTrue(scheduler.isScheduledOrRunning(trajectoryCmd));
       SimHooks.stepTiming(0.02);
     }
 
     SimHooks.stepTiming(0.1);
     scheduler.run();
 
-    assertFalse(scheduler.isScheduled(trajectoryCmd));
+    assertFalse(scheduler.isScheduledOrRunning(trajectoryCmd));
 
     assertTrue(pose.get().getTranslation().getDistance(end.getTranslation()) < 0.5);
 
