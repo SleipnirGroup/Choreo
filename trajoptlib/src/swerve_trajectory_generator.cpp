@@ -256,6 +256,10 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const auto kV_over_r = kV / path.drivetrain.wheel_radius;
       constexpr double v_supply = 12.0;
 
+      // TODO: pipe from UI
+      constexpr double kS = 0.40;
+      const double I_free = kS / R;
+
       auto F_wrt_robot = module_force.rotate_by(-θ_k);
 
       // friction = μmg
@@ -275,9 +279,11 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double smoothing_factor = 1e-4;
       auto F_drag = (F_lateral * F_lateral) * slp::sqrt(F_norm_sq + 1e-6) / (F_norm_sq + smoothing_factor);
 
-      // motor force is force in wheel direction + force to overcome drag from scrub
-      auto I_motor = (F_longitudinal + F_drag) / kT_over_r;
+      // numerical trick to smooth free current near zero
+      auto friction_factor = v_norm / (v_norm + smoothing_factor);
 
+      // motor force is force in wheel direction + force to overcome drag from scrub + free current
+      auto I_motor = (F_longitudinal + F_drag) / kT_over_r + I_free * friction_factor;
       auto V_emf = v_norm * kV_over_r;
       auto V_motor = I_motor * R + V_emf;
 
