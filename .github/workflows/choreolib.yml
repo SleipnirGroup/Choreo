@@ -96,7 +96,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 25
+          java-version: "25"
 
       - name: Install SystemCore Toolchain
         run: ./gradlew installSystemCoreToolchain
