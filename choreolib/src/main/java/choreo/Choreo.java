@@ -2,6 +2,8 @@
 
 package choreo;
 
+import static org.wpilib.util.ErrorMessages.requireNonNullParam;
+
 import choreo.trajectory.*;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
@@ -10,18 +12,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import org.wpilib.driverstation.Alert.Level;
-import org.wpilib.driverstation.DriverStationErrors;
-import org.wpilib.system.Filesystem;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.*;
 import java.util.function.BiConsumer;
-
-import static org.wpilib.util.ErrorMessages.requireNonNullParam;
+import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.system.Filesystem;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -48,8 +47,7 @@ public final class Choreo {
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
    *
-   * @param <ST> {@link DifferentialSample} or {@link
-   *     SwerveSample}
+   * @param <ST> {@link DifferentialSample} or {@link SwerveSample}
    */
   public interface TrajectoryLogger<ST extends TrajectorySample<ST>>
       extends BiConsumer<Trajectory<ST>, Boolean> {}
@@ -161,12 +159,12 @@ public final class Choreo {
     }
     String sampleType = trajectoryObj.get("sampleType").getAsString();
     if (sampleType.equals("Swerve")) {
-//      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
+      //      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (sampleType.equals("Differential")) {
-//      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
+      //      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
 
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);

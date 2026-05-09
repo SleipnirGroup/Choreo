@@ -2,6 +2,8 @@
 
 package choreo.auto;
 
+import static choreo.util.ChoreoAlert.allianceNotReady;
+
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AllianceContext;
 import choreo.auto.AutoFactory.AutoBindings;
@@ -12,6 +14,9 @@ import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.Trigger;
@@ -21,12 +26,6 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.system.Timer;
-
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import static choreo.util.ChoreoAlert.allianceNotReady;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -135,7 +134,7 @@ public class AutoTrajectory {
     inactiveTimer.stop();
     inactiveTimer.reset();
     isActive = true;
-      logTrajectory(true);
+    logTrajectory(true);
   }
 
   @SuppressWarnings("unchecked")
@@ -165,7 +164,7 @@ public class AutoTrajectory {
     inactiveTimer.start();
     isActive = false;
 
-      if (!interrupted && allianceCtx.allianceKnownOrIgnored()) {
+    if (!interrupted && allianceCtx.allianceKnownOrIgnored()) {
       var sampleOpt = trajectory.getFinalSample(allianceCtx.doFlip());
       if (sampleOpt.isPresent()) {
         var sample = sampleOpt.get();
@@ -200,19 +199,21 @@ public class AutoTrajectory {
    * @return The command that will follow the trajectory
    */
   public Command cmd() {
-    return driveMechanism.run(coro -> {
-      // if the trajectory is empty, return a command that will print an error
-      if (trajectory.samples().isEmpty() && warnUser) {
-        noSamples.addCause(name);
-        return;
-      }
-      cmdInitialize();
-      while (!cmdIsFinished()) {
-        cmdExecute();
-        coro.yield();
-      }
-      cmdEnd(false);
-    })
+    return driveMechanism
+        .run(
+            coro -> {
+              // if the trajectory is empty, return a command that will print an error
+              if (trajectory.samples().isEmpty() && warnUser) {
+                noSamples.addCause(name);
+                return;
+              }
+              cmdInitialize();
+              while (!cmdIsFinished()) {
+                cmdExecute();
+                coro.yield();
+              }
+              cmdEnd(false);
+            })
         .whenCanceled(() -> cmdEnd(true))
         .named("Trajectory_" + name);
   }
@@ -223,17 +224,19 @@ public class AutoTrajectory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry() {
-    return driveMechanism.run(coro -> {
-      var initialPose = getInitialPose();
-      if (initialPose.isPresent()) {
-        resetOdometry.accept(initialPose.get());
-      } else {
-        if (warnUser) {
-          noInitialPose.addCause(name);
-        }
-        coro.park();
-      }
-    })
+    return driveMechanism
+        .run(
+            coro -> {
+              var initialPose = getInitialPose();
+              if (initialPose.isPresent()) {
+                resetOdometry.accept(initialPose.get());
+              } else {
+                if (warnUser) {
+                  noInitialPose.addCause(name);
+                }
+                coro.park();
+              }
+            })
         .named("Trajectory_ResetOdometry_" + name);
   }
 
@@ -382,7 +385,7 @@ public class AutoTrajectory {
     // Make the trigger only be high for 1 cycle when the time has elapsed
     return new Trigger(() -> timer.get() > targetTime).risingEdge();
   }
-  
+
   /**
    * Returns a trigger that will go true for 1 cycle when the desired time has elapsed
    *

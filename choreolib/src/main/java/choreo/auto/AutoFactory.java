@@ -2,25 +2,24 @@
 
 package choreo.auto;
 
+import static org.wpilib.util.ErrorMessages.requireNonNullParam;
+
 import choreo.Choreo.TrajectoryCache;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAllianceFlipUtil;
-import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
-import org.wpilib.driverstation.Alliance;
-import org.wpilib.driverstation.internal.DriverStationBackend;
-import org.wpilib.math.geometry.Pose2d;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static org.wpilib.util.ErrorMessages.requireNonNullParam;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.math.geometry.Pose2d;
 
 /**
  * A factory used to create {@link AutoTrajectory}s.
@@ -131,8 +130,7 @@ public class AutoFactory {
   /**
    * Create a factory that can be used to create an {@link AutoTrajectory}.
    *
-   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
-   *     SwerveSample}
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link SwerveSample}
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
@@ -150,12 +148,7 @@ public class AutoFactory {
       boolean useAllianceFlipping,
       Mechanism driveMechanism) {
     this(
-        poseSupplier,
-        resetOdometry,
-        controller,
-        useAllianceFlipping,
-        driveMechanism,
-        (_, _) -> {});
+        poseSupplier, resetOdometry, controller, useAllianceFlipping, driveMechanism, (_, _) -> {});
   }
 
   /**
@@ -237,5 +230,4 @@ public class AutoFactory {
   public TrajectoryCache cache() {
     return trajectoryCache;
   }
-
 }

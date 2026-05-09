@@ -3,6 +3,8 @@
 package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
+import java.nio.ByteBuffer;
+import java.util.function.BiFunction;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.kinematics.ChassisVelocities;
@@ -14,9 +16,6 @@ import org.wpilib.math.numbers.N6;
 import org.wpilib.math.system.NumericalIntegration;
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.util.struct.Struct;
-
-import java.nio.ByteBuffer;
-import java.util.function.BiFunction;
 
 /** A single differential drive robot sample in a Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {

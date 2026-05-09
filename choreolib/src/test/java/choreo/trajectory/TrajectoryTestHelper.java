@@ -2,9 +2,8 @@
 
 package choreo.trajectory;
 
-import org.wpilib.math.geometry.Pose2d;
-
 import java.util.List;
+import org.wpilib.math.geometry.Pose2d;
 
 public class TrajectoryTestHelper {
   private static final double DT = 0.005;

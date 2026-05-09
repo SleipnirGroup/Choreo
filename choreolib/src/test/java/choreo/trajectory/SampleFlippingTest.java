@@ -17,7 +17,7 @@ public class SampleFlippingTest {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new double[] {0, 0, 0, 0}, new double[] {0, 0, 0, 0});
     SwerveSample mirrored2026 =
         new SwerveSample(
-            0, 
+            0,
             0,
             0,
             Math.PI - 0,
@@ -67,8 +67,8 @@ public class SampleFlippingTest {
             new double[] {14.0, 15.0, 16.0, 17.0});
     SwerveSample mirrored2026 =
         new SwerveSample(
-            0.0, 
-            - 1.0,
+            0.0,
+            -1.0,
             2.0,
             Math.PI - 3.0,
             -4.0,
@@ -105,22 +105,9 @@ public class SampleFlippingTest {
   void testZeroDifferentialSample() {
     DifferentialSample sample = new DifferentialSample(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     DifferentialSample mirrored2026 =
-        new DifferentialSample(
-            0.0, 0, 0.0, Math.PI - 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        new DifferentialSample(0.0, 0, 0.0, Math.PI - 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     DifferentialSample rotated2026 =
-        new DifferentialSample(
-            0.0,
-            0,
-            0,
-            Math.PI,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0);
+        new DifferentialSample(0.0, 0, 0, Math.PI, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX());
     assertEquals(sample.flipped(), mirrored2026);
     assertEquals(sample.mirrorX(), mirrored2026);
@@ -135,32 +122,10 @@ public class SampleFlippingTest {
         new DifferentialSample(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0);
     DifferentialSample mirrored2026 =
         new DifferentialSample(
-            0.0,
-            - 1.0,
-            2.0,
-            Math.PI - 3.0,
-            5.0,
-            4.0,
-            -6.0,
-            8.0,
-            7.0,
-            -9.0,
-            11.0,
-            10.0);
+            0.0, -1.0, 2.0, Math.PI - 3.0, 5.0, 4.0, -6.0, 8.0, 7.0, -9.0, 11.0, 10.0);
     DifferentialSample rotated2026 =
         new DifferentialSample(
-            0.0,
-            - 1.0,
-            - 2.0,
-            Math.PI + 3.0,
-            4.0,
-            5.0,
-            6.0,
-            7.0,
-            8.0,
-            9.0,
-            10.0,
-            11.0);
+            0.0, -1.0, -2.0, Math.PI + 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX());
     assertEquals(sample.flipped(), mirrored2026);
     assertEquals(sample.mirrorX(), mirrored2026);
@@ -217,18 +182,7 @@ public class SampleFlippingTest {
             new double[] {14.0, 15.0, 16.0, 17.0});
     DifferentialSample differentialSample =
         new DifferentialSample(
-            0.0,
-            - 1.0,
-            2.0,
-            Math.PI - 3.0,
-            5.0,
-            4.0,
-            -6.0,
-            8.0,
-            7.0,
-            -9.0,
-            11.0,
-            10.0);
+            0.0, -1.0, 2.0, Math.PI - 3.0, 5.0, 4.0, -6.0, 8.0, 7.0, -9.0, 11.0, 10.0);
     ChoreoAllianceFlipUtil.setFlipper(Flipper.mirroredX());
     assertEquals(sample.mirrorX().mirrorX(), sample);
     assertEquals(sample.mirrorY().mirrorY(), sample);

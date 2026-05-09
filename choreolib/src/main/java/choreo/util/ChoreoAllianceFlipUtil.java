@@ -4,12 +4,11 @@ package choreo.util;
 
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
+import java.util.Optional;
+import java.util.function.Supplier;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
 import org.wpilib.math.geometry.*;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current alliance across
@@ -27,9 +26,7 @@ public class ChoreoAllianceFlipUtil {
     /** Constructs a flipper. */
     protected Flipper() {}
 
-    /**
-     * X becomes -x, leaves the y coordinate unchanged, and heading becomes PI - heading.
-     */
+    /** X becomes -x, leaves the y coordinate unchanged, and heading becomes PI - heading. */
     static class MirroredX extends Flipper {
       public double flipX(double x) {
         return -x;

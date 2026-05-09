@@ -29,7 +29,7 @@ public class TrajectoryCmdTest {
     assert HAL.initialize(500, 0);
     Scheduler scheduler = Scheduler.createIndependentScheduler();
     AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
-    AutoFactory factory = AutoTestHelper.factory(false, pose);
+    AutoFactory factory = AutoTestHelper.factory(scheduler, false, pose);
     Trajectory<SwerveSample> trajectory =
         TrajectoryTestHelper.linearTrajectory("test", start, end, 3.0, SwerveSample.class);
 

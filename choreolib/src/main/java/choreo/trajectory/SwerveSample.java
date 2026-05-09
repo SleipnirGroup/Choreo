@@ -4,13 +4,12 @@ package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoArrayUtil;
+import java.nio.ByteBuffer;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.math.util.MathUtil;
 import org.wpilib.util.struct.Struct;
-
-import java.nio.ByteBuffer;
 
 /** A single swerve robot sample in a Trajectory. */
 public class SwerveSample implements TrajectorySample<SwerveSample> {
@@ -149,8 +148,10 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
     for (int i = 0; i < 4; ++i) {
-      interp_fx[i] = this.moduleForcesX()[i] + (endValue.moduleForcesX()[i] - this.moduleForcesX()[i]) * scale;
-      interp_fy[i] = this.moduleForcesY()[i] + (endValue.moduleForcesY()[i] - this.moduleForcesY()[i]) * scale;
+      interp_fx[i] =
+          this.moduleForcesX()[i] + (endValue.moduleForcesX()[i] - this.moduleForcesX()[i]) * scale;
+      interp_fy[i] =
+          this.moduleForcesY()[i] + (endValue.moduleForcesY()[i] - this.moduleForcesY()[i]) * scale;
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly

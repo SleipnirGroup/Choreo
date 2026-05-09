@@ -2,11 +2,10 @@
 
 package choreo.trajectory;
 
-import org.wpilib.math.geometry.Pose2d;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.wpilib.math.geometry.Pose2d;
 
 /**
  * A trajectory loaded from Choreo.

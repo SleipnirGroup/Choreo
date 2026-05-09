@@ -9,7 +9,7 @@ plugins {
     id 'org.wpilib.NativeUtils' version '2027.7.1'
     id 'org.wpilib.GradleJni' version '2027.0.0'
     id 'org.wpilib.GradleVsCode' version '2027.0.0'
-    id 'com.diffplug.spotless' version '6.25.0'
+    id 'com.diffplug.spotless' version '8.4.0'
     id 'jacoco'
 }
 
@@ -243,6 +243,14 @@ test {
     testLogging.showStandardStreams = true
 
     finalizedBy jacocoTestReport
+
+    // For reflective access to continuation classes in unit tests
+    jvmArgs += [
+        "--add-opens",
+        "java.base/jdk.internal.vm=ALL-UNNAMED",
+        "--add-opens",
+        "java.base/java.lang=ALL-UNNAMED",
+    ]
 }
 
 apply from: 'publish.gradle'
