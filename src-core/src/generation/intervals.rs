@@ -106,7 +106,7 @@ pub fn guess_control_interval_count(
                 let mod_b = translations
                     .get(mod_b_idx)
                     .expect("Module expected when finding minimum width.");
-                min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
+                min_width = min_width.min((mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y));
             }
             let dt_ceiling = min_width * config.gearing / (motor_config.free_speed * config.radius);
             let dt = dt_ceiling.min(params.target_dt);
