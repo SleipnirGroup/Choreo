@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include <units/length.h>
+#include "wpi/units/length.hpp"
+
+using namespace wpi;
 
 namespace choreo::util {
 static constexpr units::meter_t fieldLength = 16.541_m;

@@ -6,19 +6,21 @@
 #include <array>
 #include <type_traits>
 
-#include <frc/kinematics/ChassisSpeeds.h>
-#include <units/acceleration.h>
-#include <units/angle.h>
-#include <units/angular_acceleration.h>
-#include <units/angular_velocity.h>
-#include <units/force.h>
-#include <units/length.h>
-#include <units/time.h>
-#include <units/velocity.h>
-#include <wpi/MathExtras.h>
-#include <wpi/json_fwd.h>
+#include "wpi/math/kinematics/ChassisVelocities.hpp"
+#include "wpi/units/acceleration.hpp"
+#include "wpi/units/angle.hpp"
+#include "wpi/units/angular_acceleration.hpp"
+#include "wpi/units/angular_velocity.hpp"
+#include "wpi/units/force.hpp"
+#include "wpi/units/length.hpp"
+#include "wpi/units/time.hpp"
+#include "wpi/units/velocity.hpp"
+#include "wpi/util/MathExtras.hpp"
+#include "wpi/util/json.hpp"
 
 #include "choreo/util/AllianceFlipperUtil.hpp"
+
+using namespace wpi;
 
 namespace choreo {
 
@@ -77,15 +79,15 @@ class SwerveSample {
   /// Gets the Pose2d of the SwerveSample.
   ///
   /// @return The pose.
-  constexpr frc::Pose2d GetPose() const {
-    return frc::Pose2d{x, y, frc::Rotation2d{heading}};
+  constexpr wpi::math::Pose2d GetPose() const {
+    return wpi::math::Pose2d{x, y, wpi::math::Rotation2d{heading}};
   }
 
   /// Gets the field-relative chassis speeds of the SwerveSample.
   ///
   /// @return The field-relative chassis speeds.
-  constexpr frc::ChassisSpeeds GetChassisSpeeds() const {
-    return frc::ChassisSpeeds{vx, vy, omega};
+  constexpr wpi::math::ChassisVelocities GetChassisVelocities() const {
+    return wpi::math::ChassisVelocities{vx, vy, omega};
   }
 
   /// Returns the current sample flipped based on the field year.
@@ -206,9 +208,9 @@ class SwerveSample {
     std::array<units::newton_t, 4> interpolatedForcesY;
     for (int i = 0; i < 4; i++) {
       interpolatedForcesX[i] =
-          wpi::Lerp(moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
+          wpi::util::Lerp(moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
       interpolatedForcesY[i] =
-          wpi::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
+          wpi::util::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly
@@ -221,7 +223,7 @@ class SwerveSample {
     //   v(τ) = vₖ + aₖτ
     auto τ = t - timestamp;
     auto τ2 = τ * τ;
-    return SwerveSample{wpi::Lerp(timestamp, endValue.timestamp, scale),
+    return SwerveSample{wpi::util::Lerp(timestamp, endValue.timestamp, scale),
                         x + vx * τ + 0.5 * ax * τ2,
                         y + vy * τ + 0.5 * ay * τ2,
                         heading + omega * τ + 0.5 * alpha * τ2,
@@ -301,8 +303,8 @@ class SwerveSample {
   std::array<units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
 };
 
-void to_json(wpi::json& json, const SwerveSample& trajectorySample);
-void from_json(const wpi::json& json, SwerveSample& trajectorySample);
+void to_json(wpi::util::json& json, const SwerveSample& trajectorySample);
+void from_json(const wpi::util::json& json, SwerveSample& trajectorySample);
 
 }  // namespace choreo
 

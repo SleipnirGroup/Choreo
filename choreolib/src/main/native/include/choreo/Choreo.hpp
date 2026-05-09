@@ -14,7 +14,7 @@
 #include <frc2/command/Subsystem.h>
 #include <hal/UsageReporting.h>
 #include <wpi/MemoryBuffer.h>
-#include <wpi/json.h>
+#include "wpi/util/json.hpp"
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
@@ -46,9 +46,9 @@ class Choreo {
     std::string trajectoryFileName = fmt::format(
         "{}/{}{}", CHOREO_DIR, trajectoryName, TRAJECTORY_FILE_EXTENSION);
 
-    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName);
+    auto fileBuffer = wpi::util::MemoryBuffer::GetFile(trajectoryFileName);
     if (!fileBuffer) {
-      FRC_ReportError(frc::warn::Warning, "Could not find trajectory file: {}",
+      WPILIB_ReportWarning("Could not find trajectory file: {}",
                       trajectoryName);
       return {};
     }
@@ -58,10 +58,10 @@ class Choreo {
           std::string{fileBuffer.value()->GetCharBuffer().data(),
                       fileBuffer.value()->size()},
           trajectoryName);
-    } catch (wpi::json::parse_error& ex) {
-      FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
+    } catch (wpi::util::json::parse_error& ex) {
+      WPILIB_ReportWarning("Could not parse trajectory file: {}",
                       trajectoryName);
-      FRC_ReportError(frc::warn::Warning, "{}", ex.what());
+      WPILIB_ReportWarning("{}", ex.what());
       return {};
     }
     return {};
@@ -84,7 +84,7 @@ class Choreo {
       HAL_ReportUsage("ChoreoLib/DifferentialTrajectory", 2, "");
     }
 
-    wpi::json json = wpi::json::parse(trajectoryJsonString);
+    wpi::util::json json = wpi::util::json::parse(trajectoryJsonString);
     uint32_t version = json["version"];
     if (version != kTrajSchemaVersion) {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",

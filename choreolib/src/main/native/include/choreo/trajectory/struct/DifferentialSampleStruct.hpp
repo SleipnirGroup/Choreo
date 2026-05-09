@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include <wpi/SymbolExports.h>
-#include <wpi/struct/Struct.h>
+#include "wpi/util/SymbolExports.hpp"
+#include "wpi/util/struct/Struct.hpp"
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 
 template <>
-struct wpi::Struct<choreo::DifferentialSample> {
+struct wpi::util::Struct<choreo::DifferentialSample> {
   static constexpr std::string_view GetTypeName() {
     return "DifferentialSample";
   }
@@ -24,4 +24,4 @@ struct wpi::Struct<choreo::DifferentialSample> {
                    const choreo::DifferentialSample& value);
 };
 
-static_assert(wpi::StructSerializable<choreo::DifferentialSample>);
+static_assert(wpi::util::StructSerializable<choreo::DifferentialSample>);

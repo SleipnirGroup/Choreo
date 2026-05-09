@@ -4,8 +4,10 @@
 
 #include <string>
 
-#include <units/time.h>
-#include <wpi/json_fwd.h>
+#include "wpi/units/time.hpp"
+#include "wpi/util/json.hpp"
+
+using namespace wpi;
 
 namespace choreo {
 
@@ -33,7 +35,7 @@ struct EventMarker {
   bool operator==(const EventMarker&) const = default;
 };
 
-void to_json(wpi::json& json, const EventMarker& event);
-void from_json(const wpi::json& json, EventMarker& event);
+void to_json(wpi::util::json& json, const EventMarker& event);
+void from_json(const wpi::util::json& json, EventMarker& event);
 
 }  // namespace choreo

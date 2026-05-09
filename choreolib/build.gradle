@@ -48,6 +48,7 @@ dependencies {
     implementation 'org.wpilib:annotations-java:2027.+'
     implementation 'org.wpilib.wpiunits:wpiunits-java:2027.+'
     implementation 'org.wpilib.ntcore:ntcore-java:2027.+'
+    implementation 'org.wpilib.ntcore:ntcore-cpp:2027.+'
     implementation 'org.wpilib.hal:hal-java:2027.+'
     implementation 'org.wpilib.datalog:datalog-java:2027.+'
 
@@ -138,8 +139,11 @@ model {
                     }
                 }
             }
+            // binaries.all {
+            //     lib library: 'ChoreoLib', linkage: 'shared'
+            // }
             nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
-            nativeUtils.useRequiredLibrary(it, "datalog_shared")
+            // nativeUtils.useRequiredLibrary(it, "datalog_shared")
         }
     }
     testSuites {

@@ -3,12 +3,14 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
-#include <units/force.h>
-#include <wpi/json.h>
+#include "wpi/units/force.hpp"
+#include "wpi/util/json.hpp"
 
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/Trajectory.hpp"
 #include "choreo/util/AllianceFlipperUtil.hpp"
+
+using namespace wpi;
 
 using namespace choreo;
 

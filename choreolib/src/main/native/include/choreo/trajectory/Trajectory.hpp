@@ -10,13 +10,15 @@
 #include <utility>
 #include <vector>
 
-#include <units/time.h>
-#include <wpi/json_fwd.h>
+#include "wpi/units/time.hpp"
+#include "wpi/util/json.hpp"
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/EventMarker.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/TrajectorySample.hpp"
+
+using namespace wpi;
 
 namespace choreo {
 
@@ -140,7 +142,7 @@ class Trajectory {
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The first Pose in the trajectory.
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetInitialPose(
+  std::optional<wpi::math::Pose2d> GetInitialPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
@@ -160,7 +162,7 @@ class Trajectory {
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The last Pose in the trajectory.
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetFinalPose(
+  std::optional<wpi::math::Pose2d> GetFinalPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
@@ -186,8 +188,8 @@ class Trajectory {
   /// Returns the vector of poses corresponding to the trajectory.
   ///
   /// @return the vector of poses corresponding to the trajectory.
-  std::vector<frc::Pose2d> GetPoses() const {
-    std::vector<frc::Pose2d> poses;
+  std::vector<wpi::math::Pose2d> GetPoses() const {
+    std::vector<wpi::math::Pose2d> poses;
     for (const auto& sample : samples) {
       poses.push_back(sample.GetPose());
     }
@@ -354,11 +356,11 @@ class Trajectory {
   }
 };
 
-void to_json(wpi::json& json, const Trajectory<SwerveSample>& trajectory);
-void from_json(const wpi::json& json, Trajectory<SwerveSample>& trajectory);
+void to_json(wpi::util::json& json, const Trajectory<SwerveSample>& trajectory);
+void from_json(const wpi::util::json& json, Trajectory<SwerveSample>& trajectory);
 
-void to_json(wpi::json& json, const Trajectory<DifferentialSample>& trajectory);
-void from_json(const wpi::json& json,
+void to_json(wpi::util::json& json, const Trajectory<DifferentialSample>& trajectory);
+void from_json(const wpi::util::json& json,
                Trajectory<DifferentialSample>& trajectory);
 
 }  // namespace choreo

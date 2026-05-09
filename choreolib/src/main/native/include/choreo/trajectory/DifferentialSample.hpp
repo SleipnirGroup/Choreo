@@ -6,21 +6,23 @@
 #include <type_traits>
 
 #include <Eigen/Core>
-#include <frc/geometry/Pose2d.h>
-#include <frc/kinematics/ChassisSpeeds.h>
-#include <frc/system/NumericalIntegration.h>
-#include <units/acceleration.h>
-#include <units/angle.h>
-#include <units/angular_acceleration.h>
-#include <units/angular_velocity.h>
-#include <units/force.h>
-#include <units/length.h>
-#include <units/time.h>
-#include <units/velocity.h>
-#include <wpi/MathExtras.h>
-#include <wpi/json_fwd.h>
+#include "wpi/math/geometry/Pose2d.hpp"
+#include "wpi/math/kinematics/ChassisVelocities.hpp"
+#include "wpi/math/system/NumericalIntegration.hpp"
+#include "wpi/units/acceleration.hpp"
+#include "wpi/units/angle.hpp"
+#include "wpi/units/angular_acceleration.hpp"
+#include "wpi/units/angular_velocity.hpp"
+#include "wpi/units/force.hpp"
+#include "wpi/units/length.hpp"
+#include "wpi/units/time.hpp"
+#include "wpi/units/velocity.hpp"
+#include "wpi/util/MathExtras.hpp"
+#include "wpi/util/json.hpp"
 
 #include "choreo/util/AllianceFlipperUtil.hpp"
+
+using namespace wpi;
 
 namespace choreo {
 
@@ -76,15 +78,15 @@ class DifferentialSample {
   /// Gets the Pose2d of the DifferentialSample.
   ///
   /// @return The pose.
-  constexpr frc::Pose2d GetPose() const {
-    return frc::Pose2d{x, y, frc::Rotation2d{heading}};
+  constexpr wpi::math::Pose2d GetPose() const {
+    return wpi::math::Pose2d{x, y, wpi::math::Rotation2d{heading}};
   }
 
   /// Gets the field-relative chassis speeds of the DifferentialSample.
   ///
   /// @return The field-relative chassis speeds.
-  constexpr frc::ChassisSpeeds GetChassisSpeeds() const {
-    return frc::ChassisSpeeds{(vl + vr) / 2.0, 0_mps, omega};
+  constexpr wpi::math::ChassisVelocities GetChassisVelocities() const {
+    return wpi::math::ChassisVelocities{(vl + vr) / 2.0, 0_mps, omega};
   }
 
   /// Returns the current sample offset by a the time offset passed in.
@@ -150,12 +152,12 @@ class DifferentialSample {
         };
 
     units::second_t τ = t - timestamp;
-    auto sample = frc::RKDP(
+    auto sample = wpi::math::RKDP(
         f, initialState,
         Eigen::Vector<double, 3>(al.value(), ar.value(), alpha.value()), τ);
 
     return DifferentialSample{
-        wpi::Lerp(timestamp, endValue.timestamp, scale),
+        wpi::util::Lerp(timestamp, endValue.timestamp, scale),
         units::meter_t{sample(0, 0)},
         units::meter_t{sample(1, 0)},
         units::radian_t{sample(2, 0)},
@@ -165,8 +167,8 @@ class DifferentialSample {
         al,
         ar,
         alpha,
-        wpi::Lerp(fl, endValue.fl, scale),
-        wpi::Lerp(fr, endValue.fr, scale),
+        wpi::util::Lerp(fl, endValue.fl, scale),
+        wpi::util::Lerp(fr, endValue.fr, scale),
     };
   }
 
@@ -280,8 +282,8 @@ class DifferentialSample {
   units::newton_t fr = 0_N;
 };
 
-void to_json(wpi::json& json, const DifferentialSample& trajectorySample);
-void from_json(const wpi::json& json, DifferentialSample& trajectorySample);
+void to_json(wpi::util::json& json, const DifferentialSample& trajectorySample);
+void from_json(const wpi::util::json& json, DifferentialSample& trajectorySample);
 
 }  // namespace choreo
 
