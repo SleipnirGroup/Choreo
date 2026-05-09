@@ -35,7 +35,7 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
 
-      - name: Install SystemCore Toolchain
+      - name: Install Systemcore Toolchain
         run: ./gradlew installSystemCoreToolchain
         working-directory: choreolib
 
@@ -96,9 +96,9 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "25"
+          java-version: 25
 
-      - name: Install SystemCore Toolchain
+      - name: Install Systemcore Toolchain
         run: ./gradlew installSystemCoreToolchain
         working-directory: choreolib
 
