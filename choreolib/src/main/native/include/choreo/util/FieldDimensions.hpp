@@ -7,7 +7,6 @@
 #include <wpi/units/length.hpp>
 
 namespace choreo::util {
-using namespace wpi;
-static constexpr units::meter_t fieldLength = 16.541_m;
-static constexpr units::meter_t fieldWidth = 8.0692_m;
+static constexpr wpi::units::meter_t fieldLength = 16.541_m;
+static constexpr wpi::units::meter_t fieldWidth = 8.0692_m;
 }  // namespace choreo::util
