@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "wpi/util/json.hpp"
+#include <wpi/util/json.hpp>
 
 namespace choreo::util {
 template <wpi::util::detail::HasFromJson T>

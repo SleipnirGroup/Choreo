@@ -14,8 +14,8 @@
 #include "choreo/trajectory/EventMarker.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/TrajectorySample.hpp"
-#include "wpi/units/time.hpp"
-#include "wpi/util/json.hpp"
+#include <wpi/units/time.hpp>
+#include <wpi/util/json.hpp>
 
 namespace choreo {
 

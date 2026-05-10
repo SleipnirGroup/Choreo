@@ -15,11 +15,11 @@
 #include "choreo/trajectory/Trajectory.hpp"
 #include "choreo/trajectory/TrajectorySample.hpp"
 #include "choreo/util/TrajSchemaVersion.hpp"
-#include "wpi/hal/UsageReporting.hpp"
-#include "wpi/system/Errors.hpp"
-#include "wpi/system/Filesystem.hpp"
-#include "wpi/util/MemoryBuffer.hpp"
-#include "wpi/util/json.hpp"
+#include <wpi/hal/UsageReporting.hpp>
+#include <wpi/system/Errors.hpp>
+#include <wpi/system/Filesystem.hpp>
+#include <wpi/util/MemoryBuffer.hpp>
+#include <wpi/util/json.hpp>
 
 namespace choreo {
 

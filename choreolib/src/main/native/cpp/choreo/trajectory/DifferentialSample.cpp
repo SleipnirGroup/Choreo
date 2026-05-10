@@ -2,7 +2,7 @@
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 
-#include "wpi/util/json.hpp"
+#include <wpi/util/json.hpp>
 
 void choreo::to_json(wpi::util::json& json,
                      const DifferentialSample& trajectorySample) {

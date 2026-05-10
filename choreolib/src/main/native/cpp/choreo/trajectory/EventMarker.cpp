@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "wpi/util/json.hpp"
+#include <wpi/util/json.hpp>
 
 void choreo::to_json(wpi::util::json& json, const EventMarker& event) {
   json = wpi::util::json::object(
