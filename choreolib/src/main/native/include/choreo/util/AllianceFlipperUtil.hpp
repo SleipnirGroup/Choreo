@@ -6,10 +6,11 @@
 #include <numbers>
 #include <utility>
 
-#include "choreo/util/FieldDimensions.hpp"
-#include "choreo/util/Map.hpp"
 #include <wpi/units/angle.hpp>
 #include <wpi/units/length.hpp>
+
+#include "choreo/util/FieldDimensions.hpp"
+#include "choreo/util/Map.hpp"
 
 namespace choreo::util {
 

@@ -6,7 +6,6 @@
 #include <array>
 #include <type_traits>
 
-#include "choreo/util/AllianceFlipperUtil.hpp"
 #include <wpi/math/kinematics/ChassisVelocities.hpp>
 #include <wpi/units/acceleration.hpp>
 #include <wpi/units/angle.hpp>
@@ -18,6 +17,8 @@
 #include <wpi/units/velocity.hpp>
 #include <wpi/util/MathExtras.hpp>
 #include <wpi/util/json.hpp>
+
+#include "choreo/util/AllianceFlipperUtil.hpp"
 
 namespace choreo {
 

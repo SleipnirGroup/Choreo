@@ -10,12 +10,13 @@
 #include <utility>
 #include <vector>
 
+#include <wpi/units/time.hpp>
+#include <wpi/util/json.hpp>
+
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/EventMarker.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/TrajectorySample.hpp"
-#include <wpi/units/time.hpp>
-#include <wpi/util/json.hpp>
 
 namespace choreo {
 

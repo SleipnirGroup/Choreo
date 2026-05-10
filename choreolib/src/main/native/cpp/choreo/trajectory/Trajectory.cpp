@@ -4,8 +4,9 @@
 
 #include <string>
 
-#include "choreo/util/ArrayUtil.hpp"
 #include <wpi/util/json.hpp>
+
+#include "choreo/util/ArrayUtil.hpp"
 
 void choreo::to_json(wpi::util::json& json,
                      const Trajectory<SwerveSample>& trajectory) {
