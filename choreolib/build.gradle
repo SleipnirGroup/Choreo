@@ -50,7 +50,6 @@ dependencies {
     implementation 'org.wpilib.ntcore:ntcore-java:2027.+'
     implementation 'org.wpilib.ntcore:ntcore-cpp:2027.+'
     implementation 'org.wpilib.hal:hal-java:2027.+'
-    implementation 'org.wpilib.datalog:datalog-java:2027.+'
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.15.2"
     api "com.fasterxml.jackson.core:jackson-core:2.15.2"
@@ -146,7 +145,6 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_shared", "googletest_static")
 
             binaries.all {
