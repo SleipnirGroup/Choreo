@@ -13,7 +13,7 @@ jobs:
             build-options: -Ponlylinuxsystemcore
 
           - container: wpilib/aarch64-cross-ubuntu:2027-bookworm-24.04
-            artifact-name: Linux-Arm64
+            artifact-name: Linux-arm64
             build-options: -Ponlylinuxarm64
 
           - container: wpilib/ubuntu-base:24.04

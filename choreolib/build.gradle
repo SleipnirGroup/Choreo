@@ -86,11 +86,6 @@ if (project.hasProperty('onlylinuxarm64') || project.hasProperty('onlywindowsarm
     test.enabled = false
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs.add '-XDstringConcat=inline'
-    options.encoding = 'UTF-8'
-}
-
 // Set up exports properly
 nativeUtils {
     exportsConfigs {
@@ -139,11 +134,7 @@ model {
                     }
                 }
             }
-            // binaries.all {
-            //     lib library: 'ChoreoLib', linkage: 'shared'
-            // }
             nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
-            // nativeUtils.useRequiredLibrary(it, "datalog_shared")
         }
     }
     testSuites {
@@ -194,7 +185,7 @@ spotless {
             exclude '**/build/**', '**/build-*/**'
         }
         greclipse()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         trimTrailingWhitespace()
         endWithNewline()
     }
@@ -204,7 +195,7 @@ spotless {
             exclude '**/build/**', '**/build-*/**'
         }
         trimTrailingWhitespace()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         endWithNewline()
     }
 }

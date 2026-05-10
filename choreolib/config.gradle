@@ -19,12 +19,6 @@ nativeUtils.wpi.addWarningsAsErrors()
 nativeUtils.setSinglePrintPerPlatform()
 
 model {
-    // Uncomment this, and remove lines below it to enable builds for just systemcore
-    // components {
-    //     all {
-    //         targetPlatform nativeUtils.wpi.platforms.systemcore
-    //     }
-    // }
     components {
         all {
             nativeUtils.useAllPlatforms(it)
