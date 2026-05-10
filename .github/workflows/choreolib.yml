@@ -9,15 +9,15 @@ jobs:
       matrix:
         include:
           - container: wpilib/systemcore-cross-ubuntu:2027-24.04
-            artifact-name: SystemCore
+            artifact-name: Systemcore
             build-options: "-Ponlylinuxsystemcore"
 
           - container: wpilib/aarch64-cross-ubuntu:2027-bookworm-24.04
-            artifact-name: Arm64
+            artifact-name: Linux-Arm64
             build-options: "-Ponlylinuxarm64"
 
           - container: wpilib/systemcore-cross-ubuntu:2027-24.04
-            artifact-name: Linux
+            artifact-name: Linux-x86_64
             build-options: ""
 
     name: C++ and Java - ${{ matrix.artifact-name }}
