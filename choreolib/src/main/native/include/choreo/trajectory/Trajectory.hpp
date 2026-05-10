@@ -17,9 +17,9 @@
 #include "wpi/units/time.hpp"
 #include "wpi/util/json.hpp"
 
-using namespace wpi;
-
 namespace choreo {
+
+using namespace wpi;
 
 /// A trajectory loaded from Choreo.
 ///

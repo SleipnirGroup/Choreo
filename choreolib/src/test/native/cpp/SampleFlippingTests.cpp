@@ -11,7 +11,6 @@
 #include "wpi/util/json.hpp"
 
 using namespace wpi;
-
 using namespace choreo;
 
 TEST(SampleFlippingTest, ZeroSwerveSample) {

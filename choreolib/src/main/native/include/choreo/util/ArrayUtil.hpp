@@ -1,6 +1,9 @@
 // Copyright (c) Choreo contributors
 
+#pragma once
+
 #include <string>
+#include <vector>
 
 #include "wpi/util/json.hpp"
 

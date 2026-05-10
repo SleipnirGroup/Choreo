@@ -11,9 +11,9 @@
 #include "wpi/units/angle.hpp"
 #include "wpi/units/length.hpp"
 
-using namespace wpi;
-
 namespace choreo::util {
+
+using namespace wpi;
 
 enum class FlipperType { Mirrored, RotateAround };
 

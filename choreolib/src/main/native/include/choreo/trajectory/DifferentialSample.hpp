@@ -22,9 +22,9 @@
 #include "wpi/util/MathExtras.hpp"
 #include "wpi/util/json.hpp"
 
-using namespace wpi;
-
 namespace choreo {
+
+using namespace wpi;
 
 /// A single differential drive robot sample in a Trajectory.
 class DifferentialSample {

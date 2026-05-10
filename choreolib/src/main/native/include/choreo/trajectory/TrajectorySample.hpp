@@ -8,9 +8,9 @@
 #include "wpi/math/kinematics/ChassisVelocities.hpp"
 #include "wpi/units/time.hpp"
 
-using namespace wpi;
-
 namespace choreo {
+
+using namespace wpi;
 
 /// Enforce equality operators on trajectory sample types.
 template <typename T>
