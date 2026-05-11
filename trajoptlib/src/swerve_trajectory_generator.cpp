@@ -252,7 +252,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const auto R = path.drivetrain.motor_config.resistance();
       const auto I_supply_limit = path.drivetrain.motor_config.supply_limit;
       const auto I_stator_limit = path.drivetrain.motor_config.stator_limit;
-      const auto kT_over_r = path.drivetrain.motor_config.kT / path.drivetrain.wheel_radius;
+      const auto kT_over_r =
+          path.drivetrain.motor_config.kT / path.drivetrain.wheel_radius;
       const auto kV_over_r = kV / path.drivetrain.wheel_radius;
       constexpr double v_supply = 12.0;
 
@@ -263,31 +264,44 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       auto F_wrt_robot = module_force.rotate_by(-θ_k);
 
       // friction = μmg
-      const double normal_force_per_wheel = path.drivetrain.mass * 9.8 / num_wheels;
-      const double wheel_max_friction_force = path.drivetrain.wheel_cof * normal_force_per_wheel;
+      const double normal_force_per_wheel =
+          path.drivetrain.mass * 9.8 / num_wheels;
+      const double wheel_max_friction_force =
+          path.drivetrain.wheel_cof * normal_force_per_wheel;
 
       auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-6);
       auto F_dot_v = F_wrt_robot.dot(v_wheel_wrt_robot);
-      auto F_longitudinal = F_dot_v / v_norm;
-      auto F_lateral = F_wrt_robot.dot(v_wheel_wrt_robot.rotate_by(Rotation2<double>{0.0, 1.0})) / v_norm;
-      // f_drag = f_lateral * alpha
-      // alpha is slip angle between velocity direction and force direction
-      // approximating sin(alpha) = alpha we get alpha = f_lateral / f_norm
-      // then f_drag = f_lateral * alpha = f_lateral * f_lateral / f_norm
       auto F_norm_sq = F_wrt_robot.squared_norm();
-      // numerical trick to smooth near zero
-      const double smoothing_factor = 1e-4;
-      auto F_drag = (F_lateral * F_lateral) * slp::sqrt(F_norm_sq + 1e-6) / (F_norm_sq + smoothing_factor);
+      auto F_longitudinal = F_dot_v / v_norm;
+      auto F_lateral = F_wrt_robot.dot(v_wheel_wrt_robot.rotate_by(
+                           Rotation2<double>{0.0, 1.0})) /
+                       v_norm;
 
-      // numerical trick to smooth free current near zero
-      auto friction_factor = v_norm / (v_norm + smoothing_factor);
+      // Penalize lateral forces with the Tire Induced Drag model
+      // F_drag = F_lateral * sin(α)
+      // where α is the slip angle between velocity and force
+      // Let sin(α) = α; then α = F_lateral / F_norm; thus
+      // F_drag = F_lateral * α = F_lateral * F_lateral / F_norm
+      //        = F_lateral * F_lateral * sqrt(F_norm_sq) / F_norm_sq
+      // constants used for numerical smoothing
+      auto F_drag = (F_lateral * F_lateral) * slp::sqrt(F_norm_sq + 1e-6) /
+                    (F_norm_sq + 1e-4);
 
-      // motor force is force in wheel direction + force to overcome drag from scrub + free current
-      auto I_motor = (F_longitudinal + F_drag) / kT_over_r + I_free * friction_factor;
+      // smooth free current around zero velocity for solver stability
+      auto friction_factor = v_norm / (v_norm + 1e-4);
+
+      // motor force is force in wheel direction + force to overcome drag from
+      // scrub + free current
+      auto I_motor =
+          (F_longitudinal + F_drag) / kT_over_r + I_free * friction_factor;
       auto V_emf = v_norm * kV_over_r;
       auto V_motor = I_motor * R + V_emf;
 
       // stator
+      // We need to constrain motor output brake force so that the solver
+      // doesn't abuse lateral drag force to generate extremely strong braking
+      // forces. Do this by constraining I_propulsive, the portion of current
+      // that generates longitudinal force, to be above -I_stator_limit.
       // -I_stator_limit ≤ I_propulsive ≤ I_motor ≤ I_stator_limit
       // I_propulsive = F_long/kT_over_r ≥ -I_stator_limit
       //              = F_dot_v / (v_norm * kT_over_r) ≥ -I_stator_limit
@@ -304,7 +318,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       // |F|₂² ≤ Fₘₐₓ²
       // total force must not slip
-      problem.subject_to(module_force.squared_norm() <= wheel_max_friction_force * wheel_max_friction_force);
+      problem.subject_to(module_force.squared_norm() <=
+                         wheel_max_friction_force * wheel_max_friction_force);
     }
 
     // Apply dynamics constraints

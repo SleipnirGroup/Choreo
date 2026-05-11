@@ -123,7 +123,7 @@ export const MotorConfigStore = types
         kT: self.kT.value,
         kV: self.kV.value,
         supply_limit: self.supply_limit.value,
-        stator_limit: self.stator_limit.value       
+        stator_limit: self.stator_limit.value
       };
     },
   }))
