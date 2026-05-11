@@ -259,6 +259,9 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       // TODO: pipe from UI
       constexpr double kS = 0.40;
+      // assume rolling friction is equal to static friction for simplicity
+      // since rolling friction is not a common SysID term - conservative
+      // simplification to model increased V_motor due to kS
       const double I_free = kS / R;
 
       auto F_wrt_robot = module_force.rotate_by(-θ_k);
