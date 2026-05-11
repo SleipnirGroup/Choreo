@@ -27,28 +27,31 @@ using StructType = wpi::util::Struct<choreo::SwerveSample>;
 
 choreo::SwerveSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::SwerveSample{
-      units::second_t{wpi::util::UnpackStruct<double, kTimestampOff>(data)},
-      units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
-      units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
-      units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
-      units::meters_per_second_t{wpi::util::UnpackStruct<double, kVxOff>(data)},
-      units::meters_per_second_t{wpi::util::UnpackStruct<double, kVyOff>(data)},
-      units::radians_per_second_t{
+      wpi::units::second_t{
+          wpi::util::UnpackStruct<double, kTimestampOff>(data)},
+      wpi::units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
+      wpi::units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
+      wpi::units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVxOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVyOff>(data)},
+      wpi::units::radians_per_second_t{
           wpi::util::UnpackStruct<double, kOmegaOff>(data)},
-      units::meters_per_second_squared_t{
+      wpi::units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAxOff>(data)},
-      units::meters_per_second_squared_t{
+      wpi::units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAyOff>(data)},
-      units::radians_per_second_squared_t{
+      wpi::units::radians_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAlphaOff>(data)},
-      {units::newton_t{wpi::util::UnpackStruct<double, kMfX0Off>(data)},
-       units::newton_t{wpi::util::UnpackStruct<double, kMfX1Off>(data)},
-       units::newton_t{wpi::util::UnpackStruct<double, kMfX2Off>(data)},
-       units::newton_t{wpi::util::UnpackStruct<double, kMfX3Off>(data)}},
-      {units::newton_t{wpi::util::UnpackStruct<double, kMfY0Off>(data)},
-       units::newton_t{wpi::util::UnpackStruct<double, kMfY1Off>(data)},
-       units::newton_t{wpi::util::UnpackStruct<double, kMfY2Off>(data)},
-       units::newton_t{wpi::util::UnpackStruct<double, kMfY3Off>(data)}},
+      {wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfX0Off>(data)},
+       wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfX1Off>(data)},
+       wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfX2Off>(data)},
+       wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfX3Off>(data)}},
+      {wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfY0Off>(data)},
+       wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfY1Off>(data)},
+       wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfY2Off>(data)},
+       wpi::units::newton_t{wpi::util::UnpackStruct<double, kMfY3Off>(data)}},
   };
 }
 

@@ -17,18 +17,21 @@ void choreo::to_json(wpi::util::json& json,
 
 void choreo::from_json(const wpi::util::json& json,
                        DifferentialSample& trajectorySample) {
-  trajectorySample.timestamp = units::second_t{json.at("t").get_number()};
-  trajectorySample.x = units::meter_t{json.at("x").get_number()};
-  trajectorySample.y = units::meter_t{json.at("y").get_number()};
-  trajectorySample.heading = units::radian_t{json.at("heading").get_number()};
-  trajectorySample.vl = units::meters_per_second_t{json.at("vl").get_number()};
-  trajectorySample.vr = units::meters_per_second_t{json.at("vr").get_number()};
+  trajectorySample.timestamp = wpi::units::second_t{json.at("t").get_number()};
+  trajectorySample.x = wpi::units::meter_t{json.at("x").get_number()};
+  trajectorySample.y = wpi::units::meter_t{json.at("y").get_number()};
+  trajectorySample.heading =
+      wpi::units::radian_t{json.at("heading").get_number()};
+  trajectorySample.vl =
+      wpi::units::meters_per_second_t{json.at("vl").get_number()};
+  trajectorySample.vr =
+      wpi::units::meters_per_second_t{json.at("vr").get_number()};
   trajectorySample.omega =
-      units::radians_per_second_t{json.at("omega").get_number()};
+      wpi::units::radians_per_second_t{json.at("omega").get_number()};
   trajectorySample.al =
-      units::meters_per_second_squared_t{json.at("al").get_number()};
+      wpi::units::meters_per_second_squared_t{json.at("al").get_number()};
   trajectorySample.ar =
-      units::meters_per_second_squared_t{json.at("ar").get_number()};
-  trajectorySample.fl = units::newton_t{json.at("fl").get_number()};
-  trajectorySample.fr = units::newton_t{json.at("fr").get_number()};
+      wpi::units::meters_per_second_squared_t{json.at("ar").get_number()};
+  trajectorySample.fl = wpi::units::newton_t{json.at("fl").get_number()};
+  trajectorySample.fr = wpi::units::newton_t{json.at("fr").get_number()};
 }

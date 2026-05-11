@@ -23,22 +23,25 @@ using StructType = wpi::util::Struct<choreo::DifferentialSample>;
 
 choreo::DifferentialSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::DifferentialSample{
-      units::second_t{wpi::util::UnpackStruct<double, kTimestampOff>(data)},
-      units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
-      units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
-      units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
-      units::meters_per_second_t{wpi::util::UnpackStruct<double, kVlOff>(data)},
-      units::meters_per_second_t{wpi::util::UnpackStruct<double, kVrOff>(data)},
-      units::radians_per_second_t{
+      wpi::units::second_t{
+          wpi::util::UnpackStruct<double, kTimestampOff>(data)},
+      wpi::units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
+      wpi::units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
+      wpi::units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVlOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVrOff>(data)},
+      wpi::units::radians_per_second_t{
           wpi::util::UnpackStruct<double, kOmegaOff>(data)},
-      units::meters_per_second_squared_t{
+      wpi::units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAlOff>(data)},
-      units::meters_per_second_squared_t{
+      wpi::units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kArOff>(data)},
-      units::radians_per_second_squared_t{
+      wpi::units::radians_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAlphaOff>(data)},
-      units::newton_t{wpi::util::UnpackStruct<double, kFlOff>(data)},
-      units::newton_t{wpi::util::UnpackStruct<double, kFrOff>(data)}};
+      wpi::units::newton_t{wpi::util::UnpackStruct<double, kFlOff>(data)},
+      wpi::units::newton_t{wpi::util::UnpackStruct<double, kFrOff>(data)}};
 }
 
 void StructType::Pack(std::span<uint8_t> data,

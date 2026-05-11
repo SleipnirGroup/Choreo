@@ -9,12 +9,10 @@
 
 namespace choreo {
 
-using namespace wpi;
-
 /// A marker for an event in a trajectory.
 struct EventMarker {
   /// The timestamp of the event.
-  units::second_t timestamp;
+  wpi::units::second_t timestamp;
 
   /// The event.
   std::string event;
@@ -25,7 +23,7 @@ struct EventMarker {
   /// @param timestampOffset The amount to offset the timestamp by.
   /// @return A new EventMarker with the timestamp offset by the specified
   ///     amount.
-  EventMarker OffsetBy(units::second_t timestampOffset) const {
+  EventMarker OffsetBy(wpi::units::second_t timestampOffset) const {
     return EventMarker{timestamp + timestampOffset, event};
   }
 

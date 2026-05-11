@@ -3,13 +3,11 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
-#include <wpi/units/force.hpp>
 #include <wpi/util/json.hpp>
 
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/Trajectory.hpp"
 
-using namespace wpi;
 using namespace choreo;
 
 constexpr std::string_view swerveTrajectoryString =

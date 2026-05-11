@@ -22,8 +22,6 @@
 
 namespace choreo {
 
-using namespace wpi;
-
 /// A single swerve robot sample in a Trajectory.
 class SwerveSample {
  public:
@@ -48,16 +46,16 @@ class SwerveSample {
   ///     Module forces appear in the following order: [FL, FR, BL, BR].
   /// @param moduleForcesY The force on each swerve module in the Y direction.
   ///     Module forces appear in the following order: [FL, FR, BL, BR].
-  constexpr SwerveSample(units::second_t timestamp, units::meter_t x,
-                         units::meter_t y, units::radian_t heading,
-                         units::meters_per_second_t vx,
-                         units::meters_per_second_t vy,
-                         units::radians_per_second_t omega,
-                         units::meters_per_second_squared_t ax,
-                         units::meters_per_second_squared_t ay,
-                         units::radians_per_second_squared_t alpha,
-                         std::array<units::newton_t, 4> moduleForcesX,
-                         std::array<units::newton_t, 4> moduleForcesY)
+  constexpr SwerveSample(wpi::units::second_t timestamp, wpi::units::meter_t x,
+                         wpi::units::meter_t y, wpi::units::radian_t heading,
+                         wpi::units::meters_per_second_t vx,
+                         wpi::units::meters_per_second_t vy,
+                         wpi::units::radians_per_second_t omega,
+                         wpi::units::meters_per_second_squared_t ax,
+                         wpi::units::meters_per_second_squared_t ay,
+                         wpi::units::radians_per_second_squared_t alpha,
+                         std::array<wpi::units::newton_t, 4> moduleForcesX,
+                         std::array<wpi::units::newton_t, 4> moduleForcesY)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -74,7 +72,7 @@ class SwerveSample {
   /// Gets the timestamp of the SwerveSample.
   ///
   /// @return The timestamp.
-  constexpr units::second_t GetTimestamp() const { return timestamp; }
+  constexpr wpi::units::second_t GetTimestamp() const { return timestamp; }
 
   /// Gets the Pose2d of the SwerveSample.
   ///
@@ -180,7 +178,7 @@ class SwerveSample {
   ///
   /// @param timeStampOffset time to move sample by
   /// @return SwerveSample that is moved forward by the offset
-  constexpr SwerveSample OffsetBy(units::second_t timeStampOffset) const {
+  constexpr SwerveSample OffsetBy(wpi::units::second_t timeStampOffset) const {
     return SwerveSample{timestamp + timeStampOffset,
                         x,
                         y,
@@ -201,11 +199,12 @@ class SwerveSample {
   /// @param t time to move sample by
   /// @return the interpolated sample
   constexpr SwerveSample Interpolate(const SwerveSample& endValue,
-                                     units::second_t t) const {
-    units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
+                                     wpi::units::second_t t) const {
+    wpi::units::scalar_t scale =
+        (t - timestamp) / (endValue.timestamp - timestamp);
 
-    std::array<units::newton_t, 4> interpolatedForcesX;
-    std::array<units::newton_t, 4> interpolatedForcesY;
+    std::array<wpi::units::newton_t, 4> interpolatedForcesX;
+    std::array<wpi::units::newton_t, 4> interpolatedForcesY;
     for (int i = 0; i < 4; i++) {
       interpolatedForcesX[i] = wpi::util::Lerp(
           moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
@@ -247,7 +246,7 @@ class SwerveSample {
     auto compare_units = [epsilon](const auto& a, const auto& b) {
       using UnitType =
           std::remove_const_t<std::remove_reference_t<decltype(a)>>;
-      return units::math::abs(a - b) < UnitType(epsilon);
+      return wpi::units::math::abs(a - b) < UnitType(epsilon);
     };
 
     auto compare_arrays = [&compare_units](const auto& arr1, const auto& arr2) {
@@ -265,42 +264,42 @@ class SwerveSample {
   }
 
   /// The timestamp of this sample relative to the beginning of the trajectory.
-  units::second_t timestamp = 0_s;
+  wpi::units::second_t timestamp = 0_s;
 
   /// The X position of the sample relative to the blue alliance wall origin.
-  units::meter_t x = 0_m;
+  wpi::units::meter_t x = 0_m;
 
   /// The Y position of the sample relative to the blue alliance wall origin.
-  units::meter_t y = 0_m;
+  wpi::units::meter_t y = 0_m;
 
   /// The heading of the sample, with 0 being in the +X direction.
-  units::radian_t heading = 0_rad;
+  wpi::units::radian_t heading = 0_rad;
 
   /// The velocity of the sample in the X direction.
-  units::meters_per_second_t vx = 0_mps;
+  wpi::units::meters_per_second_t vx = 0_mps;
 
   /// The velocity of the sample in the Y direction.
-  units::meters_per_second_t vy = 0_mps;
+  wpi::units::meters_per_second_t vy = 0_mps;
 
   /// The angular velocity of the sample.
-  units::radians_per_second_t omega = 0_rad_per_s;
+  wpi::units::radians_per_second_t omega = 0_rad_per_s;
 
   /// The acceleration of the in the X direction.
-  units::meters_per_second_squared_t ax = 0_mps_sq;
+  wpi::units::meters_per_second_squared_t ax = 0_mps_sq;
 
   /// The acceleration of the in the Y direction.
-  units::meters_per_second_squared_t ay = 0_mps_sq;
+  wpi::units::meters_per_second_squared_t ay = 0_mps_sq;
 
   /// The angular acceleration of the sample.
-  units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
+  wpi::units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
 
   /// The force on each swerve module in the X direction. Module forces appear
   /// in the following order: [FL, FR, BL, BR].
-  std::array<units::newton_t, 4> moduleForcesX{0_N, 0_N, 0_N, 0_N};
+  std::array<wpi::units::newton_t, 4> moduleForcesX{0_N, 0_N, 0_N, 0_N};
 
   /// The force on each swerve module in the Y direction. Module forces appear
   /// in the following order: [FL, FR, BL, BR].
-  std::array<units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
+  std::array<wpi::units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
 };
 
 void to_json(wpi::util::json& json, const SwerveSample& trajectorySample);

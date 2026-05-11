@@ -10,8 +10,6 @@
 
 namespace choreo {
 
-using namespace wpi;
-
 /// Enforce equality operators on trajectory sample types.
 template <typename T>
 concept EqualityComparable = requires(const T& a, const T& b) {
@@ -23,8 +21,8 @@ concept EqualityComparable = requires(const T& a, const T& b) {
 template <typename T>
 concept TrajectorySample =
     EqualityComparable<T> &&
-    requires(T t, units::second_t time, T tother, int year) {
-      { t.GetTimestamp() } -> std::same_as<units::second_t>;
+    requires(T t, wpi::units::second_t time, T tother, int year) {
+      { t.GetTimestamp() } -> std::same_as<wpi::units::second_t>;
       { t.GetPose() } -> std::same_as<wpi::math::Pose2d>;
       {
         t.GetChassisVelocities()

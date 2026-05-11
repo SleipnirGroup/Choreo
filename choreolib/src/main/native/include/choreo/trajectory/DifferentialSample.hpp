@@ -24,8 +24,6 @@
 
 namespace choreo {
 
-using namespace wpi;
-
 /// A single differential drive robot sample in a Trajectory.
 class DifferentialSample {
  public:
@@ -48,15 +46,16 @@ class DifferentialSample {
   /// @param alpha The chassis angular acceleration
   /// @param fl The force of the left wheels
   /// @param fr The force of the right wheels
-  constexpr DifferentialSample(units::second_t timestamp, units::meter_t x,
-                               units::meter_t y, units::radian_t heading,
-                               units::meters_per_second_t vl,
-                               units::meters_per_second_t vr,
-                               units::radians_per_second_t omega,
-                               units::meters_per_second_squared_t al,
-                               units::meters_per_second_squared_t ar,
-                               units::radians_per_second_squared_t alpha,
-                               units::newton_t fl, units::newton_t fr)
+  constexpr DifferentialSample(wpi::units::second_t timestamp,
+                               wpi::units::meter_t x, wpi::units::meter_t y,
+                               wpi::units::radian_t heading,
+                               wpi::units::meters_per_second_t vl,
+                               wpi::units::meters_per_second_t vr,
+                               wpi::units::radians_per_second_t omega,
+                               wpi::units::meters_per_second_squared_t al,
+                               wpi::units::meters_per_second_squared_t ar,
+                               wpi::units::radians_per_second_squared_t alpha,
+                               wpi::units::newton_t fl, wpi::units::newton_t fr)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -73,7 +72,7 @@ class DifferentialSample {
   /// Gets the timestamp of the DifferentialSample.
   ///
   /// @return The timestamp.
-  units::second_t GetTimestamp() const { return timestamp; }
+  wpi::units::second_t GetTimestamp() const { return timestamp; }
 
   /// Gets the Pose2d of the DifferentialSample.
   ///
@@ -93,7 +92,8 @@ class DifferentialSample {
   ///
   /// @param timeStampOffset time to move sample by
   /// @return DifferentialSample that is moved forward by the offset
-  constexpr DifferentialSample OffsetBy(units::second_t timeStampOffset) const {
+  constexpr DifferentialSample OffsetBy(
+      wpi::units::second_t timeStampOffset) const {
     return DifferentialSample{timestamp + timeStampOffset,
                               x,
                               y,
@@ -114,8 +114,9 @@ class DifferentialSample {
   /// @param t time to move sample by
   /// @return the interpolated sample
   DifferentialSample Interpolate(const DifferentialSample& endValue,
-                                 units::second_t t) const {
-    units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
+                                 wpi::units::second_t t) const {
+    wpi::units::scalar_t scale =
+        (t - timestamp) / (endValue.timestamp - timestamp);
 
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations
@@ -151,19 +152,19 @@ class DifferentialSample {
               v * std::cos(θ), v * std::sin(θ), ω, al, ar, α};
         };
 
-    units::second_t τ = t - timestamp;
+    wpi::units::second_t τ = t - timestamp;
     auto sample = wpi::math::RKDP(
         f, initialState,
         Eigen::Vector<double, 3>(al.value(), ar.value(), alpha.value()), τ);
 
     return DifferentialSample{
         wpi::util::Lerp(timestamp, endValue.timestamp, scale),
-        units::meter_t{sample(0, 0)},
-        units::meter_t{sample(1, 0)},
-        units::radian_t{sample(2, 0)},
-        units::meters_per_second_t{sample(3, 0)},
-        units::meters_per_second_t{sample(4, 0)},
-        units::radians_per_second_t{sample(5, 0)},
+        wpi::units::meter_t{sample(0, 0)},
+        wpi::units::meter_t{sample(1, 0)},
+        wpi::units::radian_t{sample(2, 0)},
+        wpi::units::meters_per_second_t{sample(3, 0)},
+        wpi::units::meters_per_second_t{sample(4, 0)},
+        wpi::units::radians_per_second_t{sample(5, 0)},
         al,
         ar,
         alpha,
@@ -233,7 +234,7 @@ class DifferentialSample {
     auto compare_units = [epsilon](const auto& a, const auto& b) {
       using UnitType =
           std::remove_const_t<std::remove_reference_t<decltype(a)>>;
-      return units::math::abs(a - b) < UnitType(epsilon);
+      return wpi::units::math::abs(a - b) < UnitType(epsilon);
     };
 
     return compare_units(timestamp, other.timestamp) &&
@@ -246,40 +247,40 @@ class DifferentialSample {
   }
 
   /// The timestamp of this sample relative to the beginning of the trajectory.
-  units::second_t timestamp = 0_s;
+  wpi::units::second_t timestamp = 0_s;
 
   /// The X position of the sample relative to the blue alliance wall origin.
-  units::meter_t x = 0_m;
+  wpi::units::meter_t x = 0_m;
 
   /// The Y position of the sample relative to the blue alliance wall origin.
-  units::meter_t y = 0_m;
+  wpi::units::meter_t y = 0_m;
 
   /// The heading of the sample, with 0 being in the +X direction.
-  units::radian_t heading = 0_rad;
+  wpi::units::radian_t heading = 0_rad;
 
   /// The velocity of the left wheels.
-  units::meters_per_second_t vl = 0_mps;
+  wpi::units::meters_per_second_t vl = 0_mps;
 
   /// The velocity of the right wheels.
-  units::meters_per_second_t vr = 0_mps;
+  wpi::units::meters_per_second_t vr = 0_mps;
 
   /// The chassis angular velocity.
-  units::radians_per_second_t omega = 0_rad_per_s;
+  wpi::units::radians_per_second_t omega = 0_rad_per_s;
 
   /// The acceleration of the left wheels.
-  units::meters_per_second_squared_t al = 0_mps_sq;
+  wpi::units::meters_per_second_squared_t al = 0_mps_sq;
 
   /// The acceleration of the right wheels.
-  units::meters_per_second_squared_t ar = 0_mps_sq;
+  wpi::units::meters_per_second_squared_t ar = 0_mps_sq;
 
   /// The chassis angular acceleration.
-  units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
+  wpi::units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
 
   /// The force of the left wheels.
-  units::newton_t fl = 0_N;
+  wpi::units::newton_t fl = 0_N;
 
   /// The force of the right wheels.
-  units::newton_t fr = 0_N;
+  wpi::units::newton_t fr = 0_N;
 };
 
 void to_json(wpi::util::json& json, const DifferentialSample& trajectorySample);

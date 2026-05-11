@@ -20,8 +20,6 @@
 
 namespace choreo {
 
-using namespace wpi;
-
 /// A trajectory loaded from Choreo.
 ///
 /// @tparam SampleType DifferentialSample or SwerveSample.
@@ -124,7 +122,7 @@ class Trajectory {
   /// @param mirrorForRedAlliance whether or not to return the sample mirrored.
   /// @return The SampleType at the given time.
   template <int Year = util::kDefaultYear>
-  std::optional<SampleType> SampleAt(units::second_t timestamp,
+  std::optional<SampleType> SampleAt(wpi::units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
     if (auto state = SampleInternal(timestamp)) {
       return mirrorForRedAlliance ? state.value().template Flipped<Year>()
@@ -178,7 +176,7 @@ class Trajectory {
   ///
   /// @return The total time the trajectory will take to follow, if empty will
   ///     return 0 seconds.
-  units::second_t GetTotalTime() const {
+  wpi::units::second_t GetTotalTime() const {
     if (samples.size() == 0) {
       return 0_s;
     }
@@ -250,8 +248,8 @@ class Trajectory {
           name + "[" + std::to_string(splitIndex) + "]", {}, {}, {}};
     }
     // Now we know sublist.size() >= 1
-    units::second_t startTime = sublist.front().GetTimestamp();
-    units::second_t endTime = sublist.back().GetTimestamp();
+    wpi::units::second_t startTime = sublist.front().GetTimestamp();
+    wpi::units::second_t endTime = sublist.back().GetTimestamp();
 
     auto offsetSamples =
         sublist | std::views::transform([startTime](const SampleType& s) {
@@ -315,7 +313,8 @@ class Trajectory {
   std::vector<EventMarker> events;
 
  private:
-  std::optional<SampleType> SampleInternal(units::second_t timestamp) const {
+  std::optional<SampleType> SampleInternal(
+      wpi::units::second_t timestamp) const {
     if (samples.size() == 0) {
       return {};
     }
