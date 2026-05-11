@@ -280,8 +280,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // Penalize lateral forces with the Tire Induced Drag model
       // F_drag = F_lateral * sin(α)
       // where α is the slip angle between velocity and force
-      // Let sin(α) = α; then α = F_lateral / F_norm; thus
-      // F_drag = F_lateral * α = F_lateral * F_lateral / F_norm
+      // Let sin(α) = α; then sin(α) = F_lateral / F_norm; thus
+      // F_drag = F_lateral * sin(α) = F_lateral * F_lateral / F_norm
       //        = F_lateral * F_lateral * sqrt(F_norm_sq) / F_norm_sq
       // constants used for numerical smoothing
       auto F_drag = (F_lateral * F_lateral) * slp::sqrt(F_norm_sq + 1e-6) /
