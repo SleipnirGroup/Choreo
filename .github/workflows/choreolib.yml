@@ -35,6 +35,12 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
 
+      - uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 25
+          architecture: ${{ matrix.architecture }}
+
       - name: Set version (release)
         if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
         working-directory: choreolib
