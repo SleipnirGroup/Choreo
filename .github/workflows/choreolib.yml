@@ -39,7 +39,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 25
-          architecture: ${{ matrix.architecture }}
 
       - name: Set version (release)
         if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
