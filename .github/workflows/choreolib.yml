@@ -71,7 +71,6 @@ jobs:
         include:
           - os: windows-2025
             artifact-name: Windows-x86_64
-            architecture: x64
             build-options:
 
           # FIXME: Link failure on commands library
@@ -81,7 +80,6 @@ jobs:
 
           - os: macos-15
             artifact-name: macOS-universal
-            architecture: aarch64
             build-options:
 
     name: C++ and Java - ${{ matrix.artifact-name }}
@@ -100,7 +98,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 25
-          architecture: ${{ matrix.architecture }}
 
       # 6/27/25: an Actions issue makes GITHUB_REF unset on Windows
       - name: Set version (Windows release)
