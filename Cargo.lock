@@ -565,6 +565,8 @@ version = "2026.0.3"
 dependencies = [
  "choreo-core",
  "clap",
+ "serde",
+ "serde_json",
  "tracing",
  "tracing-subscriber",
 ]

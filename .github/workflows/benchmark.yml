@@ -1,0 +1,173 @@
+name: PR Benchmark
+
+# Comment-triggered: a maintainer (OWNER / MEMBER / COLLABORATOR) types
+# `/bench` on a PR and this workflow builds the PR's choreo-cli and the base
+# branch's choreo-cli, runs both against the PR's test-projects/, computes
+# per-trajectory solve-time / length / duration deltas, renders each trajectory
+# as an SVG with per-step linear-acceleration coloring, uploads everything as
+# an artifact, and posts a sticky PR comment with the comparison table.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: read
+  actions: read
+
+concurrency:
+  group: bench-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  bench:
+    # Only run when:
+    #   - the comment is on a PR (not a plain issue)
+    #   - the body starts with "/bench"
+    #   - the commenter has write access (gates external drive-by triggers)
+    if: >-
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/bench') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Acknowledge the trigger comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: rocket
+
+      - name: Resolve PR head + base
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('head_sha', pr.data.head.sha);
+            core.setOutput('base_sha', pr.data.base.sha);
+            core.setOutput('head_repo', pr.data.head.repo.full_name);
+
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ steps.pr.outputs.head_repo }}
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            hyperfine \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            wget
+
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.10
+
+      - name: Build PR choreo-cli
+        run: cargo build --release -p choreo-cli
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: "true"
+
+      - name: Stash PR binary
+        run: cp target/release/choreo-cli /tmp/cli-pr
+
+      - name: Snapshot PR test-projects for both runs
+        run: |
+          cp -r test-projects /tmp/tp-pr
+          cp -r test-projects /tmp/tp-base
+
+      - name: Run PR benchmark
+        run: bash scripts/run-bench.sh /tmp/cli-pr /tmp/tp-pr /tmp/out-pr
+
+      # Now overlay base-branch sources of just the Rust crates so we can
+      # build the base binary against PR's test-projects/ + scripts/.
+      - name: Fetch base ref
+        run: git fetch origin ${{ steps.pr.outputs.base_sha }}
+
+      - name: Check out base sources (Rust crates only)
+        run: |
+          git checkout ${{ steps.pr.outputs.base_sha }} -- \
+            src-core src-cli trajoptlib Cargo.lock Cargo.toml
+
+      - name: Build base choreo-cli
+        run: cargo build --release -p choreo-cli
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: "true"
+
+      - name: Stash base binary
+        run: cp target/release/choreo-cli /tmp/cli-base
+
+      - name: Restore PR sources for scripts
+        run: |
+          git checkout ${{ steps.pr.outputs.head_sha }} -- \
+            src-core src-cli trajoptlib Cargo.lock Cargo.toml
+
+      - name: Run base benchmark
+        run: bash scripts/run-bench.sh /tmp/cli-base /tmp/tp-base /tmp/out-base
+        continue-on-error: true # tolerate schema-incompatible base
+
+      - name: Render trajectory SVGs (per-step accel coloring)
+        run: |
+          set -euo pipefail
+          render() {
+            local side=$1
+            local root=$2
+            for traj in "$root"/*/*.traj; do
+              variant=$(basename "$(dirname "$traj")")
+              name=$(basename "$traj" .traj)
+              out="${traj%.traj}.${side}.svg"
+              node scripts/render-traj.mjs --traj "$traj" --out "$out" \
+                --title "${side^^}  ${variant} · ${name}" || true
+            done
+          }
+          render pr   /tmp/tp-pr
+          render base /tmp/tp-base
+
+      - name: Build markdown report
+        env:
+          ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          node scripts/bench-report.mjs \
+            --pr /tmp/tp-pr --base /tmp/tp-base \
+            --pr-reports /tmp/out-pr --base-reports /tmp/out-base \
+            --artifact-url "$ARTIFACT_URL" \
+            --out report.md
+          cat report.md
+
+      - name: Upload bench artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bench-output-${{ github.run_id }}
+          path: |
+            /tmp/out-pr/**
+            /tmp/out-base/**
+            /tmp/tp-pr/**/*.svg
+            /tmp/tp-base/**/*.svg
+            report.md
+
+      - name: Post sticky comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: bench
+          number: ${{ github.event.issue.number }}
+          path: report.md
