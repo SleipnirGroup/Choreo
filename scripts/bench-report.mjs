@@ -58,7 +58,8 @@ for (const variant of variants) {
     continue;
   }
 
-  const names = [...new Set(prRuns.flatMap(r => r.map(e => e?.name).filter(Boolean)))];
+  // sort names for consistent order
+  const names = [...new Set(prRuns.flatMap(r => r.map(e => e?.name).filter(Boolean)))].sort();
   for (const name of names) {
     const pr = aggregateSide(prRuns, name);
     const base = aggregateSide(baseRuns, name);
