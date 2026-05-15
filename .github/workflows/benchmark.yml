@@ -66,13 +66,17 @@ jobs:
             core.setOutput('base_sha', pr.data.base.sha);
             core.setOutput('head_repo', pr.data.head.repo.full_name);
 
-      - name: Checkout test-projects only
+      - name: Checkout test-projects + enumerate script
         uses: actions/checkout@v6
         with:
           repository: ${{ steps.pr.outputs.head_repo }}
           ref: ${{ steps.pr.outputs.head_sha }}
           persist-credentials: false
-          sparse-checkout: test-projects
+          # resolve only needs the variant list, so stay sparse — but the
+          # enumerator now lives in a file, so that path has to be included too.
+          sparse-checkout: |
+            test-projects
+            scripts/ci/enumerate-variants.sh
           sparse-checkout-cone-mode: false
 
       - name: Enumerate project variants
