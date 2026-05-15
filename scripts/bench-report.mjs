@@ -1,11 +1,18 @@
 #!/usr/bin/env node
-// Build a markdown comparison report from two `run-bench.sh` outputs.
+// Build a markdown comparison report from two `run-bench.sh` output dirs.
 //
 // Usage:
 //   node scripts/bench-report.mjs \
 //     --pr <PR test-projects dir>  --base <BASE test-projects dir> \
 //     --pr-reports <PR out dir>    --base-reports <BASE out dir> \
-//     --artifact-url <url>         --out <report.md>
+//     --artifact-url <url>         --commit <sha> --out <report.md>
+//
+// Each *-reports dir holds one CLI report per run: `<variant>.run<N>.report.json`
+// (an array of {name, solve_ms, ok, error}). We aggregate the runs per
+// trajectory into mean ± stdev. Trajectory geometry (length / duration /
+// sample count) is read from the staged `<variant>/<name>.traj` ONLY when that
+// side actually generated it this run (report says ok) — otherwise the `.traj`
+// on disk is stale committed input, not this run's output.
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -18,65 +25,86 @@ for (const k of ["pr", "base", "pr-reports", "base-reports", "out"]) {
   }
 }
 const artifactUrl = argv["artifact-url"] ?? null;
+const commit = argv.commit ?? null;
+// Base blob URL of the per-run bench-renders ref; SVGs live at
+// <rendersUrl>/<variant>/<name>.{pr,base}.svg (matches the bench job's
+// `${traj%.traj}.${side}.svg` render paths).
+const rendersUrl = argv["renders-url"] ?? null;
 
-// Thresholds for highlighting regressions.
-const SOLVE_PCT_THRESHOLD = 15;     // bold/red if |pctSolve| > 15%
-const LEN_DELTA_THRESHOLD = 0.01;   // bold/red if |dLen| > 1 cm
+// Solve-time regression highlight threshold (bold if |Δ%| exceeds this).
+const SOLVE_PCT_THRESHOLD = 15;
 
 const variants = listVariants(argv.pr);
 const rows = [];
-const summary = { regressed: 0, improved: 0, base_failed: 0, total: 0 };
+const summary = {
+  total: 0,        // trajectories seen across all variants
+  comparable: 0,   // generated OK on BOTH sides (the only ones scored)
+  prFailed: 0,     // did not generate on PR
+  baseFailed: 0,   // generated on PR but not on base (incl. base missing)
+  flaky: 0,        // some-but-not-all runs OK on a side
+  sumPr: 0,        // Σ mean solve ms over comparable
+  sumBase: 0,
+  pcts: [],        // per-trajectory solve Δ% over comparable
+  dTimeTotal: 0,   // Σ trajectory-duration Δ over comparable
+  dTimeCount: 0,
+};
 
 for (const variant of variants) {
-  const prReport  = loadReport(argv["pr-reports"],   variant);
-  const baseReport = loadReport(argv["base-reports"], variant);
-  const prDir   = join(argv.pr,   variant);
-  const baseDir = join(argv.base, variant);
+  const prRuns = loadRuns(argv["pr-reports"], variant);
+  const baseRuns = loadRuns(argv["base-reports"], variant);
 
-  if (!prReport) {
-    rows.push(missingRow(variant, "(no PR report)"));
+  if (prRuns.length === 0) {
+    rows.push({ variant, noReport: true });
     continue;
   }
 
-  for (const prEntry of prReport) {
-    const name = prEntry.name;
-    const baseEntry = baseReport?.find(r => r.name === name) ?? null;
-    const prTraj   = trajMetrics(join(prDir,   `${name}.traj`));
-    const baseTraj = trajMetrics(join(baseDir, `${name}.traj`));
+  const names = [...new Set(prRuns.flatMap(r => r.map(e => e?.name).filter(Boolean)))];
+  for (const name of names) {
+    const pr = aggregateSide(prRuns, name);
+    const base = aggregateSide(baseRuns, name);
+    const prOk = !!(pr && pr.ok);
+    const baseOk = !!(base && base.ok);
 
-    let status = "OK";
-    if (!prEntry.ok)            status = "PR_FAILED";
-    else if (!baseEntry)        status = "BASE_MISSING";
-    else if (!baseEntry.ok)     status = "BASE_FAILED";
+    // Only trust geometry from a side that actually produced this traj.
+    const prTraj = prOk ? trajMetrics(join(argv.pr, variant, `${name}.traj`)) : null;
+    const baseTraj = baseOk ? trajMetrics(join(argv.base, variant, `${name}.traj`)) : null;
 
-    const solvePr   = prEntry.ok ? prEntry.solve_ms : null;
-    const solveBase = baseEntry?.ok ? baseEntry.solve_ms : null;
-    const dSolve    = (solvePr != null && solveBase != null) ? solvePr - solveBase : null;
-    const pctSolve  = (dSolve != null && solveBase > 0)      ? (dSolve / solveBase) * 100 : null;
-    const dLen      = (prTraj && baseTraj)                    ? prTraj.length_m - baseTraj.length_m : null;
-    const dTime     = (prTraj && baseTraj)                    ? prTraj.total_s - baseTraj.total_s   : null;
+    let status;
+    if (!prOk) status = "PR_FAILED";
+    else if (!base || base.runs === 0) status = "BASE_MISSING";
+    else if (!baseOk) status = "BASE_FAILED";
+    else if (pr.flaky || base.flaky) status = "FLAKY";
+    else status = "OK";
 
-    const regressed =
-      status !== "OK" ||
-      (pctSolve != null && Math.abs(pctSolve) > SOLVE_PCT_THRESHOLD) ||
-      (dLen     != null && Math.abs(dLen)     > LEN_DELTA_THRESHOLD);
+    const dSolve = prOk && baseOk ? pr.mean - base.mean : null;
+    const pct = dSolve != null && base.mean > 0 ? (dSolve / base.mean) * 100 : null;
+    const dLen = prTraj && baseTraj ? prTraj.length_m - baseTraj.length_m : null;
+    const dTime = prTraj && baseTraj ? prTraj.total_s - baseTraj.total_s : null;
 
     summary.total++;
-    if (status === "BASE_MISSING" || status === "BASE_FAILED") summary.base_failed++;
-    else if (regressed && pctSolve != null && pctSolve > 0) summary.regressed++;
-    else if (pctSolve != null && pctSolve < -SOLVE_PCT_THRESHOLD) summary.improved++;
+    if (!prOk) summary.prFailed++;
+    else if (!baseOk) summary.baseFailed++;
+    else {
+      summary.comparable++;
+      summary.sumPr += pr.mean;
+      summary.sumBase += base.mean;
+      if (pct != null) summary.pcts.push(pct);
+      if (dTime != null) { summary.dTimeTotal += dTime; summary.dTimeCount++; }
+    }
+    if ((pr && pr.flaky) || (base && base.flaky)) summary.flaky++;
 
-    rows.push({ variant, name, status, regressed,
-                solvePr, solveBase, dSolve, pctSolve,
-                lenPr: prTraj?.length_m, lenBase: baseTraj?.length_m, dLen,
-                timePr: prTraj?.total_s, timeBase: baseTraj?.total_s, dTime,
-                samplesPr: prTraj?.sample_count, samplesBase: baseTraj?.sample_count });
+    rows.push({
+      variant, name, status, pr, base, prOk, baseOk, dSolve, pct,
+      lenPr: prTraj?.length_m, lenBase: baseTraj?.length_m, dLen,
+      timePr: prTraj?.total_s, timeBase: baseTraj?.total_s, dTime,
+      samplesPr: prTraj?.sample_count, samplesBase: baseTraj?.sample_count,
+    });
   }
 }
 
-writeFileSync(argv.out, renderMarkdown(rows, summary, artifactUrl));
+writeFileSync(argv.out, renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl));
 
-// ---------- helpers ----------
+// ---------- aggregation ----------
 
 function listVariants(dir) {
   if (!existsSync(dir)) return [];
@@ -86,11 +114,43 @@ function listVariants(dir) {
     .sort();
 }
 
-function loadReport(dir, variant) {
-  const p = join(dir, `${variant}.report.json`);
-  if (!existsSync(p)) return null;
-  try { return JSON.parse(readFileSync(p, "utf8")); }
-  catch { return null; }
+// All per-run report arrays for a variant: `<variant>.run<N>.report.json`,
+// plus a legacy single `<variant>.report.json` if present.
+function loadRuns(dir, variant) {
+  if (!existsSync(dir)) return [];
+  const files = readdirSync(dir)
+    .filter(f =>
+      f === `${variant}.report.json` ||
+      (f.startsWith(`${variant}.run`) && f.endsWith(".report.json")))
+    .sort();
+  const runs = [];
+  for (const f of files) {
+    try {
+      const j = JSON.parse(readFileSync(join(dir, f), "utf8"));
+      if (Array.isArray(j)) runs.push(j);
+    } catch { /* skip unparseable run */ }
+  }
+  return runs;
+}
+
+function aggregateSide(runs, name) {
+  const entries = runs.map(r => r.find(e => e && e.name === name)).filter(Boolean);
+  if (entries.length === 0) return null;
+  const okEntries = entries.filter(e => e.ok);
+  const samples = okEntries
+    .map(e => e.solve_ms)
+    .filter(v => typeof v === "number" && Number.isFinite(v));
+  const ok = samples.length > 0;
+  const mean = ok ? samples.reduce((a, b) => a + b, 0) / samples.length : null;
+  const sd = ok && samples.length > 1
+    ? Math.sqrt(samples.reduce((a, b) => a + (b - mean) ** 2, 0) / (samples.length - 1))
+    : 0;
+  const error = entries.filter(e => !e.ok).map(e => e.error).filter(Boolean).pop() ?? null;
+  return {
+    ok,
+    flaky: ok && okEntries.length < entries.length,
+    mean, sd, n: samples.length, runs: entries.length, error,
+  };
 }
 
 function trajMetrics(trajPath) {
@@ -107,74 +167,179 @@ function trajMetrics(trajPath) {
   return { length_m: len, total_s: samples[samples.length - 1].t, sample_count: samples.length };
 }
 
-function missingRow(variant, note) {
-  return { variant, name: note, status: "NO_PR_REPORT", regressed: true };
-}
+// ---------- rendering ----------
 
-function renderMarkdown(rows, summary, artifactUrl) {
-  const lines = [];
-  lines.push(`### Choreo trajectory benchmark`);
-  lines.push("");
-  lines.push(`Compared ${summary.total} trajectories across ${new Set(rows.map(r => r.variant)).size} project variant(s).`);
-  const bits = [];
-  if (summary.regressed)  bits.push(`**${summary.regressed} regressed** (solve time >${SOLVE_PCT_THRESHOLD}% slower or path length shifted >${LEN_DELTA_THRESHOLD}m)`);
-  if (summary.improved)   bits.push(`${summary.improved} sped up`);
-  if (summary.base_failed) bits.push(`${summary.base_failed} unable to compare to base`);
-  lines.push(bits.length ? bits.join(" · ") : "No notable differences.");
-  lines.push("");
-  lines.push("| Variant | Trajectory | Solve (PR) | Solve (base) | Δsolve | Length Δ | Time Δ | Samples (PR/base) | Status |");
-  lines.push("|---|---|---:|---:|---:|---:|---:|:---:|:---:|");
+function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
+  const L = [];
+  L.push(commit
+    ? `### Choreo trajectory benchmark — commit \`${commit}\``
+    : `### Choreo trajectory benchmark`);
+  L.push("");
+
+  if (summary.comparable > 0) {
+    const overall = ((summary.sumPr - summary.sumBase) / summary.sumBase) * 100;
+    const med = median(summary.pcts);
+    L.push(`**Solve time ${signedPct(overall)} overall** — PR ${fmtTotal(summary.sumPr)} vs base ${fmtTotal(summary.sumBase)} over ${summary.comparable} comparable trajector${summary.comparable === 1 ? "y" : "ies"} (median per-trajectory ${signedPct(med)}).`);
+    L.push("");
+    L.push(`Trajectory duration: ${signedFixed(summary.dTimeTotal, 3)} s total across ${summary.dTimeCount} compared. Path-length differences are diagnostic only — not a pass/fail signal.`);
+  } else {
+    L.push(`**No trajectories generated successfully on both PR and base** — nothing to score. See per-variant statuses below.`);
+  }
+  L.push("");
+  L.push(`${summary.comparable} comparable · ${summary.prFailed} failed on PR · ${summary.baseFailed} failed on base · ${summary.flaky} flaky · ${summary.total} total`);
+  L.push("");
+
+  // Group rows by variant (listVariants order is preserved by push order).
+  const byVariant = new Map();
   for (const r of rows) {
-    if (r.status === "NO_PR_REPORT") {
-      lines.push(`| \`${r.variant}\` | — | — | — | — | — | — | — | **${r.status}** |`);
+    if (!byVariant.has(r.variant)) byVariant.set(r.variant, []);
+    byVariant.get(r.variant).push(r);
+  }
+
+  // Auto-expand the single worst-regressed variant so reviewers see detail
+  // without clicking.
+  let worstVariant = null;
+  let worstPct = -Infinity;
+  for (const [v, rs] of byVariant) {
+    const cmp = rs.filter(r => r.status === "OK" || r.status === "FLAKY");
+    if (cmp.length === 0) continue;
+    const sp = cmp.reduce((a, r) => a + r.pr.mean, 0);
+    const sb = cmp.reduce((a, r) => a + r.base.mean, 0);
+    if (sb > 0) {
+      const p = ((sp - sb) / sb) * 100;
+      if (p > worstPct) { worstPct = p; worstVariant = v; }
+    }
+  }
+
+  for (const [variant, rs] of byVariant) {
+    if (rs.length === 1 && rs[0].noReport) {
+      L.push(`<details><summary><b>${variant}</b> — ⚠ no PR report</summary>`);
+      L.push("");
+      L.push(`The PR CLI produced no report for this variant (it crashed or was killed before writing one).`);
+      L.push("");
+      L.push(`</details>`);
+      L.push("");
       continue;
     }
-    lines.push("| " + [
-      `\`${r.variant}\``,
-      `\`${r.name}\``,
-      fmtMs(r.solvePr),
-      fmtMs(r.solveBase),
-      fmtSolveDelta(r.dSolve, r.pctSolve, r.regressed),
-      fmtLenDelta(r.dLen, r.regressed),
-      fmtTimeDelta(r.dTime),
-      r.samplesPr != null && r.samplesBase != null ? `${r.samplesPr}/${r.samplesBase}` : (r.samplesPr ?? "—"),
-      r.status === "OK" ? "OK" : `**${r.status}**`,
-    ].join(" | ") + " |");
+
+    const cmp = rs.filter(r => r.status === "OK" || r.status === "FLAKY");
+    let verdict;
+    if (cmp.length > 0) {
+      const sp = cmp.reduce((a, r) => a + r.pr.mean, 0);
+      const sb = cmp.reduce((a, r) => a + r.base.mean, 0);
+      verdict = `solve ${signedPct(sb > 0 ? ((sp - sb) / sb) * 100 : 0)} (${cmp.length}/${rs.length} comparable)`;
+    } else {
+      verdict = `0/${rs.length} comparable`;
+    }
+    const open = variant === worstVariant ? " open" : "";
+    L.push(`<details${open}><summary><b>${variant}</b> — ${verdict}</summary>`);
+    L.push("");
+    L.push(`| Trajectory | Solve (PR) | Solve (base) | Δsolve | Δlength | Δtime | Samples PR/base | Status |`);
+    L.push(`|---|---:|---:|---:|---:|---:|:---:|:---:|`);
+    for (const r of rs) {
+      L.push("| " + [
+        `\`${r.name}\``,
+        fmtSolve(r.pr),
+        fmtSolve(r.base),
+        fmtDeltaSolve(r.dSolve, r.pct),
+        fmtMeters(r.dLen),
+        fmtSeconds(r.dTime),
+        `${r.samplesPr ?? "—"}/${r.samplesBase ?? "—"}`,
+        fmtStatus(r.status),
+      ].join(" | ") + " |");
+    }
+    L.push("");
+
+    if (rendersUrl) {
+      const items = [];
+      for (const r of rs) {
+        const segs = [`${encodeURIComponent(r.variant)}/${encodeURIComponent(r.name)}`];
+        const links = [];
+        if (r.prOk) links.push(`[PR](${rendersUrl}/${segs}.pr.svg)`);
+        if (r.baseOk) links.push(`[base](${rendersUrl}/${segs}.base.svg)`);
+        if (links.length) items.push(`\`${r.name}\` — ${links.join(" · ")}`);
+      }
+      if (items.length) {
+        L.push(`Renders (open in browser): ${items.join(" — ")}`);
+        L.push("");
+      }
+    }
+
+    L.push(`</details>`);
+    L.push("");
   }
-  lines.push("");
+
   if (artifactUrl) {
-    lines.push(`Trajectory renderings (per-step linear-acceleration coloring, matching the UI gradient) are uploaded as a workflow artifact — open the run page to download:`);
-    lines.push("");
-    lines.push(`→ **[Download bench-output artifact](${artifactUrl})**`);
+    L.push(`Trajectory renderings (per-step linear-acceleration coloring, matching the UI gradient) are uploaded as a workflow artifact:`);
+    L.push("");
+    L.push(`→ **[Download bench-output artifact](${artifactUrl})**`);
+    L.push("");
   }
-  lines.push("");
-  lines.push(`<sub>Solve times are wall-clock around \`generate()\` only (excluding CLI startup), measured with hyperfine \`--warmup 1 --runs 3\` and reported by the CLI's \`--report-json\`. \`Length Δ\` is the change in integrated path length (sum of segment lengths). \`Time Δ\` is the change in total trajectory duration. \`Samples\` shows the count from each side; very different counts mean point-wise comparisons would be misleading — use the artifact's SVGs for visual diff.</sub>`);
-  return lines.join("\n") + "\n";
+  L.push(`<sub>Solve times are wall-clock around \`generate()\` only (excluding CLI startup), reported by the CLI's \`--report-json\` and aggregated as mean ± sample stdev over independent CLI runs. \`Δlength\`/\`Δtime\` are shown only when a trajectory generated successfully on **both** sides; path length is diagnostic, not a pass/fail signal. \`Samples\` is the per-side sample count (\`—\` = that side did not generate it).</sub>`);
+  return L.join("\n") + "\n";
 }
 
-function fmtMs(v) {
-  if (v == null) return "—";
-  return `${v.toFixed(1)} ms`;
+// ---------- formatting ----------
+
+function unitFor(ms) { return Math.abs(ms) >= 10000 ? "s" : "ms"; }
+function inUnit(ms, u) { return u === "s" ? ms / 1000 : ms; }
+function decimals(u) { return u === "s" ? 2 : 1; }
+
+function fmtTotal(ms) {
+  const u = unitFor(ms);
+  return `${inUnit(ms, u).toFixed(decimals(u))} ${u}`;
 }
 
-function fmtSolveDelta(d, pct, regressed) {
+function fmtSolve(s) {
+  if (!s || !s.ok || s.mean == null) return "—";
+  const u = unitFor(s.mean);
+  const m = inUnit(s.mean, u).toFixed(decimals(u));
+  if (s.n > 1 && s.sd > 0) {
+    return `${m} ± ${inUnit(s.sd, u).toFixed(decimals(u))} ${u}`;
+  }
+  return `${m} ${u}`;
+}
+
+function fmtDeltaSolve(d, pct) {
   if (d == null) return "—";
-  const sign = d > 0 ? "+" : "";
-  const txt = `${sign}${d.toFixed(1)} ms${pct != null ? ` (${sign}${pct.toFixed(1)}%)` : ""}`;
-  return regressed && pct != null && Math.abs(pct) > SOLVE_PCT_THRESHOLD ? `**${txt}**` : txt;
+  const u = unitFor(d);
+  const sign = d >= 0 ? "+" : "-";
+  const mag = Math.abs(inUnit(d, u)).toFixed(decimals(u));
+  const p = pct != null ? ` (${signedPct(pct)})` : "";
+  const txt = `${sign}${mag} ${u}${p}`;
+  return pct != null && Math.abs(pct) > SOLVE_PCT_THRESHOLD ? `**${txt}**` : txt;
 }
 
-function fmtLenDelta(d, regressed) {
+function fmtMeters(d) {
   if (d == null) return "—";
-  const sign = d >= 0 ? "+" : "";
-  const txt = `${sign}${d.toFixed(4)} m`;
-  return regressed && Math.abs(d) > LEN_DELTA_THRESHOLD ? `**${txt}**` : txt;
+  return `${d >= 0 ? "+" : "-"}${Math.abs(d).toFixed(4)} m`;
 }
 
-function fmtTimeDelta(d) {
+function fmtSeconds(d) {
   if (d == null) return "—";
-  const sign = d >= 0 ? "+" : "";
-  return `${sign}${d.toFixed(3)} s`;
+  return `${signedFixed(d, 3)} s`;
+}
+
+function fmtStatus(s) {
+  if (s === "OK") return "OK";
+  if (s === "FLAKY") return "⚠ FLAKY";
+  return `**${s}**`;
+}
+
+function signedPct(p) {
+  if (p == null || !Number.isFinite(p)) return "n/a";
+  return `${p >= 0 ? "+" : "-"}${Math.abs(p).toFixed(1)}%`;
+}
+
+function signedFixed(v, dp) {
+  return `${v >= 0 ? "+" : "-"}${Math.abs(v).toFixed(dp)}`;
+}
+
+function median(xs) {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
 function parseArgs(args) {

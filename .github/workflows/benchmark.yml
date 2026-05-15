@@ -1,11 +1,22 @@
 name: Solver Time Benchmark
 
 # Comment-triggered: a maintainer (OWNER / MEMBER / COLLABORATOR) types
-# `/bench` on a PR and this workflow builds the PR's choreo-cli and the base
-# branch's choreo-cli, runs both against the PR's test-projects/, computes
-# per-trajectory solve-time / length / duration deltas, renders each trajectory
-# as an SVG with per-step linear-acceleration coloring, uploads everything as
-# an artifact, and posts a sticky PR comment with the comparison table.
+# `/bench` on a PR. The work is split across parallel jobs to cut wall-clock:
+#
+#   resolve ─ gate + ack + resolve PR head/base SHAs
+#      │
+#      ├─ build (matrix: pr | base) ── two self-contained choreo-cli binaries
+#      │                               built concurrently, uploaded as artifacts
+#      │
+#      └─ bench (matrix: one job per project variant) ── each downloads both
+#                 binaries, benches ONLY its variant, renders that variant's
+#                 SVGs, uploads a per-variant artifact
+#      │
+#   collate ─ merges every per-variant artifact, pushes the rendered SVGs to a
+#             per-run `bench-renders/<run_id>` ref (so they're viewable in the
+#             browser via GitHub's blob viewer, not just a ZIP), builds the
+#             comparison report, uploads the consolidated artifact, posts a
+#             fresh PR comment
 
 on:
   issue_comment:
@@ -13,15 +24,11 @@ on:
 
 permissions:
   pull-requests: write
-  contents: read
+  contents: write   # collate pushes trajectory SVGs to a per-run bench-renders/* ref
   actions: read
 
-concurrency:
-  group: bench-${{ github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
-  bench:
+  resolve:
     # Only run when:
     #   - the comment is on a PR (not a plain issue)
     #   - the body starts with "/bench"
@@ -33,6 +40,11 @@ jobs:
        github.event.comment.author_association == 'MEMBER' ||
        github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-24.04
+    outputs:
+      head_sha: ${{ steps.pr.outputs.head_sha }}
+      base_sha: ${{ steps.pr.outputs.base_sha }}
+      head_repo: ${{ steps.pr.outputs.head_repo }}
+      variants: ${{ steps.variants.outputs.variants }}
     steps:
       - name: Acknowledge the trigger comment
         uses: peter-evans/create-or-update-comment@v4
@@ -54,13 +66,46 @@ jobs:
             core.setOutput('base_sha', pr.data.base.sha);
             core.setOutput('head_repo', pr.data.head.repo.full_name);
 
-      - name: Checkout PR head
+      - name: Checkout test-projects only
         uses: actions/checkout@v6
         with:
           repository: ${{ steps.pr.outputs.head_repo }}
           ref: ${{ steps.pr.outputs.head_sha }}
+          persist-credentials: false
+          sparse-checkout: test-projects
+          sparse-checkout-cone-mode: false
+
+      - name: Enumerate project variants
+        id: variants
+        run: bash scripts/ci/enumerate-variants.sh
+
+  # --------------------------------------------------------------------------
+  # build choreo-cli for both PR and base concurrently
+  build:
+    needs: resolve
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        side: [pr, base]
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ needs.resolve.outputs.head_repo }}
+          ref: ${{ needs.resolve.outputs.head_sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      # For the base binary, overlay the base branch's Rust crates on top of
+      # the PR checkout (everything else — scripts, test-projects — is unused
+      # by the build itself).
+      - name: Overlay base sources
+        if: matrix.side == 'base'
+        run: |
+          git fetch origin ${{ needs.resolve.outputs.base_sha }}
+          git checkout ${{ needs.resolve.outputs.base_sha }} -- \
+            src-core src-cli trajoptlib Cargo.lock Cargo.toml
 
       - name: Make GCC 14 the default toolchain
         run: |
@@ -74,7 +119,6 @@ jobs:
             build-essential \
             curl \
             file \
-            hyperfine \
             libayatana-appindicator3-dev \
             librsvg2-dev \
             libssl-dev \
@@ -85,96 +129,164 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.10
 
-      - name: Build PR choreo-cli
+      - name: Build choreo-cli (${{ matrix.side }})
+        # if base is schema-incompatible continue anyways
+        continue-on-error: ${{ matrix.side == 'base' }}
         run: cargo build --release -p choreo-cli
         env:
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: "true"
           SCCACHE_STARTUP_TIMEOUT: "600"
 
-      - name: Stash PR binary
-        run: cp target/release/choreo-cli /tmp/cli-pr
+      - name: Upload binary
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cli-${{ matrix.side }}
+          path: target/release/choreo-cli
+          if-no-files-found: warn
 
-      - name: Snapshot PR test-projects for both runs
+  # --------------------------------------------------------------------------
+  # parallelize bench for each project
+  # not parallelized further to avoid variance in HW causing noisy comparisons
+  bench:
+    needs: [resolve, build]
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJSON(needs.resolve.outputs.variants) }}
+    env:
+      VARIANT: ${{ matrix.variant }}
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ needs.resolve.outputs.head_repo }}
+          ref: ${{ needs.resolve.outputs.head_sha }}
+          persist-credentials: false
+
+      - name: Install Linux dependencies
         run: |
-          cp -r test-projects /tmp/tp-pr
-          cp -r test-projects /tmp/tp-base
+          sudo apt-get update -q
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev
+
+      - name: Download PR binary
+        uses: actions/download-artifact@v7
+        with:
+          name: cli-pr
+          path: bin-pr
+
+      - name: Download base binary
+        id: dl_base
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          name: cli-base
+          path: bin-base
+
+      - name: Make binaries executable
+        run: |
+          chmod +x bin-pr/choreo-cli
+          [ -f bin-base/choreo-cli ] && chmod +x bin-base/choreo-cli || true
+
+      - name: Stage variant
+        run: |
+          mkdir -p tp-pr tp-base
+          cp -r "test-projects/$VARIANT" "tp-pr/$VARIANT"
+          cp -r "test-projects/$VARIANT" "tp-base/$VARIANT"
 
       - name: Run PR benchmark
-        run: bash scripts/run-bench.sh /tmp/cli-pr /tmp/tp-pr /tmp/out-pr
-
-      # Now overlay base-branch sources of just the Rust crates so we can
-      # build the base binary against PR's test-projects/ + scripts/.
-      - name: Fetch base ref
-        run: git fetch origin ${{ steps.pr.outputs.base_sha }}
-
-      - name: Check out base sources (Rust crates only)
-        run: |
-          git checkout ${{ steps.pr.outputs.base_sha }} -- \
-            src-core src-cli trajoptlib Cargo.lock Cargo.toml
-
-      - name: Build base choreo-cli
-        run: cargo build --release -p choreo-cli
-        env:
-          RUSTC_WRAPPER: sccache
-          SCCACHE_GHA_ENABLED: "true"
-          SCCACHE_STARTUP_TIMEOUT: "600"
-
-      - name: Stash base binary
-        run: cp target/release/choreo-cli /tmp/cli-base
-
-      - name: Restore PR sources for scripts
-        run: |
-          git checkout ${{ steps.pr.outputs.head_sha }} -- \
-            src-core src-cli trajoptlib Cargo.lock Cargo.toml
+        run: bash scripts/run-bench.sh "$PWD/bin-pr/choreo-cli" tp-pr out-pr "$VARIANT"
 
       - name: Run base benchmark
-        run: bash scripts/run-bench.sh /tmp/cli-base /tmp/tp-base /tmp/out-base
-        continue-on-error: true # tolerate schema-incompatible base
+        continue-on-error: true # tolerate missing / schema-incompatible base
+        run: |
+          if [ -x bin-base/choreo-cli ]; then
+            bash scripts/run-bench.sh "$PWD/bin-base/choreo-cli" tp-base out-base "$VARIANT"
+          else
+            echo "no base binary available — skipping base run for $VARIANT"
+          fi
 
       - name: Render trajectory SVGs with linear acceleration coloring
-        run: |
-          set -euo pipefail
-          render() {
-            local side=$1
-            local root=$2
-            for traj in "$root"/*/*.traj; do
-              variant=$(basename "$(dirname "$traj")")
-              name=$(basename "$traj" .traj)
-              out="${traj%.traj}.${side}.svg"
-              node scripts/render-traj.mjs --traj "$traj" --out "$out" \
-                --title "${side^^}  ${variant} · ${name}" || true
-            done
-          }
-          render pr   /tmp/tp-pr
-          render base /tmp/tp-base
+        run: bash scripts/ci/render-variant.sh
+
+      - name: Upload per-variant artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bench-${{ matrix.variant }}
+          path: |
+            out-pr/**
+            out-base/**
+            tp-pr/**
+            tp-base/**
+          if-no-files-found: warn
+
+  # --------------------------------------------------------------------------
+  collate:
+    needs: [resolve, bench]
+    if: ${{ !cancelled() && needs.resolve.result == 'success' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ needs.resolve.outputs.head_repo }}
+          ref: ${{ needs.resolve.outputs.head_sha }}
+          persist-credentials: false
+
+      - name: Merge per-variant artifacts
+        continue-on-error: true # if every bench job was skipped, still comment
+        uses: actions/download-artifact@v7
+        with:
+          pattern: bench-*
+          path: merged
+          merge-multiple: true
+
+      - name: Publish renders to a ref
+        id: renders
+        continue-on-error: true # a missing renders link must not block the comment
+        uses: actions/github-script@v7
+        env:
+          HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+        with:
+          script: |
+            const publish = require(`${process.env.GITHUB_WORKSPACE}/scripts/ci/publish-renders.cjs`)
+            await publish({ github, context, core })
 
       - name: Build markdown report
         env:
           ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          RENDERS_URL: ${{ steps.renders.outputs.url }}
         run: |
           node scripts/bench-report.mjs \
-            --pr /tmp/tp-pr --base /tmp/tp-base \
-            --pr-reports /tmp/out-pr --base-reports /tmp/out-base \
+            --pr merged/tp-pr --base merged/tp-base \
+            --pr-reports merged/out-pr --base-reports merged/out-base \
             --artifact-url "$ARTIFACT_URL" \
+            ${RENDERS_URL:+--renders-url "$RENDERS_URL"} \
+            --commit "${HEAD_SHA:0:7}" \
             --out report.md
           cat report.md
 
-      - name: Upload bench artifact
+      - name: Upload consolidated bench artifact
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: bench-output-${{ github.run_id }}
           path: |
-            /tmp/out-pr/**
-            /tmp/out-base/**
-            /tmp/tp-pr/**/*.svg
-            /tmp/tp-base/**/*.svg
+            merged/out-pr/**
+            merged/out-base/**
+            merged/tp-pr/**/*.svg
+            merged/tp-base/**/*.svg
             report.md
+          if-no-files-found: warn
 
-      - name: Post sticky comment on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Post benchmark comment on PR
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          header: bench
-          number: ${{ github.event.issue.number }}
-          path: report.md
+          issue-number: ${{ github.event.issue.number }}
+          body-path: report.md
