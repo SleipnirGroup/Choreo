@@ -62,6 +62,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Make GCC 14 the default toolchain
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -q
