@@ -39,8 +39,8 @@ const rows = [];
 const summary = {
   total: 0,        // trajectories seen across all variants
   comparable: 0,   // generated OK on BOTH sides (the only ones scored)
-  prFailed: 0,     // did not generate on PR
-  baseFailed: 0,   // generated on PR but not on base (incl. base missing)
+  prFailed: 0,     // did not generate on PR (independent of base outcome)
+  baseFailed: 0,   // did not generate on base (independent of PR outcome)
   flaky: 0,        // some-but-not-all runs OK on a side
   sumPr: 0,        // Σ mean solve ms over comparable
   sumBase: 0,
@@ -84,8 +84,8 @@ for (const variant of variants) {
 
     summary.total++;
     if (!prOk) summary.prFailed++;
-    else if (!baseOk) summary.baseFailed++;
-    else {
+    if (!baseOk) summary.baseFailed++;
+    if (prOk && baseOk) {
       summary.comparable++;
       summary.sumPr += pr.mean;
       summary.sumBase += base.mean;
@@ -274,12 +274,11 @@ function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
   }
 
   if (artifactUrl) {
-    L.push(`Trajectory renderings (per-step linear-acceleration coloring, matching the UI gradient) are uploaded as a workflow artifact:`);
-    L.push("");
-    L.push(`→ **[Download bench-output artifact](${artifactUrl})**`);
+    L.push(`Trajectory renders can also be found as a workflow artifact:`);
+    L.push(`→ [Download bench-output artifact](${artifactUrl})`);
     L.push("");
   }
-  L.push(`<sub>Solve times are wall-clock over ${rows.find(r => r.pr?.runs)?.pr.runs ?? "multiple"} runs per trajectory.</sub>`);
+  L.push(`<sub>Solve times are wall-clock averaged over ${rows.find(r => r.pr?.runs)?.pr.runs ?? "multiple"} runs per trajectory.</sub>`);
   return L.join("\n") + "\n";
 }
 
