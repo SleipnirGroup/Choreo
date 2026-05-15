@@ -29,7 +29,6 @@ for proj_dir in "${project_dirs[@]}"; do
   fi
   echo "::group::$name"
   hyperfine \
-    --warmup 1 \
     --runs 3 \
     --export-json "$OUT/$name.hyperfine.json" \
     "$CLI --chor $chor --all-trajectory --generate --report-json $OUT/$name.report.json"
