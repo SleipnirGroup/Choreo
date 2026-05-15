@@ -39,7 +39,7 @@ jobs:
       (github.event.comment.author_association == 'OWNER' ||
        github.event.comment.author_association == 'MEMBER' ||
        github.event.comment.author_association == 'COLLABORATOR')
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     outputs:
       head_sha: ${{ steps.pr.outputs.head_sha }}
       base_sha: ${{ steps.pr.outputs.base_sha }}
@@ -87,7 +87,7 @@ jobs:
   # build choreo-cli for both PR and base concurrently
   build:
     needs: resolve
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -155,7 +155,7 @@ jobs:
   # not parallelized further to avoid variance in HW causing noisy comparisons
   bench:
     needs: [resolve, build]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -233,7 +233,7 @@ jobs:
   collate:
     needs: [resolve, bench]
     if: ${{ !cancelled() && needs.resolve.result == 'success' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout PR head
         uses: actions/checkout@v6
