@@ -1,4 +1,4 @@
-name: PR Benchmark
+name: Solver Time Benchmark
 
 # Comment-triggered: a maintainer (OWNER / MEMBER / COLLABORATOR) types
 # `/bench` on a PR and this workflow builds the PR's choreo-cli and the base
@@ -132,7 +132,7 @@ jobs:
         run: bash scripts/run-bench.sh /tmp/cli-base /tmp/tp-base /tmp/out-base
         continue-on-error: true # tolerate schema-incompatible base
 
-      - name: Render trajectory SVGs (per-step accel coloring)
+      - name: Render trajectory SVGs with linear acceleration coloring
         run: |
           set -euo pipefail
           render() {
