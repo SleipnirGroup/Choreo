@@ -45,7 +45,7 @@ const summary = {
   sumPr: 0,        // Σ mean solve ms over comparable
   sumBase: 0,
   pcts: [],        // per-trajectory solve Δ% over comparable
-  dTimeTotal: 0,   // Σ trajectory-duration Δ over comparable
+  durPcts: [],     // per-trajectory duration Δ% over comparable
   dTimeCount: 0,
 };
 
@@ -89,7 +89,10 @@ for (const variant of variants) {
       summary.sumPr += pr.mean;
       summary.sumBase += base.mean;
       if (pct != null) summary.pcts.push(pct);
-      if (dTime != null) { summary.dTimeTotal += dTime; summary.dTimeCount++; }
+      if (dTime != null) {
+        summary.dTimeCount++;
+        if (baseTraj.total_s > 0) summary.durPcts.push((dTime / baseTraj.total_s) * 100);
+      }
     }
     if ((pr && pr.flaky) || (base && base.flaky)) summary.flaky++;
 
@@ -181,7 +184,7 @@ function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
     const med = median(summary.pcts);
     L.push(`**Solve time ${signedPct(overall)} overall** — PR ${fmtTotal(summary.sumPr)} vs base ${fmtTotal(summary.sumBase)} over ${summary.comparable} comparable trajector${summary.comparable === 1 ? "y" : "ies"} (median per-trajectory ${signedPct(med)}).`);
     L.push("");
-    L.push(`Trajectory duration: ${signedFixed(summary.dTimeTotal, 3)} s total across ${summary.dTimeCount} compared. Path-length differences are diagnostic only — not a pass/fail signal.`);
+    L.push(`Trajectory duration: median ${signedPct(median(summary.durPcts))} per trajectory across ${summary.dTimeCount} compared.`);
   } else {
     L.push(`**No trajectories generated successfully on both PR and base** — nothing to score. See per-variant statuses below.`);
   }
@@ -275,7 +278,7 @@ function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
     L.push(`→ **[Download bench-output artifact](${artifactUrl})**`);
     L.push("");
   }
-  L.push(`<sub>Solve times are wall-clock around \`generate()\` only (excluding CLI startup), reported by the CLI's \`--report-json\` and aggregated as mean ± sample stdev over independent CLI runs. \`Δlength\`/\`Δtime\` are shown only when a trajectory generated successfully on **both** sides; path length is diagnostic, not a pass/fail signal. \`Samples\` is the per-side sample count (\`—\` = that side did not generate it).</sub>`);
+  L.push(`<sub>Solve times are wall-clock over ${rows.find(r => r.pr?.runs)?.pr.runs ?? "multiple"} runs per trajectory.</sub>`);
   return L.join("\n") + "\n";
 }
 
@@ -294,10 +297,13 @@ function fmtSolve(s) {
   if (!s || !s.ok || s.mean == null) return "—";
   const u = unitFor(s.mean);
   const m = inUnit(s.mean, u).toFixed(decimals(u));
-  if (s.n > 1 && s.sd > 0) {
-    return `${m} ± ${inUnit(s.sd, u).toFixed(decimals(u))} ${u}`;
-  }
-  return `${m} ${u}`;
+  const body = s.n > 1 && s.sd > 0
+    ? `${m} ± ${inUnit(s.sd, u).toFixed(decimals(u))} ${u}`
+    : `${m} ${u}`;
+  // Make a flaky side identifiable in the table itself (the summary only gives
+  // a count). Flaky = generated on some but not all runs; the mean is over the
+  // successful ones only.
+  return s.flaky ? `${body} ⚠ ${s.n}/${s.runs} ok` : body;
 }
 
 function fmtDeltaSolve(d, pct) {
