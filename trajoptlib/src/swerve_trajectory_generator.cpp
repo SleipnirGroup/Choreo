@@ -156,8 +156,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double dθ = std::abs(angle_modulus(θ_1 - θ_0));
 
       const double angular_time =
-          calculate_trapezoidal_time(dθ, chassis_max_ω, chassis_max_α);
-      const double linear_time = calculate_trapezoidal_time(
+          calculate_exponential_time(dθ, chassis_max_ω, chassis_max_α);
+      const double linear_time = calculate_exponential_time(
           dist, std::min(chassis_max_v, dist / angular_time), chassis_max_a);
       const double sgmt_time = angular_time + linear_time;
 
