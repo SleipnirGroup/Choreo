@@ -7,8 +7,9 @@
 #   scripts/bench-local.sh              # PR-only run, no comparison
 #   scripts/bench-local.sh <base-ref>   # full comparison vs <base-ref> (e.g. main)
 #
-# Requires: cargo, node, hyperfine. The base build uses `git worktree` so your
-# current checkout stays untouched.
+# Requires: cargo, node, and `timeout` (GNU coreutils — run-bench.sh caps each
+# run at 20m). The base build uses `git worktree` so your current checkout stays
+# untouched.
 
 set -euo pipefail
 
@@ -27,7 +28,7 @@ if [ ! -d "$REPO_ROOT/test-projects" ]; then
   echo "test-projects/ not found at repo root" >&2
   exit 1
 fi
-for cmd in cargo node hyperfine; do
+for cmd in cargo node timeout; do
   command -v "$cmd" >/dev/null || { echo "missing required command: $cmd" >&2; exit 1; }
 done
 
@@ -84,10 +85,12 @@ render_side() {
     [ -f "$traj" ] || continue
     variant=$(basename "$(dirname "$traj")")
     name=$(basename "$traj" .traj)
+    # Best-effort per trajectory, matching scripts/ci/render-variant.sh: one
+    # bad render must not abort the whole local run under `set -e`.
     node "$REPO_ROOT/scripts/render-traj.mjs" \
       --traj "$traj" \
       --out "${traj%.traj}.${side}.svg" \
-      --title "${side^^}  ${variant} · ${name}"
+      --title "${side^^}  ${variant} · ${name}" || true
   done
 }
 render_side pr "$PR_TP"
@@ -103,6 +106,8 @@ find "$PR_TP" "$BASE_TP" -name "*.svg" -print0 2>/dev/null | while IFS= read -r 
 done
 
 echo "==> Building markdown report"
+# No --commit: a local run benches the working tree (typically with uncommitted
+# changes), so a HEAD SHA in the report header would mislabel what was built.
 node "$REPO_ROOT/scripts/bench-report.mjs" \
   --pr "$PR_TP" \
   --base "$BASE_TP" \
