@@ -40,7 +40,7 @@ jobs:
       (github.event.comment.author_association == 'OWNER' ||
        github.event.comment.author_association == 'MEMBER' ||
        github.event.comment.author_association == 'COLLABORATOR')
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-slim
     outputs:
       head_sha: ${{ steps.pr.outputs.head_sha }}
       base_sha: ${{ steps.pr.outputs.base_sha }}
@@ -73,8 +73,6 @@ jobs:
           repository: ${{ steps.pr.outputs.head_repo }}
           ref: ${{ steps.pr.outputs.head_sha }}
           persist-credentials: false
-          # resolve only needs the variant list, so stay sparse — but the
-          # enumerator now lives in a file, so that path has to be included too.
           sparse-checkout: |
             test-projects
             scripts/ci/enumerate-variants.sh
@@ -117,20 +115,6 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y \
-            build-essential \
-            curl \
-            file \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libssl-dev \
-            libwebkit2gtk-4.1-dev \
-            libxdo-dev \
-            wget
-
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.10
 
@@ -170,13 +154,6 @@ jobs:
           repository: ${{ needs.resolve.outputs.head_repo }}
           ref: ${{ needs.resolve.outputs.head_sha }}
           persist-credentials: false
-
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y \
-            build-essential \
-            libssl-dev
 
       - name: Download PR binary
         uses: actions/download-artifact@v7
@@ -233,8 +210,7 @@ jobs:
   # --------------------------------------------------------------------------
   collate:
     needs: [resolve, bench]
-    if: ${{ !cancelled() && needs.resolve.result == 'success' }}
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-slim
     steps:
       - name: Checkout PR head
         uses: actions/checkout@v6
@@ -242,6 +218,8 @@ jobs:
           repository: ${{ needs.resolve.outputs.head_repo }}
           ref: ${{ needs.resolve.outputs.head_sha }}
           persist-credentials: false
+          sparse-checkout: scripts
+          sparse-checkout-cone-mode: false
 
       - name: Merge per-variant artifacts
         continue-on-error: true # if every bench job was skipped, still comment
