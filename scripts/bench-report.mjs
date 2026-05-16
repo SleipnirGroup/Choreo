@@ -289,7 +289,9 @@ function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
     L.push(`→ [Download bench-output artifact](${artifactUrl})`);
     L.push("");
   }
-  L.push(`<sub>Solve times are wall-clock averaged over ${rows.find(r => r.pr?.runs)?.pr.runs ?? "multiple"} runs per trajectory.</sub>`);
+  const maxRuns = rows.reduce(
+    (m, r) => Math.max(m, r.pr?.runs ?? 0, r.base?.runs ?? 0), 0);
+  L.push(`<sub>Solve times are whole-process CPU time (user + sys), averaged over up to ${maxRuns} run${maxRuns === 1 ? "" : "s"} per trajectory.</sub>`);
   return L.join("\n") + "\n";
 }
 

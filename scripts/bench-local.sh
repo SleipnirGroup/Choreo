@@ -7,9 +7,19 @@
 #   scripts/bench-local.sh              # PR-only run, no comparison
 #   scripts/bench-local.sh <base-ref>   # full comparison vs <base-ref> (e.g. main)
 #
-# Requires: cargo, node, and `timeout` (GNU coreutils — run-bench.sh caps each
-# run at 20m). The base build uses `git worktree` so your current checkout stays
-# untouched.
+# Requires: cargo and node (node also performs run-bench.sh's per-trajectory
+# JSON merge). The base build uses `git worktree` so your current checkout
+# stays untouched.
+#
+# Concurrency (locally we want to saturate the box, unlike CI's 1-variant-per-
+# job matrix): variants are benched in parallel, and within each variant
+# run-bench.sh runs that variant's trajectories in parallel too. Peak solver
+# processes ≈ BENCH_VARIANT_JOBS × BENCH_TRAJ_JOBS, so size the product to your
+# core count:
+#   BENCH_VARIANT_JOBS  max variants in parallel   (default: nproc/4, min 1)
+#   BENCH_TRAJ_JOBS     trajectories per variant   (run-bench.sh, default 4)
+# Defaults give ≈ nproc concurrent solves. Example:
+#   BENCH_VARIANT_JOBS=8 BENCH_TRAJ_JOBS=4 scripts/bench-local.sh
 
 set -euo pipefail
 
@@ -17,6 +27,8 @@ REPO_ROOT=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 BASE_REF=${1:-}
+NPROC=$(nproc 2>/dev/null || echo 4)
+VARIANT_JOBS=${BENCH_VARIANT_JOBS:-$(( NPROC / 4 > 0 ? NPROC / 4 : 1 ))}
 OUT_ROOT="$REPO_ROOT/bench-local"
 PR_TP="$OUT_ROOT/tp-pr"
 BASE_TP="$OUT_ROOT/tp-base"
@@ -28,9 +40,41 @@ if [ ! -d "$REPO_ROOT/test-projects" ]; then
   echo "test-projects/ not found at repo root" >&2
   exit 1
 fi
-for cmd in cargo node timeout; do
+for cmd in cargo node; do
   command -v "$cmd" >/dev/null || { echo "missing required command: $cmd" >&2; exit 1; }
 done
+
+# Bench every variant under $2 with $1, writing reports to $3, running up to
+# $VARIANT_JOBS variants concurrently. Each variant is a separate run-bench.sh
+# process (its own SHARD_ROOT, its own variant-prefixed report files — no
+# cross-variant collision in the shared out dir). Per-variant output is teed to
+# bench-local/logs/<label>-<variant>.log so the parallel console stays legible;
+# a variant failing is reported but does not abort the rest.
+bench_all() {
+  local cli=$1 tp=$2 out=$3 label=$4
+  shopt -s nullglob
+  local dirs=("$tp"/*/) d variant
+  if [ "${#dirs[@]}" -eq 0 ]; then
+    echo "no variants under $tp" >&2
+    return 1
+  fi
+  mkdir -p "$OUT_ROOT/logs"
+  echo "==> Running $label benchmark — ${#dirs[@]} variants, up to $VARIANT_JOBS in parallel (${BENCH_TRAJ_JOBS:-4} trajectories each)"
+  for d in "${dirs[@]}"; do
+    variant=$(basename "$d")
+    [ -f "$d/project.chor" ] || { echo "  skip $variant (no project.chor)" >&2; continue; }
+    while [ "$(jobs -rp | wc -l)" -ge "$VARIANT_JOBS" ]; do wait -n || true; done
+    {
+      lf="$OUT_ROOT/logs/$label-$variant.log"
+      if bash "$REPO_ROOT/scripts/run-bench.sh" "$cli" "$tp" "$out" "$variant" >"$lf" 2>&1; then
+        echo "  done  $label/$variant"
+      else
+        echo "  FAIL  $label/$variant (see $lf)" >&2
+      fi
+    } &
+  done
+  wait
+}
 
 rm -rf "$OUT_ROOT"
 mkdir -p "$PR_OUT" "$BASE_OUT"
@@ -51,8 +95,7 @@ else
   mkdir -p "$BASE_TP"
 fi
 
-echo "==> Running PR benchmark"
-bash "$REPO_ROOT/scripts/run-bench.sh" "$OUT_ROOT/cli-pr" "$PR_TP" "$PR_OUT"
+bench_all "$OUT_ROOT/cli-pr" "$PR_TP" "$PR_OUT" PR
 
 ARTIFACT_ARG=()
 if [ -n "$BASE_REF" ]; then
@@ -73,8 +116,7 @@ if [ -n "$BASE_REF" ]; then
   )
   cp "$OUT_ROOT/base-target/release/choreo-cli" "$OUT_ROOT/cli-base"
 
-  echo "==> Running base benchmark"
-  bash "$REPO_ROOT/scripts/run-bench.sh" "$OUT_ROOT/cli-base" "$BASE_TP" "$BASE_OUT" || true
+  bench_all "$OUT_ROOT/cli-base" "$BASE_TP" "$BASE_OUT" base || true
 fi
 
 echo "==> Rendering SVGs"
