@@ -26,8 +26,8 @@ for (const k of ["pr", "base", "pr-reports", "base-reports", "out"]) {
 }
 const artifactUrl = argv["artifact-url"] ?? null;
 const commit = argv.commit ?? null;
-// Base blob URL of the per-run bench-renders ref; SVGs live at
-// <rendersUrl>/<variant>/<name>.{pr,base}.svg (matches the bench job's
+// Commit-pinned base blob URL (.../blob/<sha>) from publish-renders.cjs; SVGs
+// live at <rendersUrl>/<variant>/<name>.{pr,base}.svg (matches the bench job's
 // `${traj%.traj}.${side}.svg` render paths).
 const rendersUrl = argv["renders-url"] ?? null;
 

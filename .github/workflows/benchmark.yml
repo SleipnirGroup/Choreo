@@ -13,10 +13,11 @@ name: Solver Time Benchmark
 #                 SVGs, uploads a per-variant artifact
 #      │
 #   collate ─ merges every per-variant artifact, pushes the rendered SVGs to a
-#             per-run `bench-renders/<run_id>` ref (so they're viewable in the
-#             browser via GitHub's blob viewer, not just a ZIP), builds the
-#             comparison report, uploads the consolidated artifact, posts a
-#             fresh PR comment
+#             per-run CUSTOM ref `refs/bench-renders/<run_id>` (a hidden ref,
+#             not a branch/tag, so it never shows in the Branches/Tags UI) and
+#             links them by commit SHA so they're viewable in the browser via
+#             GitHub's blob viewer (not just a ZIP), builds the comparison
+#             report, uploads the consolidated artifact, posts a fresh PR comment
 
 on:
   issue_comment:
@@ -24,7 +25,7 @@ on:
 
 permissions:
   pull-requests: write
-  contents: write   # collate pushes trajectory SVGs to a per-run bench-renders/* ref
+  contents: write   # collate pushes trajectory SVGs to a per-run refs/bench-renders/* custom ref
   actions: read
 
 jobs:

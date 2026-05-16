@@ -1,4 +1,10 @@
-// push renders to orphan ref for viewing
+// Stash the rendered SVGs as an orphan commit kept alive by a CUSTOM ref
+// (`refs/bench-renders/<run_id>`), NOT a branch. Refs outside refs/heads/* and
+// refs/tags/* don't appear in GitHub's Branches or Tags UI, so per-run pushes
+// don't pollute it — but the commit is still reachable, so it won't be GC'd and
+// its blobs stay viewable in the web UI. Links use the commit SHA directly
+// (GitHub's blob viewer resolves any SHA reachable from any ref), so we never
+// need a branch/tag name in the URL.
 
 const fs = require("fs");
 const path = require("path");
@@ -45,11 +51,11 @@ module.exports = async ({ github, context, core }) => {
   await github.rest.git.createRef({
     owner,
     repo,
-    ref: `refs/heads/${refName}`,
+    ref: `refs/${refName}`,
     sha: c.data.sha,
   });
   core.setOutput(
     "url",
-    `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/blob/${refName}`,
+    `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/blob/${c.data.sha}`,
   );
 };
