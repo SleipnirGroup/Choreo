@@ -297,13 +297,11 @@ function fmtSolve(s) {
   if (!s || !s.ok || s.mean == null) return "—";
   const u = unitFor(s.mean);
   const m = inUnit(s.mean, u).toFixed(decimals(u));
-  const body = s.n > 1 && s.sd > 0
+  const body = s.n > 1
     ? `${m} ± ${inUnit(s.sd, u).toFixed(decimals(u))} ${u}`
     : `${m} ${u}`;
-  // Make a flaky side identifiable in the table itself (the summary only gives
-  // a count). Flaky = generated on some but not all runs; the mean is over the
-  // successful ones only.
-  return s.flaky ? `${body} ⚠ ${s.n}/${s.runs} ok` : body;
+  if (s.flaky) return `${body} ⚠ ${s.n}/${s.runs} ok`;
+  return s.n > 1 ? body : `${body} (1 run)`;
 }
 
 function fmtDeltaSolve(d, pct) {
