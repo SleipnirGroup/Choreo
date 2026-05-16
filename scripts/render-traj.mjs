@@ -24,7 +24,7 @@ const FIELD_H = 8.0692;
 const VB_X = -0.5, VB_Y = -0.5, VB_W = 17.541, VB_H = 9.0692;
 // An SVG with only a viewBox renders at the CSS default 300x150 in GitHub's
 // blob viewer (hence "tiny"). Give it an explicit intrinsic pixel size.
-const PX_PER_M = 400;
+const PX_PER_M = 150;
 const PX_W = Math.round(VB_W * PX_PER_M);
 const PX_H = Math.round(VB_H * PX_PER_M);
 
