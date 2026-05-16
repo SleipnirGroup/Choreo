@@ -68,13 +68,30 @@ for (let i = 0; i < samples.length - 1; i++) {
   );
 }
 
+// Each entry in traj.waypoints is a timestamp; it sits exactly on a sample
+// boundary (see src-core .../transformers/mod.rs postprocess), so the nearest
+// sample by `t` gives the waypoint's pose (x, y, heading) on the drawn path.
+const cfg = traj.config ?? {};
+const wpTimes = traj.waypoints ?? [];
+const markers = wpTimes.map(t => {
+  let best = samples[0];
+  let bestD = Infinity;
+  for (const s of samples) {
+    const d = Math.abs(s.t - t);
+    if (d < bestD) { bestD = d; best = s; }
+  }
+  return waypointMarker(best, cfg);
+});
+
 // The trajectory <g> uses the same flip transform as FieldImage2026.svg's
 // internal <g id="field"> so we can write raw FRC field coords (origin at
-// bottom-left) directly into <line> elements.
+// bottom-left) directly into <line> elements. Waypoint markers are drawn after
+// the path segments so the bumper box / heading arrow stay visible on top.
 const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VB_X} ${VB_Y} ${VB_W} ${VB_H}" width="${PX_W}" height="${PX_H}">
   ${fieldInner}
   <g transform="scale(1 -1) translate(0 -${FIELD_H})">
     ${segs.join("\n    ")}
+    ${markers.join("\n    ")}
   </g>
   ${titleElement(argv.title)}
 </svg>
@@ -93,6 +110,34 @@ function emptySvg(title, fieldInner) {
   <text x="${VB_X + VB_W / 2}" y="${VB_Y + VB_H / 2}" text-anchor="middle" font-size="0.5" font-family="monospace" fill="white" stroke="black" stroke-width="0.04" paint-order="stroke fill">no samples${title ? ` — ${escapeXml(title)}` : ""}</text>
 </svg>
 `;
+}
+
+// A waypoint, drawn as the robot's bumper footprint (from trajectory.config —
+// front/back/side distances from center) rotated to the waypoint heading, plus
+// an arrow showing the facing direction. Coords are computed in raw FRC space
+// (x forward, y left, CCW heading) so they drop straight into the flipped <g>.
+function waypointMarker(s, cfg) {
+  const h = s.heading ?? 0;
+  const c = Math.cos(h);
+  const sn = Math.sin(h);
+  const b = cfg.bumper ?? {};
+  const f = b.front ?? 0.4;
+  const bk = b.back ?? 0.4;
+  const sd = b.side ?? 0.4;
+  // body-frame point (bx forward, by left) -> rotated + translated world point
+  const rot = (bx, by) => [s.x + bx * c - by * sn, s.y + bx * sn + by * c];
+  const pt = ([px, py]) => `${fmt(px)},${fmt(py)}`;
+  const box = [rot(f, sd), rot(f, -sd), rot(-bk, -sd), rot(-bk, sd)].map(pt).join(" ");
+  // Arrow shrunk to ~25% of its original size (75% reduction).
+  const A = 0.25;
+  const tip = rot(f + 0.35 * A, 0);
+  const headL = rot(f + 0.05 * A, 0.14 * A);
+  const headR = rot(f + 0.05 * A, -0.14 * A);
+  return (
+    `<polygon points="${box}" fill="rgba(0,0,0,0.12)" stroke="#000000" stroke-width="0.04"/>` +
+    `<circle cx="${fmt(s.x)}" cy="${fmt(s.y)}" r="0.03" fill="#ffffff" stroke="#000000" stroke-width="0.015"/>` +
+    `<polygon points="${pt(tip)} ${pt(headL)} ${pt(headR)}" fill="#ffffff" stroke="#000000" stroke-width="0.02"/>`
+  );
 }
 
 function fmt(n) {
