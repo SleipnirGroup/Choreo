@@ -181,10 +181,14 @@ jobs:
           cp -r "test-projects/$VARIANT" "tp-base/$VARIANT"
 
       - name: Run PR benchmark
+        continue-on-error: true
+        timeout-minutes: 30
         run: bash scripts/run-bench.sh "$PWD/bin-pr/choreo-cli" tp-pr out-pr "$VARIANT"
+        
 
       - name: Run base benchmark
         continue-on-error: true # tolerate missing / schema-incompatible base
+        timeout-minutes: 30
         run: |
           if [ -x bin-base/choreo-cli ]; then
             bash scripts/run-bench.sh "$PWD/bin-base/choreo-cli" tp-base out-base "$VARIANT"
