@@ -43,13 +43,11 @@ for proj_dir in "${project_dirs[@]}"; do
     echo "--- $name run $run/$RUNS ---"
     # A per-trajectory solve failure is reported via ok:false in the JSON and
     # the CLI still exits 0; a nonzero exit means a hard failure (bad project,
-    # crash, or the 20m cap below) — record it and keep going so other
-    # runs/variants still produce data instead of aborting the whole matrix job.
-    # Cap each run at 20m so one runaway/hung solve can't burn the whole job's
-    # wall clock; -k 1m escalates to SIGKILL if the CLI ignores SIGTERM.
-    timeout -k 1m 20m "$CLI" --chor "$chor" --all-trajectory --generate \
+    # crash) — record it and keep going so other runs/variants still produce
+    # data instead of aborting the whole matrix job.
+    "$CLI" --chor "$chor" --all-trajectory --generate \
       --report-json "$OUT/$name.run$run.report.json" \
-      || echo "choreo-cli failed or timed out (>20m) on $name run $run/$RUNS" >&2
+      || echo "choreo-cli exited nonzero on $name run $run/$RUNS" >&2
   done
   echo "::endgroup::"
 done
