@@ -193,6 +193,10 @@ function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
   L.push(`${summary.comparable} comparable · ${summary.prFailed} failed on PR · ${summary.baseFailed} failed on base · ${summary.flaky} flaky · ${summary.total} total`);
   L.push("");
 
+  // Overarching cross-dt tables (above the per-variant dropdowns). No-op when
+  // no variant follows the `<family>-<tier>-dt` scheme.
+  L.push(...dtSummaryTables(rows));
+
   // Group rows by variant (listVariants order is preserved by push order).
   const byVariant = new Map();
   for (const r of rows) {
@@ -344,6 +348,105 @@ function median(xs) {
   const s = [...xs].sort((a, b) => a - b);
   const m = s.length >> 1;
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// Variants named `<family>-<tier>-dt` (e.g. swerve-base-extra-low-dt) feed the
+// cross-dt summary tables.
+function parseDt(variant) {
+  if (typeof variant !== "string" || !variant.endsWith("-dt")) return null;
+  const stem = variant.slice(0, -3); // strip trailing "-dt"
+  // Test longest-first so the "-low" suffix can't steal "-extra-low".
+  for (const tier of ["extra-low", "medium", "high", "low"]) {
+    if (stem.endsWith(`-${tier}`)) {
+      return { family: stem.slice(0, -(tier.length + 1)), tier };
+    }
+  }
+  return null;
+}
+
+// Two overarching tables comparing the dt tiers. Returns [] (no-op) when no
+// variant follows the scheme, so non-dt corpora are unaffected.
+function dtSummaryTables(rows) {
+  // Magnitude order — used for COLUMN order so the sweep reads low→high dt
+  // (plain alphabetical would wrongly put "high" 2nd). Local const: this runs
+  // via renderMarkdown at module-eval time, before a top-level const would init.
+  const DT_TIERS = ["extra-low", "low", "medium", "high"];
+  const tiersSeen = new Set();
+  const families = new Set();
+  const trajNames = new Set();
+  const byFamilyTier = new Map(); // `${family} ${tier}` -> rows[]
+  const byCell = new Map();       // `${family} ${traj} ${tier}` -> row
+
+  for (const r of rows) {
+    const d = parseDt(r.variant);
+    if (!d) continue;
+    families.add(d.family);
+    tiersSeen.add(d.tier);
+    if (r.noReport) continue; // counts toward family/tier, but has no rows
+    trajNames.add(r.name);
+    const ft = `${d.family} ${d.tier}`;
+    if (!byFamilyTier.has(ft)) byFamilyTier.set(ft, []);
+    byFamilyTier.get(ft).push(r);
+    byCell.set(`${d.family} ${r.name} ${d.tier}`, r);
+  }
+
+  if (tiersSeen.size === 0) return [];
+
+  const tiers = DT_TIERS.filter(t => tiersSeen.has(t)); // present, magnitude order
+  const fams = [...families].sort();
+  const trajs = [...trajNames].sort();
+  const alignNum = tiers.map(() => "---:").join("|");
+
+  const L = [];
+  L.push(`#### dt sweep`);
+  L.push("");
+
+  // Table 1 — per-family rollup: Σ PR solve over the family's trajectories.
+  L.push(`Total PR solve per family across dt tiers (sum over that family's trajectories; lower = faster).`);
+  L.push("");
+  L.push(`| Family | ${tiers.join(" | ")} |`);
+  L.push(`|---|${alignNum}|`);
+  let anyPartial = false;
+  for (const fam of fams) {
+    const cells = tiers.map(t => {
+      const rs = byFamilyTier.get(`${fam} ${t}`);
+      if (!rs || rs.length === 0) return "—";
+      const ok = rs.filter(r => r.prOk && r.pr && Number.isFinite(r.pr.mean));
+      if (ok.length === 0) return "—";
+      const sum = ok.reduce((a, r) => a + r.pr.mean, 0);
+      const partial = ok.length < trajs.length;
+      if (partial) anyPartial = true;
+      return `${fmtTotal(sum)}${partial ? ` \\*${ok.length}/${trajs.length}` : ""}`;
+    });
+    L.push(`| \`${fam}\` | ${cells.join(" | ")} |`);
+  }
+  if (anyPartial) {
+    L.push("");
+    L.push(`<sub>\\* partial — some trajectories failed on PR for that cell, so its total covers fewer trajectories and is not like-for-like across tiers.</sub>`);
+  }
+  L.push("");
+
+  // Table 2 — regression across dt: PR-vs-base Δ% per family × trajectory.
+  L.push(`PR-vs-base solve Δ% per trajectory across dt tiers (is a regression consistent, or dt-dependent?). Bold = |Δ| > ${SOLVE_PCT_THRESHOLD}%.`);
+  L.push("");
+  L.push(`| Family | Trajectory | ${tiers.join(" | ")} |`);
+  L.push(`|---|---|${alignNum}|`);
+  for (const fam of fams) {
+    for (const tj of trajs) {
+      const cells = tiers.map(t => {
+        const r = byCell.get(`${fam} ${tj} ${t}`);
+        if (!r) return "—";
+        if (!r.prOk) return "PR✗";
+        if (!r.baseOk) return "base✗";
+        if (r.pct == null) return "~";
+        const txt = signedPct(r.pct);
+        return Math.abs(r.pct) > SOLVE_PCT_THRESHOLD ? `**${txt}**` : txt;
+      });
+      L.push(`| \`${fam}\` | \`${tj}\` | ${cells.join(" | ")} |`);
+    }
+  }
+  L.push("");
+  return L;
 }
 
 function parseArgs(args) {
