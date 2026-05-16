@@ -231,13 +231,20 @@ function renderMarkdown(rows, summary, artifactUrl, commit, rendersUrl) {
     }
 
     const cmp = rs.filter(r => r.status === "OK" || r.status === "FLAKY");
+    // Denominator is the variant's trajectory count (rs.length), never a
+    // hardcoded 4. comparable = generated on BOTH sides; PR / base = generated
+    // on that side regardless of the other, so a one-sided failure is obvious.
+    const total = rs.length;
+    const prOkN = rs.filter(r => r.prOk).length;
+    const baseOkN = rs.filter(r => r.baseOk).length;
+    const counts = `${cmp.length}/${total} comparable · ${prOkN}/${total} PR · ${baseOkN}/${total} base`;
     let verdict;
     if (cmp.length > 0) {
       const sp = cmp.reduce((a, r) => a + r.pr.mean, 0);
       const sb = cmp.reduce((a, r) => a + r.base.mean, 0);
-      verdict = `solve ${signedPct(sb > 0 ? ((sp - sb) / sb) * 100 : 0)} (${cmp.length}/${rs.length} comparable)`;
+      verdict = `solve ${signedPct(sb > 0 ? ((sp - sb) / sb) * 100 : 0)} (${counts})`;
     } else {
-      verdict = `0/${rs.length} comparable`;
+      verdict = counts;
     }
     const open = variant === worstVariant ? " open" : "";
     L.push(`<details${open}><summary><b>${variant}</b> — ${verdict}</summary>`);
