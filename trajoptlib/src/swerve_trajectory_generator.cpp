@@ -224,17 +224,19 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto Fy_net = std::accumulate(Fy.at(index).begin(), Fy.at(index).end(),
                                   slp::Variable{0.0});
 
-    // Solve for net torque
-    slp::Variable τ_net = 0.0;
+    // Solve for net torque.
+    slp::Variable<double> τ_cos_sum = 0.0;
+    slp::Variable<double> τ_sin_sum = 0.0;
     for (size_t module_index = 0; module_index < path.drivetrain.modules.size();
          ++module_index) {
       const auto& translation = path.drivetrain.modules.at(module_index);
-      auto r = translation.rotate_by(θ_k);
-      Translation2v<double> F{Fx.at(index).at(module_index),
-                              Fy.at(index).at(module_index)};
+      const auto& F_x = Fx.at(index).at(module_index);
+      const auto& F_y = Fy.at(index).at(module_index);
 
-      τ_net += r.cross(F);
+      τ_cos_sum += translation.x() * F_y - translation.y() * F_x;
+      τ_sin_sum += translation.x() * F_x + translation.y() * F_y;
     }
+    auto τ_net = θ_k.cos() * τ_cos_sum - θ_k.sin() * τ_sin_sum;
 
     // Apply module power constraints
     auto v_wrt_robot = v_k.rotate_by(-θ_k);
