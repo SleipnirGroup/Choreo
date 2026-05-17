@@ -1,7 +1,10 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
-#include "data/expr.hpp"
-#include <wpi/util/json.hpp>
 #include <wpi/units/angular_velocity.hpp>
+#include <wpi/util/json.hpp>
+
+#include "data/expr.hpp"
 
 namespace choreo::ConstraintData {
 struct MaxAngularVelocity {
@@ -13,4 +16,4 @@ inline void to_json(wpi::util::json& json, const MaxAngularVelocity& c) {
 inline void from_json(const wpi::util::json& json, MaxAngularVelocity& c) {
   c.max = json.at("max").get<Expr<wpi::units::radians_per_second_t>>();
 }
-} // namespace choreo::ConstraintData
+}  // namespace choreo::ConstraintData

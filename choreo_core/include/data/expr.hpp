@@ -17,7 +17,7 @@ struct Expr {
   /// will create an Expr with an empty string and a value of 0, which is not a
   /// valid state for an Expr. Instead, use the constructor that accepts a
   /// BaseUnit or a double, which will properly initialize the exp string.
-  Expr() : Expr (BaseUnit(0)) {};
+  Expr() : Expr(BaseUnit(0)) {};
   Expr(std::string exp, double val) : exp(exp), val(val) {}
   /// a constructor that accepts anything convertible to BaseUnit directly and
   /// formats the string with the unit abbreviation
@@ -33,12 +33,14 @@ struct Expr {
   // require some careful template metaprogramming.
   // NOLINTNEXTLINE (google-explicit-constructor)
   Expr(BaseUnit unitval) : val(unitval) {
-    //std::println("Constructing Expr with value {} and unit {}", val.value(), typeid(BaseUnit).name());
+    // std::println("Constructing Expr with value {} and unit {}", val.value(),
+    // typeid(BaseUnit).name());
     // TODO: make a compile-time function that maps the BaseUnit type to its
-    // MathJS-compatible abbreviation as a string, so that we can format the exp
-    // string properly. This will likely involve some template specialization or
-    // constexpr if statements to handle different unit types (e.g. length,
-    // mass, time, etc.). For now, we'll just not put the unit suffix.
+    //  MathJS-compatible abbreviation as a string, so that we can format the
+    //  exp string properly. This will likely involve some template
+    //  specialization or constexpr if statements to handle different unit types
+    //  (e.g. length, mass, time, etc.). For now, we'll just not put the unit
+    //  suffix.
     exp = std::format("{}", val.value());
   }
   operator double() const { return val.value(); }
@@ -53,7 +55,8 @@ void to_json(wpi::util::json& json, const Expr<BaseUnit>& expr) {
 template <typename BaseUnit>
 void from_json(const wpi::util::json& json, Expr<BaseUnit>& expr) {
   expr.exp = json.at("exp").get_string();
-  // get_number, not get_double, because get_double can throw if the value is serialized as an int.
+  // get_number, not get_double, because get_double can throw if the value is
+  // serialized as an int.
   expr.val = BaseUnit(json.at("val").get_number());
 }
 }  // namespace choreo

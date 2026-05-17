@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 #include <wpi/util/json.hpp>
 
@@ -9,4 +11,4 @@ inline void to_json(wpi::util::json& json, const StopPoint&) {
 inline void from_json(const wpi::util::json&, StopPoint&) {
   // no data
 }
-} // namespace choreo::ConstraintData
+}  // namespace choreo::ConstraintData
