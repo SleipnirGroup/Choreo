@@ -47,7 +47,7 @@ struct RobotConfig {
       {+11_in, +11_in}, {+11_in, -11_in}, {-11_in, -11_in}, {-11_in, +11_in}};
 
   static RobotConfig default_frc_swerve() {
-    return RobotConfig{.mass = Expr{150_lb},
+    return RobotConfig{.mass = 150_lb,
                        .inertia = 6.0_kg_sq_m,
                        .gearing = 6.5,
                        .radius = 2_in,

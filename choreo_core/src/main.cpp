@@ -95,21 +95,17 @@ const std::string robotConfigJson = R"({
 // waypoints where constraints can also be applied.
 
 int main() {
-  // TODO: this feels verbose in its template specification. Probably doing
-  // something unnecessary.
-  wpi::util::expected<choreo::RobotConfig, std::string> robotConfigJsonParsed =
+  auto robotConfigJsonParsed =
       wpi::util::json::parse(robotConfigJson)
           .and_then(
               [](wpi::util::json json)
                   -> wpi::util::expected<choreo::RobotConfig, std::string> {
                 try {
-                  return wpi::util::expected<choreo::RobotConfig, std::string>(
-                      json.get<choreo::RobotConfig>());
+                  return json.get<choreo::RobotConfig>();
                 } catch (const std::exception& e) {
                   // return an expected that contains an unexpected error value
-                  return wpi::util::expected<choreo::RobotConfig, std::string>(
-                      wpi::util::unexpected<std::string>(
-                          std::string(e.what())));
+                  return wpi::util::unexpected<std::string>(
+                      std::string(e.what()));
                 }
               });
 
