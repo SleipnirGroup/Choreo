@@ -2,10 +2,85 @@
 
 #include <numbers>
 #include <print>
-
+#define WITH_TRAJOPT
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
 #include <wpi/util/json.hpp>
+#include "data/expr.hpp"
+#include <data/robot_config.hpp>
+
+// Eventually this string comes in via a JSON file, but for now we'll hardcode it here for testing purposes
+const std::string robotConfigJson = R"({
+  "cof": {
+    "exp": "1.5",
+    "val": 1.5
+  },
+  "differential_track_width": {
+    "exp": "0.5588 m",
+    "val": 0.5588
+  },
+  "gearing": {
+    "exp": "6.5",
+    "val": 6.5
+  },
+  "inertia": {
+    "exp": "6 kg m^2",
+    "val": 6
+  },
+  "mass": {
+    "exp": "68.0388555 kg",
+    "val": 68.0388555
+  },
+  "radius": {
+    "exp": "0.0508 m",
+    "val": 0.0508
+  },
+  "tmax": {
+    "exp": "1.2 N*m",
+    "val": 1.2
+  },
+  "vmax": {
+    "exp": "6000.0 RPM",
+    "val": 628.3185307179587
+  },
+  "wheels": [{
+    "x": {
+      "exp": "0.2794 m",
+      "val": 0.2794
+    },
+    "y": {
+      "exp": "0.2794 m",
+      "val": 0.2794
+    }
+  }, {
+    "x": {
+      "exp": "0.2794 m",
+      "val": 0.2794
+    },
+    "y": {
+      "exp": "-0.2794 m",
+      "val": -0.2794
+    }
+  }, {
+    "x": {
+      "exp": "-0.2794 m",
+      "val": -0.2794
+    },
+    "y": {
+      "exp": "-0.2794 m",
+      "val": -0.2794
+    }
+  }, {
+    "x": {
+      "exp": "-0.2794 m",
+      "val": -0.2794
+    },
+    "y": {
+      "exp": "0.2794 m",
+      "val": 0.2794
+    }
+  }]
+})";
 // SwervePathBuilder is used to build paths that are optimized into full
 // trajectories.
 //
@@ -16,25 +91,28 @@
 // waypoints where constraints can also be applied.
 
 int main() {
-  std::println("Running Choreo Core TrajoptLib examples...");
-  auto update =
-            wpi::util::json::object("persistent", wpi::util::json::object());
-  std::println("Update: {}", std::string(update));
-  trajopt::SwerveDrivetrain swerve_drivetrain{
-      // kg
-      .mass = 45,
-      // kg-m²
-      .moi = 6,
-      // m
-      .wheel_radius = 0.04,
-      // rad/s
-      .wheel_max_angular_velocity = 70,
-      // N-m
-      .wheel_max_torque = 2,
-      // unitless
-      .wheel_cof = 1.5,
-      // m
-      .modules = {{+0.6, +0.6}, {+0.6, -0.6}, {-0.6, +0.6}, {-0.6, -0.6}}};
+  // TODO: this feels verbose in its template specification. Probably doing something unnecessary.
+  wpi::util::expected<choreo::RobotConfig, std::string> robotConfigJsonParsed =
+    wpi::util::json::parse(robotConfigJson).and_then(
+      [](wpi::util::json json) -> wpi::util::expected<choreo::RobotConfig, std::string> {
+        try {
+          return wpi::util::expected<choreo::RobotConfig, std::string>(json.get<choreo::RobotConfig>());
+        } catch (const std::exception& e) {
+          // return an expected that contains an unexpected error value
+          return wpi::util::expected<choreo::RobotConfig, std::string>(
+            wpi::util::unexpected<std::string>(std::string(e.what()))
+          );
+        }
+      }
+    );
+
+  if (!robotConfigJsonParsed) {
+    std::println("Error parsing robot config JSON: {}", robotConfigJsonParsed.error());
+    return 1;
+  }
+  choreo::RobotConfig configExp = robotConfigJsonParsed.value();
+  std::println("Parsed, re-serialized config: {}", wpi::util::json(configExp).to_string_pretty());
+
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zero_linear_velocity{0.0};
   trajopt::AngularVelocityMaxMagnitudeConstraint zero_angular_velocity{0.0};
@@ -42,7 +120,7 @@ int main() {
   // Example 1: Swerve, one meter forward motion profile
   {
     trajopt::SwervePathBuilder path;
-    path.set_drivetrain(swerve_drivetrain);
+    path.set_drivetrain(configExp.to_swerve_drivetrain());
     path.pose_wpt(0, 0.0, 0.0, 0.0);
     path.pose_wpt(1, 1.0, 0.0, 0.0);
     path.wpt_constraint(0, zero_linear_velocity);
