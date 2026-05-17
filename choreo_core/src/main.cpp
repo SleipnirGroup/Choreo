@@ -1,15 +1,19 @@
-// Copyright (c) TrajoptLib contributors
+// Copyright (c) Choreo contributors
 
 #include <numbers>
 #include <print>
 #define WITH_TRAJOPT
+#include <string>
+
+#include <data/robot_config.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
 #include <wpi/util/json.hpp>
-#include "data/expr.hpp"
-#include <data/robot_config.hpp>
 
-// Eventually this string comes in via a JSON file, but for now we'll hardcode it here for testing purposes
+#include "data/expr.hpp"
+
+// Eventually this string comes in via a JSON file, but for now we'll hardcode
+// it here for testing purposes
 const std::string robotConfigJson = R"({
   "cof": {
     "exp": "1.5",
@@ -91,28 +95,32 @@ const std::string robotConfigJson = R"({
 // waypoints where constraints can also be applied.
 
 int main() {
-  // TODO: this feels verbose in its template specification. Probably doing something unnecessary.
+  // TODO: this feels verbose in its template specification. Probably doing
+  // something unnecessary.
   wpi::util::expected<choreo::RobotConfig, std::string> robotConfigJsonParsed =
-    wpi::util::json::parse(robotConfigJson).and_then(
-      [](wpi::util::json json) -> wpi::util::expected<choreo::RobotConfig, std::string> {
-        try {
-          return wpi::util::expected<choreo::RobotConfig, std::string>(json.get<choreo::RobotConfig>());
-        } catch (const std::exception& e) {
-          // return an expected that contains an unexpected error value
-          return wpi::util::expected<choreo::RobotConfig, std::string>(
-            wpi::util::unexpected<std::string>(std::string(e.what()))
-          );
-        }
-      }
-    );
+      wpi::util::json::parse(robotConfigJson)
+          .and_then(
+              [](wpi::util::json json)
+                  -> wpi::util::expected<choreo::RobotConfig, std::string> {
+                try {
+                  return wpi::util::expected<choreo::RobotConfig, std::string>(
+                      json.get<choreo::RobotConfig>());
+                } catch (const std::exception& e) {
+                  // return an expected that contains an unexpected error value
+                  return wpi::util::expected<choreo::RobotConfig, std::string>(
+                      wpi::util::unexpected<std::string>(
+                          std::string(e.what())));
+                }
+              });
 
   if (!robotConfigJsonParsed) {
-    std::println("Error parsing robot config JSON: {}", robotConfigJsonParsed.error());
+    std::println("Error parsing robot config JSON: {}",
+                 robotConfigJsonParsed.error());
     return 1;
   }
   choreo::RobotConfig configExp = robotConfigJsonParsed.value();
-  std::println("Parsed, re-serialized config: {}", wpi::util::json(configExp).to_string_pretty());
-
+  std::println("Parsed, re-serialized config: {}",
+               wpi::util::json(configExp).to_string_pretty());
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zero_linear_velocity{0.0};
   trajopt::AngularVelocityMaxMagnitudeConstraint zero_angular_velocity{0.0};

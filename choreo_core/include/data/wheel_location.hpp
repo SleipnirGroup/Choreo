@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
 #include <wpi/math/geometry/Translation2d.hpp>
@@ -11,7 +13,9 @@
 #endif
 
 namespace choreo {
-/// Represents the location of a wheel on the robot, relative to the robot's center. Standard configuration is FL: (+x, +y), BL: (+x, -y), BR: (-x, -y), FR: (-x, +y)
+/// Represents the location of a wheel on the robot, relative to the robot's
+/// center. Standard configuration is FL: (+x, +y), BL: (+x, -y), BR: (-x, -y),
+/// FR: (-x, +y)
 struct WheelLocation {
   Expr<wpi::units::meter_t> x;
   Expr<wpi::units::meter_t> y;
@@ -33,4 +37,4 @@ void from_json(const wpi::util::json& json, WheelLocation& module) {
   module.x = json.at("x").get<choreo::Expr<wpi::units::meter_t>>();
   module.y = json.at("y").get<choreo::Expr<wpi::units::meter_t>>();
 }
-}
+}  // namespace choreo
