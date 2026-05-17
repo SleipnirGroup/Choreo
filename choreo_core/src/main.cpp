@@ -6,10 +6,12 @@
 #include <string>
 
 #include <data/robot_config.hpp>
+#include <data/waypoint.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
 #include <wpi/util/json.hpp>
-
+#include <data/constraint.hpp>
+#include "data/constraint_data/constraint_data.hpp"
 #include "data/expr.hpp"
 
 // Eventually this string comes in via a JSON file, but for now we'll hardcode
@@ -118,6 +120,25 @@ int main() {
   std::println("Parsed, re-serialized config: {}",
                wpi::util::json(configExp).to_string_pretty());
 
+  std::vector<choreo::Waypoint> wpts = {
+      choreo::Waypoint{.x = 0_m, .y = 0_m, .heading = 0_rad, .fix_translation = true, .fix_heading = true},
+      choreo::Waypoint{.x = 1_m, .y = 0_m, .heading = 0_rad, .fix_translation = true, .fix_heading = true}};
+  std::println("Waypoint JSON: {}", wpi::util::json(wpts).to_string_pretty());
+
+  choreo::WaypointID wptIDFirst = choreo::FirstWaypoint{};
+  choreo::WaypointID wptIDLast = choreo::LastWaypoint{};
+  choreo::WaypointID wptIDIndex0 = choreo::WaypointIDX{.idx = 0};
+  std::println("WaypointID JSON first: {}", wpi::util::json(wptIDFirst).to_string_pretty());
+  std::println("WaypointID JSON last: {}", wpi::util::json(wptIDLast).to_string_pretty());
+  std::println("WaypointID JSON index 0: {}", wpi::util::json(wptIDIndex0).to_string_pretty());
+
+  choreo::ConstraintData::ConstraintVariant constraintVariant = choreo::ConstraintData::MaxVelocity{.max = 2_mps};
+  wpi::util::json constraintJson = constraintVariant; // uses the to_json for ConstraintVariant, which uses to_json_special for MaxVelocity
+  //choreo::ConstraintData::to_json(constraintJson, constraintVariant);
+  std::println("ConstraintVariant JSON: {}", constraintJson.to_string_pretty());
+  choreo::ConstraintData::ConstraintVariant pointAt = choreo::ConstraintData::PointAt{.x = 1_m, .y = 1_m, .tolerance = 0.1_rad, .flip = true};
+  wpi::util::json pointAtJson = pointAt; // uses the to_json for ConstraintVariant, which uses to_json_special for PointAt
+  std::println("ConstraintVariant PointAt JSON: {}", pointAtJson.to_string_pretty());
   trajopt::LinearVelocityMaxMagnitudeConstraint zero_linear_velocity{0.0};
   trajopt::AngularVelocityMaxMagnitudeConstraint zero_angular_velocity{0.0};
 
@@ -125,16 +146,27 @@ int main() {
   {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(configExp.to_swerve_drivetrain());
-    path.pose_wpt(0, 0.0, 0.0, 0.0);
-    path.pose_wpt(1, 1.0, 0.0, 0.0);
+    int index = 0;
+    for (choreo::Waypoint wpt : wpts) {
+        if (wpt.fix_translation && wpt.fix_heading) {
+            path.pose_wpt(index, wpt.x, wpt.y, wpt.heading);
+        } else if (wpt.fix_translation) {
+            path.translation_wpt(index, wpt.x, wpt.y);
+        } else if (wpt.fix_heading) {
+            //path.heading_wpt(index, wpt.heading);
+        } else {
+            path.wpt_initial_guess_point(index, wpt.toTrajoptPose2d());
+        }
+        index++;
+    }
     path.wpt_constraint(0, zero_linear_velocity);
     path.wpt_constraint(1, zero_linear_velocity);
     path.set_control_interval_counts({40});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
-    if (auto solution = generator.generate(true); !solution) {
-      std::println("Error in example 1: {}", solution.error());
-      return std::to_underlying(solution.error());
-    }
+    // trajopt::SwerveTrajectoryGenerator generator{path};
+    // if (auto solution = generator.generate(true); !solution) {
+    //   std::println("Error in example 1: {}", solution.error());
+    //   return std::to_underlying(solution.error());
+    // }
   }
 }
