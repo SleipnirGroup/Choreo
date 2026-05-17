@@ -15,6 +15,7 @@
 
 #include "data/constraint_data/constraint_data.hpp"
 #include "data/expr.hpp"
+#include "data/swerve_sample.hpp"
 
 // Eventually this string comes in via a JSON file, but for now we'll hardcode
 // it here for testing purposes
@@ -150,7 +151,6 @@ int main() {
   wpi::util::json constraintJson =
       constraintVariant;  // uses the to_json for ConstraintVariant, which uses
                           // to_json_special for MaxVelocity
-  // choreo::ConstraintData::to_json(constraintJson, constraintVariant);
   std::println("ConstraintVariant JSON: {}", constraintJson.to_string_pretty());
   choreo::ConstraintData::ConstraintVariant pointAt =
       choreo::ConstraintData::PointAt{
@@ -184,10 +184,21 @@ int main() {
     path.wpt_constraint(1, zero_linear_velocity);
     path.set_control_interval_counts({40});
 
-    // trajopt::SwerveTrajectoryGenerator generator{path};
-    // if (auto solution = generator.generate(true); !solution) {
-    //   std::println("Error in example 1: {}", solution.error());
-    //   return std::to_underlying(solution.error());
-    // }
+    trajopt::SwerveTrajectoryGenerator generator{path};
+    auto solution = generator.generate(true);
+    if (!solution) {
+      std::println("Error in example 1: {}", solution.error());
+      return std::to_underlying(solution.error());
+    } else {
+      trajopt::SwerveTrajectory trajectory =
+          trajopt::SwerveTrajectory(solution.value());
+      std::println("Example 1 trajectory:");
+      std::vector<choreo::SwerveSample> samples;
+      samples.reserve(trajectory.samples.size());
+      for (const auto& sample : trajectory.samples) {
+        samples.emplace_back(choreo::SwerveSample(sample));
+      }
+      std::println("{}", wpi::util::json(samples).to_string_pretty());
+    }
   }
 }
