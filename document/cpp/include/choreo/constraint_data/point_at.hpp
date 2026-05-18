@@ -5,7 +5,7 @@
 #include <wpi/units/length.hpp>
 #include <wpi/util/json.hpp>
 
-#include "data/expr.hpp"
+#include "../expr.hpp"
 
 namespace choreo::ConstraintData {
 struct PointAt {

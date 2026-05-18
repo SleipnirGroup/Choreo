@@ -7,21 +7,21 @@
 #include <wpi/util/json.hpp>
 // ConstraintData components (each lives in its own header)
 #include "constraint_data/constraint_data.hpp"
-#include "constraint_scope.hpp"
+#include "constraint_data/constraint_scope.hpp"
 
 // Waypoint ID types and helpers
 namespace choreo {
 struct WaypointIDX {
-  uint64_t idx;
+  size_t idx;
 };
 struct FirstWaypoint {};
 struct LastWaypoint {};
 using WaypointID = std::variant<WaypointIDX, FirstWaypoint, LastWaypoint>;
 
-inline std::optional<uint64_t> getWaypointIndex(const WaypointID& id,
-                                                uint64_t totalWaypoints) {
+inline std::optional<size_t> getWaypointIndex(const WaypointID& id,
+                                                size_t totalWaypoints) {
   return std::visit(
-      [totalWaypoints](auto&& arg) -> std::optional<uint64_t> {
+      [totalWaypoints](auto&& arg) -> std::optional<size_t> {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, WaypointIDX>) {
           if (arg.idx >= totalWaypoints)
@@ -57,7 +57,7 @@ inline void from_json(const wpi::util::json& json, WaypointID& id) {
     int64_t index = json.at("idx").get_int();
     if (index < 0)
       throw std::invalid_argument("WaypointIDX index cannot be negative");
-    id = WaypointIDX{.idx = static_cast<uint64_t>(index)};
+    id = WaypointIDX{.idx = static_cast<size_t>(index)};
   } else if (json.is_string() && json.get_string() == "first") {
     id = FirstWaypoint{};
   } else if (json.is_string() && json.get_string() == "last") {
@@ -68,8 +68,8 @@ inline void from_json(const wpi::util::json& json, WaypointID& id) {
 }
 
 struct ConstraintIDX {
-  uint64_t from;
-  std::optional<uint64_t> to;  // if not specified, applies only to
+  size_t from;
+  std::optional<size_t> to;  // if not specified, applies only to
   ConstraintData::ConstraintVariant data;
   bool enabled;
 };
@@ -81,14 +81,14 @@ struct Constraint {
   ConstraintData::ConstraintVariant data;
   bool enabled;
 
-  std::optional<ConstraintIDX> toConstraintIDX(uint64_t totalWaypoints) const {
+  std::optional<ConstraintIDX> toConstraintIDX(size_t totalWaypoints) const {
     auto fromIdxOpt = getWaypointIndex(from, totalWaypoints);
     if (!fromIdxOpt) {
       return std::nullopt;
     }
-    uint64_t fromIdx = *fromIdxOpt;
+    size_t fromIdx = *fromIdxOpt;
 
-    std::optional<uint64_t> toIdxOpt;
+    std::optional<size_t> toIdxOpt;
     if (to) {
       toIdxOpt = getWaypointIndex(*to, totalWaypoints);
       if (!toIdxOpt)
@@ -99,7 +99,7 @@ struct Constraint {
         .from = fromIdx, .to = toIdxOpt, .data = data, .enabled = enabled};
   }
 };
-void to_json(wpi::util::json& json, const Constraint& constraint) {
+inline void to_json(wpi::util::json& json, const Constraint& constraint) {
   json =
       wpi::util::json::object("from", constraint.from, "data", constraint.data,
                               "enabled", constraint.enabled);
@@ -107,7 +107,7 @@ void to_json(wpi::util::json& json, const Constraint& constraint) {
     json["to"] = *constraint.to;
   }
 }
-void from_json(const wpi::util::json& json, Constraint& constraint) {
+inline void from_json(const wpi::util::json& json, Constraint& constraint) {
   constraint.from = json.at("from").get<WaypointID>();
   if (json.contains("to"))
     constraint.to = json.at("to").get<WaypointID>();

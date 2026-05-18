@@ -21,6 +21,7 @@
 #include "trajopt/constraint/point_point_min_constraint.hpp"
 #include "trajopt/constraint/pose_equality_constraint.hpp"
 #include "trajopt/constraint/translation_equality_constraint.hpp"
+#include "trajopt/constraint/keep_in_circle_constraint.hpp"
 #include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/translation2.hpp"
 
@@ -55,7 +56,8 @@ using Constraint = std::variant<
     PointPointMaxConstraint,
     PointPointMinConstraint,
     PoseEqualityConstraint,
-    TranslationEqualityConstraint
+    TranslationEqualityConstraint,
+    KeepInCircleConstraint
     // clang-format on
     >;
 

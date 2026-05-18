@@ -48,12 +48,12 @@ struct Expr {
 };
 
 template <typename BaseUnit>
-void to_json(wpi::util::json& json, const Expr<BaseUnit>& expr) {
+inline void to_json(wpi::util::json& json, const Expr<BaseUnit>& expr) {
   json = wpi::util::json::object("exp", expr.exp, "val", expr.val.value());
 }
 
 template <typename BaseUnit>
-void from_json(const wpi::util::json& json, Expr<BaseUnit>& expr) {
+inline void from_json(const wpi::util::json& json, Expr<BaseUnit>& expr) {
   expr.exp = json.at("exp").get_string();
   // get_number, not get_double, because get_double can throw if the value is
   // serialized as an int.

@@ -29,11 +29,11 @@ struct WheelLocation {
 #endif
 };
 
-void to_json(wpi::util::json& json, const WheelLocation& module) {
+inline void to_json(wpi::util::json& json, const WheelLocation& module) {
   json = wpi::util::json::object("x", module.x, "y", module.y);
 }
 
-void from_json(const wpi::util::json& json, WheelLocation& module) {
+inline void from_json(const wpi::util::json& json, WheelLocation& module) {
   module.x = json.at("x").get<choreo::Expr<wpi::units::meter_t>>();
   module.y = json.at("y").get<choreo::Expr<wpi::units::meter_t>>();
 }

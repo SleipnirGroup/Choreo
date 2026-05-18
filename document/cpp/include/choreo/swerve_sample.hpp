@@ -56,13 +56,13 @@ struct SwerveSample {
   }
 #endif
 };
-void to_json(wpi::util::json& json, const SwerveSample& sample) {
+inline void to_json(wpi::util::json& json, const SwerveSample& sample) {
   json = wpi::util::json::object(
       "t", sample.t, "x", sample.x, "y", sample.y, "heading", sample.heading,
       "vx", sample.vx, "vy", sample.vy, "omega", sample.omega, "ax", sample.ax,
       "ay", sample.ay, "alpha", sample.alpha, "fx", sample.fx, "fy", sample.fy);
 }
-void from_json(const wpi::util::json& json, SwerveSample& sample) {
+inline void from_json(const wpi::util::json& json, SwerveSample& sample) {
   sample.t = json.at("t").get_double();
   sample.x = json.at("x").get_double();
   sample.y = json.at("y").get_double();

@@ -109,7 +109,7 @@ struct RobotConfig {
   }
 #endif
 };
-void to_json(wpi::util::json& json, const RobotConfig& config) {
+inline void to_json(wpi::util::json& json, const RobotConfig& config) {
   json = wpi::util::json::object(
       "mass", config.mass, "inertia", config.inertia, "gearing", config.gearing,
       "radius", config.radius, "vmax", config.vmax, "tmax", config.tmax, "cof",
@@ -117,7 +117,7 @@ void to_json(wpi::util::json& json, const RobotConfig& config) {
       "wheels", config.wheels);
 }
 
-void from_json(const wpi::util::json& json, RobotConfig& config) {
+inline void from_json(const wpi::util::json& json, RobotConfig& config) {
   config.mass = json.at("mass").get<choreo::Expr<wpi::units::kilogram_t>>();
   config.inertia =
       json.at("inertia")
