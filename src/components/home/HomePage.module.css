@@ -50,6 +50,28 @@
   gap: 4px;
 }
 
+.SearchBar {
+  width: 280px;
+  margin-bottom: 20px !important;
+}
+
+.SearchBar input {
+  color: white;
+  font-size: 0.875rem;
+}
+
+.SearchBar fieldset {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.SearchBar:hover fieldset {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.SearchBar :global(.Mui-focused) fieldset {
+  border-color: var(--accent-purple) !important;
+}
+
 .PathGrid {
   display: flex;
   flex-wrap: wrap;
