@@ -67,7 +67,11 @@ export const UIStateStore = types
 
     contextMenuSelectedWaypoint: types.maybe(types.number),
     contextMenuWaypointType: types.maybe(types.number),
-    contextMenuMouseSelection: types.maybe(types.array(types.number)) // [clientX, clientY] from `MouseEvent`
+    contextMenuMouseSelection: types.maybe(types.array(types.number)), // [clientX, clientY] from `MouseEvent`
+    currentView: types.optional(
+      types.enumeration<"home" | "editor">(["home", "editor"]),
+      "home"
+    )
   })
   .views((self: any) => {
     return {
@@ -210,6 +214,12 @@ export const UIStateStore = types
       self.contextMenuMouseSelection = mouseSelection
         ? [mouseSelection.clientX, mouseSelection.clientY]
         : undefined;
+    },
+    navigateToHome() {
+      self.currentView = "home";
+    },
+    navigateToEditor() {
+      self.currentView = "editor";
     }
   }));
 export type IUIStateStore = Instance<typeof UIStateStore>;

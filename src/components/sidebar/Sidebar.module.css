@@ -112,3 +112,38 @@
 .SidebarItem .SidebarRightIcon {
   padding-right: 8px;
 }
+
+.PathNameDisplay {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  cursor: text;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.15s;
+}
+
+.PathNameDisplay:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.PathNameText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.PathNameInput {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent-purple);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  padding: 1px 4px;
+  font-family: inherit;
+  width: 110px;
+  min-width: 0;
+}

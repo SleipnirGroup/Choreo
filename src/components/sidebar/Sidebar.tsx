@@ -1,24 +1,79 @@
-import { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
+import { Component, useRef, useState } from "react";
+import { doc, renamePath, uiState } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
 import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
-import PathSelector from "./PathSelector";
-import MenuIcon from "@mui/icons-material/Menu";
-import {
-  ContentCopy,
-  Redo,
-  ShapeLine,
-  Polyline,
-  Undo
-} from "@mui/icons-material";
-import Add from "@mui/icons-material/Add";
+import { ArrowBack } from "@mui/icons-material";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
-
+import { NameIssue } from "../../document/path/NameIsIdentifier";
 import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
+
+const PathNameEditor = observer(() => {
+  const path = doc.pathlist.activePath;
+  const [renaming, setRenaming] = useState(false);
+  const [name, setName] = useState("");
+  const [error, setError] = useState<NameIssue | undefined>(undefined);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startRename = () => {
+    setName(path.name);
+    setError(undefined);
+    setRenaming(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commit = () => {
+    if (error === undefined && name !== path.name) {
+      renamePath(path.uuid, name);
+    }
+    setRenaming(false);
+  };
+
+  const check = (n: string) => {
+    setError(doc.pathlist.validateName(n, path.uuid));
+    setName(n);
+  };
+
+  if (renaming) {
+    return (
+      <Tooltip
+        disableInteractive
+        open={error !== undefined}
+        title={error?.uiMessage ?? ""}
+        placement="bottom"
+        arrow
+      >
+        <input
+          ref={inputRef}
+          value={name}
+          autoFocus
+          spellCheck={false}
+          onChange={(e) => check(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") setRenaming(false);
+          }}
+          onBlur={commit}
+          className={styles.PathNameInput}
+          style={{
+            borderBottomColor: error ? "#f44336" : "var(--accent-purple)"
+          }}
+        />
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Tooltip disableInteractive title="Click to rename">
+      <span className={styles.PathNameDisplay} onClick={startRename}>
+        <span className={styles.PathNameText}>{path.name}</span>
+      </span>
+    </Tooltip>
+  );
+});
 
 type Props = object;
 
@@ -31,7 +86,6 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    const { toggleMainMenu } = uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -47,123 +101,21 @@ class Sidebar extends Component<Props, State> {
             zIndex: 1000
           }}
         >
-          <span>
-            <Tooltip disableInteractive title="Main Menu">
-              <IconButton
-                onClick={() => {
-                  toggleMainMenu();
-                }}
-              >
-                <MenuIcon></MenuIcon>
+          <span style={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+            <Tooltip disableInteractive title="All Paths">
+              <IconButton onClick={() => uiState.navigateToHome()}>
+                <ArrowBack></ArrowBack>
               </IconButton>
             </Tooltip>
-            Choreo
+            <PathNameEditor />
           </span>
 
           <span>
             <ProjectSaveStatusIndicator
               savingState={uiState.projectSavingState}
             ></ProjectSaveStatusIndicator>
-            <Tooltip disableInteractive title="Undo">
-              <span>
-                <IconButton
-                  disabled={!doc.history.canUndo}
-                  onClick={() => {
-                    doc.undo();
-                  }}
-                >
-                  <Undo></Undo>
-                </IconButton>
-              </span>
-            </Tooltip>
-            <Tooltip disableInteractive title="Redo">
-              <span>
-                <IconButton
-                  disabled={!doc.history.canRedo}
-                  onClick={() => {
-                    doc.redo();
-                  }}
-                >
-                  <Redo></Redo>
-                </IconButton>
-              </span>
-            </Tooltip>
           </span>
         </div>
-        <div
-          className={styles.SidebarHeading}
-          style={{ gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px" }}
-        >
-          PATHS
-          <Tooltip disableInteractive title="Generate All">
-            <span>
-              <IconButton
-                size="small"
-                color="default"
-                style={{
-                  float: "right"
-                }}
-                disabled={Object.keys(doc.pathlist.paths).length == 0}
-                onClick={() => doc.generateAll()}
-              >
-                <Polyline fontSize="small"></Polyline>
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip disableInteractive title="Generate All Outdated">
-            <span>
-              <IconButton
-                size="small"
-                color="default"
-                style={{
-                  float: "right"
-                }}
-                disabled={Object.keys(doc.pathlist.paths).length == 0}
-                onClick={() => doc.generateAllOutdated()}
-              >
-                <ShapeLine fontSize="small"></ShapeLine>
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip disableInteractive title="Duplicate Path">
-            <span>
-              <IconButton
-                size="small"
-                color="default"
-                style={{
-                  float: "right"
-                }}
-                disabled={Object.keys(doc.pathlist.paths).length == 0}
-                onClick={() =>
-                  doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
-                }
-              >
-                <ContentCopy fontSize="small"></ContentCopy>
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip disableInteractive title="Add Path">
-            <IconButton
-              size="small"
-              color="default"
-              style={{
-                float: "right"
-              }}
-              onClick={() => doc.pathlist.addPath("NewPath", true)}
-            >
-              <Add fontSize="small"></Add>
-            </IconButton>
-          </Tooltip>
-        </div>
-        <Divider></Divider>
-        <div
-          className={styles.Sidebar}
-          style={{ maxHeight: "300px", minHeight: "50px" }}
-        >
-          <PathSelector></PathSelector>
-        </div>
-        <Divider></Divider>
-        <div className={styles.SidebarHeading}>FEATURES</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
@@ -198,7 +150,7 @@ class Sidebar extends Component<Props, State> {
           </Divider>
           <div className={styles.WaypointList}>
             {doc.pathlist.activePath.markers.map(
-              (marker: IEventMarkerStore, index: number) => {
+              (marker: IEventMarkerStore) => {
                 return (
                   <SidebarEventMarker
                     marker={marker}

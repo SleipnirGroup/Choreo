@@ -30,7 +30,6 @@ import {
   openProjectSelectFeedback
 } from "./document/DocumentManager";
 
-import SettingsModal from "./components/config/SettingsModal";
 import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
 
@@ -239,7 +238,6 @@ class AppMenu extends Component<Props, State> {
               </div>
             </ListItem>
           </List>
-          <SettingsModal></SettingsModal>
         </div>
       </Drawer>
     );

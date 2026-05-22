@@ -5,6 +5,9 @@ import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import AppMenu from "./AppMenu";
 import PathAnimationPanel from "./components/field/PathAnimationPanel";
+import SettingsModal from "./components/config/SettingsModal";
+import HomePage from "./components/home/HomePage";
+import { uiState } from "./document/DocumentManager";
 
 type Props = object;
 
@@ -19,29 +22,36 @@ class Body extends Component<Props, State> {
         <div className="App">
           <div className="Page">
             <AppMenu></AppMenu>
-            <span
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                flexGrow: 1,
-                height: 0,
-                width: "100%"
-              }}
-            >
-              <Sidebar></Sidebar>
+            <SettingsModal></SettingsModal>
+            {uiState.currentView === "home" ? (
+              <HomePage></HomePage>
+            ) : (
               <span
                 style={{
                   display: "flex",
-                  flexDirection: "column",
+                  flexDirection: "row",
                   flexGrow: 1,
-                  width: 0
+                  height: 0,
+                  width: "100%"
                 }}
               >
-                <Navbar></Navbar>
-                <Field></Field>
+                <Sidebar></Sidebar>
+                <span
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    flexGrow: 1,
+                    width: 0
+                  }}
+                >
+                  <Navbar></Navbar>
+                  <Field></Field>
+                </span>
               </span>
-            </span>
-            <PathAnimationPanel></PathAnimationPanel>
+            )}
+            {uiState.currentView === "editor" && (
+              <PathAnimationPanel></PathAnimationPanel>
+            )}
           </div>
         </div>
       </>
