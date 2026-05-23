@@ -66,10 +66,6 @@ class TRAJOPT_DLLEXPORT KeepInCircleConstraint {
             constraint.apply(problem, pose, linear_velocity, angular_velocity,
                     linear_acceleration, angular_acceleration);
             }
-      // std::visit(
-        
-      //   [&problem, &pose, &linear_velocity, &angular_velocity, &linear_acceleration, &angular_acceleration](const auto&& c)
-      // {c.apply(problem, pose, linear_velocity, angular_velocity, linear_acceleration, angular_acceleration);}, constraint);
   }
 
  private:

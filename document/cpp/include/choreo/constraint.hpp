@@ -71,7 +71,6 @@ struct ConstraintIDX {
   size_t from;
   std::optional<size_t> to;  // if not specified, applies only to
   ConstraintData::ConstraintVariant data;
-  bool enabled;
 };
 
 struct Constraint {
@@ -96,7 +95,7 @@ struct Constraint {
     }
 
     return ConstraintIDX{
-        .from = fromIdx, .to = toIdxOpt, .data = data, .enabled = enabled};
+        .from = fromIdx, .to = toIdxOpt, .data = data};
   }
 };
 inline void to_json(wpi::util::json& json, const Constraint& constraint) {

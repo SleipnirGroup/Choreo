@@ -15,7 +15,7 @@
 // #include "max_acceleration.hpp"
 // #include "max_angular_acceleration.hpp"
 // #include "max_angular_velocity.hpp"
-// #include "max_velocity.hpp"
+#include "max_velocity.hpp"
 // #include "point_at.hpp"
 // #include "stop_point.hpp"
 namespace choreo::ConstraintData {
@@ -34,6 +34,7 @@ concept ConstraintLike =
 using ConstraintVariant =
     std::variant<
       //clang-format off
+      MaxVelocity,
     // MaxVelocity, MaxAcceleration, MaxAngularVelocity,
     //              MaxAngularAcceleration, PointAt, HeadingConstraint, StopPoint,
         KeepInCircle

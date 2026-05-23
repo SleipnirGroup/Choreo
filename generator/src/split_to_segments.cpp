@@ -33,10 +33,9 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   // guesses.
   for (const auto& constraint : constraints) {
     std::println(
-        "Constraint from {} to {}: enabled={}, data={}", constraint.from,
+        "Constraint from {} to {}: data={}", constraint.from,
         constraint.to.has_value() ? std::to_string(constraint.to.value())
                                   : "none",
-        constraint.enabled,
         std::visit(
             [](const auto& data) {
               return wpi::util::json(data).to_string_pretty();
@@ -80,33 +79,6 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
     segments.push_back(
         Segment{.start = waypoint, .coalesce_with_previous = isInitialGuess});
   }
-  // Now we can go through the constraints again and assign them to the
-  // appropriate segments based on their 'from' and 'to' indices. Reindex the
-  // constraints by subtracting the number of initial guess waypoints that come
-  // before their 'from' and 'to' indices, since those waypoints will be removed
-  // from the optimization problem and made initial guess points on the previous
-  // segment. This way, the constraints will still reference the correct
-  // waypoints in the new segments-based representation of the path.
-  // std::vector<ConstraintIDX> reindexedConstraints(constraints.size());
-
-  // auto fix_scope = [](size_t idx, const std::vector<size_t>& removed_idxs) {
-  //   size_t to_subtract = 0;
-  //   for (size_t removed : removed_idxs) {
-  //     if (removed < idx) {
-  //       to_subtract++;
-  //     }
-  //   }
-  //   return idx - to_subtract;
-  // };
-
-  // for (const auto& constraint : constraints) {
-
-  //   reindexedConstraints.push_back(ConstraintIDX{.from =
-  //   fix_scope(constraint.from, initialGuessWaypointIndices), .to =
-  //   constraint.to ? std::optional<size_t>(fix_scope(*constraint.to,
-  //   initialGuessWaypointIndices)) : std::nullopt, .data = constraint.data,
-  //   .enabled = constraint.enabled});
-  // }
 
   for (const auto& constraint : constraints) {
     if (constraint.to) {  // Apply to every segment between 'from' and 'to',
