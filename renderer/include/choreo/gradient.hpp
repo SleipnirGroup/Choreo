@@ -12,7 +12,7 @@ namespace choreo {
             double l;
 
             std::string toCSS() {
-                return std::format("hsl({}, {}%, {}%)", h*360, s*100, l*100);
+                return std::format("hsl({}, {}%, {}%)", static_cast<int>(h*360), s*100, l*100);
             }
         };
         namespace path_gradient {

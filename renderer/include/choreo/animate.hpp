@@ -24,7 +24,7 @@ namespace choreo::svg_helpers {
  * Returns nullptr for empty input.
  */
 inline void make_animateMotion(SVGPP::Group* parent, const std::vector<SwerveSample>& samples,
-                                                             int precision = 6) {
+                                                             int precision = 3) {
   if (samples.empty()) return;
 
   const double t0 = samples.front().t;
