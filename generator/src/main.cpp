@@ -20,6 +20,8 @@
 
 #include "segment.hpp"
 #include "split_to_segments.hpp"
+#include <choreo/renderer.hpp>
+#include <choreo/gradient.hpp>
 
 // Eventually this string comes in via a JSON file, but for now we'll hardcode
 // it here for testing purposes
@@ -115,15 +117,32 @@ const choreo::Parameters params{
                    .y = 0_m,
                    .heading = 0_rad,
                    .fix_translation = true,
+                   .fix_heading = true},
+                                    {.x = 1.2_m,
+                   .y = 1_m,
+                   .heading = 2_rad,
+                   .fix_translation = true,
+                   .fix_heading = true},
+                  
+                                                      {.x = 3.2_m,
+                   .y = 1_m,
+                   .heading = 1_rad,
+                   .fix_translation = true,
                    .fix_heading = true}},
     .constraints =
         {
             {.from = choreo::FirstWaypoint{}, .to = std::nullopt, .data =
             choreo::ConstraintData::MaxVelocity{.max = 0_mps}, .enabled =
             true},
+            {.from = choreo::FirstWaypoint{}, .to = std::nullopt, .data =
+            choreo::ConstraintData::MaxAngularVelocity{}, .enabled =
+            true},
             {.from = choreo::LastWaypoint{}, .to = std::nullopt, .data =
             choreo::ConstraintData::MaxVelocity{.max = 0_mps}, .enabled =
-            true}//,
+            true},
+                        {.from = choreo::LastWaypoint{}, .to = std::nullopt, .data =
+            choreo::ConstraintData::MaxAngularVelocity{}, .enabled =
+            true}
             //{.from = choreo::WaypointIDX{.idx = 0}, .to =
             // choreo::WaypointIDX{.idx = 2}, .data =
             // choreo::ConstraintData::KeepInCircle{.x = 0_m, .y = 0_m, .r=
@@ -234,7 +253,7 @@ int main() {
   }
 
   trajopt::SwerveTrajectoryGenerator generator{path};
-   auto solution = generator.generate(true);
+   auto solution = generator.generate(false);
   std::println("\ndone\n");
   if (!solution) {
     std::println("Error in example 1: {}", solution.error());
@@ -255,8 +274,9 @@ int main() {
         std::chrono::steady_clock::now();
     std::println("Serialized trajectory JSON: {}", json_string);
     std::println(
-        "Serialization time taken: {} ms",
+        "Serialization time taken: {} m s",
         std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
             .count());
+    choreo::render::render(samples, configExp, params, choreo::render::path_gradient::linearVelocity);
   }
 }

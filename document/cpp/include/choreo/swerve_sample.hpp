@@ -5,8 +5,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
-
+#include <wpi/util/json.hpp>
+#ifdef WITH_TRAJOPT
 #include <trajopt/swerve_trajectory_generator.hpp>
+#endif
 namespace choreo {
 struct SwerveSample {
   double t;

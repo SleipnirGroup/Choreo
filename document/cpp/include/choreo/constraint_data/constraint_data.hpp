@@ -14,7 +14,7 @@
 // #include "keep_out_circle.hpp"
 // #include "max_acceleration.hpp"
 // #include "max_angular_acceleration.hpp"
-// #include "max_angular_velocity.hpp"
+#include "max_angular_velocity.hpp"
 #include "max_velocity.hpp"
 // #include "point_at.hpp"
 // #include "stop_point.hpp"
@@ -35,6 +35,7 @@ using ConstraintVariant =
     std::variant<
       //clang-format off
       MaxVelocity,
+      MaxAngularVelocity,
     // MaxVelocity, MaxAcceleration, MaxAngularVelocity,
     //              MaxAngularAcceleration, PointAt, HeadingConstraint, StopPoint,
         KeepInCircle

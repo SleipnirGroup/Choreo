@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
-project(generator LANGUAGES CXX)
+project(choreo_renderer LANGUAGES CXX)
 
 include(FetchContent)
 # Force shared library build for trajoptlib
@@ -7,12 +7,14 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build using shared libraries" FORCE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
+
+include(FetchContent)
 FetchContent_Declare(
-    TrajoptLib
-    SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib/"
+    lunasvg
+    GIT_REPOSITORY https://github.com/sammycage/lunasvg.git
+    GIT_TAG master  # Specify the desired branch or tag
 )
-FetchContent_MakeAvailable(TrajoptLib)
+FetchContent_MakeAvailable(lunasvg)
 
 set(WITH_TRAJOPT ON)
 FetchContent_Declare(
@@ -24,11 +26,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(choreo_document)
 
 FetchContent_Declare(
-    choreo_renderer
+    TrajoptLib
     SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../renderer/"
+    "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib/"
 )
-FetchContent_MakeAvailable(choreo_renderer)
+FetchContent_MakeAvailable(TrajoptLib)
 
 # FetchContent_Declare(jartjson GIT_REPOSITORY "https://github.com/jart/json.cpp" GIT_TAG "ccb9195e6abe9eb060e338a04f43e8d2e67b45ea")
 # FetchContent_MakeAvailable(jartjson)
@@ -53,21 +55,25 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(wpilib)
 # Collect sources for the executable
-file(GLOB_RECURSE generator_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/split_to_segments.cpp")
+file(GLOB_RECURSE choreo_renderer_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-add_executable(generator ${generator_SOURCES})
+add_library(choreo_renderer ${choreo_renderer_SOURCES})
 
 # C++ standard
-target_compile_features(generator PRIVATE cxx_std_23)
+target_compile_features(choreo_renderer PRIVATE cxx_std_23)
 
 # Public include dir for this executable (optional)
 target_include_directories(
-    generator
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+    choreo_renderer
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
 
-target_link_libraries(generator PRIVATE TrajoptLib wpimath wpiutil choreo_document choreo_renderer)
+target_link_libraries(choreo_renderer PRIVATE TrajoptLib wpimath wpiutil choreo_document lunasvg::lunasvg)
 
 # Optional: install rule
-install(TARGETS generator RUNTIME DESTINATION bin)
+install(TARGETS choreo_renderer RUNTIME DESTINATION bin)
+
+
