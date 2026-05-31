@@ -46,6 +46,10 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                                            {+front, -right}}});
   }
 
+  void set_bumpers(trajopt::KeepOutRegion& bumper) {
+    bumpers.emplace_back(bumper);
+  }
+
   /// Get all bumpers currently added to the path builder
   ///
   /// @return a list of bumpers applied to the builder.

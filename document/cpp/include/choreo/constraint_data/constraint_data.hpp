@@ -1,9 +1,10 @@
 // Copyright (c) Choreo contributors
 
 #pragma once
+#include <concepts>
 #include <string>
 #include <variant>
-#include <concepts>
+#include <print>
 
 #include <wpi/util/json.hpp>
 
@@ -23,27 +24,27 @@ namespace choreo::ConstraintData {
 /// ConstraintLike concept.
 template <typename T>
 concept ConstraintLike =
-    requires(T self, const choreo::Waypoint& start, const std::optional<choreo::Waypoint>& end,
-      const std::vector<trajopt::KeepOutRegion>& bumpers) {
-  {
-  self.toTrajoptConstraint(start, end, bumpers) 
-  } -> std::same_as<trajopt::Constraint>;
-  {self.scope()} ->std::same_as<choreo::ConstraintScope>;
-  {T::type_string()} -> std::same_as<std::string_view>;
-    };
-using ConstraintVariant =
-    std::variant<
-      //clang-format off
-      MaxVelocity,
-      MaxAngularVelocity,
+    requires(T self, const choreo::Waypoint& start,
+             const std::optional<choreo::Waypoint>& end,
+             const std::vector<trajopt::KeepOutRegion>& bumpers) {
+      {
+        self.toTrajoptConstraint(start, end, bumpers)
+      } -> std::same_as<trajopt::Constraint>;
+      { self.scope() } -> std::same_as<choreo::ConstraintScope>;
+      { T::type_string() } -> std::same_as<std::string_view>;
+          };
+using ConstraintVariant = std::variant<
+    //clang-format off
+    MaxVelocity, MaxAngularVelocity,
     // MaxVelocity, MaxAcceleration, MaxAngularVelocity,
-    //              MaxAngularAcceleration, PointAt, HeadingConstraint, StopPoint,
-        KeepInCircle
-        // KeepInRectangle,
-        // KeepInLane,
-        // KeepOutCircle
-      //clang-format on
-      >;
+    //              MaxAngularAcceleration, PointAt, HeadingConstraint,
+    //              StopPoint,
+    KeepInCircle
+    // KeepInRectangle,
+    // KeepInLane,
+    // KeepOutCircle
+    //clang-format on
+    >;
 inline void to_json(wpi::util::json& json, const ConstraintVariant& c) {
   std::visit(
       [&json](auto&& arg) {
@@ -53,18 +54,19 @@ inline void to_json(wpi::util::json& json, const ConstraintVariant& c) {
 }
 inline void from_json(const wpi::util::json& json, ConstraintVariant& c) {
   std::string type = json.at("type").get_string();
-  // if (type == "MaxVelocity") {
-  //   MaxVelocity data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "MaxAcceleration") {
-  //   MaxAcceleration data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "MaxAngularVelocity") {
-  //   MaxAngularVelocity data;
-  //   from_json(json, data);
-  //   c = data;
+  std::println("type: {}", type);
+  if (type == MaxVelocity::type_string()) {
+    MaxVelocity data;
+    from_json(json, data);
+    c = data;
+    // } else if (type == "MaxAcceleration") {
+    //   MaxAcceleration data;
+    //   from_json(json, data);
+    //   c = data;
+  } else if (type == MaxAngularVelocity::type_string()) {
+    MaxAngularVelocity data;
+    from_json(json, data);
+    c = data;
   // } else if (type == "MaxAngularAcceleration") {
   //   MaxAngularAcceleration data;
   //   from_json(json, data);
@@ -82,27 +84,26 @@ inline void from_json(const wpi::util::json& json, ConstraintVariant& c) {
   //   from_json(json, data);
   //   c = data;
   // } else
-  if (type == "KeepInCircle") {
+  } else if (type == KeepInCircle::type_string()) {
     KeepInCircle data;
     from_json(json, data);
     c = data;
-  //else if (type == "KeepInRectangle") {
-  //   KeepInRectangle data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "KeepInLane") {
-  //   KeepInLane data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "KeepOutCircle") {
-  //   KeepOutCircle data;
-  //   from_json(json, data);
-  //   c = data;
+    // else if (type == "KeepInRectangle") {
+    //    KeepInRectangle data;
+    //    from_json(json, data);
+    //    c = data;
+    //  } else if (type == "KeepInLane") {
+    //    KeepInLane data;
+    //    from_json(json, data);
+    //    c = data;
+    //  } else if (type == "KeepOutCircle") {
+    //    KeepOutCircle data;
+    //    from_json(json, data);
+    //    c = data;
   } else {
     throw std::invalid_argument("Unknown constraint type: " + type);
   }
 }
-
 
 template <typename>
 struct HoldsConstraintTypes;

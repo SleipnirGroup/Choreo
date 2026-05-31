@@ -4,7 +4,11 @@
 #include <wpi/util/json.hpp>
 
 namespace choreo::ConstraintData {
-struct StopPoint {};
+struct StopPoint {
+  static StopPoint from(const wpi::util::json&) {
+    return StopPoint();
+  }
+};
 inline void to_json(wpi::util::json& json, const StopPoint&) {
   json = wpi::util::json::object("type", "StopPoint");
 }

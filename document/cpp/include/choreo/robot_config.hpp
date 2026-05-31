@@ -15,7 +15,7 @@
 
 #include "expr.hpp"
 #include "type_traits"
-#include "wheel_location.hpp"
+#include "translation2e.hpp"
 #ifdef WITH_TRAJOPT
 #include <trajopt/differential_trajectory_generator.hpp>
 #include <trajopt/geometry/translation2.hpp>
@@ -43,8 +43,13 @@ struct RobotConfig {
       22_in;  // m, distance between left and right wheels on a typical FRC
               // robot
   /// FL, BL, BR, FR
-  std::vector<WheelLocation> wheels = {
+  std::vector<Translation2e> wheels = {
       {+11_in, +11_in}, {+11_in, -11_in}, {-11_in, -11_in}, {-11_in, +11_in}};
+  
+  // Counterclockwise winding order, start location doesn't matter;
+  std::vector<Translation2e> bumpers = {
+    {+15_in, +15_in}, {+15_in, -15_in}, {-15_in, -15_in}, {-15_in, +15_in}
+  };
 
   static RobotConfig default_frc_swerve() {
     return RobotConfig{.mass = 150_lb,
@@ -58,7 +63,10 @@ struct RobotConfig {
                        .wheels = {{+11_in, +11_in},
                                   {+11_in, -11_in},
                                   {-11_in, -11_in},
-                                  {-11_in, +11_in}}};
+                                  {-11_in, +11_in}},
+                       .bumpers = {
+    {+15_in, +15_in}, {+15_in, -15_in}, {-15_in, -15_in}, {-15_in, +15_in}
+  }};
   }
   wpi::units::newton_meter_t wheel_max_torque() {
     return tmax.unit() * gearing.unit();
@@ -74,7 +82,7 @@ struct RobotConfig {
     trajoptModules.reserve(wheels.size());
     std::transform(
         wheels.begin(), wheels.end(), std::back_inserter(trajoptModules),
-        [](WheelLocation module) { return trajopt::Translation2d(module); });
+        [](Translation2e module) { return trajopt::Translation2d(module); });
     return trajopt::SwerveDrivetrain{
         .mass = mass,
         .moi = inertia,
@@ -104,8 +112,14 @@ struct RobotConfig {
         .wheel_cof = cof,
         // m
         .trackwidth = differential_track_width};
-
-    // todo: to_bumpers
+  }
+  trajopt::KeepOutRegion to_bumpers() {
+    std::vector<trajopt::Translation2d> corners;
+    corners.reserve(bumpers.size());
+    std::transform(
+        bumpers.begin(), bumpers.end(), std::back_inserter(corners),
+        [](Translation2e location) { return trajopt::Translation2d(location); });
+    return trajopt::KeepOutRegion{0.01, corners};
   }
 #endif
 };
@@ -114,7 +128,7 @@ inline void to_json(wpi::util::json& json, const RobotConfig& config) {
       "mass", config.mass, "inertia", config.inertia, "gearing", config.gearing,
       "radius", config.radius, "vmax", config.vmax, "tmax", config.tmax, "cof",
       config.cof, "differential_track_width", config.differential_track_width,
-      "wheels", config.wheels);
+      "wheels", config.wheels, "bumpers", config.bumpers);
 }
 
 inline void from_json(const wpi::util::json& json, RobotConfig& config) {
@@ -134,6 +148,10 @@ inline void from_json(const wpi::util::json& json, RobotConfig& config) {
   config.wheels.clear();
   auto whs = json.at("wheels").get_array();
   std::transform(whs.begin(), whs.end(), std::back_inserter(config.wheels),
-                 [](auto modJson) { return modJson.get<WheelLocation>(); });
+                 [](auto modJson) { return modJson.get<Translation2e>(); });
+  config.bumpers.clear();
+  auto bmps = json.at("bumpers").get_array();
+  std::transform(bmps.begin(), bmps.end(), std::back_inserter(config.bumpers),
+                 [](auto modJson) { return modJson.get<Translation2e>(); });
 }
 }  // namespace choreo

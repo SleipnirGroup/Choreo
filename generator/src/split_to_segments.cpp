@@ -81,7 +81,7 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   }
 
   for (const auto& constraint : constraints) {
-    if (constraint.to) {  // Apply to every segment between 'from' and 'to',
+    if (constraint.to && constraint.to.value() > constraint.from) {  // Apply to every segment between 'from' and 'to',
                           // exclusive of 'to'
       for (size_t i = constraint.from; i < constraint.to.value(); i++) {
         segments.at(i).segment_constraints.push_back(constraint.data);

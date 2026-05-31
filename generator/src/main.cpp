@@ -1,5 +1,6 @@
 // Copyright (c) Choreo contributors
 
+#include <iterator>
 #include <numbers>
 #include <print>
 #include <ranges>
@@ -9,7 +10,9 @@
 #include <choreo/constraint.hpp>
 #include <choreo/constraint_data/constraint_data.hpp>
 #include <choreo/expr.hpp>
+#include <choreo/gradient.hpp>
 #include <choreo/parameters.hpp>
+#include <choreo/renderer.hpp>
 #include <choreo/robot_config.hpp>
 #include <choreo/swerve_sample.hpp>
 #include <choreo/waypoint.hpp>
@@ -20,8 +23,6 @@
 
 #include "segment.hpp"
 #include "split_to_segments.hpp"
-#include <choreo/renderer.hpp>
-#include <choreo/gradient.hpp>
 
 // Eventually this string comes in via a JSON file, but for now we'll hardcode
 // it here for testing purposes
@@ -105,49 +106,50 @@ const std::string robotConfigJson = R"({
 //
 // "Sgmt" is the abbreviation for segments, the continuum of state between
 // waypoints where constraints can also be applied.
-const choreo::Parameters params{
+const choreo::Parameters params_orig{
     .waypoints = {{.x = 0_m,
                    .y = 0_m,
                    .heading = 0_rad,
                    .fix_translation = true,
                    .fix_heading = true},
-                  //{.x = 0.5_m, .y = 0.5_m, .heading = 0.5_rad,
-                  //.fix_translation = false, .fix_heading = false},
+                  {.x = 0.5_m,
+                   .y = 0.5_m,
+                   .heading = 0.5_rad,
+                   .fix_translation = true,
+                   .fix_heading = true},
                   {.x = 1_m,
-                   .y = 0_m,
-                   .heading = 0_rad,
-                   .fix_translation = true,
-                   .fix_heading = true},
-                                    {.x = 1.2_m,
-                   .y = 1_m,
+                   .y = -1.2_m,
                    .heading = 2_rad,
-                   .fix_translation = true,
-                   .fix_heading = true},
-                  
-                                                      {.x = 3.2_m,
-                   .y = 1_m,
+                   .fix_translation = false,
+                   .fix_heading = false},
+
+                  {.x = 1.2_m,
+                   .y = -1_m,
                    .heading = 1_rad,
                    .fix_translation = true,
                    .fix_heading = true}},
-    .constraints =
-        {
-            {.from = choreo::FirstWaypoint{}, .to = std::nullopt, .data =
-            choreo::ConstraintData::MaxVelocity{.max = 0_mps}, .enabled =
-            true},
-            {.from = choreo::FirstWaypoint{}, .to = std::nullopt, .data =
-            choreo::ConstraintData::MaxAngularVelocity{}, .enabled =
-            true},
-            {.from = choreo::LastWaypoint{}, .to = std::nullopt, .data =
-            choreo::ConstraintData::MaxVelocity{.max = 0_mps}, .enabled =
-            true},
-                        {.from = choreo::LastWaypoint{}, .to = std::nullopt, .data =
-            choreo::ConstraintData::MaxAngularVelocity{}, .enabled =
-            true}
-            //{.from = choreo::WaypointIDX{.idx = 0}, .to =
-            // choreo::WaypointIDX{.idx = 2}, .data =
-            // choreo::ConstraintData::KeepInCircle{.x = 0_m, .y = 0_m, .r=
-            // 0.99_m}, .enabled = true}
-        },
+    .constraints = {{.from = choreo::FirstWaypoint{},
+                     .to = std::nullopt,
+                     .data = choreo::ConstraintData::MaxVelocity{.max = 0_mps},
+                     .enabled = true},
+                    {.from = choreo::FirstWaypoint{},
+                     .to = std::nullopt,
+                     .data = choreo::ConstraintData::MaxAngularVelocity{},
+                     .enabled = true},
+                    {.from = choreo::LastWaypoint{},
+                     .to = std::nullopt,
+                     .data = choreo::ConstraintData::MaxVelocity{.max = 0_mps},
+                     .enabled = true},
+                    {.from = choreo::LastWaypoint{},
+                     .to = std::nullopt,
+                     .data = choreo::ConstraintData::MaxAngularVelocity{},
+                     .enabled = true},
+                    {.from = choreo::WaypointIDX{.idx = 2},
+                     .to = choreo::WaypointIDX{.idx = 2},
+                     .data =
+                         choreo::ConstraintData::KeepInCircle{
+                             .x = 1_m, .y = -1.2_m, .r = 0.75_m},
+                     .enabled = true}},
     .target_dt = 0.02_s};
 
 // This function would apply the segments to the optimization problem, for
@@ -156,23 +158,43 @@ const choreo::Parameters params{
 // being generated correctly.
 
 int main() {
+  std::ifstream trajIn;
+  trajIn.open("trajectory.traj");
+  std::string traj{std::istreambuf_iterator<char>(trajIn), std::istreambuf_iterator<char>()};
+  auto paramsOpt = wpi::util::json::parse(traj).and_then(
+    [](wpi::util::json json)
+        -> wpi::util::expected<choreo::Parameters, std::string> {
+      try {
+        return json.get<choreo::Parameters>();
+      } catch (const std::exception& e) {
+        // return an expected that contains an unexpected error value
+        return wpi::util::unexpected<std::string>(std::string(e.what()));
+      }
+    });
+  if (!paramsOpt) {
+    std::println("Error parsing traj JSON: {}",
+                 paramsOpt.error());
+    return 1;
+  }
+  auto params = paramsOpt.value();
   auto segments = choreo::convert_to_segments(params);
   std::println("Segments:");
   std::println("{}", wpi::util::json(segments).to_string_pretty());
-
-  auto robotConfigJsonParsed =
-      wpi::util::json::parse(robotConfigJson)
-          .and_then(
-              [](wpi::util::json json)
-                  -> wpi::util::expected<choreo::RobotConfig, std::string> {
-                try {
-                  return json.get<choreo::RobotConfig>();
-                } catch (const std::exception& e) {
-                  // return an expected that contains an unexpected error value
-                  return wpi::util::unexpected<std::string>(
-                      std::string(e.what()));
-                }
-              });
+  std::ifstream chorIn;
+  chorIn.open("project.chor");
+  std::string chor{std::istreambuf_iterator<char>(chorIn),
+                   std::istreambuf_iterator<char>()};
+  std::println("{}", chor);
+  auto robotConfigJsonParsed = wpi::util::json::parse(chor).and_then(
+      [](wpi::util::json json)
+          -> wpi::util::expected<choreo::RobotConfig, std::string> {
+        try {
+          return json.get<choreo::RobotConfig>();
+        } catch (const std::exception& e) {
+          // return an expected that contains an unexpected error value
+          return wpi::util::unexpected<std::string>(std::string(e.what()));
+        }
+      });
 
   if (!robotConfigJsonParsed) {
     std::println("Error parsing robot config JSON: {}",
@@ -181,19 +203,20 @@ int main() {
   }
   choreo::RobotConfig configExp = robotConfigJsonParsed.value();
 
+  // std::println("{}", wpi::util::json(configExp).to_string_pretty());
   segments = choreo::estimate_segment_times(segments, configExp);
-  std::println("Segments with estimated times:");
-  std::println("{}", wpi::util::json(segments).to_string_pretty());
+  // std::println("Segments with estimated times:");
+  // std::println("{}", wpi::util::json(segments).to_string_pretty());
 
   // Example 1: Swerve, one meter forward motion profile
   trajopt::SwervePathBuilder path;
   path.set_drivetrain(configExp.to_swerve_drivetrain());
+  auto bumpers = configExp.to_bumpers();
+  path.set_bumpers(bumpers);
   // Apply waypoint constraints and initial guesses
   std::vector<trajopt::Pose2d> initial_guess_points;
   std::vector<choreo::Segment> only_waypoint_segments;
-  for (int i = 0; i < segments.size();
-       i++) {  // NOTE: this loop skips some because the iterator is advanced
-               // to pick up
+  for (int i = 0; i < segments.size(); i++) {
     const auto& wpt = segments[i].start;
     if (!segments[i].coalesce_with_previous) {
       path.sgmt_initial_guess_points(only_waypoint_segments.size(),
@@ -206,7 +229,6 @@ int main() {
         path.translation_wpt(only_waypoint_segments.size(), wpt.x.val.value(),
                              wpt.y.val.value());
       } else if (!wpt.fix_translation && wpt.fix_heading) {
-        // path.fixed_heading_wpt(i, wpt.heading.val.value());
       } else {
         path.wpt_initial_guess_point(only_waypoint_segments.size(),
                                      wpt.toTrajoptPose2d());
@@ -217,6 +239,9 @@ int main() {
     }
   }
 
+  const auto bumperSet = path.get_bumpers();
+  // Now that our segments list is reindexed to match TrajoptLib's counts, we
+  // can apply the constraints
   for (int j = 0; j < only_waypoint_segments.size();
        j++) {  // only for waypoints with a segment after them.
     if (j < only_waypoint_segments.size() - 1) {
@@ -231,9 +256,9 @@ int main() {
         path.sgmt_constraint(
             j, j + 1,
             std::visit(
-                [&wpt, &next_wpt](const auto& c) -> trajopt::Constraint {
-                  return c.toTrajoptConstraint(
-                      wpt, next_wpt, std::vector<trajopt::KeepOutRegion>{});
+                [&wpt, &next_wpt,
+                 &bumperSet](const auto& c) -> trajopt::Constraint {
+                  return c.toTrajoptConstraint(wpt, next_wpt, bumperSet);
                 },
                 constraint));
       }
@@ -253,7 +278,7 @@ int main() {
   }
 
   trajopt::SwerveTrajectoryGenerator generator{path};
-   auto solution = generator.generate(false);
+  auto solution = generator.generate(true);
   std::println("\ndone\n");
   if (!solution) {
     std::println("Error in example 1: {}", solution.error());
@@ -272,11 +297,12 @@ int main() {
     auto json_string = wpi::util::json(samples).to_string_pretty();
     std::chrono::steady_clock::time_point end =
         std::chrono::steady_clock::now();
-    std::println("Serialized trajectory JSON: {}", json_string);
+    // std::println("Serialized trajectory JSON: {}", json_string);
     std::println(
         "Serialization time taken: {} m s",
         std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
             .count());
-    choreo::render::render(samples, configExp, params, choreo::render::path_gradient::linearVelocity);
+    choreo::render::render(samples, configExp, params,
+                           choreo::render::path_gradient::linearVelocity);
   }
 }
