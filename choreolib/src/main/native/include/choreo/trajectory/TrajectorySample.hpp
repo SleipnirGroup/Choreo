@@ -4,9 +4,9 @@
 
 #include <concepts>
 
-#include <frc/geometry/Pose2d.h>
-#include <frc/kinematics/ChassisSpeeds.h>
-#include <units/time.h>
+#include <wpi/math/geometry/Pose2d.hpp>
+#include <wpi/math/kinematics/ChassisVelocities.hpp>
+#include <wpi/units/time.hpp>
 
 namespace choreo {
 
@@ -21,10 +21,12 @@ concept EqualityComparable = requires(const T& a, const T& b) {
 template <typename T>
 concept TrajectorySample =
     EqualityComparable<T> &&
-    requires(T t, units::second_t time, T tother, int year) {
-      { t.GetTimestamp() } -> std::same_as<units::second_t>;
-      { t.GetPose() } -> std::same_as<frc::Pose2d>;
-      { t.GetChassisSpeeds() } -> std::same_as<frc::ChassisSpeeds>;
+    requires(T t, wpi::units::second_t time, T tother, int year) {
+      { t.GetTimestamp() } -> std::same_as<wpi::units::second_t>;
+      { t.GetPose() } -> std::same_as<wpi::math::Pose2d>;
+      {
+        t.GetChassisVelocities()
+      } -> std::same_as<wpi::math::ChassisVelocities>;
       { t.OffsetBy(time) } -> std::same_as<T>;
       { t.Interpolate(tother, time) } -> std::same_as<T>;
       // FIXME: This works around a roboRIO GCC internal compiler error; it

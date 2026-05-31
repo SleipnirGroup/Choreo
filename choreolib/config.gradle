@@ -1,15 +1,14 @@
 import org.gradle.internal.os.OperatingSystem
 
 nativeUtils.addWpiNativeUtils()
-nativeUtils.withCrossRoboRIO()
-nativeUtils.withCrossLinuxArm32()
+nativeUtils.withCrossSystemCore()
 nativeUtils.withCrossLinuxArm64()
 
 nativeUtils {
     wpi {
         configureDependencies {
-            wpiVersion = "2026.1.1"
-            niLibVersion = "2026.1.0"
+            wpiVersion = wpilibVersion
+            opencvVersion = "4.13.0-3"
         }
     }
 }
@@ -18,11 +17,6 @@ nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
 
 nativeUtils.setSinglePrintPerPlatform()
-
-nativeUtils.wpi.addVendorDeps()
-nativeUtils.wpi.getVendorDeps().loadAll()
-nativeUtils.wpi.getVendorDeps().getNativeVendor().initializeNativeDependencies()
-nativeUtils.wpi.getVendorDeps().addVendorReposToMaven(false)
 
 model {
     components {
@@ -33,7 +27,6 @@ model {
     binaries {
         withType(NativeBinarySpec).all {
             nativeUtils.usePlatformArguments(it)
-            nativeUtils.wpi.getVendorDeps().getNativeVendor().cpp(it)
         }
     }
 }

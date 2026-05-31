@@ -2,7 +2,7 @@
 
 #include "choreo/trajectory/struct/DifferentialSampleStruct.hpp"
 
-#include <wpi/struct/Struct.h>
+#include <wpi/util/struct/Struct.hpp>
 
 namespace {
 constexpr size_t kTimestampOff = 0;
@@ -19,39 +19,43 @@ constexpr size_t kFlOff = kAlphaOff + 8;
 constexpr size_t kFrOff = kFlOff + 8;
 }  // namespace
 
-using StructType = wpi::Struct<choreo::DifferentialSample>;
+using StructType = wpi::util::Struct<choreo::DifferentialSample>;
 
 choreo::DifferentialSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::DifferentialSample{
-      units::second_t{wpi::UnpackStruct<double, kTimestampOff>(data)},
-      units::meter_t{wpi::UnpackStruct<double, kXOff>(data)},
-      units::meter_t{wpi::UnpackStruct<double, kYOff>(data)},
-      units::radian_t{wpi::UnpackStruct<double, kHeadingOff>(data)},
-      units::meters_per_second_t{wpi::UnpackStruct<double, kVlOff>(data)},
-      units::meters_per_second_t{wpi::UnpackStruct<double, kVrOff>(data)},
-      units::radians_per_second_t{wpi::UnpackStruct<double, kOmegaOff>(data)},
-      units::meters_per_second_squared_t{
-          wpi::UnpackStruct<double, kAlOff>(data)},
-      units::meters_per_second_squared_t{
-          wpi::UnpackStruct<double, kArOff>(data)},
-      units::radians_per_second_squared_t{
-          wpi::UnpackStruct<double, kAlphaOff>(data)},
-      units::newton_t{wpi::UnpackStruct<double, kFlOff>(data)},
-      units::newton_t{wpi::UnpackStruct<double, kFrOff>(data)}};
+      wpi::units::second_t{
+          wpi::util::UnpackStruct<double, kTimestampOff>(data)},
+      wpi::units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
+      wpi::units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
+      wpi::units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVlOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVrOff>(data)},
+      wpi::units::radians_per_second_t{
+          wpi::util::UnpackStruct<double, kOmegaOff>(data)},
+      wpi::units::meters_per_second_squared_t{
+          wpi::util::UnpackStruct<double, kAlOff>(data)},
+      wpi::units::meters_per_second_squared_t{
+          wpi::util::UnpackStruct<double, kArOff>(data)},
+      wpi::units::radians_per_second_squared_t{
+          wpi::util::UnpackStruct<double, kAlphaOff>(data)},
+      wpi::units::newton_t{wpi::util::UnpackStruct<double, kFlOff>(data)},
+      wpi::units::newton_t{wpi::util::UnpackStruct<double, kFrOff>(data)}};
 }
 
 void StructType::Pack(std::span<uint8_t> data,
                       const choreo::DifferentialSample& value) {
-  wpi::PackStruct<kTimestampOff>(data, value.timestamp.value());
-  wpi::PackStruct<kXOff>(data, value.x.value());
-  wpi::PackStruct<kYOff>(data, value.y.value());
-  wpi::PackStruct<kHeadingOff>(data, value.heading.value());
-  wpi::PackStruct<kVlOff>(data, value.vl.value());
-  wpi::PackStruct<kVrOff>(data, value.vr.value());
-  wpi::PackStruct<kOmegaOff>(data, value.omega.value());
-  wpi::PackStruct<kAlOff>(data, value.al.value());
-  wpi::PackStruct<kArOff>(data, value.ar.value());
-  wpi::PackStruct<kAlphaOff>(data, value.alpha.value());
-  wpi::PackStruct<kFlOff>(data, value.fl.value());
-  wpi::PackStruct<kFrOff>(data, value.fr.value());
+  wpi::util::PackStruct<kTimestampOff>(data, value.timestamp.value());
+  wpi::util::PackStruct<kXOff>(data, value.x.value());
+  wpi::util::PackStruct<kYOff>(data, value.y.value());
+  wpi::util::PackStruct<kHeadingOff>(data, value.heading.value());
+  wpi::util::PackStruct<kVlOff>(data, value.vl.value());
+  wpi::util::PackStruct<kVrOff>(data, value.vr.value());
+  wpi::util::PackStruct<kOmegaOff>(data, value.omega.value());
+  wpi::util::PackStruct<kAlOff>(data, value.al.value());
+  wpi::util::PackStruct<kArOff>(data, value.ar.value());
+  wpi::util::PackStruct<kAlphaOff>(data, value.alpha.value());
+  wpi::util::PackStruct<kFlOff>(data, value.fl.value());
+  wpi::util::PackStruct<kFrOff>(data, value.fr.value());
 }
