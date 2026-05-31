@@ -37,6 +37,15 @@ export interface Bumper<T extends ExprOrNumber> {
   side: T;
 }
 
+export interface MotorConfig<T extends ExprOrNumber> {
+    free_speed: T;
+    stall_torque: T;
+    kT: T;
+    kV: T;
+    supply_limit: T;
+    stator_limit: T;
+}
+
 export interface Module<T extends ExprOrNumber> {
   x: T;
   y: T;
@@ -56,6 +65,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
   cof: T;
   bumper: Bumper<T>;
   differentialTrackWidth: T;
+  motorConfig: MotorConfig<T>;
 }
 
 export interface CodeGenConfig {

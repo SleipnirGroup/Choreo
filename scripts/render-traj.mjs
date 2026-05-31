@@ -1,0 +1,167 @@
+#!/usr/bin/env node
+// Render a Choreo .traj file as an SVG with per-segment color matching the
+// UI's linear-acceleration gradient from
+// src/components/config/robotconfig/PathGradient.tsx (linearAcceleration).
+//
+// Usage:
+//   node scripts/render-traj.mjs --traj <path.traj> --out <path.svg>
+//                                [--field-svg <path>] [--title <str>]
+
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+
+const argv = parseArgs(process.argv.slice(2));
+if (!argv.traj || !argv.out) {
+  console.error("usage: render-traj.mjs --traj <path> --out <path> [--field-svg <path>] [--title <str>]");
+  process.exit(2);
+}
+
+// Field dimensions match src/components/field/svg/fields/FieldDimensions.tsx
+const FIELD_W = 16.541;
+const FIELD_H = 8.0692;
+// Match FieldImage2026.svg's viewBox so the inlined background lines up.
+const VB_X = -0.5, VB_Y = -0.5, VB_W = 17.541, VB_H = 9.0692;
+// An SVG with only a viewBox renders at the CSS default 300x150 in GitHub's
+// blob viewer (hence "tiny"). Give it an explicit intrinsic pixel size.
+const PX_PER_M = 150;
+const PX_W = Math.round(VB_W * PX_PER_M);
+const PX_H = Math.round(VB_H * PX_PER_M);
+
+const here = dirname(fileURLToPath(import.meta.url));
+const defaultField = resolve(here, "..", "src", "components", "field", "svg", "fields", "FieldImage2026.svg");
+const fieldPath = argv["field-svg"] ?? defaultField;
+// Inline the field's vector markup rather than embedding it as a
+// `data:image/svg+xml` <image>. GitHub serves raw blobs with CSP
+// `default-src 'none'`, which blocks data: URIs — that's why the field
+// vanished when the SVG was opened directly. FieldImage2026.svg is pure
+// vector (no rasters), and its viewBox already matches ours, so its inner
+// content can be dropped straight in.
+const fieldInner = readFileSync(fieldPath, "utf8")
+  .replace(/^[\s\S]*?<svg\b[^>]*>/i, "")
+  .replace(/<\/svg>\s*$/i, "")
+  .trim();
+
+const traj = JSON.parse(readFileSync(argv.traj, "utf8")).trajectory;
+const samples = traj.samples ?? [];
+
+if (samples.length < 2) {
+  writeFileSync(argv.out, emptySvg(argv.title, fieldInner));
+  process.exit(0);
+}
+
+// Each segment runs from samples[i] -> samples[i+1] and is colored from the
+// START sample's acceleration. Matches FieldGeneratedLines.tsx (i runs over
+// segments, passed as `index: i` to the gradient function) and
+// PathGradient.tsx:linearAcceleration (hsl(100*a/10, 100%, 50%) — NOT clamped;
+// for accel > 10 m/s^2 the hue wraps past green into cyan/blue).
+const segs = [];
+for (let i = 0; i < samples.length - 1; i++) {
+  const s0 = samples[i];
+  const s1 = samples[i + 1];
+  const a = s0.vl !== undefined
+    ? Math.abs(s0.al + s0.ar) / 2
+    : Math.hypot(s0.ax, s0.ay);
+  const hue = (100 * a) / 10;
+  segs.push(
+    `<line x1="${fmt(s0.x)}" y1="${fmt(s0.y)}" x2="${fmt(s1.x)}" y2="${fmt(s1.y)}" stroke="hsl(${hue.toFixed(2)}, 100%, 50%)" stroke-width="0.05"/>`
+  );
+}
+
+// Each entry in traj.waypoints is a timestamp; it sits exactly on a sample
+// boundary (see src-core .../transformers/mod.rs postprocess), so the nearest
+// sample by `t` gives the waypoint's pose (x, y, heading) on the drawn path.
+const cfg = traj.config ?? {};
+const wpTimes = traj.waypoints ?? [];
+const markers = wpTimes.map(t => {
+  let best = samples[0];
+  let bestD = Infinity;
+  for (const s of samples) {
+    const d = Math.abs(s.t - t);
+    if (d < bestD) { bestD = d; best = s; }
+  }
+  return waypointMarker(best, cfg);
+});
+
+// The trajectory <g> uses the same flip transform as FieldImage2026.svg's
+// internal <g id="field"> so we can write raw FRC field coords (origin at
+// bottom-left) directly into <line> elements. Waypoint markers are drawn after
+// the path segments so the bumper box / heading arrow stay visible on top.
+const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VB_X} ${VB_Y} ${VB_W} ${VB_H}" width="${PX_W}" height="${PX_H}">
+  ${fieldInner}
+  <g transform="scale(1 -1) translate(0 -${FIELD_H})">
+    ${segs.join("\n    ")}
+    ${markers.join("\n    ")}
+  </g>
+  ${titleElement(argv.title)}
+</svg>
+`;
+
+writeFileSync(argv.out, out);
+
+function titleElement(title) {
+  if (!title) return "";
+  return `<text x="-0.4" y="-0.15" font-size="0.32" font-family="monospace" fill="white" stroke="black" stroke-width="0.02" paint-order="stroke fill">${escapeXml(title)}</text>`;
+}
+
+function emptySvg(title, fieldInner) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VB_X} ${VB_Y} ${VB_W} ${VB_H}" width="${PX_W}" height="${PX_H}">
+  ${fieldInner}
+  <text x="${VB_X + VB_W / 2}" y="${VB_Y + VB_H / 2}" text-anchor="middle" font-size="0.5" font-family="monospace" fill="white" stroke="black" stroke-width="0.04" paint-order="stroke fill">no samples${title ? ` — ${escapeXml(title)}` : ""}</text>
+</svg>
+`;
+}
+
+// A waypoint, drawn as the robot's bumper footprint (from trajectory.config —
+// front/back/side distances from center) rotated to the waypoint heading, plus
+// an arrow showing the facing direction. Coords are computed in raw FRC space
+// (x forward, y left, CCW heading) so they drop straight into the flipped <g>.
+function waypointMarker(s, cfg) {
+  const h = s.heading ?? 0;
+  const c = Math.cos(h);
+  const sn = Math.sin(h);
+  const b = cfg.bumper ?? {};
+  const f = b.front ?? 0.4;
+  const bk = b.back ?? 0.4;
+  const sd = b.side ?? 0.4;
+  // body-frame point (bx forward, by left) -> rotated + translated world point
+  const rot = (bx, by) => [s.x + bx * c - by * sn, s.y + bx * sn + by * c];
+  const pt = ([px, py]) => `${fmt(px)},${fmt(py)}`;
+  const box = [rot(f, sd), rot(f, -sd), rot(-bk, -sd), rot(-bk, sd)].map(pt).join(" ");
+  // Arrow shrunk to ~25% of its original size (75% reduction).
+  const A = 0.25;
+  const tip = rot(f + 0.35 * A, 0);
+  const headL = rot(f + 0.05 * A, 0.14 * A);
+  const headR = rot(f + 0.05 * A, -0.14 * A);
+  return (
+    `<polygon points="${box}" fill="rgba(0,0,0,0.12)" stroke="#000000" stroke-width="0.04"/>` +
+    `<circle cx="${fmt(s.x)}" cy="${fmt(s.y)}" r="0.03" fill="#ffffff" stroke="#000000" stroke-width="0.015"/>` +
+    `<polygon points="${pt(tip)} ${pt(headL)} ${pt(headR)}" fill="#ffffff" stroke="#000000" stroke-width="0.02"/>`
+  );
+}
+
+function fmt(n) {
+  return Number.isFinite(n) ? n.toFixed(4) : "0";
+}
+
+function escapeXml(s) {
+  return String(s).replace(/[<>&"]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
+}
+
+function parseArgs(args) {
+  const out = {};
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a.startsWith("--")) {
+      const key = a.slice(2);
+      const next = args[i + 1];
+      if (next === undefined || next.startsWith("--")) {
+        out[key] = true;
+      } else {
+        out[key] = next;
+        i++;
+      }
+    }
+  }
+  return out;
+}

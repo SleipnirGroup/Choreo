@@ -6,13 +6,16 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <ranges>
+#include <sleipnir/autodiff/variable.hpp>
 #include <vector>
 
 #include <sleipnir/optimization/problem.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/geometry/rotation2.hpp"
+#include "trajopt/geometry/translation2.hpp"
 #include "trajopt/util/cancellation.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
@@ -119,11 +122,12 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   constexpr int num_wheels = 4;
 
   // Minimize total time
-  const double chassis_max_force = path.drivetrain.wheel_max_torque *
+  const double chassis_max_force = path.drivetrain.motor_config.kT *
+                                   path.drivetrain.motor_config.stator_limit *
                                    num_wheels / path.drivetrain.wheel_radius;
   const double chassis_max_a = chassis_max_force / path.drivetrain.mass;
   const double chassis_max_v =
-      path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
+      path.drivetrain.wheel_radius * path.drivetrain.motor_config.free_speed;
   const double wheel_max_position_radius =
       std::ranges::max(path.drivetrain.modules, {}, &Translation2d::norm)
           .norm();
@@ -152,8 +156,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double dθ = std::abs(angle_modulus(θ_1 - θ_0));
 
       const double angular_time =
-          calculate_trapezoidal_time(dθ, chassis_max_ω, chassis_max_α);
-      const double linear_time = calculate_trapezoidal_time(
+          calculate_exponential_time(dθ, chassis_max_ω, chassis_max_α);
+      const double linear_time = calculate_exponential_time(
           dist, std::min(chassis_max_v, dist / angular_time), chassis_max_a);
       const double sgmt_time = angular_time + linear_time;
 
@@ -220,17 +224,19 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto Fy_net = std::accumulate(Fy.at(index).begin(), Fy.at(index).end(),
                                   slp::Variable{0.0});
 
-    // Solve for net torque
-    slp::Variable τ_net = 0.0;
+    // Solve for net torque.
+    slp::Variable<double> τ_cos_sum = 0.0;
+    slp::Variable<double> τ_sin_sum = 0.0;
     for (size_t module_index = 0; module_index < path.drivetrain.modules.size();
          ++module_index) {
       const auto& translation = path.drivetrain.modules.at(module_index);
-      auto r = translation.rotate_by(θ_k);
-      Translation2v<double> F{Fx.at(index).at(module_index),
-                              Fy.at(index).at(module_index)};
+      const auto& F_x = Fx.at(index).at(module_index);
+      const auto& F_y = Fy.at(index).at(module_index);
 
-      τ_net += r.cross(F);
+      τ_cos_sum += translation.x() * F_y - translation.y() * F_x;
+      τ_sin_sum += translation.x() * F_x + translation.y() * F_y;
     }
+    auto τ_net = θ_k.cos() * τ_cos_sum - θ_k.sin() * τ_sin_sum;
 
     // Apply module power constraints
     auto v_wrt_robot = v_k.rotate_by(-θ_k);
@@ -241,19 +247,26 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v<double> v_wheel_wrt_robot{
           v_wrt_robot.x() - translation.y() * ω.at(index),
           v_wrt_robot.y() + translation.x() * ω.at(index)};
-      const double v_max = path.drivetrain.wheel_radius *
-                           path.drivetrain.wheel_max_angular_velocity;
-
-      // |v|₂² ≤ vₘₐₓ²
-      problem.subject_to(v_wheel_wrt_robot.squared_norm() <= v_max * v_max);
-
       Translation2v<double> module_force{Fx.at(index).at(module_index),
                                          Fy.at(index).at(module_index)};
 
-      // τ = r x F
-      // F = τ/r
-      const double wheel_max_force =
-          path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
+      const auto kV = path.drivetrain.motor_config.kV;
+      const auto R = path.drivetrain.motor_config.resistance();
+      const auto I_supply_limit = path.drivetrain.motor_config.supply_limit;
+      const auto I_stator_limit = path.drivetrain.motor_config.stator_limit;
+      const auto kT_over_r =
+          path.drivetrain.motor_config.kT / path.drivetrain.wheel_radius;
+      const auto kV_over_r = kV / path.drivetrain.wheel_radius;
+      constexpr double v_supply = 12.0;
+
+      // TODO: pipe from UI
+      constexpr double kS = 0.40;
+      // assume rolling friction is equal to static friction for simplicity
+      // since rolling friction is not a common SysID term - conservative
+      // simplification to model increased V_motor due to kS
+      const double I_free = kS / R;
+
+      auto F_wrt_robot = module_force.rotate_by(-θ_k);
 
       // friction = μmg
       const double normal_force_per_wheel =
@@ -261,10 +274,57 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       const double wheel_max_friction_force =
           path.drivetrain.wheel_cof * normal_force_per_wheel;
 
-      const double F_max = std::min(wheel_max_force, wheel_max_friction_force);
+      auto v_norm = slp::sqrt(v_wheel_wrt_robot.squared_norm() + 1e-6);
+      auto F_dot_v = F_wrt_robot.dot(v_wheel_wrt_robot);
+      auto F_norm_sq = F_wrt_robot.squared_norm();
+      auto F_longitudinal = F_dot_v / v_norm;
+      auto F_lateral = F_wrt_robot.dot(v_wheel_wrt_robot.rotate_by(
+                           Rotation2<double>{0.0, 1.0})) /
+                       v_norm;
+
+      // Penalize lateral forces with the Tire Induced Drag model
+      // F_drag = F_lateral * sin(α)
+      // where α is the slip angle between velocity and force
+      // Let sin(α) = α; then sin(α) = F_lateral / F_norm; thus
+      // F_drag = F_lateral * sin(α) = F_lateral * F_lateral / F_norm
+      //        = F_lateral * F_lateral * sqrt(F_norm_sq) / F_norm_sq
+      // constants used for numerical smoothing
+      auto F_drag = (F_lateral * F_lateral) * slp::sqrt(F_norm_sq + 1e-6) /
+                    (F_norm_sq + 1e-4);
+
+      // smooth free current around zero velocity for solver stability
+      auto friction_factor = v_norm / (v_norm + 1e-4);
+
+      // motor force is force in wheel direction + force to overcome drag from
+      // scrub + free current
+      auto I_motor =
+          (F_longitudinal + F_drag) / kT_over_r + I_free * friction_factor;
+      auto V_emf = v_norm * kV_over_r;
+      auto V_motor = I_motor * R + V_emf;
+
+      // stator
+      // We need to constrain motor output brake force so that the solver
+      // doesn't abuse lateral drag force to generate extremely strong braking
+      // forces. Do this by constraining I_propulsive, the portion of current
+      // that generates longitudinal force, to be above -I_stator_limit.
+      // -I_stator_limit ≤ I_propulsive ≤ I_motor ≤ I_stator_limit
+      // I_propulsive = F_long/kT_over_r ≥ -I_stator_limit
+      //              = F_dot_v / (v_norm * kT_over_r) ≥ -I_stator_limit
+      //              = F_dot_v + I_stator_limit * kT_over_r * v_norm ≥ 0
+      problem.subject_to(F_dot_v + I_stator_limit * kT_over_r * v_norm >= 0);
+      problem.subject_to(I_motor <= I_stator_limit);
+
+      // supply voltage
+      problem.subject_to(slp::bounds(-v_supply, V_motor, v_supply));
+
+      // supply current
+      auto P_elec = V_motor * I_motor;
+      problem.subject_to(P_elec <= I_supply_limit * v_supply);
 
       // |F|₂² ≤ Fₘₐₓ²
-      problem.subject_to(module_force.squared_norm() <= F_max * F_max);
+      // total force must not slip
+      problem.subject_to(module_force.squared_norm() <=
+                         wheel_max_friction_force * wheel_max_friction_force);
     }
 
     // Apply dynamics constraints
@@ -378,6 +438,28 @@ void SwerveTrajectoryGenerator::apply_initial_guess(
     α[sample_index].set_value(
         (ω[sample_index].value() - ω[sample_index - 1].value()) /
         solution.dt[sample_index]);
+  }
+
+  const size_t module_count = path.drivetrain.modules.size();
+  double sum_r_sq = 0.0;
+  for (const auto& translation : path.drivetrain.modules) {
+    sum_r_sq += translation.squared_norm();
+  }
+
+  for (size_t sample_index = 0; sample_index < sample_total; ++sample_index) {
+    Rotation2d θ{solution.thetacos[sample_index],
+                 solution.thetasin[sample_index]};
+    double Fnet_x = path.drivetrain.mass * ax[sample_index].value();
+    double Fnet_y = path.drivetrain.mass * ay[sample_index].value();
+    double τ = path.drivetrain.moi * α[sample_index].value();
+
+    for (size_t module_index = 0; module_index < module_count; ++module_index) {
+      auto r = path.drivetrain.modules[module_index].rotate_by(θ);
+      Fx[sample_index][module_index].set_value(Fnet_x / module_count -
+                                               τ / sum_r_sq * r.y());
+      Fy[sample_index][module_index].set_value(Fnet_y / module_count +
+                                               τ / sum_r_sq * r.x());
+    }
   }
 }
 

@@ -1,0 +1,110 @@
+{
+ "name":"project",
+ "version":3,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{}
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"11 in",
+    "val":0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-11 in",
+    "val":-0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "mass":{
+   "exp":"150 lbs",
+   "val":68.0388555
+  },
+  "inertia":{
+   "exp":"6 kg m ^ 2",
+   "val":6.0
+  },
+  "gearing":{
+   "exp":"6.03",
+   "val":6.03
+  },
+  "radius":{
+   "exp":"2 in",
+   "val":0.0508
+  },
+  "vmax":{
+   "exp":"5784 RPM",
+   "val":605.6990636121121
+  },
+  "tmax":{
+   "exp":"1.2 N * m",
+   "val":1.2
+  },
+  "cof":{
+   "exp":"2",
+   "val":2.0
+  },
+  "bumper":{
+   "front":{
+    "exp":"16 in",
+    "val":0.4064
+   },
+   "side":{
+    "exp":"16 in",
+    "val":0.4064
+   },
+   "back":{
+    "exp":"16 in",
+    "val":0.4064
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  },
+  "motorConfig":{
+   "free_speed":{
+    "exp":"5784 RPM",
+    "val":605.6990636121121
+   },
+   "stall_torque":{
+    "exp":"9.36 N * m",
+    "val":9.36
+   },
+   "kT":{
+    "exp":"0.0197 N * m / A",
+    "val":0.0197
+   },
+   "kV":{
+    "exp":"0.0020593 V / rpm",
+    "val":0.019664866458548407
+   },
+   "supply_limit":{
+    "exp":"60 A",
+    "val":60.0
+   },
+   "stator_limit":{
+    "exp":"120 A",
+    "val":120.0
+   }
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":null,
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}

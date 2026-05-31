@@ -5,6 +5,7 @@ use std::{
     process::exit,
     sync::{Arc, Mutex},
     thread::{self, JoinHandle},
+    time::Instant,
 };
 
 use choreo_core::{
@@ -15,6 +16,15 @@ use choreo_core::{
     spec::trajectory::TrajectoryFile,
 };
 use clap::Parser;
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct TrajReport {
+    name: String,
+    solve_ms: f64,
+    ok: bool,
+    error: Option<String>,
+}
 
 const FORMATTING_OPTIONS: &str = "Formatting Options";
 const FILE_OPTIONS: &str = "File Options";
@@ -26,6 +36,7 @@ enum CliAction {
     Generate {
         project_path: PathBuf,
         trajectory_names: Vec<String>,
+        report_json: Option<PathBuf>,
     },
     Error(String),
 }
@@ -79,6 +90,14 @@ pub struct Cli {
         required = true,
     )]
     pub generate: bool,
+
+    #[arg(
+        long,
+        value_name = "path/to/report.json",
+        help_heading = FILE_OPTIONS,
+        help = "Write a JSON report with per-trajectory solve_ms timings to this path",
+    )]
+    pub report_json: Option<PathBuf>,
 }
 
 impl Cli {
@@ -104,6 +123,7 @@ impl Cli {
                 return CliAction::Generate {
                     project_path,
                     trajectory_names: self.trajectory,
+                    report_json: self.report_json,
                 };
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
@@ -121,6 +141,7 @@ impl Cli {
             CliAction::Generate {
                 project_path,
                 trajectory_names,
+                report_json,
             } => {
                 tracing::info!("CLIAction is Generate");
                 choreo_core::tokio::runtime::Builder::new_current_thread()
@@ -131,6 +152,7 @@ impl Cli {
                         resources,
                         project_path,
                         trajectory_names,
+                        report_json,
                     ));
             }
             CliAction::Error(e) => {
@@ -145,6 +167,7 @@ impl Cli {
         resources: WritingResources,
         project_path: PathBuf,
         mut trajectory_names: Vec<String>,
+        report_json: Option<PathBuf>,
     ) {
         let deploy_root = project_path
             .parent()
@@ -176,6 +199,7 @@ impl Cli {
 
         let mut thread_handles: Vec<JoinHandle<()>> = Vec::new();
         let trajectories = Arc::new(Mutex::new(Vec::<TrajectoryFile>::new()));
+        let reports = Arc::new(Mutex::new(Vec::<TrajReport>::new()));
 
         // generate trajectories
         for (i, trajectory_name) in trajectory_names.iter().enumerate() {
@@ -186,6 +210,7 @@ impl Cli {
             );
 
             let trajectories_window = Arc::clone(&trajectories);
+            let reports_window = Arc::clone(&reports);
             let trajectory =
                 file_management::read_trajectory_file(&resources, trajectory_name.to_string())
                     .await
@@ -194,51 +219,71 @@ impl Cli {
             let cln_project = project.clone();
             let cln_resources = resources.clone();
             let cln_trajectory_name = trajectory_name.clone();
-            let handle =
-                thread::spawn(
-                    move || match generate(cln_project.clone(), trajectory, i as i64) {
-                        Ok(new_trajectory) => {
-                            let runtime =
-                                choreo_core::tokio::runtime::Builder::new_current_thread()
-                                    .enable_all()
-                                    .build()
-                                    .expect("Failed to build tokio runtime");
-                            let write_result =
-                                runtime.block_on(file_management::write_trajectory_file(
-                                    &cln_resources,
-                                    &new_trajectory,
-                                ));
-                            match write_result {
-                                Ok(_) => {
-                                    tracing::info!(
-                                        "Successfully generated trajectory {:} for {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name
-                                    );
-                                }
-                                Err(e) => {
-                                    tracing::error!(
-                                        "Failed to write trajectory {:} for {:}: {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name,
-                                        e
-                                    );
-                                }
+            let handle = thread::spawn(move || {
+                let solve_start = Instant::now();
+                let result = generate(cln_project.clone(), trajectory, i as i64);
+                let solve_ms = solve_start.elapsed().as_secs_f64() * 1000.0;
+                match result {
+                    Ok(new_trajectory) => {
+                        let runtime = choreo_core::tokio::runtime::Builder::new_current_thread()
+                            .enable_all()
+                            .build()
+                            .expect("Failed to build tokio runtime");
+                        let write_result =
+                            runtime.block_on(file_management::write_trajectory_file(
+                                &cln_resources,
+                                &new_trajectory,
+                            ));
+                        match write_result {
+                            Ok(_) => {
+                                tracing::info!(
+                                    "Successfully generated trajectory {:} for {:} in {:.1} ms",
+                                    cln_trajectory_name,
+                                    cln_project.name,
+                                    solve_ms
+                                );
                             }
-                            trajectories_window
-                                .lock()
-                                .expect("Internal Choreo Thread has panicked; see stack trace.")
-                                .push(new_trajectory);
+                            Err(e) => {
+                                tracing::error!(
+                                    "Failed to write trajectory {:} for {:}: {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name,
+                                    e
+                                );
+                            }
                         }
-                        Err(e) => {
-                            tracing::error!(
-                                "Failed to generate trajectory {:}: {:}",
-                                cln_trajectory_name,
-                                e
-                            );
-                        }
-                    },
-                );
+                        trajectories_window
+                            .lock()
+                            .expect("Internal Choreo Thread has panicked; see stack trace.")
+                            .push(new_trajectory);
+                        reports_window
+                            .lock()
+                            .expect("Internal Choreo Thread has panicked; see stack trace.")
+                            .push(TrajReport {
+                                name: cln_trajectory_name,
+                                solve_ms,
+                                ok: true,
+                                error: None,
+                            });
+                    }
+                    Err(e) => {
+                        tracing::error!(
+                            "Failed to generate trajectory {:}: {:}",
+                            cln_trajectory_name,
+                            e
+                        );
+                        reports_window
+                            .lock()
+                            .expect("Internal Choreo Thread has panicked; see stack trace.")
+                            .push(TrajReport {
+                                name: cln_trajectory_name,
+                                solve_ms,
+                                ok: false,
+                                error: Some(e.to_string()),
+                            });
+                    }
+                }
+            });
 
             thread_handles.push(handle);
         }
@@ -248,6 +293,28 @@ impl Cli {
                 Ok(_) => {}
                 Err(e) => {
                     tracing::error!("Failed to join thread: {:?}", e);
+                }
+            }
+        }
+
+        if let Some(report_path) = report_json {
+            let reports_vec = reports
+                .lock()
+                .expect("Report mutex was poisoned by a panicked generation thread.");
+            match serde_json::to_string_pretty(&*reports_vec) {
+                Ok(json) => {
+                    if let Err(e) = fs::write(&report_path, json) {
+                        tracing::error!(
+                            "Failed to write report JSON to {}: {}",
+                            report_path.display(),
+                            e
+                        );
+                    } else {
+                        tracing::info!("Wrote report JSON to {}", report_path.display());
+                    }
+                }
+                Err(e) => {
+                    tracing::error!("Failed to serialize report JSON: {}", e);
                 }
             }
         }
