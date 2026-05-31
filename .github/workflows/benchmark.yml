@@ -184,7 +184,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 60
         run: bash scripts/run-bench.sh "$PWD/bin-pr/choreo-cli" tp-pr out-pr "$VARIANT"
-        
+
 
       - name: Run base benchmark
         continue-on-error: true # tolerate missing / schema-incompatible base

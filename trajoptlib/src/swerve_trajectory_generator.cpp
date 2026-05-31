@@ -445,7 +445,7 @@ void SwerveTrajectoryGenerator::apply_initial_guess(
   for (const auto& translation : path.drivetrain.modules) {
     sum_r_sq += translation.squared_norm();
   }
-  
+
   for (size_t sample_index = 0; sample_index < sample_total; ++sample_index) {
     Rotation2d θ{solution.thetacos[sample_index],
                  solution.thetasin[sample_index]};
@@ -453,13 +453,12 @@ void SwerveTrajectoryGenerator::apply_initial_guess(
     double Fnet_y = path.drivetrain.mass * ay[sample_index].value();
     double τ = path.drivetrain.moi * α[sample_index].value();
 
-    for (size_t module_index = 0; module_index < module_count;
-         ++module_index) {
+    for (size_t module_index = 0; module_index < module_count; ++module_index) {
       auto r = path.drivetrain.modules[module_index].rotate_by(θ);
-      Fx[sample_index][module_index].set_value(
-          Fnet_x / module_count - τ / sum_r_sq * r.y());
-      Fy[sample_index][module_index].set_value(
-          Fnet_y / module_count + τ / sum_r_sq * r.x());
+      Fx[sample_index][module_index].set_value(Fnet_x / module_count -
+                                               τ / sum_r_sq * r.y());
+      Fy[sample_index][module_index].set_value(Fnet_y / module_count +
+                                               τ / sum_r_sq * r.x());
     }
   }
 }
