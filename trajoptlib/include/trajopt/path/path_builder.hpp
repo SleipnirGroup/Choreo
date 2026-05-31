@@ -15,22 +15,8 @@
 #include "trajopt/util/generate_linear_initial_guess.hpp"
 #include "trajopt/util/generate_spline_initial_guess.hpp"
 #include "trajopt/util/symbol_exports.hpp"
-
+#include "trajopt/constraint/keep_out_region.hpp"
 namespace trajopt {
-
-/// Represents a physical keep-out region that the robot must avoid by a certain
-/// distance. Arbitrary polygons can be expressed with this class, and keep-out
-/// circles can also be created by only using one point with a safety distance.
-///
-/// Keep-out points must be wound either clockwise or counterclockwise.
-struct TRAJOPT_DLLEXPORT KeepOutRegion {
-  /// Minimum distance from the keep-out region the robot must maintain.
-  double safety_distance;
-
-  /// The list of points that make up this keep-out region.
-  std::vector<Translation2d> points;
-};
-
 /// Path builder.
 ///
 /// @tparam Drivetrain The drivetrain type (e.g., swerve, differential).
@@ -58,6 +44,10 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                                            {-back, +left},
                                                            {-back, -right},
                                                            {+front, -right}}});
+  }
+
+  void set_bumpers(trajopt::KeepOutRegion& bumper) {
+    bumpers.emplace_back(bumper);
   }
 
   /// Get all bumpers currently added to the path builder
