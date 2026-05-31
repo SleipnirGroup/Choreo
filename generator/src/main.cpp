@@ -23,6 +23,7 @@
 
 #include "segment.hpp"
 #include "split_to_segments.hpp"
+#include <choreo/variables/variable.hpp>
 
 // Eventually this string comes in via a JSON file, but for now we'll hardcode
 // it here for testing purposes
@@ -158,6 +159,11 @@ const choreo::Parameters params_orig{
 // being generated correctly.
 
 int main() {
+  auto var = choreo::variables::Variable{1.0_m};
+  auto var1 = choreo::variables::Variable<wpi::units::scalar_t>{1.0};
+  std::println("{}", wpi::util::json(var).to_string_pretty());
+  std::println("{}", wpi::util::json(var1).to_string_pretty());
+  return 0;
   std::ifstream trajIn;
   trajIn.open("trajectory.traj");
   std::string traj{std::istreambuf_iterator<char>(trajIn), std::istreambuf_iterator<char>()};

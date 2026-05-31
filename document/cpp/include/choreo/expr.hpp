@@ -13,6 +13,7 @@ template <typename BaseUnit>
 struct Expr {
   std::string exp;
   BaseUnit val;
+  using Unit = BaseUnit;
   /// default constructor for deserialization. Don't use this directly, as it
   /// will create an Expr with an empty string and a value of 0, which is not a
   /// valid state for an Expr. Instead, use the constructor that accepts a
