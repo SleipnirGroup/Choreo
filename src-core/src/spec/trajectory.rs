@@ -550,7 +550,7 @@ mod tests {
                 is_initial_guess: false,
             }],
             constraints: vec![],
-            target_dt: Expr::fill_in_value(0.05, "s"),
+            target_dt: Expr::fill_in_value(0.02, "s"),
         };
         TrajectoryFile {
             name: "Test".to_string(),
