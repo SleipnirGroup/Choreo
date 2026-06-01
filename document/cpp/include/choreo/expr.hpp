@@ -9,8 +9,10 @@
 #include <wpi/units/base.hpp>
 #include <wpi/util/json.hpp>
 namespace choreo {
-template <typename BaseUnit>
+
+template <typename Dim>
 struct Expr {
+  using BaseUnit = typename Dim::baseUnit;
   std::string exp;
   BaseUnit val;
   using Unit = BaseUnit;
@@ -48,16 +50,16 @@ struct Expr {
   BaseUnit unit() const { return val; }
 };
 
-template <typename BaseUnit>
-inline void to_json(wpi::util::json& json, const Expr<BaseUnit>& expr) {
+template <typename Dim>
+inline void to_json(wpi::util::json& json, const Expr<Dim>& expr) {
   json = wpi::util::json::object("exp", expr.exp, "val", expr.val.value());
 }
 
-template <typename BaseUnit>
-inline void from_json(const wpi::util::json& json, Expr<BaseUnit>& expr) {
+template <typename Dim>
+inline void from_json(const wpi::util::json& json, Expr<Dim>& expr) {
   expr.exp = json.at("exp").get_string();
   // get_number, not get_double, because get_double can throw if the value is
   // serialized as an int.
-  expr.val = BaseUnit(json.at("val").get_number());
+  expr.val = typename Dim::baseUnit(json.at("val").get_number());
 }
 }  // namespace choreo

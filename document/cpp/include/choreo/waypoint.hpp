@@ -6,12 +6,13 @@
 #include "expr.hpp"
 #include "wpi/units/angle.hpp"
 #include "wpi/units/length.hpp"
+#include "variables/dimension.hpp"
 #include "wpi/util/json.hpp"
 namespace choreo {
 struct Waypoint {
-  Expr<wpi::units::meter_t> x = 1_m;
-  Expr<wpi::units::meter_t> y = 0_m;
-  Expr<wpi::units::radian_t> heading = 0_rad;
+  Expr<dimensions::Length> x = 1_m;
+  Expr<dimensions::Length> y = 0_m;
+  Expr<dimensions::Angle> heading = 0_rad;
   size_t intervals = 0;
   bool split = false;
   bool fix_translation = false;
@@ -37,9 +38,9 @@ inline void to_json(wpi::util::json& json, const Waypoint& waypoint) {
 }
 
 inline void from_json(const wpi::util::json& json, Waypoint& waypoint) {
-  waypoint.x = json.at("x").get<Expr<wpi::units::meter_t>>();
-  waypoint.y = json.at("y").get<Expr<wpi::units::meter_t>>();
-  waypoint.heading = json.at("heading").get<Expr<wpi::units::radian_t>>();
+  waypoint.x = json.at("x").get<Expr<dimensions::Length>>();
+  waypoint.y = json.at("y").get<Expr<dimensions::Length>>();
+  waypoint.heading = json.at("heading").get<Expr<dimensions::Angle>>();
   waypoint.intervals = json.at("intervals").get_number();
   waypoint.split = json.at("split").get_bool();
   waypoint.fix_translation = json.at("fix_translation").get_bool();

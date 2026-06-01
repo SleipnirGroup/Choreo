@@ -8,6 +8,7 @@
 
 #include "expr.hpp"
 #include "type_traits"
+#include "../variables/dimension.hpp"
 #ifdef WITH_TRAJOPT
 #include <trajopt/geometry/translation2.hpp>
 #endif
@@ -17,8 +18,8 @@ namespace choreo {
 /// center. Standard configuration is FL: (+x, +y), BL: (+x, -y), BR: (-x, -y),
 /// FR: (-x, +y)
 struct Translation2e {
-  Expr<wpi::units::meter_t> x;
-  Expr<wpi::units::meter_t> y;
+  Expr<dimensions::Length> x;
+  Expr<dimensions::Length> y;
 
   operator wpi::math::Translation2d() {
     return wpi::math::Translation2d{x.unit(), y.unit()};
@@ -34,7 +35,7 @@ inline void to_json(wpi::util::json& json, const Translation2e& module) {
 }
 
 inline void from_json(const wpi::util::json& json, Translation2e& module) {
-  module.x = json.at("x").get<choreo::Expr<wpi::units::meter_t>>();
-  module.y = json.at("y").get<choreo::Expr<wpi::units::meter_t>>();
+  module.x = json.at("x").get<choreo::Expr<dimensions::Length>>();
+  module.y = json.at("y").get<choreo::Expr<dimensions::Length>>();
 }
 }  // namespace choreo

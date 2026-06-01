@@ -8,6 +8,7 @@
 #include <variant>
 #include <vector>
 #include <trajopt/constraint/keep_out_region.hpp>
+#include "../variables/dimension.hpp"
 #include "../expr.hpp"
 #include "constraint_scope.hpp"
 #include "../waypoint.hpp"
@@ -17,7 +18,7 @@
 
 namespace choreo::ConstraintData {
 struct MaxAngularVelocity {
-  Expr<wpi::units::radians_per_second_t> max = 0_rad_per_s;
+  Expr<dimensions::AngVel> max = 0_rad_per_s;
 
   trajopt::Constraint toTrajoptConstraint(const choreo::Waypoint& start, const std::optional<choreo::Waypoint>& end, const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::AngularVelocityMaxMagnitudeConstraint{max};
@@ -30,6 +31,7 @@ inline void to_json(wpi::util::json& json, const MaxAngularVelocity& c) {
   json = wpi::util::json::object("max", c.max, "type", "MaxAngularVelocity");
 }
 inline void from_json(const wpi::util::json& json, MaxAngularVelocity& c) {
-  c.max = json.at("max").get<Expr<wpi::units::radians_per_second_t>>();
+  c.max = json.at("max").get<Expr<dimensions::AngVel>>();
 }
 }  // namespace choreo::ConstraintData
+

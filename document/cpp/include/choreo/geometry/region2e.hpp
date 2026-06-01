@@ -8,16 +8,17 @@
 #include "../expr.hpp"
 #include "pose2e.hpp"
 #include "type_traits"
+#include "../variables/dimension.hpp"
 
 namespace choreo {
 /// Represents a rotated region parameterized by its center, dimensions, and heading.
 /// This can represent a rect or an ellipse
 struct Region2e {
-  Expr<wpi::units::meter_t> x;
-  Expr<wpi::units::meter_t> y;
-  Expr<wpi::units::radian_t> heading;
-  Expr<wpi::units::meter_t> w;
-  Expr<wpi::units::meter_t> h;
+  Expr<dimensions::Length> x;
+  Expr<dimensions::Length> y;
+  Expr<dimensions::Angle> heading;
+  Expr<dimensions::Length> w;
+  Expr<dimensions::Length> h;
 
   operator wpi::math::Ellipse2d() const {
     return wpi::math::Ellipse2d{wpi::math::Pose2d{x.unit(), y.unit(), {heading.unit()}}, w.unit() / 2.0, h.unit() / 2.0};
@@ -37,11 +38,11 @@ inline void to_json(wpi::util::json& json, Region2e const& ellipse) {
 }
 
 inline void from_json(wpi::util::json const& json, Region2e& ellipse) {
-  ellipse.x = json.at("x").get<choreo::Expr<wpi::units::meter_t>>();
-  ellipse.y = json.at("y").get<choreo::Expr<wpi::units::meter_t>>();
-  ellipse.heading = json.at("heading").get<choreo::Expr<wpi::units::radian_t>>();
-  ellipse.w = json.at("w").get<choreo::Expr<wpi::units::meter_t>>();
-  ellipse.h = json.at("h").get<choreo::Expr<wpi::units::meter_t>>();
+  ellipse.x = json.at("x").get<choreo::Expr<dimensions::Length>>();
+  ellipse.y = json.at("y").get<choreo::Expr<dimensions::Length>>();
+  ellipse.heading = json.at("heading").get<choreo::Expr<dimensions::Angle>>();
+  ellipse.w = json.at("w").get<choreo::Expr<dimensions::Length>>();
+  ellipse.h = json.at("h").get<choreo::Expr<dimensions::Length>>();
 }
 
 }  // namespace choreo

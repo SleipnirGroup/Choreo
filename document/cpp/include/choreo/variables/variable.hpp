@@ -2,74 +2,31 @@
 
 #include <variant>
 
-#include <wpi/units/acceleration.hpp>
-#include <wpi/units/angle.hpp>
-#include <wpi/units/angular_acceleration.hpp>
-#include <wpi/units/angular_velocity.hpp>
-#include <wpi/units/dimensionless.hpp>
-#include <wpi/units/length.hpp>
-#include <wpi/units/mass.hpp>
-#include <wpi/units/moment_of_inertia.hpp>
-#include <wpi/units/time.hpp>
-#include <wpi/units/torque.hpp>
-#include <wpi/units/velocity.hpp>
-#include <wpi/util/json.hpp>
+#include "../expr.hpp"
+
+
+#include "dimension.hpp"
 
 namespace choreo {
-namespace dimensions {
 
-template <typename T>
-struct Dimension {
-  static const std::string tag;
-  using baseUnit = T;
-};
-template <typename T>
-const std::string Dimension<T>::tag = "default value";
-
-using Number = Dimension<wpi::units::scalar_t>;
-const std::string Number::tag = "Number";
-using Length = Dimension<wpi::units::meter_t>;
-const std::string Length::tag = "Length";
-using LinVel = Dimension<wpi::units::meters_per_second_t>;
-const std::string LinVel::tag = "LinVel";
-using LinAcc = Dimension<wpi::units::meters_per_second_squared_t>;
-const std::string LinAcc::tag = "LinAcc";
-using Angle = Dimension<wpi::units::radian_t>;
-const std::string Angle::tag = "Angle";
-using AngVel = Dimension<wpi::units::radians_per_second_t>;
-const std::string AngVel::tag = "AngVel";
-using AngAcc = Dimension<wpi::units::radians_per_second_squared_t>;
-const std::string AngAcc::tag = "AngAcc";
-using Time = Dimension<wpi::units::second_t>;
-const std::string Time::tag = "Time";
-using Mass = Dimension<wpi::units::kilogram_t>;
-const std::string Mass::tag = "Mass";
-using Torque = Dimension<wpi::units::newton_meter_t>;
-const std::string Torque::tag = "Torque";
-using MoI = Dimension<wpi::units::kilogram_square_meter_t>;
-const std::string MoI::tag = "MoI";
-
-}  // namespace dimensions
-
-template <typename BaseUnit>
+template <typename DimensionType>
 struct Variable {
+  using Unit = typename DimensionType::baseUnit;
+  using Dimension = DimensionType;
 
-  Variable(const BaseUnit value) : var(value){}
-  Variable(): Variable(BaseUnit(0)){};
-    template <typename U>
-    requires std::is_convertible_v<U, BaseUnit>
+  Variable(const Unit value) : var(value) {}
+  Variable() : Variable(Unit(0)) {};
+  template <typename U>
+    requires std::is_convertible_v<U, Unit>
   // NOLINTNEXTLINE (google-explicit-constructor)
-  Variable(U&& u) : Variable(static_cast<BaseUnit>(u)) {}
-  Expr<BaseUnit> var;
-  using Unit = BaseUnit;
-  using Dimension = dimensions::Dimension<BaseUnit>;
-  
+  Variable(U&& u) : Variable(static_cast<Unit>(u)) {}
+
+  Expr<DimensionType> var;
 };
 
 template <typename T>
 inline void to_json(wpi::util::json& json, const Variable<T>& variable) {
-  json = wpi::util::json::object("dimension", dimensions::Dimension<T>::tag, "var",
-                                 variable.var);
+  json = wpi::util::json::object("dimension", T::tag, "var", variable.var);
 }
 
 template <typename T>
@@ -78,15 +35,16 @@ inline void from_json(const wpi::util::json& json, Variable<T>& variable) {
 }
 using VariableVariant = std::variant<
     //clang-format off
-    Variable<dimensions::Number::baseUnit>,
-    Variable<dimensions::Length::baseUnit>,
-    Variable<dimensions::LinVel::baseUnit>,
-    Variable<dimensions::LinAcc::baseUnit>,
-    Variable<dimensions::Angle::baseUnit>,
-    Variable<dimensions::AngVel::baseUnit>,
-    Variable<dimensions::AngAcc::baseUnit>,
-    Variable<dimensions::Time::baseUnit>, Variable<dimensions::Mass::baseUnit>,
-    Variable<dimensions::Torque::baseUnit>, Variable<dimensions::MoI::baseUnit>
+    Variable<dimensions::Number>,
+    Variable<dimensions::Length>,
+    Variable<dimensions::LinVel>,
+    Variable<dimensions::LinAcc>,
+    Variable<dimensions::Angle>,
+    Variable<dimensions::AngVel>,
+    Variable<dimensions::AngAcc>,
+    Variable<dimensions::Time>, Variable<dimensions::Mass>,
+    Variable<dimensions::Torque>, Variable<dimensions::MoI>,
+    Variable<dimensions::Current>, Variable<dimensions::KT>, Variable<dimensions::KV>
     //clang-format on
     >;
 template <typename T>
@@ -103,19 +61,19 @@ inline void to_json(wpi::util::json& json, const VariableVariant& variable) {
       },
       variable);
 }
-std::map<std::string, std::function<VariableVariant(const wpi::util::json&)>>
+inline std::map<std::string, std::function<VariableVariant(const wpi::util::json&)>>
     fromJsonMap = {
-        {dimensions::Number::tag, create<dimensions::Number::baseUnit>},
-        {dimensions::Length::tag, create<dimensions::Length::baseUnit>},
-        {dimensions::LinVel::tag, create<dimensions::LinVel::baseUnit>},
-        {dimensions::LinAcc::tag, create<dimensions::LinAcc::baseUnit>},
-        {dimensions::Angle::tag, create<dimensions::Angle::baseUnit>},
-        {dimensions::AngVel::tag, create<dimensions::AngVel::baseUnit>},
-        {dimensions::AngAcc::tag, create<dimensions::AngAcc::baseUnit>},
-        {dimensions::Time::tag, create<dimensions::Time::baseUnit>},
-        {dimensions::Mass::tag, create<dimensions::Mass::baseUnit>},
-        {dimensions::Torque::tag, create<dimensions::Torque::baseUnit>},
-        {dimensions::MoI::tag, create<dimensions::MoI::baseUnit>},
+        {dimensions::Number::tag, create<dimensions::Number>},
+        {dimensions::Length::tag, create<dimensions::Length>},
+        {dimensions::LinVel::tag, create<dimensions::LinVel>},
+        {dimensions::LinAcc::tag, create<dimensions::LinAcc>},
+        {dimensions::Angle::tag, create<dimensions::Angle>},
+        {dimensions::AngVel::tag, create<dimensions::AngVel>},
+        {dimensions::AngAcc::tag, create<dimensions::AngAcc>},
+        {dimensions::Time::tag, create<dimensions::Time>},
+        {dimensions::Mass::tag, create<dimensions::Mass>},
+        {dimensions::Torque::tag, create<dimensions::Torque>},
+        {dimensions::MoI::tag, create<dimensions::MoI>},
 };
 
 inline void from_json(const wpi::util::json& json, VariableVariant& c) {
