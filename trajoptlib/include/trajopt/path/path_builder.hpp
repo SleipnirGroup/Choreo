@@ -23,6 +23,9 @@ namespace trajopt {
 /// @tparam Solution The solution type (e.g., swerve, differential).
 template <typename Drivetrain, typename Solution>
 class TRAJOPT_DLLEXPORT PathBuilder {
+  using DrivetrainType = Drivetrain;
+  using SolutionType = Solution;
+  using SampleType = typename Solution::TrajectoryType::SampleType;
  public:
   /// Set the Drivetrain object
   ///

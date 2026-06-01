@@ -16,6 +16,7 @@
 #include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
+class DifferentialTrajectory;
 
 /// A differential drivetrain physical model.
 struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
@@ -43,6 +44,7 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
 
 /// The holonomic trajectory optimization solution.
 struct TRAJOPT_DLLEXPORT DifferentialSolution {
+  using TrajectoryType = DifferentialTrajectory;
   /// Times between samples.
   std::vector<double> dt;
 
@@ -159,6 +161,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
 /// Differential trajectory.
 class TRAJOPT_DLLEXPORT DifferentialTrajectory {
  public:
+  using SampleType = DifferentialTrajectorySample;
   /// Trajectory samples.
   std::vector<DifferentialTrajectorySample> samples;
 

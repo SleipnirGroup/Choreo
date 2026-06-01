@@ -26,9 +26,27 @@
 #include <wpi/units/time.hpp>
 #include <wpi/units/velocity.hpp>
 #include <wpi/util/json.hpp>
+#include <trajopt/differential_trajectory_generator.hpp>
 namespace choreo {
 struct DifferentialSample {
+  using TrajoptSample = trajopt::DifferentialTrajectorySample;
+  DifferentialSample() = default;
   static DifferentialSample fromJson(const wpi::util::json& json);
+#ifdef WITH_TRAJOPT
+  explicit DifferentialSample(const trajopt::DifferentialTrajectorySample& sample)
+      : t(sample.timestamp),
+        x(sample.x),
+        y(sample.y),
+        heading(sample.heading),
+        vl(sample.velocity_l),
+        vr(sample.velocity_r),
+        omega(sample.angular_velocity),
+        al(sample.acceleration_l),
+        ar(sample.acceleration_r),
+        alpha(sample.angular_acceleration),
+        fl(sample.force_l),
+        fr(sample.force_r) {}
+#endif
   wpi::units::second_t t;
   wpi::units::meter_t x;
   wpi::units::meter_t y;

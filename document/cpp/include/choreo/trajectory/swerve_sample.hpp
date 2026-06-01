@@ -12,6 +12,7 @@
 #endif
 namespace choreo {
 struct SwerveSample {
+  using TrajoptSample = trajopt::SwerveTrajectorySample;
   static SwerveSample fromJson(const wpi::util::json& json);
   double t;
   double x;

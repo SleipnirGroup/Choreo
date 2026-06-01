@@ -5,6 +5,7 @@
 #include <print>
 #include <ranges>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <choreo/constraint.hpp>
@@ -20,6 +21,7 @@
 #include <choreo/variables/variable.hpp>
 #include <choreo/variables/variables.hpp>
 #include <choreo/waypoint.hpp>
+#include <generator.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
 #include <wpi/math/geometry/Pose2d.hpp>
@@ -85,86 +87,24 @@ int main() {
   auto configExp = chor.config;
   auto traj = choreo::defaultNewTrajectory();
   traj.params = params_orig;
-  auto segments = choreo::convert_to_segments(traj.params);
-  // std::println("{}", wpi::util::json(configExp).to_string_pretty());
-  segments = choreo::estimate_segment_times(segments, configExp);
-  // std::println("Segments with estimated times:");
-  // std::println("{}", wpi::util::json(segments).to_string_pretty());
-
-  // Example 1: Swerve, one meter forward motion profile
-  trajopt::SwervePathBuilder path;
-  path.set_drivetrain(configExp.to_swerve_drivetrain());
-  auto bumpers = configExp.to_bumpers();
-  path.set_bumpers(bumpers);
-  // Apply waypoint constraints and initial guesses
-  std::vector<trajopt::Pose2d> initial_guess_points;
-  std::vector<choreo::Segment> only_waypoint_segments;
-  for (int i = 0; i < segments.size(); i++) {
-    const auto& wpt = segments[i].start;
-    if (!segments[i].coalesce_with_previous) {
-      path.sgmt_initial_guess_points(only_waypoint_segments.size(),
-                                     initial_guess_points);
-      initial_guess_points.clear();
-      if (wpt.fix_translation && wpt.fix_heading) {
-        path.pose_wpt(only_waypoint_segments.size(), wpt.x.val.value(),
-                      wpt.y.val.value(), wpt.heading.val.value());
-      } else if (wpt.fix_translation && !wpt.fix_heading) {
-        path.translation_wpt(only_waypoint_segments.size(), wpt.x.val.value(),
-                             wpt.y.val.value());
-      } else if (!wpt.fix_translation && wpt.fix_heading) {
-      } else {
-        path.wpt_initial_guess_point(only_waypoint_segments.size(),
-                                     wpt.toTrajoptPose2d());
-      }
-      only_waypoint_segments.push_back(segments[i]);
-    } else {
-      initial_guess_points.push_back(wpt.toTrajoptPose2d());
-    }
-  }
-
-  const auto bumperSet = path.get_bumpers();
-  // Now that our segments list is reindexed to match TrajoptLib's counts, we
-  // can apply the constraints
-  for (int j = 0; j < only_waypoint_segments.size();
-       j++) {  // only for waypoints with a segment after them.
-    if (j < only_waypoint_segments.size() - 1) {
-      for (const auto& constraint :
-           only_waypoint_segments[j].segment_constraints) {
-        path.sgmt_constraint(
-            j, j + 1,
-            std::visit(
-                [&bumperSet](const auto& c) -> trajopt::Constraint {
-                  return c.toTrajoptConstraint(bumperSet);
-                },
-                constraint));
-      }
-    }
-    for (const auto& constraint :
-         only_waypoint_segments[j].waypoint_constraints) {
-      path.wpt_constraint(j, std::visit(
-                                 [&bumperSet](const auto& c) -> trajopt::Constraint {
-                                   return c.toTrajoptConstraint(bumperSet);
-                                 },
-                                 constraint));
-    }
-  }
-
-  trajopt::SwerveTrajectoryGenerator generator{path};
-  auto solution = generator.generate(true);
-  std::println("\ndone\n");
-  if (!solution) {
-    std::println("Error in example 1: {}", solution.error());
-    return std::to_underlying(solution.error());
+  // choreo::TrajectoryGenerator<choreo::SwerveSample, trajopt::SwerveSolution,
+  //                             trajopt::SwerveDrivetrain,
+  //                             trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>
+  choreo::TrajectoryGenerator<choreo::DifferentialSample, trajopt::DifferentialSolution, trajopt::DifferentialDrivetrain, trajopt::DifferentialTrajectoryGenerator, trajopt::DifferentialTrajectory>
+      generator(chor, traj);
+  auto samples = generator.generate();
+  if (!samples) {
+    return std::to_underlying(samples.error());
   } else {
-    trajopt::SwerveTrajectory trajectory =
-        trajopt::SwerveTrajectory(solution.value());
-    std::println("Example 1 trajectory:");
-    std::vector<choreo::SwerveSample> samples;
-    samples.reserve(trajectory.samples.size());
-    for (const auto& sample : trajectory.samples) {
-      samples.emplace_back(choreo::SwerveSample(sample));
+    std::println("Generated trajectory:");
+    wpi::util::json json = wpi::util::json::array();
+    for (const auto& sample : *samples) {
+      wpi::util::json element;
+      element = sample;
+      json.emplace_back(std::move(element));
     }
-    choreo::render::render(samples, configExp, traj.params,
-                           choreo::render::path_gradient::linearVelocity);
+    std::println("{}", json.to_string_pretty());
+    // choreo::render::render(*samples, configExp, traj.params,
+    //                        choreo::render::path_gradient::linearVelocity);
   }
 }

@@ -10,23 +10,8 @@
 #include <wpi/units/time.hpp>
 
 #include "segment.hpp"
-#include "split_to_segments.hpp"
 namespace choreo {
 std::vector<Segment> convert_to_segments(const Parameters& params);
-Segment estimate_segment_time(const Segment& segment, const Segment& next,
-                              const RobotConfig& config);
-inline std::vector<Segment> estimate_segment_times(
-    const std::vector<Segment>& segments, const RobotConfig& config) {
-  std::vector<Segment> estimated_segments;
-  for (int i = 0; i < segments.size() - 1; i++) {
-    estimated_segments.push_back(
-        estimate_segment_time(segments[i], segments[i + 1], config));
-  };
-  estimated_segments.push_back(segments.back());
-  estimated_segments.back().estimated_time =
-      0_s;  // this must be at least one interval though.
-  return estimated_segments;
-}
 
 template <typename Drivetrain, typename Solution>
 void apply_segments(const std::vector<choreo::Segment>& segments,

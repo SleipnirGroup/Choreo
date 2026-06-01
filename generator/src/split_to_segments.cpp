@@ -114,16 +114,12 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   return segments;
 }
 
-Segment estimate_segment_time(const Segment& segment, const Segment& next,
-                              const RobotConfig& config) {
+wpi::units::second_t Segment::estimate_segment_time(const Segment& next,
+                              const RobotConfig& config) const {
   // For now, just return the segment with no estimated time. In the future, we
   // can use the constraints on the segment and the robot config to estimate
   // how long it would take to execute, which can be used as a better initial
   // guess for the optimizer and also to set time bounds on the segments.
-  Segment modified_segment = segment;
-  modified_segment.estimated_time =
-      40 * 0.02_s;  // 40 intervals at the target dt, which is a common default
-                    // for optimization problems
-  return modified_segment;
+  return 40* 0.02_s;
 }
 }  // namespace choreo
