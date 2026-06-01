@@ -11,7 +11,7 @@
 #include <choreo/expr.hpp>
 #include <choreo/parameters.hpp>
 #include <choreo/robot_config.hpp>
-#include <choreo/swerve_sample.hpp>
+#include <choreo/trajectory/swerve_sample.hpp>
 #include <choreo/waypoint.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>

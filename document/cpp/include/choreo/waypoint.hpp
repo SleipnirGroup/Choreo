@@ -41,7 +41,7 @@ inline void from_json(const wpi::util::json& json, Waypoint& waypoint) {
   waypoint.x = json.at("x").get<Expr<dimensions::Length>>();
   waypoint.y = json.at("y").get<Expr<dimensions::Length>>();
   waypoint.heading = json.at("heading").get<Expr<dimensions::Angle>>();
-  waypoint.intervals = json.at("intervals").get_number();
+  waypoint.intervals = static_cast<std::size_t>(json.at("intervals").get_number());
   waypoint.split = json.at("split").get_bool();
   waypoint.fix_translation = json.at("fix_translation").get_bool();
   waypoint.fix_heading = json.at("fix_heading").get_bool();

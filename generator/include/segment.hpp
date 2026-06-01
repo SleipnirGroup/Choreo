@@ -13,7 +13,7 @@
 
 #include <choreo/constraint_data/constraint_data.hpp>
 #include <choreo/expr.hpp>
-#include <choreo/swerve_sample.hpp>
+#include <choreo/trajectory/swerve_sample.hpp>
 #include <choreo/parameters.hpp>
 #include <wpi/math/geometry/Pose2d.hpp>
 namespace choreo {

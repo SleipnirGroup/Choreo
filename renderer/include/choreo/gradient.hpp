@@ -2,7 +2,7 @@
 #include <string>
 #include <format>
 #include <vector>
-#include <choreo/swerve_sample.hpp>
+#include <choreo/trajectory/swerve_sample.hpp>
 #include <print>
 namespace choreo {
     namespace render {

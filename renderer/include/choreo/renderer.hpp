@@ -1,5 +1,5 @@
 #pragma once
-#include <choreo/swerve_sample.hpp> 
+#include <choreo/trajectory/swerve_sample.hpp> 
 #include <choreo/robot_config.hpp>
 #include <choreo/parameters.hpp>
 #include <vector>

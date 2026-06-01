@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "choreo/swerve_sample.hpp"
+#include "choreo/trajectory/swerve_sample.hpp"
 #include "renderer.hpp"
 #include "../svg.hpp"
 

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "defaults.hpp"
 #include <choreo/project.hpp>
 #include <choreo/constraint.hpp>
 #include <choreo/constraint_data/constraint_data.hpp>
@@ -17,7 +18,7 @@
 #include <choreo/robot_config.hpp>
 #include <choreo/drive_type.hpp>
 #include <choreo/variables/variables.hpp>
-#include <choreo/swerve_sample.hpp>
+#include <choreo/trajectory/swerve_sample.hpp>
 #include <choreo/waypoint.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
@@ -28,89 +29,7 @@
 #include "split_to_segments.hpp"
 #include <choreo/variables/variable.hpp>
 
-// Eventually this string comes in via a JSON file, but for now we'll hardcode
-// it here for testing purposes
-const std::string robotConfigJson = R"({
-  "cof": {
-    "exp": "1.5",
-    "val": 1.5
-  },
-  "differential_track_width": {
-    "exp": "0.5588 m",
-    "val": 0.5588
-  },
-  "gearing": {
-    "exp": "6.5",
-    "val": 6.5
-  },
-  "inertia": {
-    "exp": "6 kg m^2",
-    "val": 6
-  },
-  "mass": {
-    "exp": "68.0388555 kg",
-    "val": 68.0388555
-  },
-  "radius": {
-    "exp": "0.0508 m",
-    "val": 0.0508
-  },
-  "tmax": {
-    "exp": "1.2 N*m",
-    "val": 1.2
-  },
-  "vmax": {
-    "exp": "6000.0 RPM",
-    "val": 628.3185307179587
-  },
-  "wheels": [{
-    "x": {
-      "exp": "0.2794 m",
-      "val": 0.2794
-    },
-    "y": {
-      "exp": "0.2794 m",
-      "val": 0.2794
-    }
-  }, {
-    "x": {
-      "exp": "0.2794 m",
-      "val": 0.2794
-    },
-    "y": {
-      "exp": "-0.2794 m",
-      "val": -0.2794
-    }
-  }, {
-    "x": {
-      "exp": "-0.2794 m",
-      "val": -0.2794
-    },
-    "y": {
-      "exp": "-0.2794 m",
-      "val": -0.2794
-    }
-  }, {
-    "x": {
-      "exp": "-0.2794 m",
-      "val": -0.2794
-    },
-    "y": {
-      "exp": "0.2794 m",
-      "val": 0.2794
-    }
-  }]
-})";
 
-
-// SwervePathBuilder is used to build paths that are optimized into full
-// trajectories.
-//
-// "Wpt" stands for waypoint, an instantaneous moment in the path where certain
-// constrains on the robot's state are applied.
-//
-// "Sgmt" is the abbreviation for segments, the continuum of state between
-// waypoints where constraints can also be applied.
 const choreo::Parameters params_orig{
     .waypoints = {{.x = 0_m,
                    .y = 0_m,
@@ -163,73 +82,11 @@ const choreo::Parameters params_orig{
 // being generated correctly.
 
 int main() {
-
-  std::ifstream trajIn;
-  trajIn.open("trajectory.traj");
-  std::string traj{std::istreambuf_iterator<char>(trajIn), std::istreambuf_iterator<char>()};
-  auto paramsOpt = wpi::util::json::parse(traj).and_then(
-    [](wpi::util::json json)
-        -> wpi::util::expected<choreo::Parameters, std::string> {
-      try {
-        return json.get<choreo::Parameters>();
-      } catch (const std::exception& e) {
-        // return an expected that contains an unexpected error value
-        return wpi::util::unexpected<std::string>(std::string(e.what()));
-      }
-    });
-  if (!paramsOpt) {
-    std::println("Error parsing traj JSON: {}",
-                 paramsOpt.error());
-    return 1;
-  }
-  auto params = paramsOpt.value();
-  auto segments = choreo::convert_to_segments(params);
-  std::println("Segments:");
-  std::println("{}", wpi::util::json(segments).to_string_pretty());
-  std::ifstream chorIn;
-  chorIn.open("projectout.chor");
-  std::string chor{std::istreambuf_iterator<char>(chorIn),
-                   std::istreambuf_iterator<char>()};
-  std::println("{}", chor);
-  auto robotConfigJsonParsed = wpi::util::json::parse(chor).and_then(
-      [](wpi::util::json json)
-          -> wpi::util::expected<choreo::RobotConfig, std::string> {
-        try {
-          return json.get<choreo::ProjectFile>().config;
-        } catch (const std::exception& e) {
-          // return an expected that contains an unexpected error value
-          return wpi::util::unexpected<std::string>(std::string(e.what()));
-        }
-      });
-
-  if (!robotConfigJsonParsed) {
-    std::println("Error parsing robot config JSON: {}",
-                 robotConfigJsonParsed.error());
-    return 1;
-  }
-
-  choreo::RobotConfig configExp = robotConfigJsonParsed.value();
-  /*
-  const choreo::ProjectFile project{
-  .name = "MyProject",
-  .version = 4,
-  .type=choreo::DriveType::Swerve,
-  .variables={
-    {
-      {"var", 1_m},
-      {"foo", 1_rad_per_s}
-    },
-    {{"center", {0_m, 0_m}}},
-    {{"pose", {1_m, 1_m, 2_rad}}},
-    {{"region", {1_m, 1_m, 2_rad, 2_m, 3_m}}}
-  },
-  .config=configExp
-};
-std::println("{}", wpi::util::json(project).to_string_pretty());
-  std::ofstream chorOut;
-  chorOut.open("projectout.chor");
-  chorOut<< wpi::util::json(project).to_string_pretty();
-  chorOut.close();*/
+  auto chor = choreo::defaultNewProject();
+  auto configExp = chor.config;
+  auto traj = choreo::defaultNewTrajectory();
+  traj.params = params_orig;
+  auto segments = choreo::convert_to_segments(traj.params);
   // std::println("{}", wpi::util::json(configExp).to_string_pretty());
   segments = choreo::estimate_segment_times(segments, configExp);
   // std::println("Segments with estimated times:");
@@ -319,17 +176,7 @@ std::println("{}", wpi::util::json(project).to_string_pretty());
     for (const auto& sample : trajectory.samples) {
       samples.emplace_back(choreo::SwerveSample(sample));
     }
-    std::chrono::steady_clock::time_point start =
-        std::chrono::steady_clock::now();
-    auto json_string = wpi::util::json(samples).to_string_pretty();
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
-    // std::println("Serialized trajectory JSON: {}", json_string);
-    std::println(
-        "Serialization time taken: {} m s",
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
-            .count());
-    choreo::render::render(samples, configExp, params,
+    choreo::render::render(samples, configExp, traj.params,
                            choreo::render::path_gradient::linearVelocity);
   }
 }
