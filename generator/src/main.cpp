@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include <choreo/project.hpp>
 #include <choreo/constraint.hpp>
 #include <choreo/constraint_data/constraint_data.hpp>
 #include <choreo/expr.hpp>
@@ -14,6 +15,8 @@
 #include <choreo/parameters.hpp>
 #include <choreo/renderer.hpp>
 #include <choreo/robot_config.hpp>
+#include <choreo/drive_type.hpp>
+#include <choreo/variables/variables.hpp>
 #include <choreo/swerve_sample.hpp>
 #include <choreo/waypoint.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
@@ -99,6 +102,7 @@ const std::string robotConfigJson = R"({
   }]
 })";
 
+
 // SwervePathBuilder is used to build paths that are optimized into full
 // trajectories.
 //
@@ -159,11 +163,7 @@ const choreo::Parameters params_orig{
 // being generated correctly.
 
 int main() {
-  auto var = choreo::variables::Variable{1.0_m};
-  auto var1 = choreo::variables::Variable<wpi::units::scalar_t>{1.0};
-  std::println("{}", wpi::util::json(var).to_string_pretty());
-  std::println("{}", wpi::util::json(var1).to_string_pretty());
-  return 0;
+
   std::ifstream trajIn;
   trajIn.open("trajectory.traj");
   std::string traj{std::istreambuf_iterator<char>(trajIn), std::istreambuf_iterator<char>()};
@@ -187,7 +187,7 @@ int main() {
   std::println("Segments:");
   std::println("{}", wpi::util::json(segments).to_string_pretty());
   std::ifstream chorIn;
-  chorIn.open("project.chor");
+  chorIn.open("projectout.chor");
   std::string chor{std::istreambuf_iterator<char>(chorIn),
                    std::istreambuf_iterator<char>()};
   std::println("{}", chor);
@@ -195,7 +195,7 @@ int main() {
       [](wpi::util::json json)
           -> wpi::util::expected<choreo::RobotConfig, std::string> {
         try {
-          return json.get<choreo::RobotConfig>();
+          return json.get<choreo::ProjectFile>().config;
         } catch (const std::exception& e) {
           // return an expected that contains an unexpected error value
           return wpi::util::unexpected<std::string>(std::string(e.what()));
@@ -207,8 +207,29 @@ int main() {
                  robotConfigJsonParsed.error());
     return 1;
   }
-  choreo::RobotConfig configExp = robotConfigJsonParsed.value();
 
+  choreo::RobotConfig configExp = robotConfigJsonParsed.value();
+  /*
+  const choreo::ProjectFile project{
+  .name = "MyProject",
+  .version = 4,
+  .type=choreo::DriveType::Swerve,
+  .variables={
+    {
+      {"var", 1_m},
+      {"foo", 1_rad_per_s}
+    },
+    {{"center", {0_m, 0_m}}},
+    {{"pose", {1_m, 1_m, 2_rad}}},
+    {{"region", {1_m, 1_m, 2_rad, 2_m, 3_m}}}
+  },
+  .config=configExp
+};
+std::println("{}", wpi::util::json(project).to_string_pretty());
+  std::ofstream chorOut;
+  chorOut.open("projectout.chor");
+  chorOut<< wpi::util::json(project).to_string_pretty();
+  chorOut.close();*/
   // std::println("{}", wpi::util::json(configExp).to_string_pretty());
   segments = choreo::estimate_segment_times(segments, configExp);
   // std::println("Segments with estimated times:");

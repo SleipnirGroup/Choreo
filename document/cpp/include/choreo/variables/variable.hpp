@@ -16,7 +16,6 @@
 #include <wpi/util/json.hpp>
 
 namespace choreo {
-namespace variables {
 namespace dimensions {
 
 template <typename T>
@@ -129,5 +128,4 @@ inline void from_json(const wpi::util::json& json, VariableVariant& c) {
   auto parse = (*parser).second;
   c = parse(json);
 }
-}  // namespace variables
 }  // namespace choreo

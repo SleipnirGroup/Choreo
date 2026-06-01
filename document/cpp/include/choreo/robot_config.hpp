@@ -15,7 +15,7 @@
 
 #include "expr.hpp"
 #include "type_traits"
-#include "translation2e.hpp"
+#include "geometry/translation2e.hpp"
 #ifdef WITH_TRAJOPT
 #include <trajopt/differential_trajectory_generator.hpp>
 #include <trajopt/geometry/translation2.hpp>
