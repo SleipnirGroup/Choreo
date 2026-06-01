@@ -23,7 +23,6 @@ struct MaxAngularVelocity {
   Expr<dimensions::AngVel> max = 0_rad_per_s;
 
   trajopt::Constraint toTrajoptConstraint(
-      const choreo::Waypoint& start, const std::optional<choreo::Waypoint>& end,
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::AngularVelocityMaxMagnitudeConstraint{max};
   }
@@ -32,6 +31,13 @@ struct MaxAngularVelocity {
     return choreo::ConstraintScope::Both;
   }
   static std::string_view type_string() { return "MaxAngularVelocity"; }
+  MaxAngularVelocity forEndpoints(const choreo::Waypoint& start,
+                             const choreo::Waypoint& end) const {
+    // For a max-angular-velocity constraint, the endpoints don't affect the constraint
+    // itself, so we can just return *this. However, we need to return a new
+    // instance to satisfy the interface.
+    return *this;
+  }
 };
 inline void to_json(wpi::util::json& json, const MaxAngularVelocity& c) {
   json = wpi::util::json::object("max", c.max, "type", "MaxAngularVelocity");

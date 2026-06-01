@@ -25,8 +25,7 @@ struct MaxVelocity {
   Expr<dimensions::LinVel> max = 0_mps;
 
   trajopt::Constraint toTrajoptConstraint(
-      const choreo::Waypoint& start, const std::optional<choreo::Waypoint>& end,
-      const std::vector<trajopt::KeepOutRegion>& bumpers) const {
+    const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::LinearVelocityMaxMagnitudeConstraint{max};
   }
 
@@ -34,6 +33,13 @@ struct MaxVelocity {
     return choreo::ConstraintScope::Both;
   }
   static std::string_view type_string() { return "MaxVelocity"; }
+  MaxVelocity forEndpoints(const choreo::Waypoint& start,
+                             const choreo::Waypoint& end) const {
+    // For a max-velocity constraint, the endpoints don't affect the constraint
+    // itself, so we can just return *this. However, we need to return a new
+    // instance to satisfy the interface.
+    return *this;
+  }
 };
 inline void to_json(wpi::util::json& json, const MaxVelocity& c) {
   json = wpi::util::json::object("max", c.max, "type", c.type_string());

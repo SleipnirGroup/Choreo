@@ -130,31 +130,20 @@ int main() {
     if (j < only_waypoint_segments.size() - 1) {
       for (const auto& constraint :
            only_waypoint_segments[j].segment_constraints) {
-        const auto& wpt = only_waypoint_segments[j].start;
-        // should never hit the nullopt case
-        const auto& next_wpt =
-            j + 1 < only_waypoint_segments.size()
-                ? std::optional{only_waypoint_segments[j + 1].start}
-                : std::nullopt;
         path.sgmt_constraint(
             j, j + 1,
             std::visit(
-                [&wpt, &next_wpt,
-                 &bumperSet](const auto& c) -> trajopt::Constraint {
-                  return c.toTrajoptConstraint(wpt, next_wpt, bumperSet);
+                [&bumperSet](const auto& c) -> trajopt::Constraint {
+                  return c.toTrajoptConstraint(bumperSet);
                 },
                 constraint));
       }
     }
     for (const auto& constraint :
          only_waypoint_segments[j].waypoint_constraints) {
-      const auto& wpt = only_waypoint_segments[j].start;
-
       path.wpt_constraint(j, std::visit(
-                                 [&wpt](const auto& c) -> trajopt::Constraint {
-                                   return c.toTrajoptConstraint(
-                                       wpt, std::nullopt,
-                                       std::vector<trajopt::KeepOutRegion>{});
+                                 [&bumperSet](const auto& c) -> trajopt::Constraint {
+                                   return c.toTrajoptConstraint(bumperSet);
                                  },
                                  constraint));
     }

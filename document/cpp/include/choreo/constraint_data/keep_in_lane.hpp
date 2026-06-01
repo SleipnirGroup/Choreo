@@ -12,18 +12,35 @@
 namespace choreo::ConstraintData {
 struct KeepInLane {
   static KeepInLane fromJson(const wpi::util::json& json);
+  Expr<dimensions::Length> x1 = 0_m;
+  Expr<dimensions::Length> y1 = 0_m;
+  bool useStartPoint = true;
+  Expr<dimensions::Length> x2 = 0_m;
+  Expr<dimensions::Length> y2 = 0_m;
+  bool useEndPoint = true;
   Expr<dimensions::Length> tolerance = 0_m;
-#ifdef WITH_TRAJOPT
-  trajopt::KeepInLaneConstraint toTrajoptConstraint(
-      const choreo::Waypoint& start,
-      const std::optional<choreo::Waypoint&> end) const {
-    return trajopt::LaneConstraint{start.toTrajoptPose2d().Translation(),
-                                   end.toTrajoptPose2d().Translation,
+
+  trajopt::Constraint toTrajoptConstraint(
+) const {
+    return trajopt::LaneConstraint{{x1.unit(), y1.unit()}, {x2.unit(), y2.unit()},
                                    tolerance.value()};
   }
-#endif
 
-  ConstraintScope scope() const { return ConstraintScope::Both; }
+  KeepInLane forEndpoints(const choreo::Waypoint& start,
+                             const choreo::Waypoint& end) const {
+    KeepInLane c = *this;
+    if (useStartPoint) {
+      c.x1 = start.pose.x;
+      c.y1 = start.pose.y;
+    }
+    if (useEndPoint) {
+      c.x2 = end.pose.x;
+      c.y2 = end.pose.y;
+    }
+    return c;
+  }
+
+   choreo::ConstraintScope scope() const { return choreo::ConstraintScope::Both; }
 };
 inline void to_json(wpi::util::json& json, const KeepInLane& c) {
   json =

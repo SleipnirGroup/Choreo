@@ -16,19 +16,27 @@
 #include "../variables/dimension.hpp"
 #include "../waypoint.hpp"
 #include "constraint_scope.hpp"
+#include "../geometry/region2e.hpp"
 
 namespace choreo {
 namespace ConstraintData {
-struct KeepInCircle {
+struct KeepInCircle : public Region2e {
   static KeepInCircle fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 0_m;
   Expr<dimensions::Length> y = 0_m;
   Expr<dimensions::Length> r = 0_m;
 
   trajopt::Constraint toTrajoptConstraint(
-      const choreo::Waypoint& start, const std::optional<choreo::Waypoint>& end,
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::KeepInCircleConstraint{bumpers, {x, y}, r};
+  }
+
+  KeepInCircle forEndpoints(const choreo::Waypoint& start,
+                             const choreo::Waypoint& end) const {
+    // For a keep-in-circle constraint, the endpoints don't affect the constraint
+    // itself, so we can just return *this. However, we need to return a new
+    // instance to satisfy the interface.
+    return *this;
   }
 
   choreo::ConstraintScope scope() const {
