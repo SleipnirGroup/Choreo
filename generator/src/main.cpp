@@ -7,28 +7,27 @@
 #include <string>
 #include <vector>
 
-#include "defaults.hpp"
-#include <choreo/project.hpp>
 #include <choreo/constraint.hpp>
 #include <choreo/constraint_data/constraint_data.hpp>
+#include <choreo/drive_type.hpp>
 #include <choreo/expr.hpp>
 #include <choreo/gradient.hpp>
 #include <choreo/parameters.hpp>
+#include <choreo/project.hpp>
 #include <choreo/renderer.hpp>
 #include <choreo/robot_config.hpp>
-#include <choreo/drive_type.hpp>
-#include <choreo/variables/variables.hpp>
 #include <choreo/trajectory/swerve_sample.hpp>
+#include <choreo/variables/variable.hpp>
+#include <choreo/variables/variables.hpp>
 #include <choreo/waypoint.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
 #include <wpi/math/geometry/Pose2d.hpp>
 #include <wpi/util/json.hpp>
 
+#include "defaults.hpp"
 #include "segment.hpp"
 #include "split_to_segments.hpp"
-#include <choreo/variables/variable.hpp>
-
 
 const choreo::Parameters params_orig{
     .waypoints = {{.x = 0_m,

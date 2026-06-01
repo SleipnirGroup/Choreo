@@ -19,7 +19,6 @@ FetchContent_Declare(
     choreo_document
     SOURCE_DIR
     "${CMAKE_CURRENT_LIST_DIR}/../document/cpp/"
-
 )
 FetchContent_MakeAvailable(choreo_document)
 
@@ -42,8 +41,8 @@ set(WITH_TESTS OFF CACHE INTERNAL "With Tests")
 set(WITH_WPIMATH ON CACHE INTERNAL "With WPIMath")
 set(WITH_WPILIB OFF CACHE INTERNAL "With WPILib")
 set(NO_WERROR ON)
-if (MSVC)
-# set(WPILIB_TARGET_WARNINGS "/wd5105" CACHE INTERNAL "WPILib Compiler Warnings") # shueja: had to silence a warning coming from deep in the Windows SDK.
+if(MSVC)
+    # set(WPILIB_TARGET_WARNINGS "/wd5105" CACHE INTERNAL "WPILib Compiler Warnings") # shueja: had to silence a warning coming from deep in the Windows SDK.
 endif()
 FetchContent_Declare(
     wpilib
@@ -53,7 +52,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(wpilib)
 # Collect sources for the executable
-file(GLOB_RECURSE generator_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/split_to_segments.cpp")
+file(
+    GLOB_RECURSE generator_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/split_to_segments.cpp"
+)
 
 add_executable(generator ${generator_SOURCES})
 
@@ -66,8 +69,10 @@ target_include_directories(
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-
-target_link_libraries(generator PRIVATE TrajoptLib wpimath wpiutil choreo_document choreo_renderer)
+target_link_libraries(
+    generator
+    PRIVATE TrajoptLib wpimath wpiutil choreo_document choreo_renderer
+)
 
 # Optional: install rule
 install(TARGETS generator RUNTIME DESTINATION bin)

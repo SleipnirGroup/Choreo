@@ -2,9 +2,10 @@
 
 #pragma once
 #include <concepts>
+#include <print>
 #include <string>
 #include <variant>
-#include <print>
+#include <vector>
 
 #include <wpi/util/json.hpp>
 
@@ -32,7 +33,7 @@ concept ConstraintLike =
       } -> std::same_as<trajopt::Constraint>;
       { self.scope() } -> std::same_as<choreo::ConstraintScope>;
       { T::type_string() } -> std::same_as<std::string_view>;
-          };
+    };
 using ConstraintVariant = std::variant<
     //clang-format off
     MaxVelocity, MaxAngularVelocity,
@@ -56,38 +57,32 @@ inline void from_json(const wpi::util::json& json, ConstraintVariant& c) {
   std::string type = json.at("type").get_string();
   std::println("type: {}", type);
   if (type == MaxVelocity::type_string()) {
-    MaxVelocity data;
-    from_json(json, data);
-    c = data;
+    c = MaxVelocity::fromJson(json);
     // } else if (type == "MaxAcceleration") {
     //   MaxAcceleration data;
     //   from_json(json, data);
     //   c = data;
   } else if (type == MaxAngularVelocity::type_string()) {
-    MaxAngularVelocity data;
-    from_json(json, data);
-    c = data;
-  // } else if (type == "MaxAngularAcceleration") {
-  //   MaxAngularAcceleration data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "PointAt") {
-  //   PointAt data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "Heading") {
-  //   HeadingConstraint data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else if (type == "StopPoint") {
-  //   StopPoint data;
-  //   from_json(json, data);
-  //   c = data;
-  // } else
+    c = MaxAngularVelocity::fromJson(json);
+    // } else if (type == "MaxAngularAcceleration") {
+    //   MaxAngularAcceleration data;
+    //   from_json(json, data);
+    //   c = data;
+    // } else if (type == "PointAt") {
+    //   PointAt data;
+    //   from_json(json, data);
+    //   c = data;
+    // } else if (type == "Heading") {
+    //   HeadingConstraint data;
+    //   from_json(json, data);
+    //   c = data;
+    // } else if (type == "StopPoint") {
+    //   StopPoint data;
+    //   from_json(json, data);
+    //   c = data;
+    // } else
   } else if (type == KeepInCircle::type_string()) {
-    KeepInCircle data;
-    from_json(json, data);
-    c = data;
+    c = KeepInCircle::fromJson(json);
     // else if (type == "KeepInRectangle") {
     //    KeepInRectangle data;
     //    from_json(json, data);

@@ -1,28 +1,31 @@
 // Copyright (c) Choreo contributors
 
 #pragma once
-#include <wpi/units/angle.hpp>
-#include <wpi/util/json.hpp>
 #include <string_view>
 
-#include "../variables/dimension.hpp"
+#include <wpi/units/angle.hpp>
+#include <wpi/util/json.hpp>
+
 #include "../expr.hpp"
+#include "../variables/dimension.hpp"
 #include "./constraint_scope.hpp"
 
 namespace choreo::ConstraintData {
 using namespace wpi::units::literals;
 struct HeadingConstraint {
+  static HeadingConstraint fromJson(const wpi::util::json& json);
   Expr<dimensions::Angle> heading = 0_rad;
   Expr<dimensions::Angle> tolerance = 0_rad;
 
   // #ifdef WITH_TRAJOPT
-  // trajopt::HeadingConstraint toTrajoptConstraint(const choreo::Waypoint& start, const std::optional<choreo::Waypoint&> end) const {
+  // trajopt::HeadingConstraint toTrajoptConstraint(const choreo::Waypoint&
+  // start, const std::optional<choreo::Waypoint&> end) const {
   //   return trajopt::HeadingConstraint{heading, tolerance};
   // }
   // #endif
 
   ConstraintScope scope() const { return ConstraintScope::Both; }
-  static std::string_view type_string() { return "Heading";}
+  static std::string_view type_string() { return "Heading"; }
 };
 inline void to_json(wpi::util::json& json, const HeadingConstraint& c) {
   json = wpi::util::json::object("heading", c.heading, "tolerance", c.tolerance,
@@ -32,4 +35,12 @@ inline void from_json(const wpi::util::json& json, HeadingConstraint& c) {
   c.heading = json.at("heading").get<Expr<dimensions::Angle>>();
   c.tolerance = json.at("tolerance").get<Expr<dimensions::Angle>>();
 }
+
+inline HeadingConstraint HeadingConstraint::fromJson(
+    const wpi::util::json& json) {
+  HeadingConstraint value;
+  from_json(json, value);
+  return value;
+}
+
 }  // namespace choreo::ConstraintData

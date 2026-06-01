@@ -1,12 +1,15 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <memory>
+
+#include "../svg.hpp"
 #include "choreo/trajectory/swerve_sample.hpp"
 #include "renderer.hpp"
-#include "../svg.hpp"
 
 namespace choreo::svg_helpers {
 
@@ -23,9 +26,11 @@ namespace choreo::svg_helpers {
  *
  * Returns nullptr for empty input.
  */
-inline void make_animateMotion(SVGPP::Group* parent, const std::vector<SwerveSample>& samples,
-                                                             int precision = 3) {
-  if (samples.empty()) return;
+inline void make_animateMotion(SVGPP::Group* parent,
+                               const std::vector<SwerveSample>& samples,
+                               int precision = 3) {
+  if (samples.empty())
+    return;
 
   const double t0 = samples.front().t;
   const double tN = samples.back().t;
@@ -40,7 +45,8 @@ inline void make_animateMotion(SVGPP::Group* parent, const std::vector<SwerveSam
     const auto& s = samples[i];
     vals << s.x << "," << s.y;
     double normalized = 0.0;
-    if (duration > 0.0) normalized = (s.t - t0) / duration;
+    if (duration > 0.0)
+      normalized = (s.t - t0) / duration;
     kt << normalized;
     if (i + 1 < samples.size()) {
       vals << ";";
@@ -53,7 +59,8 @@ inline void make_animateMotion(SVGPP::Group* parent, const std::vector<SwerveSam
   std::ostringstream ss;
   ss << std::fixed << std::setprecision(precision) << t0 << "s";
   node->set_attr("begin", ss.str());
-  ss.str(""); ss.clear();
+  ss.str("");
+  ss.clear();
   ss << std::fixed << std::setprecision(precision) << duration << "s";
   node->set_attr("dur", ss.str());
 
@@ -69,7 +76,8 @@ inline void make_animateMotion(SVGPP::Group* parent, const std::vector<SwerveSam
   for (size_t i = 0; i < samples.size(); ++i) {
     double deg = samples[i].heading * RAD_TO_DEG;
     ang_vals << deg;
-    if (i + 1 < samples.size()) ang_vals << ";";
+    if (i + 1 < samples.size())
+      ang_vals << ";";
   }
 
   auto rot = parent->add_child<SVGPP::RawElement>("animateTransform");
@@ -77,10 +85,12 @@ inline void make_animateMotion(SVGPP::Group* parent, const std::vector<SwerveSam
   rot->set_attr("type", std::string("rotate"));
   rot->set_attr("values", ang_vals.str());
   rot->set_attr("keyTimes", kt.str());
-  ss.str(""); ss.clear();
+  ss.str("");
+  ss.clear();
   ss << std::fixed << std::setprecision(precision) << t0 << "s";
   rot->set_attr("begin", ss.str());
-  ss.str(""); ss.clear();
+  ss.str("");
+  ss.clear();
   ss << std::fixed << std::setprecision(precision) << duration << "s";
   rot->set_attr("dur", ss.str());
   rot->set_attr("calcMode", std::string("linear"));

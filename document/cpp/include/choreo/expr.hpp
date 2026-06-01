@@ -48,6 +48,7 @@ struct Expr {
   }
   operator double() const { return val.value(); }
   BaseUnit unit() const { return val; }
+  static Expr fromJson(const wpi::util::json& json);
 };
 
 template <typename Dim>
@@ -61,5 +62,12 @@ inline void from_json(const wpi::util::json& json, Expr<Dim>& expr) {
   // get_number, not get_double, because get_double can throw if the value is
   // serialized as an int.
   expr.val = typename Dim::baseUnit(json.at("val").get_number());
+}
+
+template <typename Dim>
+inline Expr<Dim> Expr<Dim>::fromJson(const wpi::util::json& json) {
+  Expr<Dim> value;
+  from_json(json, value);
+  return value;
 }
 }  // namespace choreo

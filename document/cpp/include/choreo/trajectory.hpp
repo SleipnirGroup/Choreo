@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
 #include <cstdint>
@@ -5,14 +7,16 @@
 #include <string>
 #include <vector>
 
+#include <wpi/util/json.hpp>
+
+#include "choreo/event/event_marker.hpp"
 #include "choreo/parameters.hpp"
 #include "choreo/trajectory/output.hpp"
-#include <wpi/util/json.hpp>
-#include "choreo/event/event_marker.hpp"
 
 namespace choreo {
 
 struct TrajectoryFile {
+  static TrajectoryFile fromJson(const wpi::util::json& json);
   std::string name;
   std::uint32_t version;
   std::optional<Parameters> snapshot;
@@ -22,15 +26,16 @@ struct TrajectoryFile {
 };
 
 inline void to_json(wpi::util::json& json, const TrajectoryFile& trajFile) {
-  const wpi::util::json snapshot_json = trajFile.snapshot ?
-      wpi::util::json(*trajFile.snapshot) : wpi::util::json();
-  const wpi::util::json trajectory_json = trajFile.trajectory ?
-      wpi::util::json(*trajFile.trajectory) : wpi::util::json();
+  const wpi::util::json snapshot_json =
+      trajFile.snapshot ? wpi::util::json(*trajFile.snapshot)
+                        : wpi::util::json();
+  const wpi::util::json trajectory_json =
+      trajFile.trajectory ? wpi::util::json(*trajFile.trajectory)
+                          : wpi::util::json();
   json = wpi::util::json::object("name", trajFile.name, "version",
-                                 trajFile.version, "snapshot",
-                                 snapshot_json, "params", trajFile.params,
-                                 "trajectory", trajectory_json,
-                                 "events", trajFile.events);
+                                 trajFile.version, "snapshot", snapshot_json,
+                                 "params", trajFile.params, "trajectory",
+                                 trajectory_json, "events", trajFile.events);
 }
 inline void from_json(const wpi::util::json& json, TrajectoryFile& trajFile) {
   trajFile.name = json.at("name").get_string();
@@ -49,7 +54,16 @@ inline void from_json(const wpi::util::json& json, TrajectoryFile& trajFile) {
   }
 
   trajFile.events = json.at("events").get_array() |
-  std::views::transform([](const wpi::util::json& eventJson) { return
-  eventJson.get<EventMarker>(); }) | std::ranges::to<std::vector<EventMarker>>();
+                    std::views::transform([](const wpi::util::json& eventJson) {
+                      return eventJson.get<EventMarker>();
+                    }) |
+                    std::ranges::to<std::vector<EventMarker>>();
 }
+
+inline TrajectoryFile TrajectoryFile::fromJson(const wpi::util::json& json) {
+  TrajectoryFile value;
+  from_json(json, value);
+  return value;
+}
+
 }  // namespace choreo

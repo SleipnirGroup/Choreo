@@ -1,25 +1,30 @@
+// Copyright (c) Choreo contributors
+
+#include <format>
+#include <fstream>
 #include <iostream>
-#include <utility>
 #include <ranges>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <choreo/parameters.hpp>
+#include <choreo/robot_config.hpp>
+#include <choreo/trajectory/swerve_sample.hpp>
 #include <lunasvg.h>
 
-#include "choreo/renderer.hpp"
-#include "choreo/gradient.hpp"
-#include <choreo/trajectory/swerve_sample.hpp> 
-#include <choreo/robot_config.hpp>
-#include <choreo/parameters.hpp>
-#include <vector>
-#include <format>
-#include "wpi/util/fs.hpp"
 #include "choreo/animate.hpp"
+#include "choreo/gradient.hpp"
+#include "choreo/renderer.hpp"
+#include "wpi/util/fs.hpp"
 using namespace lunasvg;
 namespace choreo {
 
 namespace render {
 
-
 SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
-           choreo::RobotConfig config, choreo::Parameters parameters, choreo::render::path_gradient::PathGradient& gradient) {
+                  choreo::RobotConfig config, choreo::Parameters parameters,
+                  choreo::render::path_gradient::PathGradient& gradient) {
   constexpr double FIELD_WIDTH = 8;
   constexpr double FIELD_LENGTH = 16;
   using namespace SVGPP;
@@ -51,7 +56,8 @@ SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
   }
   auto trajectory = base->add_child<SVGPP::Group>();
   {
-    for (const auto& [i, tup] : std::views::enumerate(std::views::adjacent<2>(samples))) {
+    for (const auto& [i, tup] :
+         std::views::enumerate(std::views::adjacent<2>(samples))) {
       const auto& [a, b] = tup;
       trajectory->add_child<SVGPP::Line>(a.x, b.x, a.y, b.y)
           ->set_attr("stroke", gradient(samples, i).toCSS());
@@ -61,14 +67,12 @@ SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
   {
     choreo::svg_helpers::make_animateMotion(robot, samples);
     auto start = samples.front();
-    robot->add_child<SVGPP::Circle>(0.5, 0, 0.1)->set_attrs({
-      {"stroke", "none"},
-      {"fill", "white"}
-    });
-    auto rect = robot->add_child<SVGPP::Rect>(start.x-0.5, start.y-0.5, 1, 1);
+    robot->add_child<SVGPP::Circle>(0.5, 0, 0.1)
+        ->set_attrs({{"stroke", "none"}, {"fill", "white"}});
+    auto rect =
+        robot->add_child<SVGPP::Rect>(start.x - 0.5, start.y - 0.5, 1, 1);
     rect->set_attr("stroke", "white").set_attr("fill", "none");
   }
-  
 
   auto document = Document::loadFromData(std::string(svg));
   {
@@ -79,7 +83,7 @@ SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
   document->renderToBitmap(400, 200, 0x222222FF).writeToPng("original.png");
 
   return svg;
-           }
+}
 
 }  // namespace render
 }  // namespace choreo

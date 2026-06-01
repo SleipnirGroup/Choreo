@@ -4,11 +4,12 @@
 #include <wpi/units/length.hpp>
 #include <wpi/util/json.hpp>
 
-#include "../variables/dimension.hpp"
 #include "../expr.hpp"
+#include "../variables/dimension.hpp"
 
 namespace choreo::ConstraintData {
 struct KeepInRectangle {
+  static KeepInRectangle fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 0_m;
   Expr<dimensions::Length> y = 0_m;
   Expr<dimensions::Length> w = 0_m;
@@ -24,4 +25,11 @@ inline void from_json(const wpi::util::json& json, KeepInRectangle& c) {
   c.w = json.at("w").get<Expr<dimensions::Length>>();
   c.h = json.at("h").get<Expr<dimensions::Length>>();
 }
+
+inline KeepInRectangle KeepInRectangle::fromJson(const wpi::util::json& json) {
+  KeepInRectangle value;
+  from_json(json, value);
+  return value;
+}
+
 }  // namespace choreo::ConstraintData

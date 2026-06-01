@@ -4,12 +4,13 @@
 #include <wpi/math/geometry/Pose2d.hpp>
 
 #include "expr.hpp"
+#include "variables/dimension.hpp"
 #include "wpi/units/angle.hpp"
 #include "wpi/units/length.hpp"
-#include "variables/dimension.hpp"
 #include "wpi/util/json.hpp"
 namespace choreo {
 struct Waypoint {
+  static Waypoint fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 1_m;
   Expr<dimensions::Length> y = 0_m;
   Expr<dimensions::Angle> heading = 0_rad;
@@ -41,10 +42,18 @@ inline void from_json(const wpi::util::json& json, Waypoint& waypoint) {
   waypoint.x = json.at("x").get<Expr<dimensions::Length>>();
   waypoint.y = json.at("y").get<Expr<dimensions::Length>>();
   waypoint.heading = json.at("heading").get<Expr<dimensions::Angle>>();
-  waypoint.intervals = static_cast<std::size_t>(json.at("intervals").get_number());
+  waypoint.intervals =
+      static_cast<std::size_t>(json.at("intervals").get_number());
   waypoint.split = json.at("split").get_bool();
   waypoint.fix_translation = json.at("fix_translation").get_bool();
   waypoint.fix_heading = json.at("fix_heading").get_bool();
   waypoint.override_intervals = json.at("override_intervals").get_bool();
 }
+
+inline Waypoint Waypoint::fromJson(const wpi::util::json& json) {
+  Waypoint value;
+  from_json(json, value);
+  return value;
+}
+
 }  // namespace choreo

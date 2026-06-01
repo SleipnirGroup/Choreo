@@ -1,10 +1,12 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
+#include <map>
+#include <string>
 #include <variant>
 
 #include "../expr.hpp"
-
-
 #include "dimension.hpp"
 
 namespace choreo {
@@ -13,13 +15,14 @@ template <typename DimensionType>
 struct Variable {
   using Unit = typename DimensionType::baseUnit;
   using Dimension = DimensionType;
-
+  // NOLINTNEXTLINE (google-explicit-constructor)
   Variable(const Unit value) : var(value) {}
   Variable() : Variable(Unit(0)) {};
   template <typename U>
     requires std::is_convertible_v<U, Unit>
   // NOLINTNEXTLINE (google-explicit-constructor)
   Variable(U&& u) : Variable(static_cast<Unit>(u)) {}
+  static Variable fromJson(const wpi::util::json& json);
 
   Expr<DimensionType> var;
 };
@@ -33,18 +36,22 @@ template <typename T>
 inline void from_json(const wpi::util::json& json, Variable<T>& variable) {
   variable.var = json.at("var").get<Expr<T>>();
 }
+
+template <typename T>
+inline Variable<T> Variable<T>::fromJson(const wpi::util::json& json) {
+  Variable<T> value;
+  from_json(json, value);
+  return value;
+}
 using VariableVariant = std::variant<
     //clang-format off
-    Variable<dimensions::Number>,
-    Variable<dimensions::Length>,
-    Variable<dimensions::LinVel>,
-    Variable<dimensions::LinAcc>,
-    Variable<dimensions::Angle>,
-    Variable<dimensions::AngVel>,
-    Variable<dimensions::AngAcc>,
-    Variable<dimensions::Time>, Variable<dimensions::Mass>,
-    Variable<dimensions::Torque>, Variable<dimensions::MoI>,
-    Variable<dimensions::Current>, Variable<dimensions::KT>, Variable<dimensions::KV>
+    Variable<dimensions::Number>, Variable<dimensions::Length>,
+    Variable<dimensions::LinVel>, Variable<dimensions::LinAcc>,
+    Variable<dimensions::Angle>, Variable<dimensions::AngVel>,
+    Variable<dimensions::AngAcc>, Variable<dimensions::Time>,
+    Variable<dimensions::Mass>, Variable<dimensions::Torque>,
+    Variable<dimensions::MoI>, Variable<dimensions::Current>,
+    Variable<dimensions::KT>, Variable<dimensions::KV>
     //clang-format on
     >;
 template <typename T>
@@ -61,7 +68,8 @@ inline void to_json(wpi::util::json& json, const VariableVariant& variable) {
       },
       variable);
 }
-inline std::map<std::string, std::function<VariableVariant(const wpi::util::json&)>>
+inline std::map<std::string,
+                std::function<VariableVariant(const wpi::util::json&)>>
     fromJsonMap = {
         {dimensions::Number::tag, create<dimensions::Number>},
         {dimensions::Length::tag, create<dimensions::Length>},

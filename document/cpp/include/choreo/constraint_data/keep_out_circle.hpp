@@ -3,12 +3,13 @@
 #pragma once
 #include <wpi/units/length.hpp>
 #include <wpi/util/json.hpp>
-#include "../variables/dimension.hpp"
 
 #include "../expr.hpp"
+#include "../variables/dimension.hpp"
 
 namespace choreo::ConstraintData {
 struct KeepOutCircle {
+  static KeepOutCircle fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 0_m;
   Expr<dimensions::Length> y = 0_m;
   Expr<dimensions::Length> r = 0_m;
@@ -22,4 +23,11 @@ inline void from_json(const wpi::util::json& json, KeepOutCircle& c) {
   c.y = json.at("y").get<Expr<dimensions::Length>>();
   c.r = json.at("r").get<Expr<dimensions::Length>>();
 }
+
+inline KeepOutCircle KeepOutCircle::fromJson(const wpi::util::json& json) {
+  KeepOutCircle value;
+  from_json(json, value);
+  return value;
+}
+
 }  // namespace choreo::ConstraintData

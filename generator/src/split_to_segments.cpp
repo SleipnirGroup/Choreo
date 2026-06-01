@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #include "split_to_segments.hpp"
 
 #include <numbers>
@@ -32,15 +34,15 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   // Mark waypoints that are referenced by constraints as not being initial
   // guesses.
   for (const auto& constraint : constraints) {
-    std::println(
-        "Constraint from {} to {}: data={}", constraint.from,
-        constraint.to.has_value() ? std::to_string(constraint.to.value())
-                                  : "none",
-        std::visit(
-            [](const auto& data) {
-              return wpi::util::json(data).to_string_pretty();
-            },
-            constraint.data));
+    std::println("Constraint from {} to {}: data={}", constraint.from,
+                 constraint.to.has_value()
+                     ? std::to_string(constraint.to.value())
+                     : "none",
+                 std::visit(
+                     [](const auto& data) {
+                       return wpi::util::json(data).to_string_pretty();
+                     },
+                     constraint.data));
     if (constraint.to) {
       if (constraint.to.value() >= is_unconstrained.size()) {
         std::println(
@@ -81,8 +83,10 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   }
 
   for (const auto& constraint : constraints) {
-    if (constraint.to && constraint.to.value() > constraint.from) {  // Apply to every segment between 'from' and 'to',
-                          // exclusive of 'to'
+    if (constraint.to &&
+        constraint.to.value() >
+            constraint.from) {  // Apply to every segment between 'from' and
+                                // 'to', exclusive of 'to'
       for (size_t i = constraint.from; i < constraint.to.value(); i++) {
         segments.at(i).segment_constraints.push_back(constraint.data);
       }
@@ -99,14 +103,16 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   return segments;
 }
 
-Segment estimate_segment_time(const Segment& segment, const Segment& next, const RobotConfig& config) {
+Segment estimate_segment_time(const Segment& segment, const Segment& next,
+                              const RobotConfig& config) {
   // For now, just return the segment with no estimated time. In the future, we
   // can use the constraints on the segment and the robot config to estimate
   // how long it would take to execute, which can be used as a better initial
   // guess for the optimizer and also to set time bounds on the segments.
   Segment modified_segment = segment;
-  modified_segment.estimated_time = 40 * 0.02_s;  // 40 intervals at the target dt, which is a common default for
-                                  // optimization problems
+  modified_segment.estimated_time =
+      40 * 0.02_s;  // 40 intervals at the target dt, which is a common default
+                    // for optimization problems
   return modified_segment;
 }
 }  // namespace choreo

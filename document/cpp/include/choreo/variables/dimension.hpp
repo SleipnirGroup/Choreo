@@ -1,12 +1,15 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
 #include <string>
 
-#include <wpi/units/base.hpp>
 #include <wpi/units/acceleration.hpp>
 #include <wpi/units/angle.hpp>
 #include <wpi/units/angular_acceleration.hpp>
 #include <wpi/units/angular_velocity.hpp>
+#include <wpi/units/base.hpp>
+#include <wpi/units/current.hpp>
 #include <wpi/units/dimensionless.hpp>
 #include <wpi/units/length.hpp>
 #include <wpi/units/mass.hpp>
@@ -15,8 +18,6 @@
 #include <wpi/units/torque.hpp>
 #include <wpi/units/velocity.hpp>
 #include <wpi/units/voltage.hpp>
-#include <wpi/units/current.hpp>
-
 
 namespace choreo {
 namespace dimensions {
@@ -100,15 +101,19 @@ struct Dimension<wpi::units::ampere_t> {
 };
 
 template <>
-struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>> {
+struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<
+    wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>> {
   inline static const std::string tag = "KT";
-  using baseUnit = wpi::units::unit_t<wpi::units::compound_unit<wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>;
+  using baseUnit = wpi::units::unit_t<wpi::units::compound_unit<
+      wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>;
 };
 
 template <>
-struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>> {
+struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<
+    wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>> {
   inline static const std::string tag = "KV";
-  using baseUnit = wpi::units::unit_t<wpi::units::compound_unit<wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>;
+  using baseUnit = wpi::units::unit_t<wpi::units::compound_unit<
+      wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>;
 };
 
 using Number = Dimension<wpi::units::scalar_t>;
@@ -123,8 +128,10 @@ using Mass = Dimension<wpi::units::kilogram_t>;
 using Torque = Dimension<wpi::units::newton_meter_t>;
 using MoI = Dimension<wpi::units::kilogram_square_meter_t>;
 using Current = Dimension<wpi::units::ampere_t>;
-using KT = Dimension<wpi::units::unit_t<wpi::units::compound_unit<wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>>;
-using KV = Dimension<wpi::units::unit_t<wpi::units::compound_unit<wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>>;
+using KT = Dimension<wpi::units::unit_t<wpi::units::compound_unit<
+    wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>>;
+using KV = Dimension<wpi::units::unit_t<wpi::units::compound_unit<
+    wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>>;
 
 }  // namespace dimensions
 }  // namespace choreo

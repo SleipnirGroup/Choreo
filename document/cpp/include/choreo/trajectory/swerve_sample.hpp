@@ -5,12 +5,14 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
 #include <wpi/util/json.hpp>
 #ifdef WITH_TRAJOPT
 #include <trajopt/swerve_trajectory_generator.hpp>
 #endif
 namespace choreo {
 struct SwerveSample {
+  static SwerveSample fromJson(const wpi::util::json& json);
   double t;
   double x;
   double y;
@@ -23,6 +25,8 @@ struct SwerveSample {
   double alpha;
   std::vector<double> fx;  // FL, BL, BR, FR
   std::vector<double> fy;  // FL, BL, BR, FR
+
+  SwerveSample() = default;
 
   SwerveSample(double t, double x, double y, double heading, double vx,
                double vy, double omega, double ax, double ay, double alpha,
@@ -82,4 +86,11 @@ inline void from_json(const wpi::util::json& json, SwerveSample& sample) {
   std::transform(fyJson.begin(), fyJson.end(), std::back_inserter(sample.fy),
                  [](const wpi::util::json& val) { return val.get_number(); });
 }
+
+inline SwerveSample SwerveSample::fromJson(const wpi::util::json& json) {
+  SwerveSample value;
+  from_json(json, value);
+  return value;
+}
+
 }  // namespace choreo

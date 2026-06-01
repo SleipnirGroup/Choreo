@@ -1,7 +1,11 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
 #include <algorithm>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include <wpi/util/json.hpp>
 
@@ -72,5 +76,5 @@ inline void from_json(wpi::util::json const& j, SampleListVariant& samples) {
   }
 
   throw std::runtime_error("JSON does not match any known sample type");
-} 
+}
 }  // namespace choreo

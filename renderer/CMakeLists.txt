@@ -7,12 +7,12 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build using shared libraries" FORCE)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-
 include(FetchContent)
 FetchContent_Declare(
     lunasvg
     GIT_REPOSITORY https://github.com/sammycage/lunasvg.git
-    GIT_TAG master  # Specify the desired branch or tag
+    GIT_TAG
+        master # Specify the desired branch or tag
 )
 FetchContent_MakeAvailable(lunasvg)
 
@@ -21,7 +21,6 @@ FetchContent_Declare(
     choreo_document
     SOURCE_DIR
     "${CMAKE_CURRENT_LIST_DIR}/../document/cpp/"
-
 )
 FetchContent_MakeAvailable(choreo_document)
 
@@ -44,8 +43,8 @@ set(WITH_TESTS OFF CACHE INTERNAL "With Tests")
 set(WITH_WPIMATH ON CACHE INTERNAL "With WPIMath")
 set(WITH_WPILIB OFF CACHE INTERNAL "With WPILib")
 set(NO_WERROR ON)
-if (MSVC)
-# set(WPILIB_TARGET_WARNINGS "/wd5105" CACHE INTERNAL "WPILib Compiler Warnings") # shueja: had to silence a warning coming from deep in the Windows SDK.
+if(MSVC)
+    # set(WPILIB_TARGET_WARNINGS "/wd5105" CACHE INTERNAL "WPILib Compiler Warnings") # shueja: had to silence a warning coming from deep in the Windows SDK.
 endif()
 FetchContent_Declare(
     wpilib
@@ -55,7 +54,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(wpilib)
 # Collect sources for the executable
-file(GLOB_RECURSE choreo_renderer_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(
+    GLOB_RECURSE choreo_renderer_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
 
 add_library(choreo_renderer ${choreo_renderer_SOURCES})
 
@@ -70,10 +72,10 @@ target_include_directories(
         $<INSTALL_INTERFACE:include>
 )
 
-
-target_link_libraries(choreo_renderer PRIVATE TrajoptLib wpimath wpiutil choreo_document lunasvg::lunasvg)
+target_link_libraries(
+    choreo_renderer
+    PRIVATE TrajoptLib wpimath wpiutil choreo_document lunasvg::lunasvg
+)
 
 # Optional: install rule
 install(TARGETS choreo_renderer RUNTIME DESTINATION bin)
-
-
