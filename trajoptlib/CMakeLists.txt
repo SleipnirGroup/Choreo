@@ -42,7 +42,7 @@ if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.14.0
+        GIT_TAG v3.15.0
         GIT_SHALLOW ON
         EXCLUDE_FROM_ALL
         SYSTEM
