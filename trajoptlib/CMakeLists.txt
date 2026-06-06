@@ -70,7 +70,7 @@ install(
     INCLUDES DESTINATION include
 )
 export(TARGETS TrajoptLib FILE TrajoptLib.cmake NAMESPACE TrajoptLib::)
-install(DIRECTORY include/ COMPONENT TrajoptLib DESTINATION "include")
+install(DIRECTORY include/ COMPONENT TrajoptLib DESTINATION include)
 install(
     EXPORT TrajoptLibTargets
     FILE TrajoptLib.cmake
@@ -82,7 +82,7 @@ install(
 configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/TrajoptLibConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/TrajoptLibConfig.cmake
-    INSTALL_DESTINATION "lib/cmake/TrajoptLib"
+    INSTALL_DESTINATION lib/cmake/TrajoptLib
     NO_SET_AND_CHECK_MACRO
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
