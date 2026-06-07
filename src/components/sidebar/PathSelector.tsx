@@ -22,6 +22,8 @@ import { NameIssue } from "../../document/path/NameIsIdentifier";
 
 type Props = {
   searchQuery: string;
+  regexMode: boolean;
+  sortAlphabetical: boolean;
 };
 type State = object;
 
@@ -314,12 +316,28 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
 class PathSelector extends Component<Props, State> {
   Option = observer(PathSelectorOption);
   render() {
+    let regex: RegExp | null = null;
+    if (this.props.regexMode) {
+      try {
+        regex = new RegExp(this.props.searchQuery, "i");
+      } catch {
+        toast.error("Invalid regular expression: " + this.props.searchQuery);
+      }
+    }
     const activePath = doc.pathlist.activePathUUID;
     const filteredPathEntries = Array.from(doc.pathlist.paths.entries())
-      .filter(([, path]) =>
-        path.name.toLowerCase().includes(this.props.searchQuery.toLowerCase().trim())
-      );
-      // .sort((a, b) => a[1].name.localeCompare(b[1].name));
+      .filter(([, path]) => {
+        const query = this.props.searchQuery.trim();
+        if (!query) return true;
+        return regex == null
+          ? path.name
+            .toLowerCase()
+            .includes(query.toLowerCase())
+          : regex.test(path.name);
+      });
+    if (this.props.sortAlphabetical) {
+      filteredPathEntries.sort((a, b) => a[1].name.localeCompare(b[1].name));
+    }
 
     return (
       <div>

@@ -70,6 +70,8 @@ export const UIStateStore = types
     contextMenuMouseSelection: types.maybe(types.array(types.number)), // [clientX, clientY] from `MouseEvent`
 
     trajSearchQuery: types.maybe(types.string),
+    trajSearchRegex: false,
+    sortAlphabetical: false,
   })
   .views((self: any) => {
     return {
@@ -215,6 +217,12 @@ export const UIStateStore = types
     },
     setTrajSearchQuery(query: string) {
       self.trajSearchQuery = query;
+    },
+    toggleTrajSearchRegex() {
+      self.trajSearchRegex = !self.trajSearchRegex;
+    },
+    toggleSortAlphabetical() {
+      self.sortAlphabetical = !self.sortAlphabetical;
     },
   }));
 export type IUIStateStore = Instance<typeof UIStateStore>;

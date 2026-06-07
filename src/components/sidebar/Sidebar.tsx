@@ -13,7 +13,8 @@ import {
   Polyline,
   Undo,
   Search,
-  Clear
+  Clear,
+  Abc
 } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
@@ -56,18 +57,49 @@ class TrajectorySearch extends Component<Props, State> {
                   sx={{
                     color: "gray",
                     marginRight: "4px",
-                    fontSize: "20px"
+                    fontSize: "20px",
                   }}
                 />
               ),
-              endAdornment: trajSearchQuery && (
-                <IconButton
-                  size="small"
-                  onClick={() => setTrajSearchQuery("")}
-                  sx={{ padding: 0 }}
-                >
-                  <Clear sx={{ fontSize: "18px", color: "gray" }} />
-                </IconButton>
+              endAdornment: (
+                <div>
+                  <Tooltip
+                    disableInteractive
+                    title={
+                      uiState.trajSearchRegex
+                        ? "Disable regex search"
+                        : "Enable regex search"
+                    }
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={uiState.toggleTrajSearchRegex}
+                      sx={{
+                        borderRadius: "3px",
+                        fontFamily: "monospace",
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        lineHeight: 1,
+                        color: uiState.trajSearchRegex
+                          ? "var(--accent-purple)"
+                          : "white",
+                        border: uiState.trajSearchRegex
+                          ? "1px solid var(--accent-purple)"
+                          : "1px solid transparent"
+                      }}
+                    >
+                      Re
+                    </IconButton>
+                  </Tooltip>
+                  {trajSearchQuery && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setTrajSearchQuery("")}
+                    >
+                      <Clear sx={{ fontSize: "18px", color: "white" }} />
+                    </IconButton>
+                  )}
+                </div>
               ),
               style: {
                 color: "white",
@@ -122,7 +154,6 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    const { toggleMainMenu, trajSearchQuery } = uiState;
     return (
       <div className={styles.Container}>
         <div onMouseDown={this.startResize} className={styles.ResizeHandle} />
@@ -141,7 +172,7 @@ class Sidebar extends Component<Props, State> {
         >
           <span>
             <Tooltip disableInteractive title="Main Menu">
-              <IconButton onClick={toggleMainMenu}>
+              <IconButton onClick={uiState.toggleMainMenu}>
                 <MenuIcon></MenuIcon>
               </IconButton>
             </Tooltip>
@@ -180,9 +211,26 @@ class Sidebar extends Component<Props, State> {
         </div>
         <div
           className={styles.SidebarHeading}
-          style={{ gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px" }}
+          style={{
+            gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px 33.6px"
+          }}
         >
           PATHS
+          <Tooltip disableInteractive title="Sort by Alphabetical Order">
+            <span>
+              <IconButton
+                size="small"
+                color="default"
+                style={{ float: "right" }}
+                sx={{
+                  color: uiState.sortAlphabetical ? "var(--accent-purple)" : "white"
+                }}
+                onClick={uiState.toggleSortAlphabetical}
+              >
+                <Abc />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip disableInteractive title="Generate All">
             <span>
               <IconButton
@@ -250,7 +298,11 @@ class Sidebar extends Component<Props, State> {
           className={styles.Sidebar}
           style={{ maxHeight: "300px", minHeight: "50px" }}
         >
-          <PathSelector searchQuery={trajSearchQuery ?? ""}></PathSelector>
+          <PathSelector
+            searchQuery={uiState.trajSearchQuery ?? ""}
+            regexMode={uiState.trajSearchRegex}
+            sortAlphabetical={uiState.sortAlphabetical}
+          ></PathSelector>
         </div>
         <Divider></Divider>
         <div className={styles.SidebarHeading}>FEATURES</div>
