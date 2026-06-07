@@ -57,11 +57,11 @@ FIELD_WIDTH = {width}""",
 
 #pragma once
 
-#include <units/length.h>
+#include <wpi/units/length.hpp>
 
 namespace choreo::util {{
-static constexpr units::meter_t fieldLength = {length}_m;
-static constexpr units::meter_t fieldWidth = {width}_m;
+static constexpr wpi::units::meter_t fieldLength = {length}_m;
+static constexpr wpi::units::meter_t fieldWidth = {width}_m;
 }}  // namespace choreo::util""",
     ),
 ]

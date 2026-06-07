@@ -2,10 +2,10 @@
 
 package choreo.trajectory;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.interpolation.Interpolatable;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.util.struct.StructSerializable;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.interpolation.Interpolatable;
+import org.wpilib.math.kinematics.ChassisVelocities;
+import org.wpilib.util.struct.StructSerializable;
 
 /**
  * The generic interface for a sample in a trajectory.
@@ -33,7 +33,7 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
    *
    * @return the field-relative chassis speeds of this sample.
    */
-  ChassisSpeeds getChassisSpeeds();
+  ChassisVelocities getChassisVelocities();
 
   /**
    * Returns this sample, flipped to the other alliance according to the symmetry of the field.

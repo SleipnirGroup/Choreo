@@ -2,10 +2,10 @@
 
 package choreo.trajectory;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.wpilib.math.geometry.Pose2d;
 
 /**
  * A trajectory loaded from Choreo.
@@ -255,7 +255,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   public Trajectory<SampleType> rotateAround() {
     var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
-      flippedStates.add(state.rotateAround());
+      flippedStates.add(state.mirrorY());
     }
     return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
   }

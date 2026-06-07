@@ -3,8 +3,7 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
-#include <units/force.h>
-#include <wpi/json.h>
+#include <wpi/util/json.hpp>
 
 #include "choreo/trajectory/SwerveSample.hpp"
 #include "choreo/trajectory/Trajectory.hpp"
@@ -75,7 +74,8 @@ constexpr std::string_view swerveTrajectoryString =
  ]
 })";
 
-const wpi::json swerveTrajectoryJson = wpi::json::parse(swerveTrajectoryString);
+const wpi::util::json swerveTrajectoryJson =
+    wpi::util::json::parse_or_throw(swerveTrajectoryString);
 
 const Trajectory<SwerveSample> correctSwerveTrajectory{
     "New Path",
@@ -111,9 +111,6 @@ TEST(TrajectoryFileTest, DeserializeSwerveTrajectory) {
     Trajectory<SwerveSample> deserializedSwerveTrajectory =
         swerveTrajectoryJson.get<Trajectory<SwerveSample>>();
     ASSERT_EQ(correctSwerveTrajectory, deserializedSwerveTrajectory);
-  } catch (wpi::json::parse_error& e) {
-    std::cerr << "JSON parse error: " << e.what() << std::endl;
-    FAIL();
   } catch (std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();

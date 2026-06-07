@@ -2,37 +2,36 @@
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 
-#include <wpi/json.h>
+#include <wpi/util/json.hpp>
 
-void choreo::to_json(wpi::json& json,
+void choreo::to_json(wpi::util::json& json,
                      const DifferentialSample& trajectorySample) {
-  json = wpi::json{{"t", trajectorySample.timestamp.value()},
-                   {"x", trajectorySample.x.value()},
-                   {"y", trajectorySample.y.value()},
-                   {"heading", trajectorySample.heading.value()},
-                   {"vl", trajectorySample.vl.value()},
-                   {"vr", trajectorySample.vr.value()},
-                   {"omega", trajectorySample.omega.value()},
-                   {"al", trajectorySample.al.value()},
-                   {"ar", trajectorySample.ar.value()},
-                   {"fl", trajectorySample.fl.value()},
-                   {"fr", trajectorySample.fr.value()}};
+  json = wpi::util::json::object(
+      "t", trajectorySample.timestamp.value(), "x", trajectorySample.x.value(),
+      "y", trajectorySample.y.value(), "heading",
+      trajectorySample.heading.value(), "vl", trajectorySample.vl.value(), "vr",
+      trajectorySample.vr.value(), "omega", trajectorySample.omega.value(),
+      "al", trajectorySample.al.value(), "ar", trajectorySample.ar.value(),
+      "fl", trajectorySample.fl.value(), "fr", trajectorySample.fr.value());
 }
 
-void choreo::from_json(const wpi::json& json,
+void choreo::from_json(const wpi::util::json& json,
                        DifferentialSample& trajectorySample) {
-  trajectorySample.timestamp = units::second_t{json.at("t").get<double>()};
-  trajectorySample.x = units::meter_t{json.at("x").get<double>()};
-  trajectorySample.y = units::meter_t{json.at("y").get<double>()};
-  trajectorySample.heading = units::radian_t{json.at("heading").get<double>()};
-  trajectorySample.vl = units::meters_per_second_t{json.at("vl").get<double>()};
-  trajectorySample.vr = units::meters_per_second_t{json.at("vr").get<double>()};
+  trajectorySample.timestamp = wpi::units::second_t{json.at("t").get_number()};
+  trajectorySample.x = wpi::units::meter_t{json.at("x").get_number()};
+  trajectorySample.y = wpi::units::meter_t{json.at("y").get_number()};
+  trajectorySample.heading =
+      wpi::units::radian_t{json.at("heading").get_number()};
+  trajectorySample.vl =
+      wpi::units::meters_per_second_t{json.at("vl").get_number()};
+  trajectorySample.vr =
+      wpi::units::meters_per_second_t{json.at("vr").get_number()};
   trajectorySample.omega =
-      units::radians_per_second_t{json.at("omega").get<double>()};
+      wpi::units::radians_per_second_t{json.at("omega").get_number()};
   trajectorySample.al =
-      units::meters_per_second_squared_t{json.at("al").get<double>()};
+      wpi::units::meters_per_second_squared_t{json.at("al").get_number()};
   trajectorySample.ar =
-      units::meters_per_second_squared_t{json.at("ar").get<double>()};
-  trajectorySample.fl = units::newton_t{json.at("fl").get<double>()};
-  trajectorySample.fr = units::newton_t{json.at("fr").get<double>()};
+      wpi::units::meters_per_second_squared_t{json.at("ar").get_number()};
+  trajectorySample.fl = wpi::units::newton_t{json.at("fl").get_number()};
+  trajectorySample.fr = wpi::units::newton_t{json.at("fr").get_number()};
 }
