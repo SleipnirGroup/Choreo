@@ -20,8 +20,9 @@ import { SavingState } from "../../document/UIStateStore";
 import SaveInProgress from "../../assets/SaveInProgress";
 import { NameIssue } from "../../document/path/NameIsIdentifier";
 
-type Props = object;
-
+type Props = {
+  searchQuery: string;
+};
 type State = object;
 
 type OptionProps = { uuid: string; selected: boolean };
@@ -311,15 +312,19 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
 }
 
 class PathSelector extends Component<Props, State> {
-  state = {};
-
   Option = observer(PathSelectorOption);
   render() {
     const activePath = doc.pathlist.activePathUUID;
+    const filteredPathEntries = Array.from(doc.pathlist.paths.entries())
+      .filter(([, path]) =>
+        path.name.toLowerCase().includes(this.props.searchQuery.toLowerCase().trim())
+      );
+      // .sort((a, b) => a[1].name.localeCompare(b[1].name));
+
     return (
       <div>
         <div className={styles.WaypointList}>
-          {Array.from(doc.pathlist.paths.keys()).map((uuid) => (
+          {filteredPathEntries.map(([uuid]) => (
             <this.Option
               uuid={uuid}
               key={uuid}

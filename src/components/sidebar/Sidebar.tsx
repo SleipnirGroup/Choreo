@@ -2,7 +2,7 @@ import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
-import { Divider, IconButton, Tooltip } from "@mui/material";
+import { Divider, IconButton, TextField, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -11,7 +11,9 @@ import {
   Redo,
   ShapeLine,
   Polyline,
-  Undo
+  Undo,
+  Search,
+  Clear
 } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
@@ -21,8 +23,77 @@ import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
 
 type Props = object;
-
 type State = object;
+
+
+class TrajectorySearch extends Component<Props, State> {
+  render() {
+    const { trajSearchQuery, setTrajSearchQuery } = uiState;
+
+    return (
+      <div
+        style={{
+          position: "sticky",
+          top: "-8px",
+          zIndex: 10,
+          backgroundColor: "var(--background-dark-gray)",
+          paddingInline: "8px",
+          paddingBottom: "8px",
+          paddingTop: "8px"
+        }}
+      >
+        <TextField
+          variant="outlined"
+          size="small"
+          placeholder="Search paths..."
+          value={trajSearchQuery}
+          onChange={(e) => setTrajSearchQuery(e.target.value)}
+          fullWidth
+          slotProps={{
+            input: {
+              startAdornment: (
+                <Search
+                  sx={{
+                    color: "gray",
+                    marginRight: "4px",
+                    fontSize: "20px"
+                  }}
+                />
+              ),
+              endAdornment: trajSearchQuery && (
+                <IconButton
+                  size="small"
+                  onClick={() => setTrajSearchQuery("")}
+                  sx={{ padding: 0 }}
+                >
+                  <Clear sx={{ fontSize: "18px", color: "gray" }} />
+                </IconButton>
+              ),
+              style: {
+                color: "white",
+                backgroundColor: "var(--background-light-gray)",
+                borderRadius: "4px",
+                height: "32px",
+                fontSize: "14px"
+              }
+            }
+          }}
+          sx={{
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "transparent"
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--divider-gray)"
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--accent-purple)"
+            }
+          }}
+        />
+      </div>
+    );
+  }
+}
 
 class Sidebar extends Component<Props, State> {
   state = {};
@@ -30,10 +101,31 @@ class Sidebar extends Component<Props, State> {
     super(props);
   }
 
+  startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.addEventListener("mousemove", this.resize);
+    document.addEventListener("mouseup", this.stopResize);
+  };
+
+  resize = (e: MouseEvent) => {
+    const newWidth = Math.max(260, Math.min(560, e.clientX));
+    document.documentElement.style.setProperty("--sidebar-width", `${newWidth}px`);
+  };
+
+  stopResize = () => {
+    document.removeEventListener("mousemove", this.resize);
+    document.removeEventListener("mouseup", this.stopResize);
+  };
+
+  componentWillUnmount() {
+    this.stopResize();
+  }
+
   render() {
-    const { toggleMainMenu } = uiState;
+    const { toggleMainMenu, trajSearchQuery } = uiState;
     return (
       <div className={styles.Container}>
+        <div onMouseDown={this.startResize} className={styles.ResizeHandle} />
         <div
           style={{
             flexShrink: 0,
@@ -49,11 +141,7 @@ class Sidebar extends Component<Props, State> {
         >
           <span>
             <Tooltip disableInteractive title="Main Menu">
-              <IconButton
-                onClick={() => {
-                  toggleMainMenu();
-                }}
-              >
+              <IconButton onClick={toggleMainMenu}>
                 <MenuIcon></MenuIcon>
               </IconButton>
             </Tooltip>
@@ -155,12 +243,14 @@ class Sidebar extends Component<Props, State> {
             </IconButton>
           </Tooltip>
         </div>
-        <Divider></Divider>
+        <Divider />
+        <TrajectorySearch />
+        <Divider />
         <div
           className={styles.Sidebar}
           style={{ maxHeight: "300px", minHeight: "50px" }}
         >
-          <PathSelector></PathSelector>
+          <PathSelector searchQuery={trajSearchQuery ?? ""}></PathSelector>
         </div>
         <Divider></Divider>
         <div className={styles.SidebarHeading}>FEATURES</div>
