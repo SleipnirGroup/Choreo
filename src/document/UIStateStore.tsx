@@ -71,7 +71,7 @@ export const UIStateStore = types
 
     trajSearchQuery: types.maybe(types.string),
     trajSearchRegex: false,
-    sortAlphabetical: false,
+    sortAlphabetical: false
   })
   .views((self: any) => {
     return {
@@ -223,6 +223,6 @@ export const UIStateStore = types
     },
     toggleSortAlphabetical() {
       self.sortAlphabetical = !self.sortAlphabetical;
-    },
+    }
   }));
 export type IUIStateStore = Instance<typeof UIStateStore>;

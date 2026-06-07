@@ -26,7 +26,6 @@ import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
 type Props = object;
 type State = object;
 
-
 class TrajectorySearch extends Component<Props, State> {
   render() {
     const { trajSearchQuery, setTrajSearchQuery } = uiState;
@@ -57,12 +56,12 @@ class TrajectorySearch extends Component<Props, State> {
                   sx={{
                     color: "gray",
                     marginRight: "4px",
-                    fontSize: "20px",
+                    fontSize: "20px"
                   }}
                 />
               ),
               endAdornment: (
-                <div>
+                <>
                   <Tooltip
                     disableInteractive
                     title={
@@ -99,7 +98,7 @@ class TrajectorySearch extends Component<Props, State> {
                       <Clear sx={{ fontSize: "18px", color: "white" }} />
                     </IconButton>
                   )}
-                </div>
+                </>
               ),
               style: {
                 color: "white",
@@ -141,7 +140,10 @@ class Sidebar extends Component<Props, State> {
 
   resize = (e: MouseEvent) => {
     const newWidth = Math.max(260, Math.min(560, e.clientX));
-    document.documentElement.style.setProperty("--sidebar-width", `${newWidth}px`);
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      `${newWidth}px`
+    );
   };
 
   stopResize = () => {
@@ -223,7 +225,9 @@ class Sidebar extends Component<Props, State> {
                 color="default"
                 style={{ float: "right" }}
                 sx={{
-                  color: uiState.sortAlphabetical ? "var(--accent-purple)" : "white"
+                  color: uiState.sortAlphabetical
+                    ? "var(--accent-purple)"
+                    : "white"
                 }}
                 onClick={uiState.toggleSortAlphabetical}
               >

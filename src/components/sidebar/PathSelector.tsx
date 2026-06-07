@@ -325,16 +325,15 @@ class PathSelector extends Component<Props, State> {
       }
     }
     const activePath = doc.pathlist.activePathUUID;
-    const filteredPathEntries = Array.from(doc.pathlist.paths.entries())
-      .filter(([, path]) => {
+    const filteredPathEntries = Array.from(doc.pathlist.paths.entries()).filter(
+      ([, path]) => {
         const query = this.props.searchQuery.trim();
         if (!query) return true;
         return regex == null
-          ? path.name
-            .toLowerCase()
-            .includes(query.toLowerCase())
+          ? path.name.toLowerCase().includes(query.toLowerCase())
           : regex.test(path.name);
-      });
+      }
+    );
     if (this.props.sortAlphabetical) {
       filteredPathEntries.sort((a, b) => a[1].name.localeCompare(b[1].name));
     }
