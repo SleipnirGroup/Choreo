@@ -15,10 +15,10 @@ namespace trajopt {
 /// A path waypoint.
 struct TRAJOPT_DLLEXPORT Waypoint {
   /// Instantaneous constraints at the waypoint.
-  std::vector<Constraint> waypoint_constraints;
+  std::vector<::trajopt::Constraint> waypoint_constraints;
 
   /// Continuous constraints along the segment.
-  std::vector<Constraint> segment_constraints;
+  std::vector<::trajopt::Constraint> segment_constraints;
 };
 
 /// A path.
