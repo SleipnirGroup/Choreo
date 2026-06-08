@@ -27,7 +27,7 @@ inline void from_json(wpi::util::json const& j, SampleVariant& sample) {
     sample = std::move(ds);
     return;
   } else if (j.contains("fx") && j.contains("fy")) {
-    SwerveSample ss{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {}, {}};
+    SwerveSample ss;
     from_json(j, ss);
     sample = std::move(ss);
     return;
@@ -66,7 +66,7 @@ inline void from_json(wpi::util::json const& j, SampleListVariant& samples) {
   } else if (j.contains("fx") && j.contains("fy")) {
     samples = j.get_array() |
               std::views::transform([](const wpi::util::json& x) {
-                SwerveSample ss{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, {}, {}};
+                SwerveSample ss;
                 from_json(x, ss);
                 return ss;
               }) |

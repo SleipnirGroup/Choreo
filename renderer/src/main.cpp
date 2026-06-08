@@ -59,7 +59,7 @@ SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
     for (const auto& [i, tup] :
          std::views::enumerate(std::views::adjacent<2>(samples))) {
       const auto& [a, b] = tup;
-      trajectory->add_child<SVGPP::Line>(a.x, b.x, a.y, b.y)
+      trajectory->add_child<SVGPP::Line>(a.pose.X().value(), b.pose.X().value(), a.pose.Y().value(), b.pose.Y().value())
           ->set_attr("stroke", gradient(samples, i).toCSS());
     }
   }
@@ -70,7 +70,7 @@ SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
     robot->add_child<SVGPP::Circle>(0.5, 0, 0.1)
         ->set_attrs({{"stroke", "none"}, {"fill", "white"}});
     auto rect =
-        robot->add_child<SVGPP::Rect>(start.x - 0.5, start.y - 0.5, 1, 1);
+        robot->add_child<SVGPP::Rect>(start.pose.X().value() - 0.5, start.pose.Y().value() - 0.5, 1, 1);
     rect->set_attr("stroke", "white").set_attr("fill", "none");
   }
 

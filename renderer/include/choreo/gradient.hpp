@@ -36,7 +36,7 @@ static PathGradient progress{[](auto samples, auto index) {
 }};
 static PathGradient linearVelocity{[](auto samples, auto index) {
   auto samp = samples[index];
-  auto v = std::hypot(samp.vx, samp.vy);
+  auto v = std::hypot(samp.velocity.vx.value(), samp.velocity.vy.value());
 
   return HSL{120.0 / 360.0 * (v / 5.0), 1, 0.5};
 }};

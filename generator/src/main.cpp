@@ -87,10 +87,10 @@ int main() {
   auto configExp = chor.config;
   auto traj = choreo::defaultNewTrajectory();
   traj.params = params_orig;
-  // choreo::TrajectoryGenerator<choreo::SwerveSample, trajopt::SwerveSolution,
-  //                             trajopt::SwerveDrivetrain,
-  //                             trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>
-  choreo::TrajectoryGenerator<choreo::DifferentialSample, trajopt::DifferentialSolution, trajopt::DifferentialDrivetrain, trajopt::DifferentialTrajectoryGenerator, trajopt::DifferentialTrajectory>
+  choreo::TrajectoryGenerator<choreo::SwerveSample, trajopt::SwerveSolution,
+                              trajopt::SwerveDrivetrain,
+                              trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>
+  //choreo::TrajectoryGenerator<choreo::DifferentialSample, trajopt::DifferentialSolution, trajopt::DifferentialDrivetrain, trajopt::DifferentialTrajectoryGenerator, trajopt::DifferentialTrajectory>
       generator(chor, traj);
   auto samples = generator.generate();
   if (!samples) {

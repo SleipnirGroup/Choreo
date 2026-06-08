@@ -33,8 +33,8 @@ if(MSVC)
 endif()
 FetchContent_Declare(
     wpilib
-    GIT_REPOSITORY https://github.com/wpilibsuite/allwpilib.git
-    GIT_TAG main
+    GIT_REPOSITORY https://github.com/zachwaffle4/allwpilib.git
+    GIT_TAG trajectory-api
     SYSTEM
 )
 FetchContent_MakeAvailable(wpilib)

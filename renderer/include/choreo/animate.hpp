@@ -29,12 +29,13 @@ namespace choreo::svg_helpers {
 inline void make_animateMotion(SVGPP::Group* parent,
                                const std::vector<SwerveSample>& samples,
                                int precision = 3) {
+  using namespace wpi::units::literals;
   if (samples.empty())
     return;
 
-  const double t0 = samples.front().t;
-  const double tN = samples.back().t;
-  const double duration = (tN - t0 >= 0.0) ? (tN - t0) : 0.0;
+  const auto t0 = samples.front().timestamp;
+  const auto tN = samples.back().timestamp;
+  const auto duration = (tN - t0 >= 0.0_s) ? (tN - t0) : 0.0_s;
 
   std::ostringstream vals;
   std::ostringstream kt;
@@ -43,11 +44,11 @@ inline void make_animateMotion(SVGPP::Group* parent,
 
   for (size_t i = 0; i < samples.size(); ++i) {
     const auto& s = samples[i];
-    vals << s.x << "," << s.y;
-    double normalized = 0.0;
-    if (duration > 0.0)
-      normalized = (s.t - t0) / duration;
-    kt << normalized;
+    vals << s.pose.X().value() << "," << s.pose.Y().value();
+    double normalized_time = 0.0;
+    if (duration > 0.0_s)
+      normalized_time = (s.timestamp - t0) / duration;
+    kt << normalized_time;
     if (i + 1 < samples.size()) {
       vals << ";";
       kt << ";";
@@ -57,11 +58,11 @@ inline void make_animateMotion(SVGPP::Group* parent,
   auto node = parent->add_child<SVGPP::RawElement>("animateMotion");
 
   std::ostringstream ss;
-  ss << std::fixed << std::setprecision(precision) << t0 << "s";
+  ss << std::fixed << std::setprecision(precision) << t0.value() << "s";
   node->set_attr("begin", ss.str());
   ss.str("");
   ss.clear();
-  ss << std::fixed << std::setprecision(precision) << duration << "s";
+  ss << std::fixed << std::setprecision(precision) << duration.value() << "s";
   node->set_attr("dur", ss.str());
 
   node->set_attr("values", vals.str());
@@ -74,7 +75,7 @@ inline void make_animateMotion(SVGPP::Group* parent,
   std::ostringstream ang_vals;
   ang_vals << std::fixed << std::setprecision(precision);
   for (size_t i = 0; i < samples.size(); ++i) {
-    double deg = samples[i].heading * RAD_TO_DEG;
+    double deg = samples[i].pose.Rotation().Degrees().value();
     ang_vals << deg;
     if (i + 1 < samples.size())
       ang_vals << ";";
@@ -87,11 +88,11 @@ inline void make_animateMotion(SVGPP::Group* parent,
   rot->set_attr("keyTimes", kt.str());
   ss.str("");
   ss.clear();
-  ss << std::fixed << std::setprecision(precision) << t0 << "s";
+  ss << std::fixed << std::setprecision(precision) << t0.value() << "s";
   rot->set_attr("begin", ss.str());
   ss.str("");
   ss.clear();
-  ss << std::fixed << std::setprecision(precision) << duration << "s";
+  ss << std::fixed << std::setprecision(precision) << duration.value() << "s";
   rot->set_attr("dur", ss.str());
   rot->set_attr("calcMode", std::string("linear"));
   rot->set_attr("fill", std::string("freeze"));
