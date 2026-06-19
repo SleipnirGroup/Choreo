@@ -15,6 +15,7 @@
 #include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
+class SwerveTrajectory;
 
 /// A swerve drivetrain physical model.
 struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
@@ -44,6 +45,8 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
 
 /// The swerve drive trajectory optimization solution.
 struct TRAJOPT_DLLEXPORT SwerveSolution {
+  using TrajectoryType = SwerveTrajectory;
+
   /// Times between samples.
   std::vector<double> dt;
 
@@ -162,6 +165,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
 /// Swerve trajectory.
 class TRAJOPT_DLLEXPORT SwerveTrajectory {
  public:
+  using SampleType = SwerveTrajectorySample;
   /// Trajectory samples.
   std::vector<SwerveTrajectorySample> samples;
 
