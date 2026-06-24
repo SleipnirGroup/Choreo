@@ -53,7 +53,7 @@ endif()
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    GIT_TAG v0.6.2
+    GIT_TAG v0.6.3
     GIT_SHALLOW ON
     SYSTEM
 )
