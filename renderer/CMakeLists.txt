@@ -34,25 +34,8 @@ FetchContent_MakeAvailable(TrajoptLib)
 # FetchContent_Declare(jartjson GIT_REPOSITORY "https://github.com/jart/json.cpp" GIT_TAG "ccb9195e6abe9eb060e338a04f43e8d2e67b45ea")
 # FetchContent_MakeAvailable(jartjson)
 
-set(WITH_CSCORE OFF CACHE INTERNAL "With CSCore")
-set(WITH_GUI OFF CACHE INTERNAL "With GUI")
-set(WITH_JAVA OFF CACHE INTERNAL "With Java")
-set(WITH_NTCORE OFF CACHE INTERNAL "With NTCore")
-set(WITH_SIMULATION_MODULES OFF CACHE INTERNAL "With Simulation Modules")
-set(WITH_TESTS OFF CACHE INTERNAL "With Tests")
-set(WITH_WPIMATH ON CACHE INTERNAL "With WPIMath")
-set(WITH_WPILIB OFF CACHE INTERNAL "With WPILib")
-set(NO_WERROR ON)
-if(MSVC)
-    # set(WPILIB_TARGET_WARNINGS "/wd5105" CACHE INTERNAL "WPILib Compiler Warnings") # shueja: had to silence a warning coming from deep in the Windows SDK.
-endif()
-FetchContent_Declare(
-    wpilib
-    GIT_REPOSITORY https://github.com/zachwaffle4/allwpilib.git
-    GIT_TAG trajectory-api
-    SYSTEM
-)
-FetchContent_MakeAvailable(wpilib)
+include (../cmake/FetchWPILib.cmake)
+fetch_wpilib()
 # Collect sources for the executable
 file(
     GLOB_RECURSE choreo_renderer_SOURCES
@@ -62,7 +45,7 @@ file(
 add_library(choreo_renderer ${choreo_renderer_SOURCES})
 
 # C++ standard
-target_compile_features(choreo_renderer PRIVATE cxx_std_23)
+#target_compile_features(choreo_renderer PRIVATE cxx_std_23)
 
 # Public include dir for this executable (optional)
 target_include_directories(

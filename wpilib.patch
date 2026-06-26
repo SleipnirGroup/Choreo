@@ -1,0 +1,114 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bc832067c..a321fa25a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -84,9 +84,10 @@ option(WITH_SIMULATION_MODULES "Build simulation modules" ON)
+ option(WITH_BENCHMARK "Build the benchmark project" ON)
+ 
+ # Options for using a package manager (e.g., vcpkg) for certain dependencies.
++option(USE_SYSTEM_EIGEN "Use system eigen" OFF)
+ option(USE_SYSTEM_FMTLIB "Use system fmtlib" OFF)
+ option(USE_SYSTEM_LIBUV "Use system libuv" OFF)
+-option(USE_SYSTEM_EIGEN "Use system eigen" OFF)
++option(USE_SYSTEM_SLEIPNIR "Use system sleipnir" OFF)
+ option(USE_LINKED_AVAHI "Use directly linked Avahi instead of loading at runtime" OFF)
+ 
+ # Options for compilation flags.
+diff --git a/wpimath/CMakeLists.txt b/wpimath/CMakeLists.txt
+index c74a443da..5df3a1aab 100644
+--- a/wpimath/CMakeLists.txt
++++ b/wpimath/CMakeLists.txt
+@@ -20,13 +20,11 @@ file(
+     src/main/native/cpp/jni/optimization/ProblemJNI.cpp
+ )
+ 
+-file(
+-    GLOB_RECURSE wpimath_native_src
+-    src/main/native/cpp/*.cpp
+-    src/main/native/thirdparty/sleipnir/src/*.cpp
+-)
++file(GLOB_RECURSE wpimath_native_src src/main/native/cpp/*.cpp)
+ list(REMOVE_ITEM wpimath_native_src ${wpimath_jni_src})
+ 
++file(GLOB_RECURSE sleipnir_native_src src/main/native/thirdparty/sleipnir/src/*.cpp)
++
+ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS FALSE)
+ 
+ file(GLOB_RECURSE wpimath_protobuf_native_src src/generated/main/native/cpp/wpimath/protobuf/*.cpp)
+@@ -86,19 +84,38 @@ else()
+     target_link_libraries(wpimath Eigen3::Eigen)
+ endif()
+ 
+-install(
+-    DIRECTORY src/main/native/thirdparty/gcem/include/ src/main/native/thirdparty/sleipnir/include/
+-    DESTINATION "${include_dest}/wpimath"
+-)
++install(DIRECTORY src/main/native/thirdparty/gcem/include/ DESTINATION "${include_dest}/wpimath")
+ target_include_directories(
+     wpimath
+     SYSTEM
+-    PUBLIC
+-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/native/thirdparty/gcem/include>
+-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/native/thirdparty/sleipnir/include>
+-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/native/thirdparty/sleipnir/src>
++    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/native/thirdparty/gcem/include>
+ )
+ 
++if(NOT USE_SYSTEM_SLEIPNIR)
++    target_sources(wpimath PRIVATE ${sleipnir_native_src})
++    install(
++        DIRECTORY src/main/native/thirdparty/sleipnir/include/
++        DESTINATION "${include_dest}/wpimath"
++    )
++    target_include_directories(
++        wpimath
++        SYSTEM
++        PUBLIC
++            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/native/thirdparty/sleipnir/include>
++            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/native/thirdparty/sleipnir/src>
++    )
++else()
++    find_package(Sleipnir CONFIG REQUIRED)
++    target_link_libraries(wpimath Sleipnir::Sleipnir)
++    if(MSVC)
++        get_target_property(Sleipnir_includes Sleipnir::Sleipnir INTERFACE_INCLUDE_DIRECTORIES)
++        foreach(dir ${Sleipnir_includes})
++            target_compile_options(wpimath PUBLIC /external:I "${dir}")
++        endforeach()
++        target_compile_options(wpimath PUBLIC /external:W0)
++    endif()
++endif()
++
+ install(
+     DIRECTORY src/generated/main/native/cpp/
+     DESTINATION "${include_dest}/wpimath"
+diff --git a/benchmark/src/main/native/cpp/CartPoleBenchmark.hpp b/benchmark/src/main/native/cpp/CartPoleBenchmark.hpp
+index 413d30089..c6bd84419 100644
+--- a/benchmark/src/main/native/cpp/CartPoleBenchmark.hpp
++++ b/benchmark/src/main/native/cpp/CartPoleBenchmark.hpp
+@@ -72,9 +72,9 @@ inline void BM_CartPole(benchmark::State& state) {
+ 
+     // Initial guess
+     for (int k = 0; k < N + 1; ++k) {
+-      X(0, k).set_value(
++      X[0, k].set_value(
+           std::lerp(x_initial[0], x_final[0], static_cast<double>(k) / N));
+-      X(1, k).set_value(
++      X[1, k].set_value(
+           std::lerp(x_initial[1], x_final[1], static_cast<double>(k) / N));
+     }
+ 
+diff --git a/wpimath/wpimath-config.cmake.in b/wpimath/wpimath-config.cmake.in
+index 9100d7943..62daba04c 100644
+--- a/wpimath/wpimath-config.cmake.in
++++ b/wpimath/wpimath-config.cmake.in
+@@ -6,5 +6,9 @@ if(@USE_SYSTEM_EIGEN@)
+     find_dependency(Eigen3)
+ endif()
+ 
++if(@USE_SYSTEM_SLEIPNIR@)
++  find_dependency(Sleipnir)
++endif()
++
+ @FILENAME_DEP_REPLACE@
+ include(${SELF_DIR}/wpimath.cmake)

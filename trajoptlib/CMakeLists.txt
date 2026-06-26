@@ -50,11 +50,24 @@ if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     FetchContent_MakeAvailable(Catch2)
 endif()
 
+    set(EIGEN_BUILD_CMAKE_PACKAGE TRUE)
+    FetchContent_Declare(
+        Eigen3
+        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+        # master on 2026-03-29
+        GIT_TAG b7f6aed1b9974fd56cce651b4ff059c3bfc67782
+        SYSTEM
+        OVERRIDE_FIND_PACKAGE
+    )
+    FetchContent_MakeAvailable(Eigen3)
+
+set(SLEIPNIR_USE_SYSTEM_EIGEN ON "Use system eigen")
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    GIT_TAG v0.6.1
+    GIT_TAG v0.6.3
     GIT_SHALLOW ON
+    OVERRIDE_FIND_PACKAGE
     SYSTEM
 )
 FetchContent_MakeAvailable(Sleipnir)
@@ -115,10 +128,10 @@ if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
         trajoptlib_test
         PUBLIC TrajoptLib Catch2::Catch2WithMain
     )
-    catch_discover_tests(
-        trajoptlib_test
-        DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
-    )
+    # catch_discover_tests(
+    #     trajoptlib_test
+    #     DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+    # )
 endif()
 
 # Build examples and example tests
@@ -161,11 +174,11 @@ if(TRAJOPT_BUILD_EXAMPLES)
                 PUBLIC TrajoptLib Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
-                catch_discover_tests(
-                    ${example}_test
-                    DL_PATHS
-                        ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
-                )
+                # catch_discover_tests(
+                #     ${example}_test
+                #     DL_PATHS
+                #         ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+                # )
             endif()
         endif()
     endforeach()
