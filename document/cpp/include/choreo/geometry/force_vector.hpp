@@ -210,15 +210,15 @@ class ForceVector2d final {
 };
 
 
-// void to_json(wpi::util::json& json, const ForceVector2d& state) {
-//   json = wpi::util::json::object("x", state.X().value(), "y", state.Y().value());
-// }
+inline void to_json(wpi::util::json& json, const ForceVector2d& state) {
+  json = wpi::util::json::object("x", state.X().value(), "y", state.Y().value());
+}
 
 
-// void from_json(const wpi::util::json& json, ForceVector2d& state) {
-//   state = ForceVector2d{wpi::units::newton_t{json.at("x").get_number()},
-//                         wpi::units::newton_t{json.at("y").get_number()}};
-// }
+inline void from_json(const wpi::util::json& json, ForceVector2d& state) {
+  state = ForceVector2d{wpi::units::newton_t{json.at("x").get_number()},
+                        wpi::units::newton_t{json.at("y").get_number()}};
+}
 
 }  // namespace wpi::math
 

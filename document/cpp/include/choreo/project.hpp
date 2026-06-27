@@ -10,7 +10,7 @@
 #include "choreo/expr.hpp"
 #include "choreo/robot_config.hpp"
 #include "choreo/variables/variables.hpp"
-// #include "choreo/codegen_config.hpp"
+#include "choreo/codegen/codegen_config.hpp"
 
 namespace choreo {
 
@@ -21,13 +21,13 @@ struct ProjectFile {
   DriveType type;
   Variables variables;
   RobotConfig config;
-  // CodeGenConfig codegen;
+  CodeGenConfig codegen;
 };
 
 inline void to_json(wpi::util::json& json, const ProjectFile& project) {
   json = wpi::util::json::object(
       "name", project.name, "version", project.version, "type", project.type,
-      "variables", project.variables, "config", project.config);
+      "variables", project.variables, "config", project.config, "codegen", project.codegen);
 }
 
 inline void from_json(const wpi::util::json& json, ProjectFile& project) {
@@ -36,6 +36,7 @@ inline void from_json(const wpi::util::json& json, ProjectFile& project) {
   project.type = json.at("type").get<DriveType>();
   project.variables = json.at("variables").get<Variables>();
   project.config = json.at("config").get<RobotConfig>();
+  project.codegen = json.at("codegen").get<CodeGenConfig>();
 }
 
 inline ProjectFile ProjectFile::fromJson(const wpi::util::json& json) {

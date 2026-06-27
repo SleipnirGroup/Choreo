@@ -151,11 +151,11 @@ inline void from_json(const wpi::util::json& json, RobotConfig& config) {
   config.wheels.clear();
   auto whs = json.at("wheels").get_array();
   std::transform(whs.begin(), whs.end(), std::back_inserter(config.wheels),
-                 [](auto modJson) { return modJson.get<Translation2e>(); });
+                 [](auto modJson) { return modJson.template get<Translation2e>(); });
   config.bumpers.clear();
   auto bmps = json.at("bumpers").get_array();
   std::transform(bmps.begin(), bmps.end(), std::back_inserter(config.bumpers),
-                 [](auto modJson) { return modJson.get<Translation2e>(); });
+                 [](auto modJson) { return modJson.template get<Translation2e>(); });
   config.motor = json.at("motor").get<MotorConfig>();
 }
 

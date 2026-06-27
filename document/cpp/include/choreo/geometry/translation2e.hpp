@@ -7,7 +7,7 @@
 #include <wpi/util/json.hpp>
 
 #include "../variables/dimension.hpp"
-#include "expr.hpp"
+#include "../expr.hpp"
 #include "type_traits"
 #ifdef WITH_TRAJOPT
 #include <trajopt/geometry/translation2.hpp>

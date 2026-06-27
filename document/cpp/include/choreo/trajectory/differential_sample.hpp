@@ -34,7 +34,7 @@ namespace choreo {
 struct DifferentialSample : wpi::math::DifferentialSample {
   using TrajoptSample = trajopt::DifferentialTrajectorySample;
   DifferentialSample() = default;
-  constexpr DifferentialSample(const trajopt::DifferentialTrajectorySample& sample) {
+  constexpr explicit DifferentialSample(const trajopt::DifferentialTrajectorySample& sample) {
     using namespace wpi::units::literals;
     this->pose = wpi::math::Pose2d{wpi::units::meter_t(sample.x), wpi::units::meter_t(sample.y), wpi::units::radian_t(sample.heading)};
     auto velocity_in_heading = wpi::units::meters_per_second_t((sample.velocity_l + sample.velocity_r) / 2.0);
