@@ -10,7 +10,6 @@
 
 #include <choreo/constraint.hpp>
 #include <choreo/constraint_data/constraint_data.hpp>
-#include <choreo/drive_type.hpp>
 #include <choreo/expr.hpp>
 #include <choreo/gradient.hpp>
 #include <choreo/parameters.hpp>
@@ -87,7 +86,7 @@ int main() {
   auto configExp = chor.config;
   auto traj = choreo::defaultNewTrajectory();
   traj.params = params_orig;
-  choreo::TrajectoryGenerator<choreo::SwerveSample, trajopt::SwerveSolution,
+  choreo::TrajectoryGenerator<choreo::SwerveDriveType, trajopt::SwerveSolution,
                               trajopt::SwerveDrivetrain,
                               trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>
   //choreo::TrajectoryGenerator<choreo::DifferentialSample, trajopt::DifferentialSolution, trajopt::DifferentialDrivetrain, trajopt::DifferentialTrajectoryGenerator, trajopt::DifferentialTrajectory>
@@ -104,7 +103,7 @@ int main() {
       json.emplace_back(std::move(element));
     }
     std::println("{}", json.to_string_pretty());
-    choreo::render::render(*samples, configExp, traj.params,
-                           choreo::render::path_gradient::linearVelocity);
+    // choreo::render::render(*samples, configExp, traj.params,
+    //                        choreo::render::path_gradient::linearVelocity);
   }
 }

@@ -27,11 +27,12 @@ namespace choreo::svg_helpers {
  * Returns nullptr for empty input.
  */
 inline void make_animateMotion(SVGPP::Group* parent,
-                               const std::vector<SwerveSample>& samples,
+                               const std::vector<choreo::SwerveDriveType::WPILibSample>& samples,
                                int precision = 3) {
   using namespace wpi::units::literals;
-  if (samples.empty())
+  if (samples.empty()) {
     return;
+}
 
   const auto t0 = samples.front().timestamp;
   const auto tN = samples.back().timestamp;
@@ -46,8 +47,9 @@ inline void make_animateMotion(SVGPP::Group* parent,
     const auto& s = samples[i];
     vals << s.pose.X().value() << "," << s.pose.Y().value();
     double normalized_time = 0.0;
-    if (duration > 0.0_s)
+    if (duration > 0.0_s) {
       normalized_time = (s.timestamp - t0) / duration;
+}
     kt << normalized_time;
     if (i + 1 < samples.size()) {
       vals << ";";
@@ -77,8 +79,9 @@ inline void make_animateMotion(SVGPP::Group* parent,
   for (size_t i = 0; i < samples.size(); ++i) {
     double deg = samples[i].pose.Rotation().Degrees().value();
     ang_vals << deg;
-    if (i + 1 < samples.size())
+    if (i + 1 < samples.size()) {
       ang_vals << ";";
+}
   }
 
   auto rot = parent->add_child<SVGPP::RawElement>("animateTransform");

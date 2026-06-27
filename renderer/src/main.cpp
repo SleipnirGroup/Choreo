@@ -15,14 +15,17 @@
 
 #include "choreo/animate.hpp"
 #include "choreo/gradient.hpp"
+#include "choreo/project.hpp"
 #include "choreo/renderer.hpp"
+#include "choreo/trajectory/sample_concept.hpp"
 #include "wpi/util/fs.hpp"
 using namespace lunasvg;
 namespace choreo {
 
 namespace render {
 
-SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
+template <SampleLike Sample>
+SVGPP::SVG render(std::vector<Sample> samples,
                   choreo::RobotConfig config, choreo::Parameters parameters,
                   choreo::render::path_gradient::PathGradient& gradient) {
   constexpr double FIELD_WIDTH = 8;
@@ -54,12 +57,12 @@ SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
         ->set_attr("id", std::string("yaxis"))
         .set_attr("stroke", std::string("green"));
   }
-  auto trajectory = base->add_child<SVGPP::Group>();
+  auto trajectoryGroup = base->add_child<SVGPP::Group>();
   {
     for (const auto& [i, tup] :
          std::views::enumerate(std::views::adjacent<2>(samples))) {
       const auto& [a, b] = tup;
-      trajectory->add_child<SVGPP::Line>(a.pose.X().value(), b.pose.X().value(), a.pose.Y().value(), b.pose.Y().value())
+      trajectoryGroup->add_child<SVGPP::Line>(a.pose.X().value(), b.pose.X().value(), a.pose.Y().value(), b.pose.Y().value())
           ->set_attr("stroke", gradient(samples, i).toCSS());
     }
   }

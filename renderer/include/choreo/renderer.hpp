@@ -10,6 +10,8 @@
 #include <choreo/trajectory/swerve_sample.hpp>
 
 #include "../svg.hpp"
+#include "choreo/project.hpp"
+#include "choreo/trajectory.hpp"
 #include "gradient.hpp"
 
 namespace SVGPP {
@@ -31,8 +33,7 @@ class RawElement : public Element {
 }  // namespace SVGPP
 namespace choreo {
 namespace render {
-SVGPP::SVG render(std::vector<choreo::SwerveSample> samples,
-                  choreo::RobotConfig config, choreo::Parameters parameters,
+SVGPP::SVG render(choreo::ProjectFile project, choreo::TrajectoryFile trajectory,
                   choreo::render::path_gradient::PathGradient& gradient);
 }  // namespace render
 }  // namespace choreo

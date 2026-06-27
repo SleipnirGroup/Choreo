@@ -9,11 +9,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 23)
-if(WITH_TRAJOPT)
+if(WITH_TRAJOPT AND NOT TARGET TrajoptLib)
     FetchContent_Declare(
         TrajoptLib
         SOURCE_DIR
-        "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib/"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../trajoptlib/"
     )
     FetchContent_MakeAvailable(TrajoptLib)
 endif()
@@ -31,7 +31,7 @@ file(
 add_library(choreo_document ${choreo_document_SOURCES})
 
 if(WITH_TRAJOPT)
-    target_compile_definitions(choreo_document PUBLIC -DWITH_TRAJOPT)
+    target_compile_definitions(choreo_document PUBLIC WITH_TRAJOPT)
 endif()
 # C++ standard
 target_compile_features(choreo_document PRIVATE cxx_std_23)
@@ -44,5 +44,7 @@ target_include_directories(
 )
 target_link_libraries(choreo_document PRIVATE wpimath wpiutil)
 if(WITH_TRAJOPT)
-    target_link_libraries(choreo_document PRIVATE TrajoptLib)
+    # Trajopt headers are included by public choreo_document headers, so this
+    # dependency must be PUBLIC for consumers to inherit include directories.
+    target_link_libraries(choreo_document PUBLIC TrajoptLib)
 endif()

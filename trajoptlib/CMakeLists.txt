@@ -4,7 +4,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+
 project(TrajoptLib LANGUAGES CXX)
+set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 23)
 
 include(CMakePackageConfigHelpers)
 include(CTest)

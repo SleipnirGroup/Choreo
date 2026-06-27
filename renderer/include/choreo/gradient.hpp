@@ -6,8 +6,10 @@
 #include <print>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <choreo/trajectory/swerve_sample.hpp>
+#include <choreo/trajectory/differential_sample.hpp>
 namespace choreo {
 namespace render {
 struct HSL {
@@ -22,20 +24,25 @@ struct HSL {
 };
 namespace path_gradient {
 struct PathGradient {
-  std::function<HSL(std::vector<choreo::SwerveSample>, size_t index)>
+  std::function<HSL(choreo::SwerveDriveType::WPILibTrajectory trajectory, size_t index)>
       swerve_color;
-  HSL operator()(std::vector<choreo::SwerveSample> samples, size_t index) {
-    return swerve_color(samples, index);
+  // std::function<HSL(std::vector<choreo::DifferentialDriveType::WPILibSample>, size_t index)>
+  //     differential_color;
+  HSL operator()(choreo::SwerveDriveType::WPILibTrajectory trajectory, size_t index) {
+    return swerve_color(trajectory, index);
   }
+  // HSL operator()(std::vector<choreo::DifferentialDriveType::WPILibSample> samples, size_t index) {
+  //   return differential_color(samples, index);
+  // }
 };
-static PathGradient progress{[](auto samples, auto index) {
+static PathGradient progress{[](choreo::SwerveDriveType::WPILibTrajectory trajectory, size_t index) {
   auto interp =
-      static_cast<double>(index) / static_cast<double>(samples.size());
+      static_cast<double>(index) / static_cast<double>(trajectory.Samples().size());
 
   return HSL{120.0 / 360.0 * (1 - interp), 1, 0.5};
 }};
-static PathGradient linearVelocity{[](auto samples, auto index) {
-  auto samp = samples[index];
+static PathGradient linearVelocity{[](choreo::SwerveDriveType::WPILibTrajectory trajectory, size_t index) {
+  auto samp = trajectory.Samples()[index];
   auto v = std::hypot(samp.velocity.vx.value(), samp.velocity.vy.value());
 
   return HSL{120.0 / 360.0 * (v / 5.0), 1, 0.5};

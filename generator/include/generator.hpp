@@ -15,10 +15,10 @@
 #include "split_to_segments.hpp"
 
 namespace choreo {
-template <typename ChoreoSampleType, typename TrajoptSolutionType,
+template <typename ChoreoDriveType, typename TrajoptSolutionType,
           typename TrajoptDrivetrainType, typename GeneratorType, typename TrajectoryType>
 class TrajectoryGenerator {
-  using Sample = ChoreoSampleType;
+  using Sample = ChoreoDriveType::WPILibSample;
   using Builder = trajopt::PathBuilder<TrajoptDrivetrainType, TrajoptSolutionType>;
 
  public:
@@ -50,7 +50,7 @@ class TrajectoryGenerator {
     apply_constraints();
   }
   // TODO: temporary, eventually generate returns a modified TrajectoryFile
-  std::expected<std::vector<ChoreoSampleType>, slp::ExitStatus> generate() {
+  std::expected<std::vector<Sample>, slp::ExitStatus> generate() {
     return generate_internal(); }
  private:
   choreo::ProjectFile projectFile;
@@ -113,7 +113,7 @@ class TrajectoryGenerator {
     }
   }
 
-  std::expected<std::vector<ChoreoSampleType>, slp::ExitStatus>
+  std::expected<std::vector<Sample>, slp::ExitStatus>
   generate_internal() {
     GeneratorType traj_generator{generator};
     auto solution = traj_generator.generate(true);
@@ -121,10 +121,10 @@ class TrajectoryGenerator {
       return std::unexpected(solution.error());
     }
     auto trajectory = TrajectoryType(solution.value());
-    std::vector<ChoreoSampleType> samples;
+    std::vector<Sample> samples;
     samples.reserve(trajectory.samples.size());
     for (const auto& sample : trajectory.samples) {
-      samples.emplace_back(ChoreoSampleType(sample));
+      samples.emplace_back(ChoreoDriveType::fromTrajopt(sample));
     }
     return samples;
   }
