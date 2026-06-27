@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 project(generator LANGUAGES CXX)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(FetchContent)
 # Force shared library build for trajoptlib
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build using shared libraries" FORCE)

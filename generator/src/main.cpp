@@ -104,7 +104,7 @@ int main() {
       json.emplace_back(std::move(element));
     }
     std::println("{}", json.to_string_pretty());
-    // choreo::render::render(*samples, configExp, traj.params,
-    //                        choreo::render::path_gradient::linearVelocity);
+    choreo::render::render(*samples, configExp, traj.params,
+                           choreo::render::path_gradient::linearVelocity);
   }
 }

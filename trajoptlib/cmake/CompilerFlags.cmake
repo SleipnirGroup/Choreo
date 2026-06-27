@@ -11,7 +11,7 @@ macro(compiler_flags target)
 
     #target_compile_features(${target} PUBLIC cxx_std_23)
     if(MSVC)
-        target_compile_options(${target} PUBLIC /MP /utf-8 /bigobj)
+        target_compile_options(${target} PUBLIC  /utf-8 /bigobj)
  
     endif()
 endmacro()
