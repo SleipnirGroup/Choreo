@@ -158,11 +158,11 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install build mypy numpy pytest scipy scipy-stubs wheel wpilib
+      - run: pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
 
-      - run: python3 -m build
+      - run: python -m build
         working-directory: ./choreolib/py
-      - run: pip3 install --no-cache-dir dist/*.whl
+      - run: pip install --no-cache-dir dist/*.whl
         working-directory: ./choreolib/py
       - run: pytest
         working-directory: ./choreolib/py
