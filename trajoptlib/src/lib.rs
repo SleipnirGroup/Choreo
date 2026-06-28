@@ -7,12 +7,21 @@ mod ffi {
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    struct MotorConfig {
+        free_speed: f64,
+        stall_torque: f64,
+        kT: f64,
+        kV: f64,
+        supply_limit: f64,
+        stator_limit: f64,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     struct SwerveDrivetrain {
         mass: f64,
         moi: f64,
         wheel_radius: f64,
-        wheel_max_angular_velocity: f64,
-        wheel_max_torque: f64,
+        motor_config: MotorConfig,
         wheel_cof: f64,
         modules: Vec<Translation2d>,
     }
@@ -1291,6 +1300,7 @@ pub use ffi::DifferentialDrivetrain;
 pub use ffi::DifferentialTrajectory;
 pub use ffi::DifferentialTrajectorySample;
 pub use ffi::Pose2d;
+pub use ffi::MotorConfig;
 pub use ffi::SwerveDrivetrain;
 pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;

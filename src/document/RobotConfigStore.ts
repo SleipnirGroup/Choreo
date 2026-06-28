@@ -43,7 +43,15 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   differentialTrackWidth: {
     exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
     val: DEFAULT_WHEELBASE
-  }
+  },
+  motorConfig: {
+    stall_torque: { exp: "9.36 N * m", val: 9.36 },
+    free_speed: { exp: "5800 RPM", val: (5800.0 / 60.0) * 2 * Math.PI },
+    kT: { exp: "0.0197 N * m / A", val: 0.0197 },
+    kV: { exp: "0.00206896552 V / RPM", val: 0.00206896552 * 60 / (2 * Math.PI) },
+    supply_limit: { exp: "60 A", val: 60.0 },
+    stator_limit: { exp: "120 A", val: 120.0 }
+  },
 };
 
 // When adding new fields, consult
@@ -84,6 +92,53 @@ export const BumperStore = types
       self.side.deserialize(ser.side);
     }
   }));
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
+export const MotorConfigStore = types
+  .model("MotorConfig", {
+    free_speed: ExpressionStore,
+    stall_torque: ExpressionStore,
+    kT: ExpressionStore,
+    kV: ExpressionStore,
+    supply_limit: ExpressionStore,
+    stator_limit: ExpressionStore,
+  })
+  .views((self) => ({
+    get serialize(): MotorConfig<Expr> {
+      return {
+        free_speed: self.free_speed.serialize,
+        stall_torque: self.stall_torque.serialize,
+        kT: self.kT.serialize,
+        kV: self.kV.serialize,
+        supply_limit: self.supply_limit.serialize,
+        stator_limit: self.stator_limit.serialize
+      };
+    },
+    get snapshot(): MotorConfig<number> {
+      return {
+        free_speed: self.free_speed.value,
+        stall_torque: self.stall_torque.value,
+        kT: self.kT.value,
+        kV: self.kV.value,
+        supply_limit: self.supply_limit.value,
+        stator_limit: self.stator_limit.value
+      };
+    },
+  }))
+  .actions((self) => ({
+    deserialize(ser: MotorConfig<Expr>) {
+      self.free_speed.deserialize(ser.free_speed);
+      self.stall_torque.deserialize(ser.stall_torque);
+      self.kT.deserialize(ser.kT);
+      self.kV.deserialize(ser.kV);
+      self.supply_limit.deserialize(ser.supply_limit);
+      self.stator_limit.deserialize(ser.stator_limit);
+    }
+  }));
+
+
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/
@@ -130,6 +185,7 @@ export const RobotConfigStore = types
     frontLeft: ModuleStore,
     backLeft: ModuleStore,
     differentialTrackWidth: ExpressionStore,
+    motorConfig: MotorConfigStore,
     identifier: types.identifier
   })
   .views((self) => {
@@ -152,6 +208,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.serialize,
           frontLeft: self.frontLeft.serialize,
           backLeft: self.backLeft.serialize,
+          motorConfig: self.motorConfig.serialize,
           differentialTrackWidth: self.differentialTrackWidth.serialize
         };
       },
@@ -185,6 +242,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.snapshot,
           frontLeft: self.frontLeft.snapshot,
           backLeft: self.backLeft.snapshot,
+          motorConfig: self.motorConfig.snapshot,
           differentialTrackWidth: self.differentialTrackWidth.value
         };
       }
@@ -203,6 +261,7 @@ export const RobotConfigStore = types
         self.bumper.deserialize(config.bumper);
         self.frontLeft.deserialize(config.frontLeft);
         self.backLeft.deserialize(config.backLeft);
+        self.motorConfig.deserialize(config.motorConfig);
         self.differentialTrackWidth.deserialize(config.differentialTrackWidth);
       }
     };
