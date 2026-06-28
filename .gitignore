@@ -1,56 +1,24 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Choreo
-src-tauri/gen
-src-tauri/target
-target
-
-# TrajoptLib
-trajoptlib/build*
-trajoptlib/target
+build/
+node_modules/
+src-tauri/gen/
+target/
 trajoptlib/Cargo.lock
+
+# CMake
+CMakeUserPresets.json
 
 # Python
 *.egg-info/
-.eggs/
-.pytest_cache/
 __pycache__/
 dist/
 
-# clangd
-.cache
-compile_commands.json
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# macOS
+.DS_Store
 
 # mkdocs
 site/
-
-# cmake user presets
-CMakeUserPresets.json
-
-build/
-cli/
-test-tmp*/
