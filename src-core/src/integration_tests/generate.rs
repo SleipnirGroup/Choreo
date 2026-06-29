@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod generate {
+    use std::env::temp_dir;
     use std::fs;
     use std::{
         path::PathBuf,
@@ -22,14 +23,14 @@ mod generate {
     }
 
     async fn test_generate(drive_type: &str, version: &str) {
-        let test_dir: PathBuf = format!("./test-tmp-{version}-{drive_type}").into();
+        let test_dir: PathBuf = temp_dir().join(format!("choreo-test-{version}-{drive_type}"));
         let original_chor: PathBuf =
             format!("../test-jsons/project/{version}/{drive_type}.chor").into();
         let test_chor: PathBuf = test_dir.join(format!("{drive_type}.chor"));
         let original_traj: PathBuf =
             format!("../test-jsons/trajectory/{version}/{drive_type}.traj").into();
         let test_traj: PathBuf = test_dir.join(format!("{drive_type}.traj"));
-        let _ = fs::create_dir(test_dir.clone()).or_else(|_| fs::remove_dir(test_dir));
+        let _ = fs::create_dir(test_dir.clone());
         // don't modify the original files
         fs::copy(original_chor.clone(), test_chor.clone()).unwrap();
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
@@ -46,6 +47,7 @@ mod generate {
         let chor_after_second = fs::read_to_string(test_chor.clone()).unwrap();
         assert!(traj_after_first == traj_after_second);
         assert!(chor_after_first == chor_after_second);
+        let _ = fs::remove_dir_all(test_dir);
     }
     // Copied from src-cli
     #[allow(clippy::cast_possible_wrap)]
