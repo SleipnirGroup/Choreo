@@ -3,22 +3,26 @@ import org.wpilib.toolchain.*
 plugins {
     id 'cpp'
     id 'java'
-    id 'java-library'
     id 'google-test'
     id 'org.wpilib.WPILibRepositoriesPlugin' version '2027.0.0'
-    id 'org.wpilib.NativeUtils' version '2027.7.1'
+    id 'org.wpilib.NativeUtils' version '2027.10.0'
     id 'org.wpilib.GradleJni' version '2027.0.0'
     id 'org.wpilib.GradleVsCode' version '2027.0.0'
     id 'com.diffplug.spotless' version '8.4.0'
-    id 'jacoco'
 }
 
+// WPILib Version
 ext.wpilibVersion = "2027.+"
-ext.getCurrentArch = {
-    return NativePlatforms.desktop
-}
 
-def systemArch = getCurrentArch()
+repositories {
+    mavenCentral()
+}
+wpilibRepositories.use2027Repos()
+if (project.hasProperty('releaseMode')) {
+    wpilibRepositories.addAllReleaseRepositories(project)
+} else {
+    wpilibRepositories.addAllDevelopmentRepositories(project)
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_25
@@ -26,41 +30,28 @@ java {
 }
 var javaVersion = "25"
 
-repositories {
-    mavenCentral()
-}
-if (project.hasProperty('releaseMode')) {
-    wpilibRepositories.addAllReleaseRepositories(project)
-} else {
-    wpilibRepositories.addAllDevelopmentRepositories(project)
-}
-wpilibRepositories.use2027Repos()
-
 // Apply C++ configuration
 apply from: 'config.gradle'
 
 // Apply Java configuration
 dependencies {
-    implementation 'org.wpilib.wpilibj:wpilibj-java:2027.+'
-    implementation 'org.wpilib.wpiutil:wpiutil-java:2027.+'
-    implementation 'org.wpilib.wpimath:wpimath-java:2027.+'
-    implementation 'org.wpilib:commands3-java:2027.+'
-    implementation 'org.wpilib:annotations-java:2027.+'
-    implementation 'org.wpilib.wpiunits:wpiunits-java:2027.+'
-    implementation 'org.wpilib.ntcore:ntcore-java:2027.+'
-    implementation 'org.wpilib.ntcore:ntcore-cpp:2027.+'
-    implementation 'org.wpilib.hal:hal-java:2027.+'
-
-    api "com.fasterxml.jackson.core:jackson-annotations:2.19.2"
-    api "com.fasterxml.jackson.core:jackson-core:2.19.2"
-    api "com.fasterxml.jackson.core:jackson-databind:2.19.2"
-
-    implementation 'com.google.code.gson:gson:2.13.1'
+    implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
+    implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
+    implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
+    implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
+    implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
+    implementation "org.wpilib.hal:hal-java:$wpilibVersion"
+    implementation "org.wpilib:commands3-java:$wpilibVersion"
 
     // This is needed to use wpilibj Filesystem class
-    testImplementation 'org.wpilib.cscore:cscore-java:2027.+'
-    testImplementation 'org.wpilib.cameraserver:cameraserver-java:2027.+'
-    testImplementation 'org.wpilib.hal:hal-java:2027.+'
+    testImplementation "org.wpilib.cscore:cscore-java:$wpilibVersion"
+    testImplementation "org.wpilib.cameraserver:cameraserver-java:$wpilibVersion"
+
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.19.2"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.19.2"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.19.2"
+
+    implementation "com.google.code.gson:gson:2.13.1"
 
     testImplementation 'us.hebi.quickbuf:quickbuf-runtime:1.4'
 
@@ -70,14 +61,13 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-
 // Set up java tests
 test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 }
 
@@ -85,39 +75,48 @@ if (project.hasProperty('onlylinuxarm64') || project.hasProperty('onlywindowsarm
     test.enabled = false
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs.add '-XDstringConcat=inline'
+    options.encoding = 'UTF-8'
+}
+
+// Setup Javadocs to link back to WPILib docs
+javadoc {
+    options {
+        links "https://docs.oracle.com/en/java/javase/$javaVersion/docs/api/", "https://github.wpilib.org/allwpilib/docs/release/java/"
+        addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
+        addBooleanOption('html5', true)
+        addStringOption("charset", "utf-8")
+        addStringOption("docencoding", "utf-8")
+        addStringOption("encoding", "utf-8")
+        linkSource(true)
+        failOnError = true
+
+        title = "ChoreoLib API"
+
+        // Treat javadoc warnings as errors.
+        //
+        // The second argument '-quiet' is a hack. The one parameter
+        // addStringOption() doesn't work, so we add '-quiet', which is added
+        // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
+        options.addStringOption('Werror', '-quiet')
+    }
+}
+
 // Set up exports properly
 nativeUtils {
     exportsConfigs {
+        // Main library is just default empty. This will export everything
         ChoreoLib {
-            x86ExcludeSymbols = [
-                '_CT??_R0?AV_System_error',
-                '_CT??_R0?AVexception',
-                '_CT??_R0?AVfailure',
-                '_CT??_R0?AVruntime_error',
-                '_CT??_R0?AVsystem_error',
-                '_CTA5?AVfailure',
-                '_TI5?AVfailure',
-                '_CT??_R0?AVout_of_range',
-                '_CTA3?AVout_of_range',
-                '_TI3?AVout_of_range',
-                '_CT??_R0?AVbad_cast'
-            ]
-            x64ExcludeSymbols = [
-                '_CT??_R0?AV_System_error',
-                '_CT??_R0?AVexception',
-                '_CT??_R0?AVfailure',
-                '_CT??_R0?AVruntime_error',
-                '_CT??_R0?AVsystem_error',
-                '_CTA5?AVfailure',
-                '_TI5?AVfailure',
-                '_CT??_R0?AVout_of_range',
-                '_CTA3?AVout_of_range',
-                '_TI3?AVout_of_range',
-                '_CT??_R0?AVbad_cast'
-            ]
         }
     }
 }
+
+ext.getCurrentArch = {
+    return NativePlatforms.desktop
+}
+
+def systemArch = getCurrentArch()
 
 model {
     components {
@@ -145,8 +144,6 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_shared", "googletest_static")
-
             binaries.all {
                 def arch = it.targetPlatform.name
                 if (systemArch == arch && it.buildType.name == 'debug') {
@@ -157,12 +154,10 @@ model {
                     test.workingDir filePath
                 }
             }
+
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared", "googletest_static")
         }
     }
-}
-
-compileJava {
-    options.encoding = 'UTF-8'
 }
 
 spotless {
@@ -198,40 +193,11 @@ spotless {
     }
 }
 
-javadoc {
-    options.links("https://docs.oracle.com/en/java/javase/${javaVersion}/docs/api/")
-    options.links("https://github.wpilib.org/allwpilib/docs/release/java/")
-    options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
-    options.addBooleanOption('html5', true)
-    options.addStringOption("charset", "utf-8")
-    options.addStringOption("docencoding", "utf-8")
-    options.addStringOption("encoding", "utf-8")
-    options.linkSource(true)
-    failOnError = true
-
-    title = "ChoreoLib API"
-
-    // Treat javadoc warnings as errors.
-    //
-    // The second argument '-quiet' is a hack. The one parameter
-    // addStringOption() doesn't work, so we add '-quiet', which is added
-    // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
-    options.addStringOption('Werror', '-quiet')
-}
-
-jacocoTestReport {
-    reports {
-        xml.required.set(true)
-    }
-}
-
 test {
     dependsOn cleanTest
 
     useJUnitPlatform()
     testLogging.showStandardStreams = true
-
-    finalizedBy jacocoTestReport
 
     // For reflective access to continuation classes in unit tests
     jvmArgs += [
@@ -245,5 +211,5 @@ test {
 apply from: 'publish.gradle'
 
 wrapper {
-    gradleVersion '9.4.1'
+    gradleVersion = '9.4.1'
 }

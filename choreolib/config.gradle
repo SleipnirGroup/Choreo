@@ -8,7 +8,8 @@ nativeUtils {
     wpi {
         configureDependencies {
             wpiVersion = wpilibVersion
-            opencvVersion = "4.13.0-3"
+            mrcLibVersion = '2027.1.0-alpha-1-65-g21f308e'
+            opencvVersion = "2027-4.13.0-3"
         }
     }
 }
