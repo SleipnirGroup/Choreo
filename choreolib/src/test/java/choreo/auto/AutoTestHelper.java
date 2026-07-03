@@ -20,7 +20,7 @@ public class AutoTestHelper {
         robotPose::set,
         sample -> robotPose.set(sample.getPose()),
         useAllianceFlipping,
-        new Mechanism("Dummy Drivetrain", scheduler) {},
+        new Mechanism() {},
         (sample, isStart) -> {});
   }
 
