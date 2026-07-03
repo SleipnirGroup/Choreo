@@ -10,9 +10,7 @@ fn main() {
     cmake_config.define("BUILD_SHARED_LIBS", "OFF");
 
     if cfg!(target_os = "windows") {
-        cmake_config
-            .generator("Visual Studio 17 2022")
-            .cxxflag("/EHsc");
+        cmake_config.cxxflag("/EHsc");
     }
 
     let cmake_dest = cmake_config.build();
