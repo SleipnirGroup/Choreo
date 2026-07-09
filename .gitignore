@@ -51,6 +51,8 @@ site/
 # cmake user presets
 CMakeUserPresets.json
 
-build/
+build/*
+!*.traj
 cli/
 test-tmp*/
+

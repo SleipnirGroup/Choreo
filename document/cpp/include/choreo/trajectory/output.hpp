@@ -27,6 +27,9 @@ struct Trajectory {
   std::vector<double> waypoints;
   typename Type::WPILibTrajectory samples;
   std::vector<std::size_t> splits;
+  static inline Trajectory<Type> realDefault() {
+    return Trajectory<Type>{std::nullopt, {}, typename Type::WPILibTrajectory{std::vector<typename Type::WPILibSample>{}}, {}};
+  }
 static inline Trajectory<Type> from_json(const wpi::util::json& json) {
   auto config = json.contains("config")
                     ? std::make_optional(json.at("config").get<RobotConfig>())

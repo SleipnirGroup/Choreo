@@ -57,7 +57,8 @@ target_include_directories(
 
 target_link_libraries(
     choreo_renderer
-    PRIVATE TrajoptLib wpimath wpiutil choreo_document lunasvg::lunasvg
+    PRIVATE TrajoptLib wpimath wpiutil choreo_document
+    PUBLIC lunasvg::lunasvg
 )
 
 # Optional: install rule

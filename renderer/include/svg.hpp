@@ -1361,7 +1361,7 @@ class Line : public Shape {
   using Shape::Shape;
   ElementKind kind() const override { return static_kind; }
 
-  Line(double x1, double x2, double y1, double y2)
+  Line(double x1,double y1, double x2, double y2)
       : Shape({{"x1", to_string(x1)},
                {"x2", to_string(x2)},
                {"y1", to_string(y1)},

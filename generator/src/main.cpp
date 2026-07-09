@@ -55,7 +55,7 @@ const choreo::Parameters params_orig{
     .constraints = {{.from = choreo::FirstWaypoint{},
                      .to = std::nullopt,
                      .data = choreo::ConstraintData::MaxVelocity{.max = 0_mps},
-                     .enabled = true},
+                     .enabled = false},
                     {.from = choreo::FirstWaypoint{},
                      .to = std::nullopt,
                      .data = choreo::ConstraintData::MaxAngularVelocity{},
@@ -86,6 +86,9 @@ int main() {
   auto configExp = chor.config;
   auto traj = choreo::defaultNewTrajectory();
   traj.params = params_orig;
+  
+  auto traj_unscratch = traj;
+  
   choreo::TrajectoryGenerator<choreo::SwerveDriveType, trajopt::SwerveSolution,
                               trajopt::SwerveDrivetrain,
                               trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>
@@ -95,15 +98,25 @@ int main() {
   if (!samples) {
     return std::to_underlying(samples.error());
   } else {
-    std::println("Generated trajectory:");
-    wpi::util::json json = wpi::util::json::array();
-    for (const auto& sample : *samples) {
-      wpi::util::json element;
-      element = sample;
-      json.emplace_back(std::move(element));
-    }
-    std::println("{}", json.to_string_pretty());
-    // choreo::render::render(*samples, configExp, traj.params,
-    //                        choreo::render::path_gradient::linearVelocity);
+    using DriveType = typename decltype(generator)::DriveType;
+    auto output = choreo::Trajectory<DriveType> {
+      configExp, {}, DriveType::WPILibTrajectory{*samples}, {}
+    };
+    traj_unscratch.trajectory = output;
+    traj_unscratch.params = params_orig;
+    
+      {
+    std::ofstream out("out.traj");
+    out << std::string(wpi::util::json(traj_unscratch).to_string_pretty());
+    out.close();
+  }
+    auto svg = choreo::render::render(*samples, configExp, traj.params,
+                           choreo::render::path_gradient::linearVelocity);
+    auto graphs = choreo::render::graph(*samples);
+      {
+        std::ofstream out("graphs.svg");
+        out << std::string(graphs);
+        out.close();
+      }
   }
 }

@@ -18,10 +18,12 @@ namespace choreo {
 template <typename ChoreoDriveType, typename TrajoptSolutionType,
           typename TrajoptDrivetrainType, typename GeneratorType, typename TrajectoryType>
 class TrajectoryGenerator {
-  using Sample = ChoreoDriveType::WPILibSample;
-  using Builder = trajopt::PathBuilder<TrajoptDrivetrainType, TrajoptSolutionType>;
+
 
  public:
+   using DriveType = ChoreoDriveType;
+  using Sample = ChoreoDriveType::WPILibSample;
+  using Builder = trajopt::PathBuilder<TrajoptDrivetrainType, TrajoptSolutionType>;
   // Owns projectFile and trajectoryFile;
   TrajectoryGenerator(choreo::ProjectFile& projectFile,
                       choreo::TrajectoryFile& trajectoryFile)
