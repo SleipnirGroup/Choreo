@@ -1,13 +1,13 @@
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { IConstraintDataStore } from "../../../../document/ConstraintDataStore";
+import { IConstraintDataStore } from "../../../../document/ConstraintDataStore.ts";
 import {
   ConstraintKey,
   DataMap
-} from "../../../../document/ConstraintDefinitions";
-import { doc } from "../../../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+} from "../../../../document/ConstraintDefinitions.ts";
+import { doc } from "../../../../document/DocumentManager.ts";
+import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
 
 const STROKE = 0.1;
 const DOT = 0.1;

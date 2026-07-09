@@ -3,22 +3,22 @@ import { Component } from "react";
 import {
   doc,
   generateWithToastsAndExport
-} from "../../document/DocumentManager";
-import WaypointPanel from "../config/WaypointConfigPanel";
+} from "../../document/DocumentManager.ts";
+import WaypointPanel from "../config/WaypointConfigPanel.ts";
 
 import { Close } from "@mui/icons-material";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { Box, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { IConstraintStore } from "../../document/ConstraintStore";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import { Commands } from "../../document/tauriCommands";
-import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
-import ViewOptionsPanel from "../config/ViewOptionsPanel";
-import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
-import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
+import { IConstraintStore } from "../../document/ConstraintStore.ts";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore.ts";
+import { Commands } from "../../document/tauriCommands.ts";
+import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel.ts";
+import ViewOptionsPanel from "../config/ViewOptionsPanel.ts";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel.ts";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel.ts";
 import styles from "./Field.module.css";
-import FieldOverlayRoot from "./svg/FieldOverlayRoot";
+import FieldOverlayRoot from "./svg/FieldOverlayRoot.ts";
 
 type Props = object;
 

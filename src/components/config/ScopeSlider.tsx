@@ -1,7 +1,7 @@
 import { Slider, SliderProps } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore.ts";
 
 type Props = {
   isRange: boolean;

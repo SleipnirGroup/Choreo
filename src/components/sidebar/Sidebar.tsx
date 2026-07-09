@@ -1,10 +1,10 @@
 import { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager.ts";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
 import { Divider, IconButton, Tooltip } from "@mui/material";
-import WaypointList from "./WaypointList";
-import PathSelector from "./PathSelector";
+import WaypointList from "./WaypointList.ts";
+import PathSelector from "./PathSelector.ts";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   ContentCopy,
@@ -14,11 +14,11 @@ import {
   Undo
 } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
-import SidebarConstraint from "./SidebarConstraint";
-import SidebarEventMarker from "./SidebarEventMarker";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import SidebarConstraint from "./SidebarConstraint.ts";
+import SidebarEventMarker from "./SidebarEventMarker.ts";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
 
-import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
+import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator.ts";
 
 type Props = object;
 

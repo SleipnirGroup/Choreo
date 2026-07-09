@@ -1,10 +1,10 @@
 import { Component } from "react";
-import { uiState } from "../../document/DocumentManager";
+import { uiState } from "../../document/DocumentManager.ts";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { NavbarItemData, NavbarItemSectionEnds } from "../../document/UIData";
+import { NavbarItemData, NavbarItemSectionEnds } from "../../document/UIData.ts";
 
 type Props = object;
 

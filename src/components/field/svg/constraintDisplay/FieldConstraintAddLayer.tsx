@@ -1,12 +1,12 @@
 import { Component } from "react";
-import { doc, uiState } from "../../../../document/DocumentManager";
-import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions";
+import { doc, uiState } from "../../../../document/DocumentManager.ts";
+import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions.ts";
 
 import { observer } from "mobx-react";
-import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
-import { FieldMatrixContext } from "../FieldMatrixContext";
-import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
-import { tracing } from "../../../../document/tauriTracing";
+import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
+import { FieldMatrixContext } from "../FieldMatrixContext.ts";
+import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer.ts";
+import { tracing } from "../../../../document/tauriTracing.ts";
 
 type Props = {
   lineColor?: string;

@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { doc } from "../../../document/DocumentManager";
+import { doc } from "../../../document/DocumentManager.ts";
 
 import { observer } from "mobx-react";
 

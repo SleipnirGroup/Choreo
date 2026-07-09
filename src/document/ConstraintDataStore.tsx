@@ -6,7 +6,7 @@ import {
   ModelPropertiesDeclarationToProperties,
   types
 } from "mobx-state-tree";
-import { Expr, isExpr } from "./schema/DocumentTypes";
+import { Expr, isExpr } from "./schema/DocumentTypes.ts";
 import {
   ConstraintData,
   ConstraintDefinition,
@@ -16,12 +16,12 @@ import {
   DataMap,
   PropertyDefinitionList,
   consts
-} from "./ConstraintDefinitions";
+} from "./ConstraintDefinitions.ts";
 import {
   ExpressionStore,
   IExpressionStore,
   IVariables
-} from "./ExpressionStore";
+} from "./ExpressionStore.ts";
 
 type lookup<T extends ConstraintPropertyType> = T extends Expr
   ? typeof ExpressionStore
@@ -30,7 +30,6 @@ type lookup<T extends ConstraintPropertyType> = T extends Expr
     : never;
 
 type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
-  // @ts-expect-error lookup type is fragile
   [propkey in keyof D["props"]]: lookup<D["props"][propkey]>;
 } & {
   type: ISimpleType<D["type"]>;
@@ -100,7 +99,6 @@ function createDataStore<
       };
       serialize = (self) => {
         const part = oldSerialize(self);
-        //@ts-expect-error not assignable
         part[key] = (self[key] as IExpressionStore).serialize;
 
         return part;
@@ -147,7 +145,6 @@ function createDataStore<
     } as Props<K>)
     .actions(
       (self) =>
-        //@ts-expect-error the typing doesn't preserve through fromEntries()
         Object.fromEntries(
           Object.entries(setters).map(([key, val]) => [
             key as keyof ConstraintSetters<K>,

@@ -1,12 +1,12 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { isExpr } from "../../document/schema/DocumentTypes";
-import { IConstraintStore } from "../../document/ConstraintStore";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import BooleanInput from "../input/BooleanInput";
-import ExpressionInput from "../input/ExpressionInput";
-import ExpressionInputList from "../input/ExpressionInputList";
-import ScopeSlider from "./ScopeSlider";
+import { isExpr } from "../../document/schema/DocumentTypes.ts";
+import { IConstraintStore } from "../../document/ConstraintStore.ts";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore.ts";
+import BooleanInput from "../input/BooleanInput.ts";
+import ExpressionInput from "../input/ExpressionInput.ts";
+import ExpressionInputList from "../input/ExpressionInputList.ts";
+import ScopeSlider from "./ScopeSlider.ts";
 import styles from "./WaypointConfigPanel.module.css";
 
 type Props = {

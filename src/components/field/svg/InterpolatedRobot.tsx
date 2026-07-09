@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
-import { sample } from "../../../util/MathUtil";
+import { doc, uiState } from "../../../document/DocumentManager.ts";
+import { sample } from "../../../util/MathUtil.ts";
 
 type Props = {
   timestamp: number;

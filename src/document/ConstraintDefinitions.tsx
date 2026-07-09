@@ -7,9 +7,9 @@ import {
   SystemUpdateAlt
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
-import { Expr } from "./schema/DocumentTypes";
-import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
-import KeepInLane from "../assets/KeepInLane";
+import { Expr } from "./schema/DocumentTypes.ts";
+import { Dimension, DimensionName, Dimensions } from "./ExpressionStore.ts";
+import KeepInLane from "../assets/KeepInLane.ts";
 
 export type ConstraintPropertyType = Expr | boolean;
 

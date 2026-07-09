@@ -1,11 +1,11 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager.ts";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
-import { NavbarItemData } from "../../document/UIData";
+import { NavbarItemData } from "../../document/UIData.ts";
 import { Room } from "@mui/icons-material";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
 
 type Props = object;
 

@@ -5,8 +5,8 @@ import {
   Project,
   RobotConfig,
   Trajectory
-} from "./schema/DocumentTypes";
-import { OpenFilePayload } from "./DocumentManager";
+} from "./schema/DocumentTypes.ts";
+import { OpenFilePayload } from "./DocumentManager.ts";
 export type ChoreoError = { type: string; content: string };
 export type ChoreoResult<T> = T | ChoreoError;
 export const Commands = {

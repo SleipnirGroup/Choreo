@@ -1,11 +1,11 @@
 import "@fontsource-variable/roboto-mono/wght-italic.css";
-import "@fontsource-variable/roboto-mono";
-import "@fontsource/roboto";
+import "@fontsource-variable/roboto-mono.css";
+import "@fontsource/roboto.css";
 import "./App.css";
 import { observer } from "mobx-react";
 import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Body from "./Body";
+import Body from "./Body.ts";
 import { OverridesStyleRules } from "@mui/material/styles/overrides";
 import { ButtonClasses, Theme } from "@mui/material";
 

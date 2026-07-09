@@ -1,9 +1,9 @@
-import { ConstraintData } from "../ConstraintDefinitions";
-import { Dimensions } from "../ExpressionStore";
-export { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion";
-import { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion";
-export { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion";
-import { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion";
+import { ConstraintData } from "../ConstraintDefinitions.ts";
+import { Dimensions } from "../ExpressionStore.ts";
+export { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion.ts";
+import { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion.ts";
+export { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion.ts";
+import { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion.ts";
 export type Expr = { exp: string; val: number };
 
 export function isExpr(arg: any): arg is Expr {

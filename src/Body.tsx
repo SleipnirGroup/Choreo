@@ -1,10 +1,10 @@
 import { Component } from "react";
 import { observer } from "mobx-react";
-import Navbar from "./components/navbar/Navbar";
-import Field from "./components/field/Field";
-import Sidebar from "./components/sidebar/Sidebar";
-import AppMenu from "./AppMenu";
-import PathAnimationPanel from "./components/field/PathAnimationPanel";
+import Navbar from "./components/navbar/Navbar.ts";
+import Field from "./components/field/Field.ts";
+import Sidebar from "./components/sidebar/Sidebar.ts";
+import AppMenu from "./AppMenu.ts";
+import PathAnimationPanel from "./components/field/PathAnimationPanel.ts";
 
 type Props = object;
 

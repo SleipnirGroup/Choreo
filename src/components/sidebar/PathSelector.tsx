@@ -11,14 +11,14 @@ import { confirm } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { toast } from "react-toastify";
-import { deletePath, doc, renamePath } from "../../document/DocumentManager";
+import { deletePath, doc, renamePath } from "../../document/DocumentManager.ts";
 import styles from "./Sidebar.module.css";
-import ExpressionInput from "../input/ExpressionInput";
-import ExpressionInputList from "../input/ExpressionInputList";
-import GenerateInProgress from "../../assets/GenerateInProgress";
-import { SavingState } from "../../document/UIStateStore";
-import SaveInProgress from "../../assets/SaveInProgress";
-import { NameIssue } from "../../document/path/NameIsIdentifier";
+import ExpressionInput from "../input/ExpressionInput.ts";
+import ExpressionInputList from "../input/ExpressionInputList.ts";
+import GenerateInProgress from "../../assets/GenerateInProgress.ts";
+import { SavingState } from "../../document/UIStateStore.ts";
+import SaveInProgress from "../../assets/SaveInProgress.ts";
+import { NameIssue } from "../../document/path/NameIsIdentifier.ts";
 
 type Props = object;
 

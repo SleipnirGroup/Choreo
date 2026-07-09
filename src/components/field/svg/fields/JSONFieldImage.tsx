@@ -1,11 +1,11 @@
 import { Component } from "react";
-import { FtToM, InToM } from "../../../../util/UnitConversions";
+import { FtToM, InToM } from "../../../../util/UnitConversions.ts";
 import defaultFieldImage from "./FieldImage2026.svg";
-import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions";
+import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions.ts";
 import {
   CustomFieldData,
   FieldJSON
-} from "../../../../document/schema/DocumentTypes";
+} from "../../../../document/schema/DocumentTypes.ts";
 
 type Props = {
   opacity: number;

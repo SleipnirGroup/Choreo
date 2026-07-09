@@ -1,10 +1,10 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { DragDropContext, Droppable } from "@hello-pangea/dnd";
-import { doc } from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { doc } from "../../document/DocumentManager.ts";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore.ts";
 import styles from "./Sidebar.module.css";
-import SidebarWaypoint from "./SidebarWaypoint";
+import SidebarWaypoint from "./SidebarWaypoint.ts";
 
 const getListStyle = (isDraggingOver: boolean) => ({
   outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent"

@@ -4,13 +4,13 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
-import { WaypointUUID } from "../../document/schema/DocumentTypes";
-import { doc } from "../../document/DocumentManager";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { WaypointUUID } from "../../document/schema/DocumentTypes.ts";
+import { doc } from "../../document/DocumentManager.ts";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
 import {
   IHolonomicPathStore,
   waypointIDToText
-} from "../../document/path/HolonomicPathStore";
+} from "../../document/path/HolonomicPathStore.ts";
 import styles from "./Sidebar.module.css";
 
 type Props = {

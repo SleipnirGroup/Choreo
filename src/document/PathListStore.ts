@@ -1,17 +1,17 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { Trajectory } from "./schema/DocumentTypes";
-import { Env } from "./DocumentManager";
+import { Trajectory } from "./schema/DocumentTypes.ts";
+import { Env } from "./DocumentManager.ts";
 import {
   HolonomicPathStore,
   IHolonomicPathStore
-} from "./path/HolonomicPathStore";
-import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
-import { SavingState } from "./UIStateStore";
+} from "./path/HolonomicPathStore.ts";
+import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions.ts";
+import { SavingState } from "./UIStateStore.ts";
 import {
   addErrorMessages,
   isValidIdentifier,
   NameIssue
-} from "./path/NameIsIdentifier";
+} from "./path/NameIsIdentifier.ts";
 
 export const PathListStore = types
   .model("PathListStore", {

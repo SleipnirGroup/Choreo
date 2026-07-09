@@ -1,9 +1,9 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
-import { Expr, Waypoint } from "./schema/DocumentTypes";
-import { Env } from "./DocumentManager";
-import { ExpressionStore } from "./ExpressionStore";
-import { NavbarItemData } from "./UIData";
-import { tracing } from "./tauriTracing";
+import { Expr, Waypoint } from "./schema/DocumentTypes.ts";
+import { Env } from "./DocumentManager.ts";
+import { ExpressionStore } from "./ExpressionStore.ts";
+import { NavbarItemData } from "./UIData.ts";
+import { tracing } from "./tauriTracing.ts";
 
 export const DEFAULT_WAYPOINT: Waypoint<number> = {
   x: 0,

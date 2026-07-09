@@ -1,10 +1,10 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { saveProject, saveProjectDialog } from "../../document/DocumentManager";
-import { SavingState as SavingState } from "../../document/UIStateStore";
+import { saveProject, saveProjectDialog } from "../../document/DocumentManager.ts";
+import { SavingState as SavingState } from "../../document/UIStateStore.ts";
 import { Check, FolderOff, PriorityHigh } from "@mui/icons-material";
 import { IconButton, Tooltip } from "@mui/material";
-import SaveInProgress from "../../assets/SaveInProgress";
+import SaveInProgress from "../../assets/SaveInProgress.ts";
 
 type Props = {
   savingState: SavingState;

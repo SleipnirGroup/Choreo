@@ -1,5 +1,5 @@
 import { Save } from "@mui/icons-material";
-import IconInProgress from "./IconInProgress";
+import IconInProgress from "./IconInProgress.ts";
 
 function SaveInProgress(props: any) {
   return <IconInProgress {...props} icon={<Save></Save>}></IconInProgress>;

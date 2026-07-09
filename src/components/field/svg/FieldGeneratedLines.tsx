@@ -1,10 +1,10 @@
-import { doc, uiState } from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager.ts";
 
 import { observer } from "mobx-react";
 import {
   PathGradientArgs,
   PathGradients
-} from "../../config/robotconfig/PathGradient";
+} from "../../config/robotconfig/PathGradient.ts";
 
 function FieldGeneratedLines() {
   const path = doc.pathlist.activePath;

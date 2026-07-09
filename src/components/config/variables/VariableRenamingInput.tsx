@@ -6,7 +6,7 @@ import {
   isNameIssueError,
   isNameIssueWarning,
   NameIssue
-} from "../../../document/path/NameIsIdentifier";
+} from "../../../document/path/NameIsIdentifier.ts";
 
 type Props = {
   name: string;

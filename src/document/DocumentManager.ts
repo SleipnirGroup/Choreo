@@ -1,7 +1,7 @@
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { ask, save } from "@tauri-apps/plugin-dialog";
-import { TauriEvent } from "@tauri-apps/api/event";
-import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
+import { TauriEvent, UnlistenFn } from "@tauri-apps/api/event";
+import { DocumentStore, SelectableItemTypes } from "./DocumentModel.ts";
 
 import hotkeys from "hotkeys-js";
 import { getDebugName, IReactionDisposer, reaction } from "mobx";
@@ -12,8 +12,8 @@ import {
   walk
 } from "mobx-state-tree";
 import { toast, ToastContentProps } from "react-toastify";
-import LocalStorageKeys from "../util/LocalStorageKeys";
-import { safeGetIdentifier } from "../util/mobxutils";
+import LocalStorageKeys from "../util/LocalStorageKeys.ts";
+import { safeGetIdentifier } from "../util/mobxutils.ts";
 import {
   Command,
   EventMarker,
@@ -25,45 +25,45 @@ import {
   type Expr,
   type RobotConfig,
   type Waypoint
-} from "./schema/DocumentTypes";
+} from "./schema/DocumentTypes.ts";
 import {
   CommandStore,
   ICommandStore,
   commandIsGroup,
   commandIsNamed,
   commandIsWait
-} from "./CommandStore";
+} from "./CommandStore.ts";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
-} from "./ConstraintDataStore";
+} from "./ConstraintDataStore.ts";
 import {
   ConstraintDefinitions,
   ConstraintKey,
   DataMap
-} from "./ConstraintDefinitions";
+} from "./ConstraintDefinitions.ts";
 import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "./ConstraintStore";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { IExpressionStore, IVariables, variables } from "./ExpressionStore";
+} from "./ConstraintStore.ts";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.ts";
+import { IExpressionStore, IVariables, variables } from "./ExpressionStore.ts";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
-} from "./HolonomicWaypointStore";
+} from "./HolonomicWaypointStore.ts";
 import {
   EXPR_DEFAULTS,
   IRobotConfigStore,
   RobotConfigStore
-} from "./RobotConfigStore";
-import { ViewLayerDefaults } from "./UIData";
-import { SavingState, UIStateStore } from "./UIStateStore";
-import { findUUIDIndex } from "./path/utils";
-import { ChoreoError, Commands } from "./tauriCommands";
-import { tracing } from "./tauriTracing";
+} from "./RobotConfigStore.ts";
+import { ViewLayerDefaults } from "./UIData.ts";
+import { SavingState, UIStateStore } from "./UIStateStore.ts";
+import { findUUIDIndex } from "./path/utils.ts";
+import { ChoreoError, Commands } from "./tauriCommands.ts";
+import { tracing } from "./tauriTracing.ts";
 
 const TRAJ_DATA_FILENAME = "ChoreoTraj";
 const VARS_FILENAME = "ChoreoVars";
@@ -442,7 +442,7 @@ export async function setupEventListeners() {
       }
       await tauriWindow.getCurrentWindow().destroy();
     })
-    .then((unlisten) => {
+    .then((unlisten: UnlistenFn) => {
       window.addEventListener("unload", () => {
         unlisten();
       });

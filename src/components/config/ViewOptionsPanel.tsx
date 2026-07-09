@@ -9,12 +9,12 @@ import {
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
-import { ViewItemData } from "../../document/UIData";
+import { doc, uiState } from "../../document/DocumentManager.ts";
+import { ViewItemData } from "../../document/UIData.ts";
 import styles from "./WaypointConfigPanel.module.css";
-import { PathGradients } from "./robotconfig/PathGradient";
-import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel";
-import Variable from "../../assets/Variable";
+import { PathGradients } from "./robotconfig/PathGradient.ts";
+import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel.ts";
+import Variable from "../../assets/Variable.ts";
 
 type Props = object;
 
