@@ -1,6 +1,6 @@
 import "@fontsource-variable/roboto-mono/wght-italic.css";
-import "@fontsource-variable/roboto-mono.css";
-import "@fontsource/roboto.css";
+import "@fontsource-variable/roboto-mono/index.css";
+import "@fontsource/roboto/index.css";
 import "./App.css";
 import { observer } from "mobx-react";
 import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
