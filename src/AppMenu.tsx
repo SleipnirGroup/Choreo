@@ -28,11 +28,11 @@ import {
   uiState,
   openDiagnosticZipWithInfo,
   openProjectSelectFeedback
-} from "./document/DocumentManager.ts";
+} from "./document/DocumentManager";
 
-import SettingsModal from "./components/config/SettingsModal.tsx";
-import { Commands } from "./document/tauriCommands.ts";
-import { version } from "./util/version.ts";
+import SettingsModal from "./components/config/SettingsModal";
+import { Commands } from "./document/tauriCommands";
+import { version } from "./util/version";
 
 type Props = object;
 

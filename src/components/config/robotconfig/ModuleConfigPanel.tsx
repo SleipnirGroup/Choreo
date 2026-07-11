@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc } from "../../../document/DocumentManager.ts";
-import ExpressionInput from "../../input/ExpressionInput.tsx";
-import ExpressionInputList from "../../input/ExpressionInputList.tsx";
+import { doc } from "../../../document/DocumentManager";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 
 type Props = { rowGap: number };
 

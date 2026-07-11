@@ -1,11 +1,11 @@
 import { Divider } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc } from "../../../document/DocumentManager.ts";
-import PoseVariablesConfigPanel from "./PoseVariablesConfigPanel.tsx";
+import { doc } from "../../../document/DocumentManager";
+import PoseVariablesConfigPanel from "./PoseVariablesConfigPanel";
 import VariablesConfigPanel, {
   GeneralVariableAddPanel
-} from "./VariablesConfigPanel.tsx";
+} from "./VariablesConfigPanel";
 
 type Props = object;
 

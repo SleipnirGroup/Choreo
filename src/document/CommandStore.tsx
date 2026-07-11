@@ -13,9 +13,9 @@ import {
   GroupCommand,
   NamedCommand,
   WaitCommand
-} from "./schema/DocumentTypes.ts";
-import { Env, EnvConstructors } from "./DocumentManager.ts";
-import { ExpressionStore } from "./ExpressionStore.tsx";
+} from "./schema/DocumentTypes";
+import { Env, EnvConstructors } from "./DocumentManager";
+import { ExpressionStore } from "./ExpressionStore";
 
 export type CommandGroupType = "sequential" | "parallel" | "deadline" | "race";
 export type CommandType = CommandGroupType | "wait" | "named" | "none";

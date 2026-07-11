@@ -1,10 +1,10 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc } from "../../../document/DocumentManager.ts";
-import Input from "../../input/Input.tsx";
-import InputList from "../../input/InputList.tsx";
+import { doc } from "../../../document/DocumentManager";
+import Input from "../../input/Input";
+import InputList from "../../input/InputList";
 
-import { MetersOrFeet, MToFt } from "../../../util/UnitConversions.ts";
+import { MetersOrFeet, MToFt } from "../../../util/UnitConversions";
 
 type Props = { rowGap: number; imperial: boolean };
 

@@ -13,9 +13,9 @@ import {
   CommandType,
   CommandUIData,
   ICommandStore
-} from "../../../document/CommandStore.tsx";
-import ExpressionInput from "../../input/ExpressionInput.tsx";
-import ExpressionInputList from "../../input/ExpressionInputList.tsx";
+} from "../../../document/CommandStore";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 
 type Props = {
   command: ICommandStore;

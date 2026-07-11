@@ -1,16 +1,16 @@
 import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component, ReactElement } from "react";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore.ts";
-import { WaypointData } from "../../document/UIData.tsx";
-import BooleanInput from "../input/BooleanInput.tsx";
-import ExpressionInput from "../input/ExpressionInput.tsx";
-import ExpressionInputList from "../input/ExpressionInputList.tsx";
-import Input from "../input/Input.tsx";
-import InputList from "../input/InputList.tsx";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { WaypointData } from "../../document/UIData";
+import BooleanInput from "../input/BooleanInput";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
+import Input from "../input/Input";
+import InputList from "../input/InputList";
 import styles from "./WaypointConfigPanel.module.css";
-import PoseAssignToWaypointDropdown from "./PoseAssignToWaypointDropdown.tsx";
-import { doc } from "../../document/DocumentManager.ts";
+import PoseAssignToWaypointDropdown from "./PoseAssignToWaypointDropdown";
+import { doc } from "../../document/DocumentManager";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 

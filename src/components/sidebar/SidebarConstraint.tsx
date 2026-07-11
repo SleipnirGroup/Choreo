@@ -3,8 +3,8 @@ import { observer } from "mobx-react";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, { Component } from "react";
-import { IConstraintStore } from "../../document/ConstraintStore.tsx";
-import { doc } from "../../document/DocumentManager.ts";
+import { IConstraintStore } from "../../document/ConstraintStore";
+import { doc } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 
 import {
@@ -15,7 +15,7 @@ import {
 import {
   IHolonomicPathStore,
   waypointIDToText
-} from "../../document/path/HolonomicPathStore.ts";
+} from "../../document/path/HolonomicPathStore";
 
 type Props = {
   constraint: IConstraintStore;

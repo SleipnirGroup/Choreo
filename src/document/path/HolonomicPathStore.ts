@@ -15,19 +15,19 @@ import {
   WaypointUUID,
   type ChoreoPath,
   type Trajectory
-} from "../schema/DocumentTypes.ts";
-import { Env, uiState } from "../DocumentManager.ts";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore.tsx";
+} from "../schema/DocumentTypes";
+import { Env, uiState } from "../DocumentManager";
+import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 import {
   DEFAULT_WAYPOINT,
   IHolonomicWaypointStore
-} from "../HolonomicWaypointStore.ts";
-import { ChoreoPathStore } from "./ChoreoPathStore.ts";
-import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore.ts";
-import { PathUIStore } from "./PathUIStore.ts";
-import { findUUIDIndex } from "./utils.ts";
-import { ChoreoError, Commands } from "../tauriCommands.ts";
-import { SavingState } from "../UIStateStore.tsx";
+} from "../HolonomicWaypointStore";
+import { ChoreoPathStore } from "./ChoreoPathStore";
+import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore";
+import { PathUIStore } from "./PathUIStore";
+import { findUUIDIndex } from "./utils";
+import { ChoreoError, Commands } from "../tauriCommands";
+import { SavingState } from "../UIStateStore";
 import { toast, ToastContentProps } from "react-toastify";
 export function waypointIDToText(
   id: WaypointUUID | undefined,

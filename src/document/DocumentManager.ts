@@ -1,7 +1,7 @@
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { ask, save } from "@tauri-apps/plugin-dialog";
 import { TauriEvent, UnlistenFn } from "@tauri-apps/api/event";
-import { DocumentStore, SelectableItemTypes } from "./DocumentModel.tsx";
+import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
 import { getDebugName, IReactionDisposer, reaction } from "mobx";
@@ -12,8 +12,8 @@ import {
   walk
 } from "mobx-state-tree";
 import { toast, ToastContentProps } from "react-toastify";
-import LocalStorageKeys from "../util/LocalStorageKeys.ts";
-import { safeGetIdentifier } from "../util/mobxutils.ts";
+import LocalStorageKeys from "../util/LocalStorageKeys";
+import { safeGetIdentifier } from "../util/mobxutils";
 import {
   Command,
   EventMarker,
@@ -25,45 +25,45 @@ import {
   type Expr,
   type RobotConfig,
   type Waypoint
-} from "./schema/DocumentTypes.ts";
+} from "./schema/DocumentTypes";
 import {
   CommandStore,
   ICommandStore,
   commandIsGroup,
   commandIsNamed,
   commandIsWait
-} from "./CommandStore.tsx";
+} from "./CommandStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
-} from "./ConstraintDataStore.tsx";
+} from "./ConstraintDataStore";
 import {
   ConstraintDefinitions,
   ConstraintKey,
   DataMap
-} from "./ConstraintDefinitions.tsx";
+} from "./ConstraintDefinitions";
 import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "./ConstraintStore.tsx";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.tsx";
-import { IExpressionStore, IVariables, variables } from "./ExpressionStore.tsx";
+} from "./ConstraintStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { IExpressionStore, IVariables, variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
-} from "./HolonomicWaypointStore.ts";
+} from "./HolonomicWaypointStore";
 import {
   EXPR_DEFAULTS,
   IRobotConfigStore,
   RobotConfigStore
-} from "./RobotConfigStore.ts";
-import { ViewLayerDefaults } from "./UIData.tsx";
-import { SavingState, UIStateStore } from "./UIStateStore.tsx";
-import { findUUIDIndex } from "./path/utils.ts";
-import { ChoreoError, Commands } from "./tauriCommands.ts";
-import { tracing } from "./tauriTracing.ts";
+} from "./RobotConfigStore";
+import { ViewLayerDefaults } from "./UIData";
+import { SavingState, UIStateStore } from "./UIStateStore";
+import { findUUIDIndex } from "./path/utils";
+import { ChoreoError, Commands } from "./tauriCommands";
+import { tracing } from "./tauriTracing";
 
 const TRAJ_DATA_FILENAME = "ChoreoTraj";
 const VARS_FILENAME = "ChoreoVars";

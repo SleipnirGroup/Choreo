@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { Button, Checkbox, FormControlLabel, Stack } from "@mui/material";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import { codeGenDialog, doc } from "../../document/DocumentManager.ts";
+import { codeGenDialog, doc } from "../../document/DocumentManager";
 import { ReactNode } from "react";
 
 function OpenFolderButton(args: { children?: ReactNode }) {

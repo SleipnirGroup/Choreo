@@ -5,24 +5,24 @@ import {
   Constraint,
   Expr,
   Waypoint
-} from "../schema/DocumentTypes.ts";
-import { ConstraintKey, DataMap } from "../ConstraintDefinitions.tsx";
+} from "../schema/DocumentTypes";
+import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
 import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "../ConstraintStore.tsx";
-import { Env } from "../DocumentManager.ts";
-import { ExpressionStore } from "../ExpressionStore.tsx";
+} from "../ConstraintStore";
+import { Env } from "../DocumentManager";
+import { ExpressionStore } from "../ExpressionStore";
 import {
   DEFAULT_WAYPOINT,
   HolonomicWaypointStore,
   IHolonomicWaypointStore
-} from "../HolonomicWaypointStore.ts";
+} from "../HolonomicWaypointStore";
 import {
   savedWaypointIdToWaypointId,
   waypointIdToSavedWaypointId
-} from "./utils.ts";
+} from "./utils";
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/

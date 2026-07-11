@@ -10,20 +10,20 @@ import {
   SampleType,
   SwerveSample,
   Trajectory
-} from "./schema/DocumentTypes.ts";
-import { ConstraintStore, IConstraintStore } from "./ConstraintStore.tsx";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.tsx";
-import { Variables } from "./ExpressionStore.tsx";
+} from "./schema/DocumentTypes";
+import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { Variables } from "./ExpressionStore";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore
-} from "./HolonomicWaypointStore.ts";
-import { PathListStore } from "./PathListStore.ts";
-import { RobotConfigStore } from "./RobotConfigStore.ts";
-import { Commands } from "./tauriCommands.ts";
-import { tracing } from "./tauriTracing.ts";
-import { CodeGenStore } from "./CodeGenStore.ts";
-import { genJavaFiles } from "./DocumentManager.ts";
+} from "./HolonomicWaypointStore";
+import { PathListStore } from "./PathListStore";
+import { RobotConfigStore } from "./RobotConfigStore";
+import { Commands } from "./tauriCommands";
+import { tracing } from "./tauriTracing";
+import { CodeGenStore } from "./CodeGenStore";
+import { genJavaFiles } from "./DocumentManager";
 
 export type SelectableItemTypes =
   | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {

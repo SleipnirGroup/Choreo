@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc } from "../../../document/DocumentManager.ts";
+import { doc } from "../../../document/DocumentManager";
 
-import { sample } from "../../../util/MathUtil.ts";
+import { sample } from "../../../util/MathUtil";
 
 type MarkerProps = {
   x: number;

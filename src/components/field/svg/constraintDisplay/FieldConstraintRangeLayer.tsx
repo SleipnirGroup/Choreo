@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
-import { doc } from "../../../../document/DocumentManager.ts";
-import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
+import { doc } from "../../../../document/DocumentManager";
+import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 
 type Props = {
   points: IHolonomicWaypointStore[];

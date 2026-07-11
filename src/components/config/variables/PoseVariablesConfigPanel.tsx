@@ -2,17 +2,14 @@ import { Add, ArrowDropDown, ArrowDropUp, Delete } from "@mui/icons-material";
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { doc } from "../../../document/DocumentManager.ts";
-import {
-  DimensionsExt,
-  IExprPose
-} from "../../../document/ExpressionStore.tsx";
-import ExpressionInput from "../../input/ExpressionInput.tsx";
-import VariableRenamingInput from "./VariableRenamingInput.tsx";
+import { doc } from "../../../document/DocumentManager";
+import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
+import ExpressionInput from "../../input/ExpressionInput";
+import VariableRenamingInput from "./VariableRenamingInput";
 import {
   isNameIssueError,
   NameIssue
-} from "../../../document/path/NameIsIdentifier.ts";
+} from "../../../document/path/NameIsIdentifier";
 
 type PoseVariablePanelProps = {
   name: string;

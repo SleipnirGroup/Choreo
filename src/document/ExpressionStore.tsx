@@ -24,24 +24,24 @@ import {
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
 import { Instance, getEnv, types } from "mobx-state-tree";
-import Angle from "../assets/Angle.tsx";
-import Mass from "../assets/Mass.tsx";
-import MoI from "../assets/MoI.tsx";
-import Torque from "../assets/Torque.tsx";
-import Waypoint from "../assets/Waypoint.tsx";
+import Angle from "../assets/Angle";
+import Mass from "../assets/Mass";
+import MoI from "../assets/MoI";
+import Torque from "../assets/Torque";
+import Waypoint from "../assets/Waypoint";
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables,
   Expr,
   isExpr
-} from "./schema/DocumentTypes.ts";
-import { Env } from "./DocumentManager.ts";
-import { tracing } from "./tauriTracing.ts";
+} from "./schema/DocumentTypes";
+import { Env } from "./DocumentManager";
+import { tracing } from "./tauriTracing";
 import {
   addErrorMessages,
   isValidIdentifier,
   NameIssue
-} from "./path/NameIsIdentifier.ts";
+} from "./path/NameIsIdentifier";
 
 export const math = create(all, { predictable: true });
 

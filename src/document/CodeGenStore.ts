@@ -1,5 +1,5 @@
 import { types } from "mobx-state-tree";
-import { CodeGenConfig } from "./schema/DocumentTypes.ts";
+import { CodeGenConfig } from "./schema/DocumentTypes";
 import { path } from "@tauri-apps/api";
 import { toast } from "react-toastify";
 

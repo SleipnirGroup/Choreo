@@ -6,7 +6,7 @@ import {
   ModelPropertiesDeclarationToProperties,
   types
 } from "mobx-state-tree";
-import { Expr, isExpr } from "./schema/DocumentTypes.ts";
+import { Expr, isExpr } from "./schema/DocumentTypes";
 import {
   ConstraintData,
   ConstraintDefinition,
@@ -16,12 +16,12 @@ import {
   DataMap,
   PropertyDefinitionList,
   consts
-} from "./ConstraintDefinitions.tsx";
+} from "./ConstraintDefinitions";
 import {
   ExpressionStore,
   IExpressionStore,
   IVariables
-} from "./ExpressionStore.tsx";
+} from "./ExpressionStore";
 
 type lookup<T extends ConstraintPropertyType> = T extends Expr
   ? typeof ExpressionStore

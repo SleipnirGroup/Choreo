@@ -1,13 +1,13 @@
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { IConstraintDataStore } from "../../../../document/ConstraintDataStore.tsx";
+import { IConstraintDataStore } from "../../../../document/ConstraintDataStore";
 import {
   ConstraintKey,
   DataMap
-} from "../../../../document/ConstraintDefinitions.tsx";
-import { doc } from "../../../../document/DocumentManager.ts";
-import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
+} from "../../../../document/ConstraintDefinitions";
+import { doc } from "../../../../document/DocumentManager";
+import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 
 type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;

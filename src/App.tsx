@@ -5,7 +5,7 @@ import "./App.css";
 import { observer } from "mobx-react";
 import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Body from "./Body.tsx";
+import Body from "./Body";
 import { Theme } from "@mui/material";
 
 function App() {

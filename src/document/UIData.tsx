@@ -10,16 +10,16 @@ import {
   Flip
 } from "@mui/icons-material";
 import { ReactElement } from "react";
-import Waypoint from "../assets/Waypoint.tsx";
-import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel.tsx";
-import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel.tsx";
+import Waypoint from "../assets/Waypoint";
+import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
+import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
   ConstraintDefinition,
   ConstraintDefinitions,
   ConstraintKey
-} from "./ConstraintDefinitions.tsx";
-import { ConstraintStore } from "./ConstraintStore.tsx";
-import CodeGenConfigPanel from "../components/config/CodeGenConfigPanel.tsx";
+} from "./ConstraintDefinitions";
+import { ConstraintStore } from "./ConstraintStore";
+import CodeGenConfigPanel from "../components/config/CodeGenConfigPanel";
 
 /* Navbar stuff */
 export const WaypointData: {

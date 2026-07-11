@@ -1,9 +1,9 @@
 import { Autocomplete, createFilterOptions, TextField } from "@mui/material";
 import { Component } from "react";
-import { doc } from "../../document/DocumentManager.ts";
+import { doc } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import { MathNode } from "mathjs";
-import { math } from "../../document/ExpressionStore.tsx";
+import { math } from "../../document/ExpressionStore";
 type Props = {
   setXExpression: (expr: MathNode) => void;
   setYExpression: (expr: MathNode) => void;

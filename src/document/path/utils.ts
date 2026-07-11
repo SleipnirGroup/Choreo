@@ -1,6 +1,6 @@
-import { WaypointIDX } from "../schema/DocumentTypes.ts";
-import { IWaypointScope } from "../ConstraintStore.tsx";
-import { IHolonomicWaypointStore } from "../HolonomicWaypointStore.ts";
+import { WaypointIDX } from "../schema/DocumentTypes";
+import { IWaypointScope } from "../ConstraintStore";
+import { IHolonomicWaypointStore } from "../HolonomicWaypointStore";
 
 export function findUUIDIndex(uuid: string, items: { uuid: string }[]) {
   return items.findIndex((wpt) => wpt.uuid === uuid);

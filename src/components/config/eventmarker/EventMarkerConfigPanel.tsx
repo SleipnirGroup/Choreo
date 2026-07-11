@@ -3,15 +3,15 @@ import { observer } from "mobx-react";
 import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
 import { DragDropContext } from "@hello-pangea/dnd";
-import { IEventMarkerStore } from "../../../document/EventMarkerStore.tsx";
-import ExpressionInput from "../../input/ExpressionInput.tsx";
-import ExpressionInputList from "../../input/ExpressionInputList.tsx";
+import { IEventMarkerStore } from "../../../document/EventMarkerStore";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 import InputStyles from "../../input/InputList.module.css";
-import ScopeSlider from "../ScopeSlider.tsx";
+import ScopeSlider from "../ScopeSlider";
 import styles from "../WaypointConfigPanel.module.css";
-import CommandDraggable from "./CommandDraggable.tsx";
-import { CommandStore } from "../../../document/CommandStore.tsx";
-import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore.ts";
+import CommandDraggable from "./CommandDraggable";
+import { CommandStore } from "../../../document/CommandStore";
+import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 
 type Props = { marker: IEventMarkerStore; points: IHolonomicWaypointStore[] };
 

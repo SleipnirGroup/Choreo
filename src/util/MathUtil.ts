@@ -1,7 +1,7 @@
 import {
   DifferentialSample,
   SwerveSample
-} from "../document/schema/DocumentTypes.ts";
+} from "../document/schema/DocumentTypes";
 
 /**
  * A port of WPILib's MathUtil.inputModulus

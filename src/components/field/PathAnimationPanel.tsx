@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager.ts";
-import PathAnimationSlider from "./PathAnimationSlider.tsx";
+import { doc, uiState } from "../../document/DocumentManager";
+import PathAnimationSlider from "./PathAnimationSlider";
 import IconButton from "@mui/material/IconButton";
 import PlayIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";

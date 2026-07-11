@@ -1,5 +1,5 @@
 import { ShapeLine } from "@mui/icons-material";
-import IconInProgress from "./IconInProgress.tsx";
+import IconInProgress from "./IconInProgress";
 
 function GenerateInProgress(props: any) {
   return (

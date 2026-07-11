@@ -5,9 +5,9 @@ import {
   type SwerveSample,
   Output,
   RobotConfig
-} from "../schema/DocumentTypes.ts";
-import { Env } from "../DocumentManager.ts";
-import { Commands } from "../tauriCommands.ts";
+} from "../schema/DocumentTypes";
+import { Env } from "../DocumentManager";
+import { Commands } from "../tauriCommands";
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/

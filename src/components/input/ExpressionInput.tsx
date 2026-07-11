@@ -2,7 +2,7 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
-import { IExpressionStore, math } from "../../document/ExpressionStore.tsx";
+import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
 import { IReactionDisposer, reaction } from "mobx";
 

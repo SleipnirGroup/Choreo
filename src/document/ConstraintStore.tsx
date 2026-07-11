@@ -2,11 +2,11 @@ import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
   ConstraintDataObjects,
   IConstraintDataStore
-} from "./ConstraintDataStore.tsx";
-import { ConstraintKey } from "./ConstraintDefinitions.tsx";
-import { Env } from "./DocumentManager.ts";
-import { IHolonomicWaypointStore } from "./HolonomicWaypointStore.ts";
-import { findUUIDIndex, getByWaypointID } from "./path/utils.ts";
+} from "./ConstraintDataStore";
+import { ConstraintKey } from "./ConstraintDefinitions";
+import { Env } from "./DocumentManager";
+import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import { findUUIDIndex, getByWaypointID } from "./path/utils";
 
 export const WaypointScope = types.union(
   types.literal("first"),

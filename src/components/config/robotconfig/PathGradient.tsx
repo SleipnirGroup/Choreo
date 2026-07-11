@@ -1,8 +1,8 @@
 import {
   DifferentialSample,
   SwerveSample
-} from "../../../document/schema/DocumentTypes.ts";
-import { IDocumentStore } from "../../../document/DocumentModel.tsx";
+} from "../../../document/schema/DocumentTypes";
+import { IDocumentStore } from "../../../document/DocumentModel";
 
 /**
  * Represents a path gradient.

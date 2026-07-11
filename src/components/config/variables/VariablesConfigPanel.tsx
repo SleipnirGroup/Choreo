@@ -2,21 +2,21 @@ import { Add, Delete } from "@mui/icons-material";
 import { MenuItem, Select, SelectChangeEvent, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
-import { doc } from "../../../document/DocumentManager.ts";
+import { doc } from "../../../document/DocumentManager";
 import {
   DimensionName,
   DimensionNameExt,
   DimensionNamesExt,
   DimensionsExt,
   IExpressionStore
-} from "../../../document/ExpressionStore.tsx";
-import ExpressionInput from "../../input/ExpressionInput.tsx";
-import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel.tsx";
-import VariableRenamingInput from "./VariableRenamingInput.tsx";
+} from "../../../document/ExpressionStore";
+import ExpressionInput from "../../input/ExpressionInput";
+import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel";
+import VariableRenamingInput from "./VariableRenamingInput";
 import {
   isNameIssueError,
   NameIssue
-} from "../../../document/path/NameIsIdentifier.ts";
+} from "../../../document/path/NameIsIdentifier";
 
 const VariablePanel = observer(
   (props: {

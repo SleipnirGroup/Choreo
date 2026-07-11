@@ -3,19 +3,19 @@ import {
   EventMarker,
   EventMarkerData,
   WaypointUUID
-} from "./schema/DocumentTypes.ts";
-import { CommandStore } from "./CommandStore.tsx";
-import { WaypointScope } from "./ConstraintStore.tsx";
-import { Env, EnvConstructors } from "./DocumentManager.ts";
-import { ExpressionStore } from "./ExpressionStore.tsx";
-import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore.ts";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore.ts";
+} from "./schema/DocumentTypes";
+import { CommandStore } from "./CommandStore";
+import { WaypointScope } from "./ConstraintStore";
+import { Env, EnvConstructors } from "./DocumentManager";
+import { ExpressionStore } from "./ExpressionStore";
+import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore";
+import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 import {
   findUUIDIndex,
   getByWaypointID,
   savedWaypointIdToWaypointId,
   waypointIdToSavedWaypointId
-} from "./path/utils.ts";
+} from "./path/utils";
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/

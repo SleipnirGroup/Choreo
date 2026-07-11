@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager.ts";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import { Slider } from "@mui/material";
-import { ViewLayers } from "../../document/UIData.tsx";
+import { ViewLayers } from "../../document/UIData";
 
 type Props = object;
 
