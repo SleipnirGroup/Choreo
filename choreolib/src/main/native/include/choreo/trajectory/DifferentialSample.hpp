@@ -7,6 +7,7 @@
 
 #include <Eigen/Core>
 #include <wpi/math/geometry/Pose2d.hpp>
+#include <wpi/math/geometry/Rotation2d.hpp>
 #include <wpi/math/kinematics/ChassisVelocities.hpp>
 #include <wpi/math/system/NumericalIntegration.hpp>
 #include <wpi/units/acceleration.hpp>
@@ -23,6 +24,8 @@
 #include "choreo/util/AllianceFlipperUtil.hpp"
 
 namespace choreo {
+
+
 
 /// A single differential drive robot sample in a Trajectory.
 class DifferentialSample {
@@ -46,9 +49,8 @@ class DifferentialSample {
   /// @param alpha The chassis angular acceleration
   /// @param fl The force of the left wheels
   /// @param fr The force of the right wheels
-  constexpr DifferentialSample(wpi::units::second_t timestamp,
-                               wpi::units::meter_t x, wpi::units::meter_t y,
-                               wpi::units::radian_t heading,
+  constexpr DifferentialSample(wpi::units::second_t timestamp, wpi::units::meter_t x,
+                               wpi::units::meter_t y, wpi::units::radian_t heading,
                                wpi::units::meters_per_second_t vl,
                                wpi::units::meters_per_second_t vr,
                                wpi::units::radians_per_second_t omega,
@@ -84,7 +86,7 @@ class DifferentialSample {
   /// Gets the field-relative chassis speeds of the DifferentialSample.
   ///
   /// @return The field-relative chassis speeds.
-  constexpr wpi::math::ChassisVelocities GetChassisVelocities() const {
+  constexpr wpi::math::ChassisVelocities GetChassisSpeeds() const {
     return wpi::math::ChassisVelocities{(vl + vr) / 2.0, 0_mps, omega};
   }
 
@@ -92,8 +94,7 @@ class DifferentialSample {
   ///
   /// @param timeStampOffset time to move sample by
   /// @return DifferentialSample that is moved forward by the offset
-  constexpr DifferentialSample OffsetBy(
-      wpi::units::second_t timeStampOffset) const {
+  constexpr DifferentialSample OffsetBy(wpi::units::second_t timeStampOffset) const {
     return DifferentialSample{timestamp + timeStampOffset,
                               x,
                               y,
@@ -115,8 +116,7 @@ class DifferentialSample {
   /// @return the interpolated sample
   DifferentialSample Interpolate(const DifferentialSample& endValue,
                                  wpi::units::second_t t) const {
-    wpi::units::scalar_t scale =
-        (t - timestamp) / (endValue.timestamp - timestamp);
+    wpi::units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
 
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations
@@ -158,7 +158,7 @@ class DifferentialSample {
         Eigen::Vector<double, 3>(al.value(), ar.value(), alpha.value()), τ);
 
     return DifferentialSample{
-        wpi::util::Lerp(timestamp, endValue.timestamp, scale),
+        wpi::util::Lerp(timestamp, endValue.timestamp, scale.value()),
         wpi::units::meter_t{sample(0, 0)},
         wpi::units::meter_t{sample(1, 0)},
         wpi::units::radian_t{sample(2, 0)},
@@ -168,8 +168,8 @@ class DifferentialSample {
         al,
         ar,
         alpha,
-        wpi::util::Lerp(fl, endValue.fl, scale),
-        wpi::util::Lerp(fr, endValue.fr, scale),
+        wpi::util::Lerp(fl, endValue.fl, scale.value()),
+        wpi::util::Lerp(fr, endValue.fr, scale.value()),
     };
   }
 

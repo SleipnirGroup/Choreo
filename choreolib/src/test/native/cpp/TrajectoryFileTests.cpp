@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
+#include <wpi/units/force.hpp>
 #include <wpi/util/json.hpp>
 
 #include "choreo/trajectory/SwerveSample.hpp"
@@ -75,7 +76,7 @@ constexpr std::string_view swerveTrajectoryString =
 })";
 
 const wpi::util::json swerveTrajectoryJson =
-    wpi::util::json::parse_or_throw(swerveTrajectoryString);
+  wpi::util::json::parse(swerveTrajectoryString).value();
 
 const Trajectory<SwerveSample> correctSwerveTrajectory{
     "New Path",

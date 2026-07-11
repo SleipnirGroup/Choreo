@@ -137,7 +137,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   }
 
   @Override
-  public ChassisVelocities getChassisVelocities() {
+  public ChassisVelocities getChassisSpeeds() {
     return new ChassisVelocities(vx, vy, omega);
   }
 
@@ -148,10 +148,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
     for (int i = 0; i < 4; ++i) {
-      interp_fx[i] =
-          this.moduleForcesX()[i] + (endValue.moduleForcesX()[i] - this.moduleForcesX()[i]) * scale;
-      interp_fy[i] =
-          this.moduleForcesY()[i] + (endValue.moduleForcesY()[i] - this.moduleForcesY()[i]) * scale;
+      interp_fx[i] = MathUtil.lerp(this.moduleForcesX()[i], endValue.moduleForcesX()[i], scale);
+      interp_fy[i] = MathUtil.lerp(this.moduleForcesY()[i], endValue.moduleForcesY()[i], scale);
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly

@@ -9,11 +9,13 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.ChoreoAllianceFlipUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
@@ -48,6 +50,11 @@ public class AutoFactory {
 
     Optional<Alliance> alliance() {
       return allianceGetter.get();
+    }
+
+    Supplier<Optional<Pose2d>> getFlippedPose(Optional<Pose2d> bluePose) {
+      return ChoreoAllianceFlipUtil.optionalFlippedPose2d(
+          bluePose, this::alliance, useAllianceFlipping);
     }
   }
 
@@ -127,7 +134,7 @@ public class AutoFactory {
     this.driveSubsystem = driveSubsystem;
     this.allianceCtx = new AllianceContext(useAllianceFlipping, MatchState::getAlliance);
     this.trajectoryLogger = trajectoryLogger;
-    HAL.reportUsage("ChoreoLib/AutoFactory", 1, "");
+    HAL.reportUsage("ChoreoTrigger", 1, "AutoFactory");
 
     voidRoutine =
         new AutoRoutine(this, "VOID-ROUTINE", allianceCtx) {
@@ -243,11 +250,25 @@ public class AutoFactory {
    *
    * @see AutoRoutine#trajectory(Trajectory)
    */
-  @SuppressWarnings("unchecked")
   <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
       Trajectory<ST> trajectory, AutoRoutine routine, boolean useBindings) {
+    return trajectory(trajectory, routine, useBindings, Function.identity());
+  }
+
+  /**
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
+   *
+   * @see AutoRoutine#trajectory(Trajectory)
+   */
+  @SuppressWarnings("unchecked")
+  <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
+      Trajectory<ST> trajectory,
+      AutoRoutine routine,
+      boolean useBindings,
+      Function<Trajectory<ST>, Trajectory<ST>> trajectoryTransform) {
     // type solidify everything
-    final Trajectory<ST> solidTrajectory = trajectory;
+    final Trajectory<ST> solidTrajectory = trajectoryTransform.apply(trajectory);
     final Consumer<ST> solidController = (Consumer<ST>) this.controller;
     return new AutoTrajectory(
         trajectory.name(),
@@ -260,6 +281,22 @@ public class AutoFactory {
         driveSubsystem,
         routine,
         useBindings ? bindings : new AutoBindings());
+  }
+
+  /**
+   * Warms up Choreo to ensure that there is no delay at the start of auto. It is recommended to
+   * schedule this command in your Robot constructor, like so:
+   *
+   * <pre><code>
+   *     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
+   * </code></pre>
+   *
+   * @return A command that warms up Choreo's autonomous functionality.
+   */
+  public Command warmupCmd() {
+    var autoTraj = trajectory("", voidRoutine, false);
+    autoTraj.suppressWarnings();
+    return autoTraj.cmd().ignoringDisable(true).withTimeout(0.5).withName("Choreo Warmup Command");
   }
 
   /**
@@ -278,6 +315,51 @@ public class AutoFactory {
    */
   public Command trajectoryCmd(String trajectoryName) {
     return trajectory(trajectoryName, voidRoutine, false).cmd();
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
+   *
+   * <p><b>Important </b>
+   *
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @param transform A function that takes in the loaded trajectory and applies a transformation to
+   *     it, such as left-to-right mirroring.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public Command trajectoryCmd(
+      String trajectoryName,
+      final int splitIndex,
+      Function<AutoTrajectory, AutoTrajectory> transform) {
+    return transform.apply(trajectory(trajectoryName, splitIndex, voidRoutine, false)).cmd();
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
+   *
+   * <p><b>Important </b>
+   *
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param transform A function that takes in the loaded trajectory and applies a transformation to
+   *     it, such as left-to-right mirroring.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public Command trajectoryCmd(
+      String trajectoryName, Function<AutoTrajectory, AutoTrajectory> transform) {
+    return transform.apply(trajectory(trajectoryName, voidRoutine, false)).cmd();
   }
 
   /**
@@ -350,6 +432,37 @@ public class AutoFactory {
    */
   public <ST extends TrajectorySample<ST>> Command resetOdometry(Trajectory<ST> trajectory) {
     return trajectory(trajectory, voidRoutine, false).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the supplied pose
+   *
+   * @param pose A function that is called when the command is run. It returns an <code>
+   *     Optional&lt;Pose2d&gt;</code> of the robot's desired odometry position.
+   * @return A command that resets the robot's odometry to the supplied pose, or does nothing if the
+   *     supplied Optional is empty.
+   */
+  public Command resetOdometry(Supplier<Optional<Pose2d>> pose) {
+    return driveSubsystem.runOnce(() -> pose.get().ifPresent(resetOdometry));
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the given pose
+   *
+   * @param pose An <code>Optional&lt;Pose2d&gt;</code> of the robot's desired odometry position.
+   * @param doFlipForAlliance True if the given pose still needs to be flipped according to the
+   *     alliance (usually true). False if it is an absolute field position.
+   * @return A command that resets the robot's odometry to the given pose (flipped as directed), or
+   *     does nothing if the supplied Optional is empty.
+   */
+  public Command resetOdometry(Optional<Pose2d> pose, boolean doFlipForAlliance) {
+    if (pose.isEmpty()) {
+      return driveSubsystem.runOnce(
+          () -> {}); // equivalent to Commands.none() requiring driveSubsystem.
+    }
+    Supplier<Optional<Pose2d>> supplier =
+        doFlipForAlliance ? allianceCtx.getFlippedPose(pose) : (() -> pose);
+    return resetOdometry(supplier);
   }
 
   /**

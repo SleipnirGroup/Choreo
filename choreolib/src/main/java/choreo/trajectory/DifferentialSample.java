@@ -115,7 +115,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * @see org.wpilib.math.kinematics.DifferentialDriveKinematics#toChassisVelocities
    */
   @Override
-  public ChassisVelocities getChassisVelocities() {
+  public ChassisVelocities getChassisSpeeds() {
     return new ChassisVelocities((vl + vr) / 2, 0, omega);
   }
 
@@ -156,7 +156,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar, alpha), τ);
 
     return new DifferentialSample(
-        this.t + (endValue.t - this.t) * scale,
+        MathUtil.lerp(this.t, endValue.t, scale),
         sample.get(0, 0),
         sample.get(1, 0),
         sample.get(2, 0),
@@ -166,8 +166,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         this.al,
         this.ar,
         this.alpha,
-        this.fl + (endValue.fl - this.fl) * scale,
-        this.fr + (endValue.fr - this.fr) * scale);
+        MathUtil.lerp(this.fl, endValue.fl, scale),
+        MathUtil.lerp(this.fr, endValue.fr, scale));
   }
 
   public DifferentialSample flipped() {

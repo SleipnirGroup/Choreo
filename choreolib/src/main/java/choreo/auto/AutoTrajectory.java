@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import static choreo.util.ChoreoAlert.allianceNotReady;
 import static org.wpilib.driverstation.Alert.Level.HIGH;
 
 import choreo.Choreo.TrajectoryLogger;
@@ -25,7 +26,6 @@ import org.wpilib.command2.FunctionalCommand;
 import org.wpilib.command2.ScheduleCommand;
 import org.wpilib.command2.Subsystem;
 import org.wpilib.command2.button.Trigger;
-import org.wpilib.driverstation.Alert;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
@@ -56,8 +56,6 @@ public class AutoTrajectory {
   private static final MultiAlert noInitialPose =
       ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", HIGH);
-  private static final Alert allianceNotReady =
-      ChoreoAlert.alert("Alliance used but not ready", HIGH);
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
@@ -70,6 +68,7 @@ public class AutoTrajectory {
   private final Timer inactiveTimer = new Timer();
   private final Subsystem driveSubsystem;
   private final AutoRoutine routine;
+  private final AutoBindings bindings;
 
   /**
    * A way to create slightly less triggers for many actions. Not static as to not leak triggers
@@ -82,6 +81,9 @@ public class AutoTrajectory {
 
   /** If the trajectory ran to completion */
   private boolean isCompleted = false;
+
+  /** Whether to suppress warnings for this trajectory. */
+  private boolean warnUser = true;
 
   /**
    * Constructs an AutoTrajectory.
@@ -117,6 +119,7 @@ public class AutoTrajectory {
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
     this.trajectoryLogger = trajectoryLogger;
+    this.bindings = bindings;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
@@ -205,6 +208,11 @@ public class AutoTrajectory {
         || !allianceCtx.allianceKnownOrIgnored();
   }
 
+  /** Suppresses warnings for this trajectory. */
+  void suppressWarnings() {
+    warnUser = false;
+  }
+
   /**
    * Creates a command that allocates the drive subsystem and follows the trajectory using the
    * factories control function
@@ -213,7 +221,7 @@ public class AutoTrajectory {
    */
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
-    if (trajectory.samples().isEmpty()) {
+    if (trajectory.samples().isEmpty() && warnUser) {
       return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
@@ -247,7 +255,9 @@ public class AutoTrajectory {
             Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
             Commands.runOnce(
                     () -> {
-                      noInitialPose.addCause(name);
+                      if (warnUser) {
+                        noInitialPose.addCause(name);
+                      }
                       routine.kill();
                     })
                 .andThen(driveSubsystem.run(() -> {})),
@@ -268,6 +278,75 @@ public class AutoTrajectory {
   public <SampleType extends TrajectorySample<SampleType>>
       Trajectory<SampleType> getRawTrajectory() {
     return (Trajectory<SampleType>) trajectory;
+  }
+
+  /**
+   * Returns this auto trajectory, mirrored to the other alliance.
+   *
+   * @param <SampleType> The type of the trajectory samples. Due to Java limitations, you have to
+   *     specify the sample type again here even if it was already specified when creating the
+   *     AutoTrajectory.
+   * @return this auto trajectory, mirrored to the other alliance.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorX() {
+    return new AutoTrajectory(
+        name,
+        (Trajectory<SampleType>) trajectory.mirrorX(),
+        poseSupplier,
+        resetOdometry,
+        (Consumer<SampleType>) controller,
+        allianceCtx,
+        (TrajectoryLogger<SampleType>) trajectoryLogger,
+        driveSubsystem,
+        routine,
+        bindings);
+  }
+
+  /**
+   * Returns this auto trajectory, mirrored left-to-right from the driver's perspective.
+   *
+   * @param <SampleType> The type of the trajectory samples. Due to Java limitations, you have to
+   *     specify the sample type again here even if it was already specified when creating the
+   *     AutoTrajectory.
+   * @return this auto trajectory, mirrored left-to-right from the driver's perspective.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory mirrorY() {
+    return new AutoTrajectory(
+        name,
+        (Trajectory<SampleType>) trajectory.mirrorY(),
+        poseSupplier,
+        resetOdometry,
+        (Consumer<SampleType>) controller,
+        allianceCtx,
+        (TrajectoryLogger<SampleType>) trajectoryLogger,
+        driveSubsystem,
+        routine,
+        bindings);
+  }
+
+  /**
+   * Returns this auto trajectory, rotated 180 degrees around the field center.
+   *
+   * @param <SampleType> The type of the trajectory samples. Due to Java limitations, you have to
+   *     specify the sample type again here even if it was already specified when creating the
+   *     AutoTrajectory.
+   * @return this auto trajectory, rotated 180 degrees around the field center.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory rotateAround() {
+    return new AutoTrajectory(
+        name,
+        (Trajectory<SampleType>) trajectory.rotateAround(),
+        poseSupplier,
+        resetOdometry,
+        (Consumer<SampleType>) controller,
+        allianceCtx,
+        (TrajectoryLogger<SampleType>) trajectoryLogger,
+        driveSubsystem,
+        routine,
+        bindings);
   }
 
   /**
@@ -427,20 +506,6 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
-   * after one pulse.
-   *
-   * @param cycles The number of cycles to delay the trigger from rising to true.
-   * @return A trigger that is true when the trajectory is finished.
-   * @see #doneDelayed(int)
-   * @deprecated Use {@link #doneDelayed(int)} instead.
-   */
-  @Deprecated(forRemoval = true, since = "2025")
-  public Trigger done(int cycles) {
-    return doneDelayed(0.02 * cycles);
-  }
-
-  /**
    * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
    *
    * <p>This is different from inactive() in a few ways.
@@ -515,13 +580,17 @@ public class AutoTrajectory {
   public Trigger atTime(double timeSinceStart) {
     // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      triggerTimeNegative.addCause(name);
+      if (warnUser) {
+        triggerTimeNegative.addCause(name);
+      }
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
     if (timeSinceStart > trajectory.getTotalTime()) {
-      triggerTimeAboveMax.addCause(name);
+      if (warnUser) {
+        triggerTimeAboveMax.addCause(name);
+      }
       return offTrigger;
     }
 
@@ -567,7 +636,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
+    if (!foundEvent && warnUser) {
       eventNotFound.addCause(name);
     }
 
@@ -667,7 +736,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
+    if (!foundEvent && warnUser) {
       eventNotFound.addCause(name);
     }
 
@@ -747,7 +816,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
+    if (!foundEvent && warnUser) {
       eventNotFound.addCause(name);
     }
 
@@ -769,7 +838,7 @@ public class AutoTrajectory {
             .mapToDouble(e -> e.timestamp)
             .toArray();
 
-    if (times.length == 0) {
+    if (times.length == 0 && warnUser) {
       eventNotFound.addCause("collectEvents(" + eventName + ")");
     }
 

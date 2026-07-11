@@ -33,7 +33,7 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
    *
    * @return the field-relative chassis speeds of this sample.
    */
-  ChassisVelocities getChassisVelocities();
+  ChassisVelocities getChassisSpeeds();
 
   /**
    * Returns this sample, flipped to the other alliance according to the symmetry of the field.

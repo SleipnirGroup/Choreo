@@ -2,13 +2,21 @@
 
 package choreo.util;
 
+import static choreo.util.FieldDimensions.FIELD_LENGTH;
+import static choreo.util.FieldDimensions.FIELD_WIDTH;
+
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
-import org.wpilib.math.geometry.*;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.geometry.Translation3d;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current alliance across
@@ -26,10 +34,17 @@ public class ChoreoAllianceFlipUtil {
     /** Constructs a flipper. */
     protected Flipper() {}
 
-    /** X becomes -x, leaves the y coordinate unchanged, and heading becomes PI - heading. */
+    /**
+     * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
+     * heading.
+     */
     static class MirroredX extends Flipper {
+      public MirroredX(double fieldLength, double fieldWidth) {
+        super(fieldLength, fieldWidth);
+      }
+
       public double flipX(double x) {
-        return -x;
+        return getFieldLength() - x;
       }
 
       public double flipY(double y) {
@@ -97,10 +112,12 @@ public class ChoreoAllianceFlipUtil {
      * Creates a new flipper that mirrors across x=fieldLength/2. This is intended for
      * alliance-based flipping in rotationally asymmetric games.
      *
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
      * @return a new flipper.
      */
-    public static MirroredX mirroredX() {
-      return new MirroredX();
+    public static MirroredX mirroredX(double fieldLength, double fieldWidth) {
+      return new MirroredX(fieldLength, fieldWidth);
     }
 
     /**
@@ -108,12 +125,16 @@ public class ChoreoAllianceFlipUtil {
      * fieldWidth-y, and heading becomes -heading.
      */
     static class MirroredY extends Flipper {
+      public MirroredY(double fieldLength, double fieldWidth) {
+        super(fieldLength, fieldWidth);
+      }
+
       public double flipX(double x) {
         return x;
       }
 
       public double flipY(double y) {
-        return -y;
+        return getFieldWidth() - y;
       }
 
       public double flipHeading(double heading) {
@@ -180,16 +201,24 @@ public class ChoreoAllianceFlipUtil {
      * same alliance half, but can be used to mirror left and right sides of the field, from driver
      * perspective.
      *
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
      * @return a new flipper.
      */
-    public static MirroredY mirroredY() {
-      return new MirroredY();
+    public static MirroredY mirroredY(double fieldLength, double fieldWidth) {
+      return new MirroredY(fieldLength, fieldWidth);
     }
 
     /** X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes PI + heading. */
     static class RotatedAround extends Flipper {
-      MirroredX mirrorX = mirroredX();
-      MirroredY mirrorY = mirroredY();
+      public RotatedAround(double fieldLength, double fieldWidth) {
+        super(fieldLength, fieldWidth);
+        this.mirrorX = mirroredX(fieldLength, fieldWidth);
+        this.mirrorY = mirroredY(fieldLength, fieldWidth);
+      }
+
+      MirroredX mirrorX = mirroredX(getFieldLength(), getFieldWidth());
+      MirroredY mirrorY = mirroredY(getFieldLength(), getFieldWidth());
 
       public double flipX(double x) {
         return mirrorX.flipX(mirrorY.flipX(x));
@@ -257,10 +286,12 @@ public class ChoreoAllianceFlipUtil {
      * Creates a new rotated flipper around the center of the field. This is intended for
      * alliance-based flipping in rotationally symmetric games.
      *
+     * @param fieldLength The length of the field.
+     * @param fieldWidth The width of the field.
      * @return A new rotated flipper around the center of the field.
      */
-    public static RotatedAround rotatedAround() {
-      return new RotatedAround();
+    public static RotatedAround rotatedAround(double fieldLength, double fieldWidth) {
+      return new RotatedAround(fieldLength, fieldWidth);
     }
 
     // ***** Class Definition *****/
@@ -277,6 +308,24 @@ public class ChoreoAllianceFlipUtil {
     public Flipper(double fieldLength, double fieldWidth) {
       this.fieldLength = fieldLength;
       this.fieldWidth = fieldWidth;
+    }
+
+    /**
+     * Gets the length (X axis) of the field.
+     *
+     * @return the length (X axis) of the field.
+     */
+    public double getFieldLength() {
+      return fieldLength;
+    }
+
+    /**
+     * Gets the width (Y axis) of the field.
+     *
+     * @return the width (Y axis) of the field.
+     */
+    public double getFieldWidth() {
+      return fieldWidth;
     }
 
     /**
@@ -380,7 +429,7 @@ public class ChoreoAllianceFlipUtil {
     }
 
     /** The default flipper for the current FRC year. */
-    public static Flipper FRC_CURRENT = rotatedAround();
+    public static Flipper FRC_CURRENT = rotatedAround(FIELD_LENGTH, FIELD_WIDTH);
   }
 
   private static Flipper activeAllianceFlip;
@@ -455,9 +504,9 @@ public class ChoreoAllianceFlipUtil {
    */
   public static void setFlipper(Flipper flipper) {
     activeAllianceFlip = flipper;
-    activeMirrorX = Flipper.mirroredX();
-    activeMirrorY = Flipper.mirroredY();
-    activeRotateAround = Flipper.rotatedAround();
+    activeMirrorX = Flipper.mirroredX(flipper.getFieldLength(), flipper.getFieldWidth());
+    activeMirrorY = Flipper.mirroredY(flipper.getFieldLength(), flipper.getFieldWidth());
+    activeRotateAround = Flipper.rotatedAround(flipper.getFieldLength(), flipper.getFieldWidth());
   }
 
   /**

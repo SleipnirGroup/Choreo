@@ -6,6 +6,8 @@
 #include <array>
 #include <type_traits>
 
+#include <wpi/math/geometry/Pose2d.hpp>
+#include <wpi/math/geometry/Rotation2d.hpp>
 #include <wpi/math/kinematics/ChassisVelocities.hpp>
 #include <wpi/units/acceleration.hpp>
 #include <wpi/units/angle.hpp>
@@ -21,6 +23,8 @@
 #include "choreo/util/AllianceFlipperUtil.hpp"
 
 namespace choreo {
+
+
 
 /// A single swerve robot sample in a Trajectory.
 class SwerveSample {
@@ -84,7 +88,7 @@ class SwerveSample {
   /// Gets the field-relative chassis speeds of the SwerveSample.
   ///
   /// @return The field-relative chassis speeds.
-  constexpr wpi::math::ChassisVelocities GetChassisVelocities() const {
+  constexpr wpi::math::ChassisVelocities GetChassisSpeeds() const {
     return wpi::math::ChassisVelocities{vx, vy, omega};
   }
 
@@ -200,16 +204,17 @@ class SwerveSample {
   /// @return the interpolated sample
   constexpr SwerveSample Interpolate(const SwerveSample& endValue,
                                      wpi::units::second_t t) const {
-    wpi::units::scalar_t scale =
-        (t - timestamp) / (endValue.timestamp - timestamp);
+    wpi::units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
 
     std::array<wpi::units::newton_t, 4> interpolatedForcesX;
     std::array<wpi::units::newton_t, 4> interpolatedForcesY;
     for (int i = 0; i < 4; i++) {
-      interpolatedForcesX[i] = wpi::util::Lerp(
-          moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
-      interpolatedForcesY[i] = wpi::util::Lerp(
-          moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
+      interpolatedForcesX[i] =
+        wpi::util::Lerp(moduleForcesX[i], endValue.moduleForcesX[i],
+                scale.value());
+      interpolatedForcesY[i] =
+        wpi::util::Lerp(moduleForcesY[i], endValue.moduleForcesY[i],
+                scale.value());
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly
@@ -222,7 +227,8 @@ class SwerveSample {
     //   v(τ) = vₖ + aₖτ
     auto τ = t - timestamp;
     auto τ2 = τ * τ;
-    return SwerveSample{wpi::util::Lerp(timestamp, endValue.timestamp, scale),
+    return SwerveSample{wpi::util::Lerp(timestamp, endValue.timestamp,
+                                        scale.value()),
                         x + vx * τ + 0.5 * ax * τ2,
                         y + vy * τ + 0.5 * ay * τ2,
                         heading + omega * τ + 0.5 * alpha * τ2,

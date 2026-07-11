@@ -10,9 +10,10 @@ import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectoryTestHelper;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
-import org.wpilib.command3.Command;
-import org.wpilib.command3.Scheduler;
-import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.SchedulerMaker;
+import org.wpilib.driverstation.RobotState;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.hardware.hal.RobotMode;
 import org.wpilib.math.geometry.Pose2d;
@@ -22,18 +23,18 @@ import org.wpilib.simulation.SimHooks;
 
 public class TrajectoryCmdTest {
   private static final Pose2d start = new Pose2d();
-  private static final Pose2d end = new Pose2d(2.0, 2.0, Rotation2d.k180deg);
+  private static final Pose2d end = new Pose2d(2.0, 2.0, new Rotation2d(Math.PI));
 
   @Test
   public void testExecution() {
     assert HAL.initialize(500, 0);
-    Scheduler scheduler = Scheduler.createIndependentScheduler();
+    CommandScheduler scheduler = SchedulerMaker.make();
     AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
-    AutoFactory factory = AutoTestHelper.factory(scheduler, false, pose);
+    AutoFactory factory = AutoTestHelper.factory(false, pose);
     Trajectory<SwerveSample> trajectory =
         TrajectoryTestHelper.linearTrajectory("test", start, end, 3.0, SwerveSample.class);
 
-    Command trajectoryCmd = factory.trajectory(trajectory).cmd();
+    Command trajectoryCmd = factory.trajectoryCmd(trajectory);
 
     scheduler.schedule(trajectoryCmd);
 
@@ -42,32 +43,33 @@ public class TrajectoryCmdTest {
 
     SimHooks.pauseTiming();
 
-    updateAndAssertIsAutonomous();
+    DriverStationSim.setDsAttached(true);
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
+    DriverStationSim.notifyNewData();
+
+    assertTrue(RobotState.isAutonomousEnabled());
 
     for (int i = 0; i < 149; i++) {
       scheduler.run();
-      assertTrue(scheduler.isScheduledOrRunning(trajectoryCmd));
+      assertTrue(scheduler.isScheduled(trajectoryCmd));
       SimHooks.stepTiming(0.02);
     }
 
     SimHooks.stepTiming(0.1);
     scheduler.run();
 
-    assertFalse(scheduler.isScheduledOrRunning(trajectoryCmd));
+    assertFalse(scheduler.isScheduled(trajectoryCmd));
 
     assertTrue(pose.get().getTranslation().getDistance(end.getTranslation()) < 0.5);
 
-    updateAndAssertIsAutonomous();
-
-    SimHooks.resumeTiming();
-  }
-
-  private void updateAndAssertIsAutonomous() {
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setEnabled(true);
     DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
     DriverStationSim.notifyNewData();
-    DriverStationBackend.refreshData();
-    assertTrue(DriverStationBackend.isAutonomousEnabled());
+
+    assertTrue(RobotState.isAutonomousEnabled());
+
+    SimHooks.resumeTiming();
   }
 }
