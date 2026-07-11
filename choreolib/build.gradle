@@ -41,7 +41,7 @@ dependencies {
     implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation "org.wpilib.hal:hal-java:$wpilibVersion"
-    implementation "org.wpilib:commands3-java:$wpilibVersion"
+    implementation "org.wpilib.commandsv2:commandsv2-java:$wpilibVersion"
 
     // This is needed to use wpilibj Filesystem class
     testImplementation "org.wpilib.cscore:cscore-java:$wpilibVersion"
