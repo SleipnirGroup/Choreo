@@ -239,7 +239,8 @@ export const HolonomicPathStore = types
           debounceId = setTimeout(performSave, 50);
         }
       );
-      let checkUpToDateDebounceId: ReturnType<typeof setTimeout> | undefined = undefined;
+      let checkUpToDateDebounceId: ReturnType<typeof setTimeout> | undefined =
+        undefined;
       robotConfigListenerDisposer = reaction(
         () => self.trajectory.currentConfigSnapshot,
         () => {

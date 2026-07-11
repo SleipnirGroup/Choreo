@@ -11,7 +11,13 @@ import { Theme } from "@mui/material";
 function App() {
   const buttonOverrides = {
     // Name of the slot
-    root: ({ ownerState, theme }: { ownerState: { color?: string }; theme: Theme }) => ({
+    root: ({
+      ownerState,
+      theme
+    }: {
+      ownerState: { color?: string };
+      theme: Theme;
+    }) => ({
       // Some CSS
       fontSize: "1rem",
       color: "white",
@@ -30,7 +36,13 @@ function App() {
   };
   const iconButtonOverrides = {
     // Name of the slot
-    root: ({ ownerState, theme }: { ownerState: { color?: string }; theme: Theme }) => ({
+    root: ({
+      ownerState,
+      theme
+    }: {
+      ownerState: { color?: string };
+      theme: Theme;
+    }) => ({
       // Some CSS
       fontSize: "1rem",
       color: "white",

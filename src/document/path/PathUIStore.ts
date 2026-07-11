@@ -1,5 +1,8 @@
 import { types, getEnv, Instance } from "mobx-state-tree";
-import { DifferentialSample, type SwerveSample } from "../schema/DocumentTypes.ts";
+import {
+  DifferentialSample,
+  type SwerveSample
+} from "../schema/DocumentTypes.ts";
 import { Env } from "../DocumentManager.ts";
 import { SavingState } from "../UIStateStore.tsx";
 
