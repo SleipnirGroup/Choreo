@@ -4,10 +4,10 @@ import {
   EventMarkerData,
   WaypointUUID
 } from "./schema/DocumentTypes.ts";
-import { CommandStore } from "./CommandStore.ts";
-import { WaypointScope } from "./ConstraintStore.ts";
+import { CommandStore } from "./CommandStore.tsx";
+import { WaypointScope } from "./ConstraintStore.tsx";
 import { Env, EnvConstructors } from "./DocumentManager.ts";
-import { ExpressionStore } from "./ExpressionStore.ts";
+import { ExpressionStore } from "./ExpressionStore.tsx";
 import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore.ts";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore.ts";
 import {

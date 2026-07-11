@@ -9,10 +9,10 @@ import {
   DimensionNamesExt,
   DimensionsExt,
   IExpressionStore
-} from "../../../document/ExpressionStore.ts";
-import ExpressionInput from "../../input/ExpressionInput.ts";
-import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel.ts";
-import VariableRenamingInput from "./VariableRenamingInput.ts";
+} from "../../../document/ExpressionStore.tsx";
+import ExpressionInput from "../../input/ExpressionInput.tsx";
+import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel.tsx";
+import VariableRenamingInput from "./VariableRenamingInput.tsx";
 import {
   isNameIssueError,
   NameIssue

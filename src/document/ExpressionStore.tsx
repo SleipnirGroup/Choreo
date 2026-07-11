@@ -24,11 +24,11 @@ import {
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
 import { Instance, getEnv, types } from "mobx-state-tree";
-import Angle from "../assets/Angle.ts";
-import Mass from "../assets/Mass.ts";
-import MoI from "../assets/MoI.ts";
-import Torque from "../assets/Torque.ts";
-import Waypoint from "../assets/Waypoint.ts";
+import Angle from "../assets/Angle.tsx";
+import Mass from "../assets/Mass.tsx";
+import MoI from "../assets/MoI.tsx";
+import Torque from "../assets/Torque.tsx";
+import Waypoint from "../assets/Waypoint.tsx";
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables,

@@ -3,7 +3,7 @@ import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager.ts";
 import styles from "./WaypointConfigPanel.module.css";
 import { Slider } from "@mui/material";
-import { ViewLayers } from "../../document/UIData.ts";
+import { ViewLayers } from "../../document/UIData.tsx";
 
 type Props = object;
 

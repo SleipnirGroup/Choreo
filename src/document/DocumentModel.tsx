@@ -11,9 +11,9 @@ import {
   SwerveSample,
   Trajectory
 } from "./schema/DocumentTypes.ts";
-import { ConstraintStore, IConstraintStore } from "./ConstraintStore.ts";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.ts";
-import { Variables } from "./ExpressionStore.ts";
+import { ConstraintStore, IConstraintStore } from "./ConstraintStore.tsx";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.tsx";
+import { Variables } from "./ExpressionStore.tsx";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore

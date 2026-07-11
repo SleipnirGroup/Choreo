@@ -1,11 +1,11 @@
 import { Component } from "react";
 import { doc, uiState } from "../../../../document/DocumentManager.ts";
-import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions.ts";
+import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions.tsx";
 
 import { observer } from "mobx-react";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
 import { FieldMatrixContext } from "../FieldMatrixContext.ts";
-import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer.ts";
+import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer.tsx";
 import { tracing } from "../../../../document/tauriTracing.ts";
 
 type Props = {

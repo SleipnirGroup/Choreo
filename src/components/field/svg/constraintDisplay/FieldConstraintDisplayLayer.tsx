@@ -3,16 +3,16 @@ import React from "react";
 import {
   ConstraintDataTypeMap,
   ConstraintKey
-} from "../../../../document/ConstraintDefinitions.ts";
-import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore.ts";
+} from "../../../../document/ConstraintDefinitions.tsx";
+import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore.tsx";
 import { doc } from "../../../../document/DocumentManager.ts";
-import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer.ts";
-import KeepInCircleOverlay from "./KeepInCircleOverlay.ts";
-import KeepInRectangleOverlay from "./KeepInRectangleOverlay.ts";
-import PointAtOverlay from "./PointAtOverlay.ts";
-import KeepOutCircleOverlay from "./KeepOutCircleOverlay.ts";
+import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer.tsx";
+import KeepInCircleOverlay from "./KeepInCircleOverlay.tsx";
+import KeepInRectangleOverlay from "./KeepInRectangleOverlay.tsx";
+import PointAtOverlay from "./PointAtOverlay.tsx";
+import KeepOutCircleOverlay from "./KeepOutCircleOverlay.tsx";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
-import KeepInLaneOverlay from "./KeepInLaneOverlay.ts";
+import KeepInLaneOverlay from "./KeepInLaneOverlay.tsx";
 
 export type OverlayProps<K extends keyof ConstraintDataTypeMap> = {
   data: IConstraintStoreKeyed<K>;

@@ -6,14 +6,14 @@ import {
   Expr,
   Waypoint
 } from "../schema/DocumentTypes.ts";
-import { ConstraintKey, DataMap } from "../ConstraintDefinitions.ts";
+import { ConstraintKey, DataMap } from "../ConstraintDefinitions.tsx";
 import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "../ConstraintStore.ts";
+} from "../ConstraintStore.tsx";
 import { Env } from "../DocumentManager.ts";
-import { ExpressionStore } from "../ExpressionStore.ts";
+import { ExpressionStore } from "../ExpressionStore.tsx";
 import {
   DEFAULT_WAYPOINT,
   HolonomicWaypointStore,

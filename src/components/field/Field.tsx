@@ -4,21 +4,21 @@ import {
   doc,
   generateWithToastsAndExport
 } from "../../document/DocumentManager.ts";
-import WaypointPanel from "../config/WaypointConfigPanel.ts";
+import WaypointPanel from "../config/WaypointConfigPanel.tsx";
 
 import { Close } from "@mui/icons-material";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { Box, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { IConstraintStore } from "../../document/ConstraintStore.ts";
-import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
+import { IConstraintStore } from "../../document/ConstraintStore.tsx";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.tsx";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore.ts";
 import { Commands } from "../../document/tauriCommands.ts";
-import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel.ts";
-import ViewOptionsPanel from "../config/ViewOptionsPanel.ts";
-import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel.ts";
-import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel.ts";
+import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel.tsx";
+import ViewOptionsPanel from "../config/ViewOptionsPanel.tsx";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel.tsx";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel.tsx";
 import styles from "./Field.module.css";
-import FieldOverlayRoot from "./svg/FieldOverlayRoot.ts";
+import FieldOverlayRoot from "./svg/FieldOverlayRoot.tsx";
 
 type Props = object;
 

@@ -1,7 +1,7 @@
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { ask, save } from "@tauri-apps/plugin-dialog";
 import { TauriEvent, UnlistenFn } from "@tauri-apps/api/event";
-import { DocumentStore, SelectableItemTypes } from "./DocumentModel.ts";
+import { DocumentStore, SelectableItemTypes } from "./DocumentModel.tsx";
 
 import hotkeys from "hotkeys-js";
 import { getDebugName, IReactionDisposer, reaction } from "mobx";
@@ -32,24 +32,24 @@ import {
   commandIsGroup,
   commandIsNamed,
   commandIsWait
-} from "./CommandStore.ts";
+} from "./CommandStore.tsx";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
-} from "./ConstraintDataStore.ts";
+} from "./ConstraintDataStore.tsx";
 import {
   ConstraintDefinitions,
   ConstraintKey,
   DataMap
-} from "./ConstraintDefinitions.ts";
+} from "./ConstraintDefinitions.tsx";
 import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "./ConstraintStore.ts";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.ts";
-import { IExpressionStore, IVariables, variables } from "./ExpressionStore.ts";
+} from "./ConstraintStore.tsx";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore.tsx";
+import { IExpressionStore, IVariables, variables } from "./ExpressionStore.tsx";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
@@ -59,8 +59,8 @@ import {
   IRobotConfigStore,
   RobotConfigStore
 } from "./RobotConfigStore.ts";
-import { ViewLayerDefaults } from "./UIData.ts";
-import { SavingState, UIStateStore } from "./UIStateStore.ts";
+import { ViewLayerDefaults } from "./UIData.tsx";
+import { SavingState, UIStateStore } from "./UIStateStore.tsx";
 import { findUUIDIndex } from "./path/utils.ts";
 import { ChoreoError, Commands } from "./tauriCommands.ts";
 import { tracing } from "./tauriTracing.ts";

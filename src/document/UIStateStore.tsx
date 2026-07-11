@@ -4,9 +4,9 @@ import { Instance, types } from "mobx-state-tree";
 import {
   PathGradient,
   PathGradients
-} from "../components/config/robotconfig/PathGradient.ts";
+} from "../components/config/robotconfig/PathGradient.tsx";
 import LocalStorageKeys from "../util/LocalStorageKeys.ts";
-import { ConstraintKey } from "./ConstraintDefinitions.ts";
+import { ConstraintKey } from "./ConstraintDefinitions.tsx";
 import {
   NUM_SETTINGS_TABS,
   NavbarData,
@@ -16,10 +16,10 @@ import {
   navbarIndexToConstraint,
   navbarIndexToConstraintDefinition,
   navbarIndexToConstraintKey
-} from "./UIData.ts";
+} from "./UIData.tsx";
 import { tracing } from "./tauriTracing.ts";
 import { CustomFieldData } from "./schema/DocumentTypes.ts";
-import { defaultFieldData } from "../components/field/svg/fields/JSONFieldImage.ts";
+import { defaultFieldData } from "../components/field/svg/fields/JSONFieldImage.tsx";
 
 export enum SavingState {
   SAVED = "saved",

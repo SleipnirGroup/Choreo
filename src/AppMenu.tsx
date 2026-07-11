@@ -30,7 +30,7 @@ import {
   openProjectSelectFeedback
 } from "./document/DocumentManager.ts";
 
-import SettingsModal from "./components/config/SettingsModal.ts";
+import SettingsModal from "./components/config/SettingsModal.tsx";
 import { Commands } from "./document/tauriCommands.ts";
 import { version } from "./util/version.ts";
 

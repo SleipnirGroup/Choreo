@@ -3,7 +3,7 @@ import { Component } from "react";
 import { doc } from "../../document/DocumentManager.ts";
 import { observer } from "mobx-react";
 import { MathNode } from "mathjs";
-import { math } from "../../document/ExpressionStore.ts";
+import { math } from "../../document/ExpressionStore.tsx";
 type Props = {
   setXExpression: (expr: MathNode) => void;
   setYExpression: (expr: MathNode) => void;

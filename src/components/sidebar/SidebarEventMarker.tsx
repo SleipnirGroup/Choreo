@@ -6,7 +6,7 @@ import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
 import { WaypointUUID } from "../../document/schema/DocumentTypes.ts";
 import { doc } from "../../document/DocumentManager.ts";
-import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.tsx";
 import {
   IHolonomicPathStore,
   waypointIDToText

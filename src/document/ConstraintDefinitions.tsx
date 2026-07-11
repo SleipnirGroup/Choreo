@@ -8,8 +8,8 @@ import {
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
 import { Expr } from "./schema/DocumentTypes.ts";
-import { Dimension, DimensionName, Dimensions } from "./ExpressionStore.ts";
-import KeepInLane from "../assets/KeepInLane.ts";
+import { Dimension, DimensionName, Dimensions } from "./ExpressionStore.tsx";
+import KeepInLane from "../assets/KeepInLane.tsx";
 
 export type ConstraintPropertyType = Expr | boolean;
 

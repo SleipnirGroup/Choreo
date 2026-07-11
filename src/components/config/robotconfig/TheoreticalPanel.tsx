@@ -1,8 +1,8 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { doc } from "../../../document/DocumentManager.ts";
-import Input from "../../input/Input.ts";
-import InputList from "../../input/InputList.ts";
+import Input from "../../input/Input.tsx";
+import InputList from "../../input/InputList.tsx";
 
 import { MetersOrFeet, MToFt } from "../../../util/UnitConversions.ts";
 

@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import {
   PathGradientArgs,
   PathGradients
-} from "../../config/robotconfig/PathGradient.ts";
+} from "../../config/robotconfig/PathGradient.tsx";
 
 function FieldGeneratedLines() {
   const path = doc.pathlist.activePath;

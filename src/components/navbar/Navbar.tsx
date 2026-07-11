@@ -4,7 +4,7 @@ import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { NavbarItemData, NavbarItemSectionEnds } from "../../document/UIData.ts";
+import { NavbarItemData, NavbarItemSectionEnds } from "../../document/UIData.tsx";
 
 type Props = object;
 

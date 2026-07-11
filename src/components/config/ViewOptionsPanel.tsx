@@ -10,11 +10,11 @@ import {
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager.ts";
-import { ViewItemData } from "../../document/UIData.ts";
+import { ViewItemData } from "../../document/UIData.tsx";
 import styles from "./WaypointConfigPanel.module.css";
-import { PathGradients } from "./robotconfig/PathGradient.ts";
-import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel.ts";
-import Variable from "../../assets/Variable.ts";
+import { PathGradients } from "./robotconfig/PathGradient.tsx";
+import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel.tsx";
+import Variable from "../../assets/Variable.tsx";
 
 type Props = object;
 

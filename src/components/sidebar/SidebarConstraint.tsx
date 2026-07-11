@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, { Component } from "react";
-import { IConstraintStore } from "../../document/ConstraintStore.ts";
+import { IConstraintStore } from "../../document/ConstraintStore.tsx";
 import { doc } from "../../document/DocumentManager.ts";
 import styles from "./Sidebar.module.css";
 

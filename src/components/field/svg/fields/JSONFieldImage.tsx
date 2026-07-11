@@ -1,7 +1,7 @@
 import { Component } from "react";
 import { FtToM, InToM } from "../../../../util/UnitConversions.ts";
 import defaultFieldImage from "./FieldImage2026.svg";
-import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions.ts";
+import { FIELD_LENGTH, FIELD_WIDTH } from "./FieldDimensions.tsx";
 import {
   CustomFieldData,
   FieldJSON

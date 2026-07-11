@@ -3,7 +3,7 @@ import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { uiState } from "../../document/DocumentManager.ts";
-import { SETTINGS_TABS } from "../../document/UIData.ts";
+import { SETTINGS_TABS } from "../../document/UIData.tsx";
 
 type Props = object;
 

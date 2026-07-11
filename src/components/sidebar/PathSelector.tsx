@@ -13,11 +13,11 @@ import React, { Component } from "react";
 import { toast } from "react-toastify";
 import { deletePath, doc, renamePath } from "../../document/DocumentManager.ts";
 import styles from "./Sidebar.module.css";
-import ExpressionInput from "../input/ExpressionInput.ts";
-import ExpressionInputList from "../input/ExpressionInputList.ts";
-import GenerateInProgress from "../../assets/GenerateInProgress.ts";
-import { SavingState } from "../../document/UIStateStore.ts";
-import SaveInProgress from "../../assets/SaveInProgress.ts";
+import ExpressionInput from "../input/ExpressionInput.tsx";
+import ExpressionInputList from "../input/ExpressionInputList.tsx";
+import GenerateInProgress from "../../assets/GenerateInProgress.tsx";
+import { SavingState } from "../../document/UIStateStore.tsx";
+import SaveInProgress from "../../assets/SaveInProgress.tsx";
 import { NameIssue } from "../../document/path/NameIsIdentifier.ts";
 
 type Props = object;

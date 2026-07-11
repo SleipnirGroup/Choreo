@@ -2,8 +2,8 @@ import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
   ConstraintDataObjects,
   IConstraintDataStore
-} from "./ConstraintDataStore.ts";
-import { ConstraintKey } from "./ConstraintDefinitions.ts";
+} from "./ConstraintDataStore.tsx";
+import { ConstraintKey } from "./ConstraintDefinitions.tsx";
 import { Env } from "./DocumentManager.ts";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore.ts";
 import { findUUIDIndex, getByWaypointID } from "./path/utils.ts";

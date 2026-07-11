@@ -5,7 +5,7 @@ import "./App.css";
 import { observer } from "mobx-react";
 import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Body from "./Body.ts";
+import Body from "./Body.tsx";
 import { OverridesStyleRules } from "@mui/material/styles/overrides";
 import { ButtonClasses, Theme } from "@mui/material";
 

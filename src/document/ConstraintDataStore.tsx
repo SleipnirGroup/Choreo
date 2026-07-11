@@ -16,12 +16,12 @@ import {
   DataMap,
   PropertyDefinitionList,
   consts
-} from "./ConstraintDefinitions.ts";
+} from "./ConstraintDefinitions.tsx";
 import {
   ExpressionStore,
   IExpressionStore,
   IVariables
-} from "./ExpressionStore.ts";
+} from "./ExpressionStore.tsx";
 
 type lookup<T extends ConstraintPropertyType> = T extends Expr
   ? typeof ExpressionStore

@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { doc, uiState } from "../../../document/DocumentManager.ts";
 
 import { observer } from "mobx-react";
-import { ViewLayers } from "../../../document/UIData.ts";
+import { ViewLayers } from "../../../document/UIData.tsx";
 
 function FieldConstraintsAddLayer() {
   const layers = uiState.layers;

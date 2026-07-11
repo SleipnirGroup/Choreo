@@ -1,5 +1,5 @@
-import { ConstraintData } from "../ConstraintDefinitions.ts";
-import { Dimensions } from "../ExpressionStore.ts";
+import { ConstraintData } from "../ConstraintDefinitions.tsx";
+import { Dimensions } from "../ExpressionStore.tsx";
 export { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion.ts";
 import { TRAJ_SCHEMA_VERSION } from "./TrajSchemaVersion.ts";
 export { PROJECT_SCHEMA_VERSION } from "./ProjectSchemaVersion.ts";

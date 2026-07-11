@@ -9,29 +9,29 @@ import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { Expr, Waypoint } from "../../../document/schema/DocumentTypes.ts";
-import { ConstraintKey } from "../../../document/ConstraintDefinitions.ts";
-import { IConstraintStoreKeyed } from "../../../document/ConstraintStore.ts";
+import { ConstraintKey } from "../../../document/ConstraintDefinitions.tsx";
+import { IConstraintStoreKeyed } from "../../../document/ConstraintStore.tsx";
 import { doc, uiState } from "../../../document/DocumentManager.ts";
 import {
   NavbarItemData,
   NavbarItemSectionEnds,
   NavbarLabels,
   ViewLayers
-} from "../../../document/UIData.ts";
-import FieldAxisLines from "./FieldAxisLines.ts";
-import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer.ts";
-import FieldEventMarkers from "./FieldEventMarkers.ts";
-import FieldGeneratedLines from "./FieldGeneratedLines.ts";
-import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints.ts";
-import FieldGrid from "./FieldGrid.ts";
+} from "../../../document/UIData.tsx";
+import FieldAxisLines from "./FieldAxisLines.tsx";
+import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer.tsx";
+import FieldEventMarkers from "./FieldEventMarkers.tsx";
+import FieldGeneratedLines from "./FieldGeneratedLines.tsx";
+import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints.tsx";
+import FieldGrid from "./FieldGrid.tsx";
 import { DOMMatrixIdentity, FieldMatrixContext } from "./FieldMatrixContext.ts";
-import FieldPathLines from "./FieldPathLines.ts";
-import FieldSamples from "./FieldSamples.ts";
-import InterpolatedRobot from "./InterpolatedRobot.ts";
-import OverlayWaypoint from "./OverlayWaypoint.ts";
-import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer.ts";
-import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer.ts";
-import * as FieldDimensions from "./fields/FieldDimensions.ts";
+import FieldPathLines from "./FieldPathLines.tsx";
+import FieldSamples from "./FieldSamples.tsx";
+import InterpolatedRobot from "./InterpolatedRobot.tsx";
+import OverlayWaypoint from "./OverlayWaypoint.tsx";
+import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer.tsx";
+import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer.tsx";
+import * as FieldDimensions from "./fields/FieldDimensions.tsx";
 import Field2026 from "./fields/FieldImage2026.svg";
 
 type Props = object;

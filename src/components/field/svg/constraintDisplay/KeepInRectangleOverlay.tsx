@@ -1,11 +1,11 @@
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { IConstraintDataStore } from "../../../../document/ConstraintDataStore.ts";
+import { IConstraintDataStore } from "../../../../document/ConstraintDataStore.tsx";
 import {
   ConstraintKey,
   DataMap
-} from "../../../../document/ConstraintDefinitions.ts";
+} from "../../../../document/ConstraintDefinitions.tsx";
 import { doc } from "../../../../document/DocumentManager.ts";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore.ts";
 

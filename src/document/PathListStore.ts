@@ -5,8 +5,8 @@ import {
   HolonomicPathStore,
   IHolonomicPathStore
 } from "./path/HolonomicPathStore.ts";
-import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions.ts";
-import { SavingState } from "./UIStateStore.ts";
+import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions.tsx";
+import { SavingState } from "./UIStateStore.tsx";
 import {
   addErrorMessages,
   isValidIdentifier,

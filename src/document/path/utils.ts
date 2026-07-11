@@ -1,5 +1,5 @@
 import { WaypointIDX } from "../schema/DocumentTypes.ts";
-import { IWaypointScope } from "../ConstraintStore.ts";
+import { IWaypointScope } from "../ConstraintStore.tsx";
 import { IHolonomicWaypointStore } from "../HolonomicWaypointStore.ts";
 
 export function findUUIDIndex(uuid: string, items: { uuid: string }[]) {

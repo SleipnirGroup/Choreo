@@ -3,9 +3,9 @@ import React, { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager.ts";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
-import { NavbarItemData } from "../../document/UIData.ts";
+import { NavbarItemData } from "../../document/UIData.tsx";
 import { Room } from "@mui/icons-material";
-import { IEventMarkerStore } from "../../document/EventMarkerStore.ts";
+import { IEventMarkerStore } from "../../document/EventMarkerStore.tsx";
 
 type Props = object;
 

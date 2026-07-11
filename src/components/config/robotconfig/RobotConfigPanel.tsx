@@ -2,12 +2,12 @@ import { Divider, FormHelperText, Switch } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import inputStyles from "../../input/InputList.module.css";
-import DimensionsConfigPanel from "./DimensionsConfigPanel.ts";
-import ModuleConfigPanel from "./ModuleConfigPanel.ts";
-import TheoreticalPanel from "./TheoreticalPanel.ts";
+import DimensionsConfigPanel from "./DimensionsConfigPanel.tsx";
+import ModuleConfigPanel from "./ModuleConfigPanel.tsx";
+import TheoreticalPanel from "./TheoreticalPanel.tsx";
 import { doc } from "../../../document/DocumentManager.ts";
-import DifferentialConfigPanel from "./DifferentialConfigPanel.ts";
-import SwerveConfigPanel from "./SwerveConfigPanel.ts";
+import DifferentialConfigPanel from "./DifferentialConfigPanel.tsx";
+import SwerveConfigPanel from "./SwerveConfigPanel.tsx";
 
 type Props = object;
 

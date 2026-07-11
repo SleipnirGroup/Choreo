@@ -17,7 +17,7 @@ import {
   type Trajectory
 } from "../schema/DocumentTypes.ts";
 import { Env, uiState } from "../DocumentManager.ts";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore.ts";
+import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore.tsx";
 import {
   DEFAULT_WAYPOINT,
   IHolonomicWaypointStore
@@ -27,7 +27,7 @@ import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore.ts";
 import { PathUIStore } from "./PathUIStore.ts";
 import { findUUIDIndex } from "./utils.ts";
 import { ChoreoError, Commands } from "../tauriCommands.ts";
-import { SavingState } from "../UIStateStore.ts";
+import { SavingState } from "../UIStateStore.tsx";
 import { toast, ToastContentProps } from "react-toastify";
 export function waypointIDToText(
   id: WaypointUUID | undefined,
