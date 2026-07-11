@@ -30,7 +30,9 @@ type lookup<T extends ConstraintPropertyType> = T extends Expr
     : never;
 
 type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
-  [propkey in keyof D["props"]]: lookup<D["props"][propkey]>;
+  [propkey in keyof D["props"]]: lookup<
+    D["props"][propkey] & ConstraintPropertyType
+  >;
 } & {
   type: ISimpleType<D["type"]>;
   def: IType<
@@ -99,7 +101,8 @@ function createDataStore<
       };
       serialize = (self) => {
         const part = oldSerialize(self);
-        part[key] = (self[key] as IExpressionStore).serialize;
+        part[key] = (self[key] as IExpressionStore)
+          .serialize as D["props"][typeof key];
 
         return part;
       };
@@ -150,7 +153,7 @@ function createDataStore<
             key as keyof ConstraintSetters<K>,
             val(self)
           ])
-        ) as ConstraintSetters<K>
+        ) as unknown as ConstraintSetters<K>
     )
     .views((self) => ({
       get serialize(): D {

@@ -447,7 +447,7 @@ export async function setupEventListeners() {
         unlisten();
       });
     });
-  let autoSaveDebounce: NodeJS.Timeout | undefined = undefined;
+  let autoSaveDebounce: ReturnType<typeof setTimeout> | undefined = undefined;
   const performAutoSave = () => {
     if (uiState.hasSaveLocation) {
       uiState.setProjectSavingState(SavingState.SAVING);
