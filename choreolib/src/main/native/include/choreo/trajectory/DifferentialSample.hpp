@@ -83,10 +83,10 @@ class DifferentialSample {
     return wpi::math::Pose2d{x, y, wpi::math::Rotation2d{heading}};
   }
 
-  /// Gets the field-relative chassis speeds of the DifferentialSample.
+  /// Gets the field-relative chassis velocities of the DifferentialSample.
   ///
-  /// @return The field-relative chassis speeds.
-  constexpr wpi::math::ChassisVelocities GetChassisSpeeds() const {
+  /// @return The field-relative chassis velocities.
+  constexpr wpi::math::ChassisVelocities GetChassisVelocities() const {
     return wpi::math::ChassisVelocities{(vl + vr) / 2.0, 0_mps, omega};
   }
 

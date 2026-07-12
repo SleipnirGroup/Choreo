@@ -6,7 +6,7 @@ readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE.txt"]
 requires-python = ">=3.9"
-dependencies = ["numpy", "wpilib>=2025.1.1,<2027"]
+dependencies = ["numpy", "wpilib==2027.0.0-alpha6"]
 
   [[project.authors]]
   name = "Choreo Development Team"
@@ -28,3 +28,4 @@ version_callback = "_choreo_version:get_version"
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["choreo/test"]
+pythonpath = ["."]

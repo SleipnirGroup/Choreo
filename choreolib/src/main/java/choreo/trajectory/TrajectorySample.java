@@ -29,11 +29,11 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
   Pose2d getPose();
 
   /**
-   * Returns the field-relative chassis speeds of this sample.
+   * Returns the field-relative chassis velocities of this sample.
    *
-   * @return the field-relative chassis speeds of this sample.
+   * @return the field-relative chassis velocities of this sample.
    */
-  ChassisVelocities getChassisSpeeds();
+  ChassisVelocities getChassisVelocities();
 
   /**
    * Returns this sample, flipped to the other alliance according to the symmetry of the field.

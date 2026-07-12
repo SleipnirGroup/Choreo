@@ -85,10 +85,10 @@ class SwerveSample {
     return wpi::math::Pose2d{x, y, wpi::math::Rotation2d{heading}};
   }
 
-  /// Gets the field-relative chassis speeds of the SwerveSample.
+  /// Gets the field-relative chassis velocities of the SwerveSample.
   ///
-  /// @return The field-relative chassis speeds.
-  constexpr wpi::math::ChassisVelocities GetChassisSpeeds() const {
+  /// @return The field-relative chassis velocities.
+  constexpr wpi::math::ChassisVelocities GetChassisVelocities() const {
     return wpi::math::ChassisVelocities{vx, vy, omega};
   }
 

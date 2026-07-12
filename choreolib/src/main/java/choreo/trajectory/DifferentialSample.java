@@ -109,13 +109,13 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   /**
-   * Returns the field-relative chassis speeds of this sample.
+   * Returns the field-relative chassis velocities of this sample.
    *
-   * @return the field-relative chassis speeds of this sample.
+   * @return the field-relative chassis velocities of this sample.
    * @see org.wpilib.math.kinematics.DifferentialDriveKinematics#toChassisVelocities
    */
   @Override
-  public ChassisVelocities getChassisSpeeds() {
+  public ChassisVelocities getChassisVelocities() {
     return new ChassisVelocities((vl + vr) / 2, 0, omega);
   }
 
