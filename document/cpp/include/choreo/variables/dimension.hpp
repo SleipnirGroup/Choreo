@@ -24,86 +24,86 @@ namespace dimensions {
 
 template <typename T>
 struct Dimension {
-  inline static const std::string tag = "default value";
+  inline static constexpr std::string_view tag = "default value";
   using baseUnit = T;
 };
 
 template <>
 struct Dimension<wpi::units::scalar_t> {
-  inline static const std::string tag = "Number";
+  inline static constexpr std::string_view tag = "Number";
   using baseUnit = wpi::units::scalar_t;
 };
 
 template <>
 struct Dimension<wpi::units::meter_t> {
-  inline static const std::string tag = "Length";
+  inline static constexpr std::string_view tag = "Length";
   using baseUnit = wpi::units::meter_t;
 };
 
 template <>
 struct Dimension<wpi::units::meters_per_second_t> {
-  inline static const std::string tag = "LinVel";
+  inline static constexpr std::string_view tag = "LinVel";
   using baseUnit = wpi::units::meters_per_second_t;
 };
 
 template <>
 struct Dimension<wpi::units::meters_per_second_squared_t> {
-  inline static const std::string tag = "LinAcc";
+  inline static constexpr std::string_view tag = "LinAcc";
   using baseUnit = wpi::units::meters_per_second_squared_t;
 };
 
 template <>
 struct Dimension<wpi::units::radian_t> {
-  inline static const std::string tag = "Angle";
+  inline static constexpr std::string_view tag = "Angle";
   using baseUnit = wpi::units::radian_t;
 };
 
 template <>
 struct Dimension<wpi::units::radians_per_second_t> {
-  inline static const std::string tag = "AngVel";
+  inline static constexpr std::string_view tag = "AngVel";
   using baseUnit = wpi::units::radians_per_second_t;
 };
 
 template <>
 struct Dimension<wpi::units::radians_per_second_squared_t> {
-  inline static const std::string tag = "AngAcc";
+  inline static constexpr std::string_view tag = "AngAcc";
   using baseUnit = wpi::units::radians_per_second_squared_t;
 };
 
 template <>
 struct Dimension<wpi::units::second_t> {
-  inline static const std::string tag = "Time";
+  inline static constexpr std::string_view tag = "Time";
   using baseUnit = wpi::units::second_t;
 };
 
 template <>
 struct Dimension<wpi::units::kilogram_t> {
-  inline static const std::string tag = "Mass";
+  inline static constexpr std::string_view tag = "Mass";
   using baseUnit = wpi::units::kilogram_t;
 };
 
 template <>
 struct Dimension<wpi::units::newton_meter_t> {
-  inline static const std::string tag = "Torque";
+  inline static constexpr std::string_view tag = "Torque";
   using baseUnit = wpi::units::newton_meter_t;
 };
 
 template <>
 struct Dimension<wpi::units::kilogram_square_meter_t> {
-  inline static const std::string tag = "MoI";
+  inline static constexpr std::string_view tag = "MoI";
   using baseUnit = wpi::units::kilogram_square_meter_t;
 };
 
 template <>
 struct Dimension<wpi::units::ampere_t> {
-  inline static const std::string tag = "Current";
+  inline static constexpr std::string_view tag = "Current";
   using baseUnit = wpi::units::ampere_t;
 };
 
 template <>
 struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<
     wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>> {
-  inline static const std::string tag = "KT";
+  inline static constexpr std::string_view tag = "KT";
   using baseUnit = wpi::units::unit_t<wpi::units::compound_unit<
       wpi::units::newton_meter, wpi::units::inverse<wpi::units::ampere>>>;
 };
@@ -111,7 +111,7 @@ struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<
 template <>
 struct Dimension<wpi::units::unit_t<wpi::units::compound_unit<
     wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>> {
-  inline static const std::string tag = "KV";
+  inline static constexpr std::string_view tag = "KV";
   using baseUnit = wpi::units::unit_t<wpi::units::compound_unit<
       wpi::units::volt, wpi::units::inverse<wpi::units::radians_per_second>>>;
 };

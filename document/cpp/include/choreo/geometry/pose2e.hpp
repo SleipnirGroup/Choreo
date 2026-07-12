@@ -24,6 +24,11 @@ struct Pose2e {
   Expr<dimensions::Length> y;
   Expr<dimensions::Angle> heading;
 
+  bool equivalent(const Pose2e& other) const {
+    return x.equivalent(other.x) && y.equivalent(other.y) &&
+           heading.equivalent(other.heading);
+  }
+
   operator wpi::math::Pose2d() {
     return wpi::math::Pose2d{x.unit(), y.unit(), {heading.unit()}};
   }

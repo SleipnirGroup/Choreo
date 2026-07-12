@@ -100,11 +100,11 @@ int main() {
   } else {
     using DriveType = typename decltype(generator)::DriveType;
     auto output = choreo::Trajectory<DriveType> {
-      configExp, {}, DriveType::WPILibTrajectory{*samples}, {}
+      {}, DriveType::WPILibTrajectory{*samples}, {}
     };
     traj_unscratch.trajectory = output;
     traj_unscratch.params = params_orig;
-    
+    traj_unscratch.config = configExp;
       {
     std::ofstream out("out.traj");
     out << std::string(wpi::util::json(traj_unscratch).to_string_pretty());

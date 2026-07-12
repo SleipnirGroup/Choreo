@@ -14,7 +14,8 @@
 #include <wpi/units/torque.hpp>
 #include <wpi/util/json.hpp>
 namespace choreo {
-TrajectoryFile defaultNewTrajectory(std::string name = "New Trajectory") {
+
+inline TrajectoryFile defaultNewTrajectory(std::string name = "New Trajectory") {
   return TrajectoryFile{.name = name,
                         .version = 4,
                         .snapshot = std::nullopt,
@@ -22,17 +23,15 @@ TrajectoryFile defaultNewTrajectory(std::string name = "New Trajectory") {
                         .trajectory = std::nullopt,
                         .events = {}};
 }
-RobotConfig default_frc_swerve() {
+inline RobotConfig default_frc_swerve() {
   return RobotConfig{.mass = 150_lb,
                      .inertia = 6.0_kg_sq_m,
                      .gearing = 6.5,
                      .radius = 2_in,
                      .cof = 1.5,
                      .differential_track_width = 22_in,
-                     .wheels = {{+11_in, +11_in},
-                                {+11_in, -11_in},
-                                {-11_in, -11_in},
-                                {-11_in, +11_in}},
+                     .wheels = {{{+11_in, +11_in}, {-11_in},
+                                {-11_in, 11_in}, {-11_in, -11_in}}},
                      .bumpers = {{+15_in, +15_in},
                                  {+15_in, -15_in},
                                  {-15_in, -15_in},
@@ -44,7 +43,7 @@ RobotConfig default_frc_swerve() {
                                           .supply_limit = 40_A,
                                           .stator_limit = 40_A}};
 }
-ProjectFile defaultNewProject(std::string name = "New Project") {
+inline ProjectFile defaultNewProject(std::string name = "New Project") {
   return ProjectFile{.name = name,
                      .version = 4,
                      .type = DriveType::Swerve,

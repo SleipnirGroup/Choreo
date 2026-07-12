@@ -35,6 +35,14 @@ struct MotorConfig {
   Expr<dimensions::KV> kV;
   Expr<dimensions::Current> supply_limit;
   Expr<dimensions::Current> stator_limit;
+
+  bool equivalent(const MotorConfig& other) const {
+    return free_speed.equivalent(other.free_speed) &&
+           stall_torque.equivalent(other.stall_torque) &&
+           kT.equivalent(other.kT) && kV.equivalent(other.kV) &&
+           supply_limit.equivalent(other.supply_limit) &&
+           stator_limit.equivalent(other.stator_limit);
+  }
 };
 inline void to_json(wpi::util::json& json, const MotorConfig& config) {
   json = wpi::util::json::object(
@@ -74,6 +82,30 @@ struct RobotConfig {
   // Counterclockwise winding order, start location doesn't matter;
   std::vector<Translation2e> bumpers;
   MotorConfig motor;
+
+  bool equivalent(const RobotConfig& other) const {
+    if (!mass.equivalent(other.mass) || !inertia.equivalent(other.inertia) ||
+        !gearing.equivalent(other.gearing) ||
+        !radius.equivalent(other.radius) || !cof.equivalent(other.cof) ||
+        !differential_track_width.equivalent(other.differential_track_width) ||
+        !motor.equivalent(other.motor)) {
+      return false;
+    }
+    const bool wheelsEqual =
+        std::ranges::equal(wheels, other.wheels,
+                           [](const Translation2e& lhs,
+                              const Translation2e& rhs) {
+                             return lhs.equivalent(rhs);
+                           });
+    if (!wheelsEqual) {
+      return false;
+    }
+    return std::ranges::equal(bumpers, other.bumpers,
+                              [](const Translation2e& lhs,
+                                 const Translation2e& rhs) {
+                                return lhs.equivalent(rhs);
+                              });
+  }
 
   wpi::units::newton_meter_t wheel_max_torque() {
     return motor.stall_torque.unit() * gearing.unit();

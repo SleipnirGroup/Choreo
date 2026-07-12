@@ -23,17 +23,13 @@ namespace choreo {
 template <typename Type>
 requires DriveTypeLike<Type>
 struct Trajectory {
-  std::optional<RobotConfig> config;
   std::vector<double> waypoints;
   typename Type::WPILibTrajectory samples;
   std::vector<std::size_t> splits;
   static inline Trajectory<Type> realDefault() {
-    return Trajectory<Type>{std::nullopt, {}, typename Type::WPILibTrajectory{std::vector<typename Type::WPILibSample>{}}, {}};
+    return Trajectory<Type>{{}, typename Type::WPILibTrajectory{std::vector<typename Type::WPILibSample>{}}, {}};
   }
 static inline Trajectory<Type> from_json(const wpi::util::json& json) {
-  auto config = json.contains("config")
-                    ? std::make_optional(json.at("config").get<RobotConfig>())
-                    : std::nullopt;
   std::string s = json.at("sample_type").get_string();
   if (s != Type::tag) {
     throw std::invalid_argument("Parsing Trajectory with wrong drive type" + s);
@@ -52,18 +48,14 @@ static inline Trajectory<Type> from_json(const wpi::util::json& json) {
                   return static_cast<std::size_t>(x.get_number());
                 }) |
                 std::ranges::to<std::vector<std::size_t>>();
-  return Trajectory<Type>{config, waypoints, samples, splits};
+  return Trajectory<Type>{waypoints, samples, splits};
 }
 };
 template <typename Type>
 requires DriveTypeLike<Type>
 inline void to_json(wpi::util::json& json, const Trajectory<Type>& traj) {
-  const wpi::util::json config_json =
-      traj.config ? wpi::util::json(*traj.config) : wpi::util::json();
-  
   json = wpi::util::json::object(
-      "config", config_json, "waypoints",
-      traj.waypoints, "splits", traj.splits);
+      "waypoints", traj.waypoints, "splits", traj.splits);
   json["samples"] = traj.samples;
   json["sample_type"] = Type::tag;
 }

@@ -22,6 +22,10 @@ struct Translation2e {
   Expr<dimensions::Length> x;
   Expr<dimensions::Length> y;
 
+  bool equivalent(const Translation2e& other) const {
+    return x.equivalent(other.x) && y.equivalent(other.y);
+  }
+
   operator wpi::math::Translation2d() {
     return wpi::math::Translation2d{x.unit(), y.unit()};
   }
