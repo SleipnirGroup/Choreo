@@ -49,6 +49,9 @@ struct Expr {
   operator double() const { return val.value(); }
   BaseUnit unit() const { return val; }
   static Expr fromJson(const wpi::util::json& json);
+  bool equivalent(const Expr& other) const {
+    return val.value() == other.val.value();
+  }
 };
 
 template <typename Dim>

@@ -1,0 +1,432 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "choreo-document-schema",
+  "title": "Choreo Document Schema",
+  "description": "JSON schema covering every struct/enum in document/cpp that has to_json or from_json defined.",
+  "version": 4,
+  "$defs": {
+    "Expr": {
+      "type": "object",
+      "description": "A mathematical expression paired with a pre-evaluated numeric value in SI base units.",
+      "properties": {
+        "exp": {
+          "type": "string",
+          "description": "MathJS expression string (e.g. '1.5 * kg', '90 deg')"
+        },
+        "val": {
+          "type": "number",
+          "description": "Pre-evaluated SI base-unit value (e.g. metres, radians, kg, s)"
+        }
+      },
+      "required": ["exp", "val"],
+      "additionalProperties": false
+    },
+
+    "DriveType": {
+      "description": "The drive topology of the robot.",
+      "type": "string",
+      "enum": ["Swerve", "Differential"]
+    },
+
+    "ConstraintScope": {
+      "description": "Which samples a constraint applies to.",
+      "type": "string",
+      "enum": ["both", "waypoint", "segment"]
+    },
+
+    "WaypointID": {
+      "description": "Identifies a waypoint by index or by a first/last sentinel string.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Waypoint by zero-based index.",
+          "properties": {
+            "idx": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["idx"],
+          "additionalProperties": false
+        },
+        { "type": "string", "const": "first", "description": "The first waypoint." },
+        { "type": "string", "const": "last",  "description": "The last waypoint."  }
+      ]
+    },
+
+    "Translation2e": {
+      "type": "object",
+      "description": "A 2D translation parameterized by Expr values (metres).",
+      "properties": {
+        "x": { "$ref": "#/$defs/Expr", "description": "X coordinate (m)" },
+        "y": { "$ref": "#/$defs/Expr", "description": "Y coordinate (m)" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+
+    "Pose2e": {
+      "type": "object",
+      "description": "A 2D pose parameterized by Expr values.",
+      "properties": {
+        "x":       { "$ref": "#/$defs/Expr", "description": "X coordinate (m)"  },
+        "y":       { "$ref": "#/$defs/Expr", "description": "Y coordinate (m)"  },
+        "heading": { "$ref": "#/$defs/Expr", "description": "Heading (rad)"     }
+      },
+      "required": ["x", "y", "heading"],
+      "additionalProperties": false
+    },
+
+    "Region2e": {
+      "type": "object",
+      "description": "A 2D oriented rectangular/elliptical region parameterized by Expr values.",
+      "properties": {
+        "x":       { "$ref": "#/$defs/Expr", "description": "Center X (m)"       },
+        "y":       { "$ref": "#/$defs/Expr", "description": "Center Y (m)"       },
+        "heading": { "$ref": "#/$defs/Expr", "description": "Rotation (rad)"     },
+        "w":       { "$ref": "#/$defs/Expr", "description": "Width (m)"          },
+        "h":       { "$ref": "#/$defs/Expr", "description": "Height (m)"         }
+      },
+      "required": ["x", "y", "heading", "w", "h"],
+      "additionalProperties": false
+    },
+
+    "ForceVector2d": {
+      "type": "object",
+      "description": "A 2D force vector in newtons (choreo::ForceVector2d / wpi::math::ForceVector2d).",
+      "properties": {
+        "x": { "type": "number", "description": "X force component (N)" },
+        "y": { "type": "number", "description": "Y force component (N)" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+
+    "Variable": {
+      "type": "object",
+      "description": "A document-level variable: a named, dimensioned Expr. The dimension tag selects the SI unit.",
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "enum": [
+            "Number",
+            "Length",   "LinVel",  "LinAcc",
+            "Angle",    "AngVel",  "AngAcc",
+            "Time",     "Mass",    "Torque",
+            "MoI",      "Current", "KT",     "KV"
+          ],
+          "description": "Dimension tag (matches choreo::dimensions::*::tag)"
+        },
+        "var": { "$ref": "#/$defs/Expr" }
+      },
+      "required": ["dimension", "var"],
+      "additionalProperties": false
+    },
+
+    "Variables": {
+      "type": "object",
+      "description": "All document-level named variables, grouped by geometric type.",
+      "properties": {
+        "expressions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/Variable" },
+          "description": "Named scalar/dimensional variables."
+        },
+        "translations": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/Translation2e" },
+          "description": "Named 2D translation variables."
+        },
+        "poses": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/Pose2e" },
+          "description": "Named 2D pose variables."
+        },
+        "regions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/Region2e" },
+          "description": "Named 2D region variables."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "MotorConfig": {
+      "type": "object",
+      "description": "Drivetrain motor model parameters.",
+      "properties": {
+        "free_speed":   { "$ref": "#/$defs/Expr", "description": "No-load speed (rad/s)"          },
+        "stall_torque": { "$ref": "#/$defs/Expr", "description": "Stall torque (N·m)"              },
+        "kT":           { "$ref": "#/$defs/Expr", "description": "Torque constant (N·m/A)"         },
+        "kV":           { "$ref": "#/$defs/Expr", "description": "Back-EMF constant (V·s/rad)"     },
+        "supply_limit": { "$ref": "#/$defs/Expr", "description": "Supply current limit (A)"        },
+        "stator_limit": { "$ref": "#/$defs/Expr", "description": "Stator current limit (A)"        }
+      },
+      "required": ["free_speed", "stall_torque", "kT", "kV", "supply_limit", "stator_limit"],
+      "additionalProperties": false
+    },
+
+    "RobotConfig": {
+      "type": "object",
+      "description": "Complete physical robot configuration.",
+      "properties": {
+        "mass":                    { "$ref": "#/$defs/Expr",         "description": "Robot mass (kg)"                                             },
+        "inertia":                 { "$ref": "#/$defs/Expr",         "description": "Moment of inertia (kg·m²)"                                  },
+        "gearing":                 { "$ref": "#/$defs/Expr",         "description": "Motor-to-wheel gear ratio (dimensionless)"                   },
+        "radius":                  { "$ref": "#/$defs/Expr",         "description": "Wheel radius (m)"                                            },
+        "cof":                     { "$ref": "#/$defs/Expr",         "description": "Wheel coefficient of friction (dimensionless)"               },
+        "differential_track_width":{ "$ref": "#/$defs/Expr",         "description": "Track width for differential drive (m)"                      },
+        "wheels": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Translation2e" },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "Swerve module positions relative to robot center: [FL, BL, BR, FR] (m)"
+        },
+        "bumpers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Translation2e" },
+          "description": "Bumper vertices in counter-clockwise order, robot-relative (m)"
+        },
+        "motor": { "$ref": "#/$defs/MotorConfig" }
+      },
+      "required": [
+        "mass", "inertia", "gearing", "radius", "cof",
+        "differential_track_width", "wheels", "bumpers", "motor"
+      ],
+      "additionalProperties": false
+    },
+
+    "CodeGenConfig": {
+      "type": "object",
+      "description": "Code generation settings stored in the project file.",
+      "properties": {
+        "root":          { "type": "string",  "description": "Output root directory path. Empty string means 'not set'." },
+        "genVars":       { "type": "boolean", "description": "Generate named variable accessors.",    "default": true },
+        "genTrajData":   { "type": "boolean", "description": "Generate data objects with details on each trajectory.",         "default": true },
+        "useChoreoLib":  { "type": "boolean", "description": "Emit ChoreoLib-compatible API calls.",  "default": true }
+      },
+      "additionalProperties": false
+    },
+
+    "Waypoint": {
+      "type": "object",
+      "description": "A trajectory waypoint with pose and optimization hints.",
+      "properties": {
+        "x":                 { "$ref": "#/$defs/Expr", "description": "X position (m)"                                    },
+        "y":                 { "$ref": "#/$defs/Expr", "description": "Y position (m)"                                    },
+        "heading":           { "$ref": "#/$defs/Expr", "description": "Heading (rad)"                                     },
+        "intervals":         { "type": "integer", "minimum": 0, "description": "Optimization intervals to next waypoint" },
+        "split":             { "type": "boolean",               "description": "Start a new trajectory split here"       },
+        "fix_translation":   { "type": "boolean",               "description": "Constrain XY position exactly during optimization"    },
+        "fix_heading":       { "type": "boolean",               "description": "Constrain heading exactly during optimization"        },
+        "override_intervals":{ "type": "boolean",               "description": "Use intervals instead of auto-selection" }
+      },
+      "required": [
+        "x", "y", "heading", "intervals",
+        "split", "fix_translation", "fix_heading", "override_intervals"
+      ],
+      "additionalProperties": false
+    },
+
+    "MaxVelocity": {
+      "type": "object",
+      "description": "Constraint: maximum linear speed along the path.",
+      "properties": {
+        "type": { "type": "string", "const": "MaxVelocity" },
+        "max":  { "$ref": "#/$defs/Expr", "description": "Maximum speed (m/s)" }
+      },
+      "required": ["type", "max"],
+      "additionalProperties": false
+    },
+
+    "MaxAngularVelocity": {
+      "type": "object",
+      "description": "Constraint: maximum rotational speed.",
+      "properties": {
+        "type": { "type": "string", "const": "MaxAngularVelocity" },
+        "max":  { "$ref": "#/$defs/Expr", "description": "Maximum angular speed (rad/s)" }
+      },
+      "required": ["type", "max"],
+      "additionalProperties": false
+    },
+
+    "KeepInCircle": {
+      "type": "object",
+      "description": "Constraint: keep the robot within a circular field region.",
+      "properties": {
+        "type": { "type": "string", "const": "KeepInCircle" },
+        "x":    { "$ref": "#/$defs/Expr", "description": "Circle center X (m)"  },
+        "y":    { "$ref": "#/$defs/Expr", "description": "Circle center Y (m)"  },
+        "r":    { "$ref": "#/$defs/Expr", "description": "Circle radius (m)"    }
+      },
+      "required": ["type", "x", "y", "r"],
+      "additionalProperties": false
+    },
+
+    "HeadingConstraint": {
+      "type": "object",
+      "description": "Constraint: robot heading must stay within tolerance of a target angle.",
+      "properties": {
+        "type":      { "type": "string", "const": "Heading" },
+        "heading":   { "$ref": "#/$defs/Expr", "description": "Target heading (rad)"    },
+        "tolerance": { "$ref": "#/$defs/Expr", "description": "Allowed deviation (rad)" }
+      },
+      "required": ["type", "heading", "tolerance"],
+      "additionalProperties": false
+    },
+
+    "ConstraintVariant": {
+      "description": "A typed constraint; discriminated by the 'type' string field.",
+      "oneOf": [
+        { "$ref": "#/$defs/MaxVelocity"        },
+        { "$ref": "#/$defs/MaxAngularVelocity" },
+        { "$ref": "#/$defs/KeepInCircle"       },
+        { "$ref": "#/$defs/HeadingConstraint"  }
+      ]
+    },
+
+    "Constraint": {
+      "type": "object",
+      "description": "A typed constraint applied at or between waypoints.",
+      "properties": {
+        "from":    { "$ref": "#/$defs/WaypointID",       "description": "Waypoint the constraint starts at"                         },
+        "to":      { "$ref": "#/$defs/WaypointID",       "description": "Waypoint the constraint ends at (omit for point constraint)"},
+        "data":    { "$ref": "#/$defs/ConstraintVariant" },
+        "enabled": { "type": "boolean"                   }
+      },
+      "required": ["from", "data", "enabled"],
+      "additionalProperties": false
+    },
+
+    "Parameters": {
+      "type": "object",
+      "description": "Trajectory parameters: waypoints, constraints, and target time step.",
+      "properties": {
+        "waypoints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Waypoint" }
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Constraint" }
+        },
+        "target_dt": { "$ref": "#/$defs/Expr", "description": "Target optimization time step (s)" }
+      },
+      "required": ["waypoints", "constraints", "target_dt"],
+      "additionalProperties": false
+    },
+
+    "EventMarkerData": {
+      "type": "object",
+      "description": "Timing information anchoring an event marker to the trajectory.",
+      "properties": {
+        "target": {
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "null" }
+          ],
+          "description": "Index of the target waypoint; null if not set."
+        },
+        "targetTimestamp": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "null" }
+          ],
+          "description": "Pre-computed trajectory time at the target waypoint (s); null if not available."
+        },
+        "offset": { "$ref": "#/$defs/Expr", "description": "Time offset from the target (s)" }
+      },
+      "required": ["target", "targetTimestamp", "offset"],
+      "additionalProperties": false
+    },
+
+    "EventMarker": {
+      "type": "object",
+      "description": "A named event placed at a time on the trajectory.",
+      "properties": {
+        "name": { "type": "string" },
+        "from": { "$ref": "#/$defs/EventMarkerData" }
+      },
+      "required": ["name", "from"],
+      "additionalProperties": false
+    },
+
+    "Trajectory": {
+      "type": "object",
+      "description": "A generated trajectory for one drive type (Trajectory<SwerveDriveType> or Trajectory<DifferentialDriveType>).",
+      "properties": {
+        "sample_type": {
+          "type": "string",
+          "enum": ["Swerve", "Differential"],
+          "description": "Drive-type discriminator tag."
+        },
+        "config": {
+          "oneOf": [
+            { "$ref": "#/$defs/RobotConfig" },
+            { "type": "null" }
+          ],
+          "description": "Robot config snapshot used when the trajectory was generated; null if not stored."
+        },
+        "waypoints": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Trajectory timestamps (s) corresponding to each waypoint."
+        },
+        "splits": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "description": "Sample indices at which trajectory splits begin."
+        },
+        "samples": {
+          "type": "array",
+          "description": "Drive-type-specific trajectory samples serialized by WPILib."
+        }
+      },
+      "required": ["sample_type", "waypoints", "splits", "samples"],
+      "additionalProperties": false
+    },
+
+    "TrajectoryFile": {
+      "type": "object",
+      "description": "Contents of a .traj file: a single named trajectory with its parameters and events.",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "integer", "minimum": 0, "description": "File format version" },
+        "snapshot": {
+          "oneOf": [
+            { "$ref": "#/$defs/Parameters" },
+            { "type": "null" }
+          ],
+          "description": "Frozen parameter snapshot from the last generation run; null if not generated yet."
+        },
+        "params": { "$ref": "#/$defs/Parameters", "description": "Current (editable) trajectory parameters." },
+        "trajectory": {
+          "oneOf": [
+            { "$ref": "#/$defs/Trajectory" },
+            { "type": "null" }
+          ],
+          "description": "Generated trajectory output; null if not yet generated."
+        },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EventMarker" }
+        }
+      },
+      "required": ["name", "version", "params", "events"],
+      "additionalProperties": false
+    },
+
+    "ProjectFile": {
+      "type": "object",
+      "description": "Contents of a .chor project file: robot config, drive type, document-level variables, and code-gen settings.",
+      "properties": {
+        "name":      { "type": "string"                          },
+        "version":   { "type": "integer", "minimum": 4, "description": "File format version" },
+        "type":      { "$ref": "#/$defs/DriveType"               },
+        "variables": { "$ref": "#/$defs/Variables"               },
+        "config":    { "$ref": "#/$defs/RobotConfig"             },
+        "codegen":   { "$ref": "#/$defs/CodeGenConfig"           }
+      },
+      "required": ["name", "version", "type", "variables", "config", "codegen"],
+      "additionalProperties": false
+    }
+  }
+}

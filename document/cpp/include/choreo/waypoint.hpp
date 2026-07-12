@@ -19,6 +19,15 @@ struct Waypoint {
   bool fix_translation = false;
   bool fix_heading = false;
   bool override_intervals = false;
+
+  bool equivalent(const Waypoint& other) const {
+    return x.equivalent(other.x) && y.equivalent(other.y) &&
+           heading.equivalent(other.heading) && (!override_intervals || (intervals == other.intervals)) &&
+           split == other.split && fix_translation == other.fix_translation &&
+           fix_heading == other.fix_heading &&
+           override_intervals == other.override_intervals;
+  }
+
   wpi::math::Pose2d toPose2d() const {
     return wpi::math::Pose2d{x.unit(), y.unit(), heading.unit()};
   }

@@ -24,6 +24,10 @@ struct MaxVelocity {
   static MaxVelocity fromJson(const wpi::util::json& json);
   Expr<dimensions::LinVel> max = 0_mps;
 
+  bool equivalent(const MaxVelocity& other) const {
+    return max.equivalent(other.max);
+  }
+
   trajopt::Constraint toTrajoptConstraint(
     const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::LinearVelocityMaxMagnitudeConstraint{max};

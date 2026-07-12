@@ -22,6 +22,10 @@ struct MaxAngularVelocity {
   static MaxAngularVelocity fromJson(const wpi::util::json& json);
   Expr<dimensions::AngVel> max = 0_rad_per_s;
 
+  bool equivalent(const MaxAngularVelocity& other) const {
+    return max.equivalent(other.max);
+  }
+
   trajopt::Constraint toTrajoptConstraint(
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::AngularVelocityMaxMagnitudeConstraint{max};

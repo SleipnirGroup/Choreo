@@ -17,6 +17,11 @@ struct HeadingConstraint {
   Expr<dimensions::Angle> heading = 0_rad;
   Expr<dimensions::Angle> tolerance = 0_rad;
 
+  bool equivalent(const HeadingConstraint& other) const {
+    return heading.equivalent(other.heading) &&
+           tolerance.equivalent(other.tolerance);
+  }
+
   // #ifdef WITH_TRAJOPT
   // trajopt::HeadingConstraint toTrajoptConstraint(const choreo::Waypoint&
   // start, const std::optional<choreo::Waypoint&> end) const {

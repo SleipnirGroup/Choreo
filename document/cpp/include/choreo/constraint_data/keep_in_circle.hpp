@@ -26,6 +26,11 @@ struct KeepInCircle : public Region2e {
   Expr<dimensions::Length> y = 0_m;
   Expr<dimensions::Length> r = 0_m;
 
+  bool equivalent(const KeepInCircle& other) const {
+    return x.equivalent(other.x) && y.equivalent(other.y) &&
+           r.equivalent(other.r);
+  }
+
   trajopt::Constraint toTrajoptConstraint(
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::KeepInCircleConstraint{bumpers, {x, y}, r};

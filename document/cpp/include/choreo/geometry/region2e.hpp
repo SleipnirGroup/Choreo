@@ -24,7 +24,13 @@ struct Region2e {
   Expr<dimensions::Length> w;
   Expr<dimensions::Length> h;
 
-  operator wpi::math::Ellipse2d() const {
+  bool equivalent(const Region2e& other) const {
+    return x.equivalent(other.x) && y.equivalent(other.y) &&
+           heading.equivalent(other.heading) && w.equivalent(other.w) &&
+           h.equivalent(other.h);
+  }
+
+  explicit operator wpi::math::Ellipse2d() const {
     return wpi::math::Ellipse2d{
         wpi::math::Pose2d{x.unit(), y.unit(), {heading.unit()}}, w.unit() / 2.0,
         h.unit() / 2.0};

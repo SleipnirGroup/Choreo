@@ -108,6 +108,19 @@ inline void from_json(const wpi::util::json& json, ConstraintVariant& c) {
   }
 }
 
+inline bool equivalent(const ConstraintVariant& lhs, const ConstraintVariant& rhs) {
+  return std::visit(
+      [](const auto& left, const auto& right) {
+        using L = std::decay_t<decltype(left)>;
+        using R = std::decay_t<decltype(right)>;
+        if constexpr (std::is_same_v<L, R>) {
+          return left.equivalent(right);
+        }
+        return false;
+      },
+      lhs, rhs);
+}
+
 template <typename>
 struct HoldsConstraintTypes;
 

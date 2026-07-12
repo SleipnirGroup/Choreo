@@ -18,6 +18,29 @@ struct Parameters {
   std::vector<Waypoint> waypoints;
   std::vector<Constraint> constraints;
   Expr<dimensions::Time> target_dt;
+
+  bool equivalent(const Parameters& other) const {
+    if (!target_dt.equivalent(other.target_dt)) {
+      return false;
+    }
+    if (waypoints.size() != other.waypoints.size() ||
+        constraints.size() != other.constraints.size()) {
+      return false;
+    }
+    const bool waypointsEqual =
+        std::ranges::equal(waypoints, other.waypoints,
+                           [](const Waypoint& lhs, const Waypoint& rhs) {
+                             return lhs.equivalent(rhs);
+                           });
+    if (!waypointsEqual) {
+      return false;
+    }
+    return std::ranges::equal(
+        constraints, other.constraints,
+        [](const Constraint& lhs, const Constraint& rhs) {
+          return lhs.equivalent(rhs);
+        });
+  }
 };
 inline void to_json(wpi::util::json& json, const Parameters& params) {
   json = wpi::util::json::object("waypoints", params.waypoints, "constraints",

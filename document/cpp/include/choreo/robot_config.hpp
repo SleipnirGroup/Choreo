@@ -69,7 +69,7 @@ struct RobotConfig {
   Expr<dimensions::Number> cof;
   Expr<dimensions::Length> differential_track_width;
   /// FL, BL, BR, FR
-  std::vector<Translation2e> wheels;
+  std::array<Translation2e, 4> wheels;
 
   // Counterclockwise winding order, start location doesn't matter;
   std::vector<Translation2e> bumpers;
@@ -148,9 +148,13 @@ inline void from_json(const wpi::util::json& json, RobotConfig& config) {
   config.differential_track_width =
       json.at("differential_track_width")
           .get<choreo::Expr<dimensions::Length>>();
-  config.wheels.clear();
   auto whs = json.at("wheels").get_array();
-  std::transform(whs.begin(), whs.end(), std::back_inserter(config.wheels),
+  if (whs.size() != 4) {
+    throw std::runtime_error(
+        "RobotConfig wheels array must have exactly 4 elements");
+  }
+
+  std::transform(whs.begin(), whs.end(), config.wheels.begin(),
                  [](auto modJson) { return modJson.template get<Translation2e>(); });
   config.bumpers.clear();
   auto bmps = json.at("bumpers").get_array();
