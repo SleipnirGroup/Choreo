@@ -12,8 +12,7 @@ from choreo.util import (
     RotateAroundFlipper,
     get_flipper_for_year,
 )
-from wpimath import ChassisVelocities
-from wpimath import Pose2d, RKDP, Rotation2d
+from wpimath import RKDP, ChassisVelocities, Pose2d, Rotation2d
 
 
 def lerp(a, b, t) -> float:

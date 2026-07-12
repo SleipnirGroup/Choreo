@@ -10,9 +10,9 @@
 #include <unordered_map>
 
 #include <wpi/system/Errors.hpp>
+#include <wpi/system/Filesystem.hpp>
 #include <wpi/util/MemoryBuffer.hpp>
 #include <wpi/util/json.hpp>
-#include <wpi/system/Filesystem.hpp>
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/SwerveSample.hpp"
@@ -133,8 +133,8 @@ class Choreo {
     /// @see Choreo#LoadTrajectory(std::string_view)
     static std::optional<Trajectory<SampleType>> LoadTrajectory(
         std::string_view trajectoryName, int splitIndex) {
-      std::string key = std::string{trajectoryName} + ".:." +
-            std::to_string(splitIndex);
+      std::string key =
+          std::string{trajectoryName} + ".:." + std::to_string(splitIndex);
 
       if (!cache.contains(key)) {
         if (cache.contains(std::string{trajectoryName})) {

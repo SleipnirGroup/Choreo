@@ -20,8 +20,6 @@
 
 namespace choreo {
 
-
-
 /// A trajectory loaded from Choreo.
 ///
 /// @tparam SampleType DifferentialSample or SwerveSample.
@@ -315,7 +313,8 @@ class Trajectory {
   std::vector<EventMarker> events;
 
  private:
-  std::optional<SampleType> SampleInternal(wpi::units::second_t timestamp) const {
+  std::optional<SampleType> SampleInternal(
+      wpi::units::second_t timestamp) const {
     if (samples.size() == 0) {
       return {};
     }
@@ -356,8 +355,7 @@ class Trajectory {
   }
 };
 
-void to_json(wpi::util::json& json,
-             const Trajectory<SwerveSample>& trajectory);
+void to_json(wpi::util::json& json, const Trajectory<SwerveSample>& trajectory);
 void from_json(const wpi::util::json& json,
                Trajectory<SwerveSample>& trajectory);
 

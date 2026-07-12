@@ -25,8 +25,6 @@
 
 namespace choreo {
 
-
-
 /// A single differential drive robot sample in a Trajectory.
 class DifferentialSample {
  public:
@@ -49,8 +47,9 @@ class DifferentialSample {
   /// @param alpha The chassis angular acceleration
   /// @param fl The force of the left wheels
   /// @param fr The force of the right wheels
-  constexpr DifferentialSample(wpi::units::second_t timestamp, wpi::units::meter_t x,
-                               wpi::units::meter_t y, wpi::units::radian_t heading,
+  constexpr DifferentialSample(wpi::units::second_t timestamp,
+                               wpi::units::meter_t x, wpi::units::meter_t y,
+                               wpi::units::radian_t heading,
                                wpi::units::meters_per_second_t vl,
                                wpi::units::meters_per_second_t vr,
                                wpi::units::radians_per_second_t omega,
@@ -94,7 +93,8 @@ class DifferentialSample {
   ///
   /// @param timeStampOffset time to move sample by
   /// @return DifferentialSample that is moved forward by the offset
-  constexpr DifferentialSample OffsetBy(wpi::units::second_t timeStampOffset) const {
+  constexpr DifferentialSample OffsetBy(
+      wpi::units::second_t timeStampOffset) const {
     return DifferentialSample{timestamp + timeStampOffset,
                               x,
                               y,
@@ -116,7 +116,8 @@ class DifferentialSample {
   /// @return the interpolated sample
   DifferentialSample Interpolate(const DifferentialSample& endValue,
                                  wpi::units::second_t t) const {
-    wpi::units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
+    wpi::units::scalar_t scale =
+        (t - timestamp) / (endValue.timestamp - timestamp);
 
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations

@@ -76,7 +76,7 @@ constexpr std::string_view swerveTrajectoryString =
 })";
 
 const wpi::util::json swerveTrajectoryJson =
-  wpi::util::json::parse(swerveTrajectoryString).value();
+    wpi::util::json::parse(swerveTrajectoryString).value();
 
 const Trajectory<SwerveSample> correctSwerveTrajectory{
     "New Path",

@@ -18,6 +18,7 @@ from wpilib import getDeployDirectory
 
 TRAJ_SCHEMA_VERSION = generated_TRAJ_SCHEMA_VERSION
 
+
 def load_differential_trajectory_string(
     trajectory_json_string: str,
 ) -> DifferentialTrajectory:

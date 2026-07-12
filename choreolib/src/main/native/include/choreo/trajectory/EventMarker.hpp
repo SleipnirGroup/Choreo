@@ -9,8 +9,6 @@
 
 namespace choreo {
 
-
-
 /// A marker for an event in a trajectory.
 struct EventMarker {
   /// The timestamp of the event.

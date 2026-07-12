@@ -8,16 +8,17 @@
 
 void choreo::to_json(wpi::util::json& json,
                      const Trajectory<SwerveSample>& trajectory) {
-  json = wpi::util::json::object("name", trajectory.name, "samples",
-                                 trajectory.samples, "splits",
-                                 trajectory.splits, "events", trajectory.events);
+  json = wpi::util::json::object(
+      "name", trajectory.name, "samples", trajectory.samples, "splits",
+      trajectory.splits, "events", trajectory.events);
 }
 
 void choreo::from_json(const wpi::util::json& json,
                        Trajectory<SwerveSample>& trajectory) {
   trajectory.name = json.at("name").get_string();
   trajectory.samples.clear();
-  for (const auto& sampleJson : json.at("trajectory").at("samples").get_array()) {
+  for (const auto& sampleJson :
+       json.at("trajectory").at("samples").get_array()) {
     trajectory.samples.push_back(sampleJson.get<SwerveSample>());
   }
 
@@ -40,15 +41,16 @@ void choreo::from_json(const wpi::util::json& json,
 
 void choreo::to_json(wpi::util::json& json,
                      const Trajectory<DifferentialSample>& trajectory) {
-  json = wpi::util::json::object("name", trajectory.name, "samples",
-                                 trajectory.samples, "splits",
-                                 trajectory.splits, "events", trajectory.events);
+  json = wpi::util::json::object(
+      "name", trajectory.name, "samples", trajectory.samples, "splits",
+      trajectory.splits, "events", trajectory.events);
 }
 
 void choreo::from_json(const wpi::util::json& json,
                        Trajectory<DifferentialSample>& trajectory) {
   trajectory.samples.clear();
-  for (const auto& sampleJson : json.at("trajectory").at("samples").get_array()) {
+  for (const auto& sampleJson :
+       json.at("trajectory").at("samples").get_array()) {
     trajectory.samples.push_back(sampleJson.get<DifferentialSample>());
   }
 

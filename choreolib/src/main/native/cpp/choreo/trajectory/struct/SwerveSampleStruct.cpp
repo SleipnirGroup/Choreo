@@ -27,13 +27,17 @@ using StructType = wpi::util::Struct<choreo::SwerveSample>;
 
 choreo::SwerveSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::SwerveSample{
-      wpi::units::second_t{wpi::util::UnpackStruct<double, kTimestampOff>(data)},
+      wpi::units::second_t{
+          wpi::util::UnpackStruct<double, kTimestampOff>(data)},
       wpi::units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
       wpi::units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
       wpi::units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
-      wpi::units::meters_per_second_t{wpi::util::UnpackStruct<double, kVxOff>(data)},
-      wpi::units::meters_per_second_t{wpi::util::UnpackStruct<double, kVyOff>(data)},
-      wpi::units::radians_per_second_t{wpi::util::UnpackStruct<double, kOmegaOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVxOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVyOff>(data)},
+      wpi::units::radians_per_second_t{
+          wpi::util::UnpackStruct<double, kOmegaOff>(data)},
       wpi::units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAxOff>(data)},
       wpi::units::meters_per_second_squared_t{
