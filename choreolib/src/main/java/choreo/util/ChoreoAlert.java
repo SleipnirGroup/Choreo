@@ -14,22 +14,22 @@ public class ChoreoAlert {
    * Creates an alert under the "Choreo" group.
    *
    * @param name The name of the alert
-   * @param type The type of alert
+   * @param level The level of alert
    * @return an Alert published under the "Choreo" group
    */
-  public static Alert alert(String name, Level type) {
-    return new Alert("Choreo Alerts", name, type);
+  public static Alert alert(String name, Level level) {
+    return new Alert("Choreo Alerts", name, level);
   }
 
   /**
    * Creates a {@link MultiAlert} under the "Choreo" group.
    *
    * @param textGenerator A function that accepts a list of causes and returns an alert message
-   * @param type The type of alert
+   * @param level The level of alert
    * @return a MultiAlert published under the "Choreo" group
    */
-  public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Level type) {
-    return new MultiAlert(textGenerator, type);
+  public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Level level) {
+    return new MultiAlert(textGenerator, level);
   }
 
   /**
@@ -40,8 +40,8 @@ public class ChoreoAlert {
     private final Function<List<String>, String> textGenerator;
     private final List<String> causes = new ArrayList<>();
 
-    MultiAlert(Function<List<String>, String> textGenerator, Level type) {
-      super("Choreo Alerts", textGenerator.apply(List.of()), type);
+    MultiAlert(Function<List<String>, String> textGenerator, Level level) {
+      super("Choreo Alerts", textGenerator.apply(List.of()), level);
       this.textGenerator = textGenerator;
     }
 
