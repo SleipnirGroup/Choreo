@@ -9,7 +9,7 @@
 #include "../variables/dimension.hpp"
 #include "../expr.hpp"
 #include "type_traits"
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/geometry/translation2.hpp>
 #endif
 
@@ -32,7 +32,7 @@ struct Translation2e {
     return wpi::math::Translation2d{x.unit(), y.unit()};
   }
 
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
   operator trajopt::Translation2d() { return trajopt::Translation2d{x, y}; }
 #endif
 };

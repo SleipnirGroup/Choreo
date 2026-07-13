@@ -6,9 +6,11 @@
 #include <variant>
 #include <vector>
 
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/constraint/angular_velocity_max_magnitude_constraint.hpp>
 #include <trajopt/constraint/constraint.hpp>
 #include <trajopt/constraint/keep_out_region.hpp>
+#endif
 #include <wpi/units/angular_velocity.hpp>
 #include <wpi/util/json.hpp>
 
@@ -28,10 +30,12 @@ struct MaxAngularVelocity {
     return max.equivalent(other.max);
   }
 
+#ifdef CHOREO_WITH_TRAJOPT
   trajopt::Constraint toTrajoptConstraint(
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::AngularVelocityMaxMagnitudeConstraint{max};
   }
+#endif
 
   choreo::ConstraintScope scope() const {
     return choreo::ConstraintScope::Both;

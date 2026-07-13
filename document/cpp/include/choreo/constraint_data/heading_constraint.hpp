@@ -24,7 +24,7 @@ struct HeadingConstraint {
            tolerance.equivalent(other.tolerance);
   }
 
-  // #ifdef WITH_TRAJOPT
+  // #ifdef CHOREO_WITH_TRAJOPT
   // trajopt::HeadingConstraint toTrajoptConstraint(const choreo::Waypoint&
   // start, const std::optional<choreo::Waypoint&> end) const {
   //   return trajopt::HeadingConstraint{heading, tolerance};

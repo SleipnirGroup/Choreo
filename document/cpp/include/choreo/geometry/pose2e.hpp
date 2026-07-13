@@ -10,7 +10,7 @@
 #include "../expr.hpp"
 #include "../variables/dimension.hpp"
 #include "type_traits"
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/geometry/pose2.hpp>
 #endif
 
@@ -35,7 +35,7 @@ struct Pose2e {
     return wpi::math::Pose2d{x.unit(), y.unit(), {heading.unit()}};
   }
 
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
   operator trajopt::Pose2d() { return trajopt::Pose2d{x, y, {heading}}; }
 #endif
 };

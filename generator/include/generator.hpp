@@ -1,5 +1,6 @@
 #pragma once
 #include <expected>
+#include <functional>
 #include <print>
 #include <ranges>
 #include <type_traits>
@@ -27,9 +28,11 @@ class TrajectoryGenerator {
   using Builder = trajopt::PathBuilder<TrajoptDrivetrainType, TrajoptSolutionType>;
   // Owns projectFile and trajectoryFile;
   TrajectoryGenerator(choreo::ProjectFile projectFile,
-                      choreo::TrajectoryFile trajectoryFile)
+                      choreo::TrajectoryFile trajectoryFile,
+                      std::function<void(const std::vector<Sample>&)> progress_callback = {})
       : projectFile(std::move(projectFile)),
-        trajectoryFile(std::move(trajectoryFile)) {
+        trajectoryFile(std::move(trajectoryFile)),
+        progress_callback(std::move(progress_callback)) {
     // This is still one segment per Choreo waypoint.
     segments = 
         convert_to_segments(this->trajectoryFile.params);
@@ -64,6 +67,18 @@ class TrajectoryGenerator {
   std::vector<choreo::Segment> segments;
   std::vector<choreo::Segment> only_waypoint_segments;
   Builder generator;
+  std::function<void(const std::vector<Sample>&)> progress_callback;
+
+  std::vector<Sample> to_samples(const TrajoptSolutionType& solution) const {
+    auto trajectory = TrajectoryType(solution);
+    std::vector<Sample> samples;
+    samples.reserve(trajectory.samples.size());
+    for (const auto& sample : trajectory.samples) {
+      samples.emplace_back(ChoreoDriveType::fromTrajopt(sample));
+    }
+    return samples;
+  }
+
   void apply_constraints() {
     const auto& bumperSet = generator.get_bumpers();
     // Now that our segments list is reindexed to match TrajoptLib's counts, we
@@ -131,18 +146,19 @@ class TrajectoryGenerator {
 
   std::expected<std::vector<Sample>, slp::ExitStatus>
   generate_internal() {
+    if (progress_callback) {
+      generator.add_callback([this](const TrajoptSolutionType& partial_solution,
+                                    int64_t) {
+        progress_callback(to_samples(partial_solution));
+      });
+    }
+
     GeneratorType traj_generator{generator};
     auto solution = traj_generator.generate(true);
     if (!solution) {
       return std::unexpected(solution.error());
     }
-    auto trajectory = TrajectoryType(solution.value());
-    std::vector<Sample> samples;
-    samples.reserve(trajectory.samples.size());
-    for (const auto& sample : trajectory.samples) {
-      samples.emplace_back(ChoreoDriveType::fromTrajopt(sample));
-    }
-    return samples;
+    return to_samples(solution.value());
   }
 };
 

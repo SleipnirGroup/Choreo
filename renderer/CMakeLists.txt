@@ -17,19 +17,21 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(lunasvg)
 
 set(WITH_TRAJOPT ON)
-FetchContent_Declare(
-    choreo_document
-    SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../document/cpp/"
-)
-FetchContent_MakeAvailable(choreo_document)
+if(NOT TARGET choreo_document)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../document/cpp"
+        "${CMAKE_CURRENT_BINARY_DIR}/choreo_document"
+    )
+endif()
 
-FetchContent_Declare(
-    TrajoptLib
-    SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib/"
-)
-FetchContent_MakeAvailable(TrajoptLib)
+if(NOT TARGET TrajoptLib)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib"
+        "${CMAKE_CURRENT_BINARY_DIR}/TrajoptLib"
+    )
+endif()
+
+include(../cmake/CompilerFlags.cmake)
 
 # FetchContent_Declare(jartjson GIT_REPOSITORY "https://github.com/jart/json.cpp" GIT_TAG "ccb9195e6abe9eb060e338a04f43e8d2e67b45ea")
 # FetchContent_MakeAvailable(jartjson)
@@ -43,6 +45,8 @@ file(
 )
 
 add_library(choreo_renderer ${choreo_renderer_SOURCES})
+
+suppress_clangcl_unused_command_line_argument(choreo_renderer)
 
 # C++ standard
 #target_compile_features(choreo_renderer PRIVATE cxx_std_23)

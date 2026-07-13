@@ -10,11 +10,13 @@ struct KeepInRectangle : public Region2e{
   KeepInRectangle(const KeepInRectangle&) = default;
   static KeepInRectangle fromJson(const wpi::util::json& json);
   static std::string_view type_string() { return "KeepInRectangle"; }
+#ifdef CHOREO_WITH_TRAJOPT
   trajopt::Constraint toTrajoptConstraint(
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::KeepInRectangleConstraint{
         bumpers, {x, y}, w / 2.0, h / 2.0};
   }
+#endif
   static choreo::ConstraintScope scope() { return choreo::ConstraintScope::Both; }
   KeepInRectangle forEndpoints(const choreo::Waypoint& start,
                              const choreo::Waypoint& end) const {

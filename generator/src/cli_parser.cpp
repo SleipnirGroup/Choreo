@@ -31,6 +31,10 @@ CliArgs parse_arguments(int argc, char** argv) {
                                         "Path to the output trajectory file",
                                         false, "",
                                         "path/to/output.traj", cmd);
+    TCLAP::ValueArg<std::string> progressUrlArg(
+      "", "progress-url",
+      "Optional WebSocket URL for progress updates (ws://host:port/path)",
+      false, "", "ws://localhost:8080/progress", cmd);
 
     cmd.parse(argc, argv);
 
@@ -45,6 +49,10 @@ CliArgs parse_arguments(int argc, char** argv) {
     if (!outputArg.getValue().empty()) {
       args.output_path =
           std::filesystem::absolute(std::filesystem::path{outputArg.getValue()});
+    }
+
+    if (!progressUrlArg.getValue().empty()) {
+      args.progress_url = progressUrlArg.getValue();
     }
 
     if (!trajectoryArg.getValue().empty()) {

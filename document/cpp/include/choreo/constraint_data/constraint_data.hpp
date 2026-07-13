@@ -25,6 +25,7 @@ namespace choreo::ConstraintData {
 /// ConstraintLike concept.
 template <typename T>
 concept ConstraintLike =
+#ifdef CHOREO_WITH_TRAJOPT
     requires(T self, const choreo::Waypoint& start,
              const choreo::Waypoint& end,
              const std::vector<trajopt::KeepOutRegion>& bumpers) {
@@ -42,6 +43,21 @@ concept ConstraintLike =
         T::type_string()
       } -> std::same_as<std::string_view>;
     };
+#else
+    requires(T self, const choreo::Waypoint& start,
+             const choreo::Waypoint& end) {
+      // forEndpoints is only called when there are two distinct endpoints, so end is not optional
+      {
+        self.forEndpoints(start, end)
+      } -> std::same_as<T>;
+      {
+        self.scope()
+      } -> std::same_as<choreo::ConstraintScope>;
+      {
+        T::type_string()
+      } -> std::same_as<std::string_view>;
+    };
+#endif
 using ConstraintVariant = std::variant<
     //clang-format off
     MaxVelocity, MaxAngularVelocity,

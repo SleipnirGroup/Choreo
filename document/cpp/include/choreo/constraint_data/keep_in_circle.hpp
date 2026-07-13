@@ -6,9 +6,11 @@
 #include <variant>
 #include <vector>
 
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/constraint/constraint.hpp>
 #include <trajopt/constraint/keep_in_circle_constraint.hpp>
 #include <trajopt/constraint/keep_out_region.hpp>
+#endif
 #include <wpi/units/length.hpp>
 #include <wpi/util/json.hpp>
 
@@ -33,10 +35,12 @@ struct KeepInCircle : public Region2e {
            r.equivalent(other.r);
   }
 
+#ifdef CHOREO_WITH_TRAJOPT
   trajopt::Constraint toTrajoptConstraint(
       const std::vector<trajopt::KeepOutRegion>& bumpers) const {
     return trajopt::KeepInCircleConstraint{bumpers, {x, y}, r};
   }
+#endif
 
   KeepInCircle forEndpoints(const choreo::Waypoint& start,
                              const choreo::Waypoint& end) const {

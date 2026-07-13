@@ -1,12 +1,15 @@
 // Copyright (c) Choreo contributors
 
 #pragma once
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/constraints/lane_constraint.hpp>
+#endif
 #include <wpi/units/length.hpp>
 #include <wpi/util/json.hpp>
 
 #include "../expr.hpp"
 #include "../variables/dimension.hpp"
+#include "../waypoint.hpp"
 #include "./constraint_scope.hpp"
 
 namespace choreo::ConstraintData {
@@ -22,22 +25,24 @@ struct KeepInLane {
   bool useEndPoint = true;
   Expr<dimensions::Length> tolerance = 0_m;
 
+#ifdef CHOREO_WITH_TRAJOPT
   trajopt::Constraint toTrajoptConstraint(
 ) const {
     return trajopt::LaneConstraint{{x1.unit(), y1.unit()}, {x2.unit(), y2.unit()},
                                    tolerance.value()};
   }
+#endif
 
   KeepInLane forEndpoints(const choreo::Waypoint& start,
                              const choreo::Waypoint& end) const {
     KeepInLane c = *this;
     if (useStartPoint) {
-      c.x1 = start.pose.x;
-      c.y1 = start.pose.y;
+      c.x1 = start.x;
+      c.y1 = start.y;
     }
     if (useEndPoint) {
-      c.x2 = end.pose.x;
-      c.y2 = end.pose.y;
+      c.x2 = end.x;
+      c.y2 = end.y;
     }
     return c;
   }

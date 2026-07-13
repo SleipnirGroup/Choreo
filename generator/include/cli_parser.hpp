@@ -11,6 +11,7 @@ struct CliArgs {
   std::filesystem::path chor_path;
   std::filesystem::path traj_path;
   std::filesystem::path output_path;
+  std::string progress_url;
   std::string error_message;
 };
 

@@ -34,7 +34,7 @@ struct Waypoint {
     return wpi::math::Pose2d{x.unit(), y.unit(), heading.unit()};
   }
 
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
   trajopt::Pose2d toTrajoptPose2d() const {
     return trajopt::Pose2d{x, y, {heading}};
   }

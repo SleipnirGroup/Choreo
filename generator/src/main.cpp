@@ -3,7 +3,9 @@
 #include <iterator>
 #include <numbers>
 #include <filesystem>
+#include <functional>
 #include <fstream>
+#include <optional>
 #include <print>
 #include <ranges>
 #include <stdexcept>
@@ -33,9 +35,15 @@
 #include "choreo/drive_type.hpp"
 #include "choreo/trajectory.hpp"
 #include "cli_parser.hpp"
+#include <progress_update_sender/client.hpp>
 #include "segment.hpp"
 #include "split_to_segments.hpp"
 
+///
+/// @brief Validates the input trajectory and project files for trajectory generation.
+/// @param project The project file.
+/// @param trajectory The trajectory file.
+/// @throws std::runtime_error if the input trajectory is invalid.
 void validate_generation_input(const choreo::ProjectFile& project,
                                const choreo::TrajectoryFile& trajectory) {
   const auto& params = trajectory.params;
@@ -80,12 +88,27 @@ void validate_generation_input(const choreo::ProjectFile& project,
 }
 
 
+/// @brief Generates a trajectory file using the specified trajectory generator.
+/// @tparam Generator The trajectory generator type.
+/// @param chor The project file.
+/// @param originalTrajectory The original trajectory file.
+/// @return The generated trajectory file, ready to be written to file, sent to a client, etc.
 template <choreo::ChoreoTrajectoryGenerator Generator>
 choreo::TrajectoryFile generate(const choreo::ProjectFile& chor,
-                                const choreo::TrajectoryFile& originalTrajectory) {
+                                const choreo::TrajectoryFile& originalTrajectory,
+                                const choreo::progress_update_sender::Client* sender = nullptr) {
                                   //Intentionally make two copies of the trajectory file
   auto traj_unscratch = choreo::TrajectoryFile{originalTrajectory};
-  Generator generator(choreo::ProjectFile{chor}, choreo::TrajectoryFile{traj_unscratch});
+  using Sample = typename Generator::Sample;
+  std::function<void(const std::vector<Sample>&)> progress_callback;
+  if (sender != nullptr) {
+    progress_callback = [sender](const std::vector<Sample>& samples) {
+      sender->sendIncompleteTrajectory(samples);
+    };
+  }
+
+  Generator generator(choreo::ProjectFile{chor}, choreo::TrajectoryFile{traj_unscratch},
+                      std::move(progress_callback));
   
   auto samplesExp = generator.generate();
   if (!samplesExp) {
@@ -137,9 +160,18 @@ choreo::TrajectoryFile generate(const choreo::ProjectFile& chor,
   return traj_unscratch;
 }
 
-choreo::TrajectoryFile read_and_generate(const CliArgs& args) {
+/// @brief Reads the project and trajectory files from the specified paths and generates a new trajectory file.
+/// @param args The command line arguments containing the paths to the project and trajectory files.
+/// @return The generated trajectory file.
+/// @throws std::runtime_error if the input files are invalid or generation fails.
+choreo::TrajectoryFile read_and_generate(
+    const CliArgs& args,
+    const choreo::progress_update_sender::Client* sender = nullptr) {
   std::println("Generating trajectories from: {}", args.chor_path.string());
   std::println("Trajectory to generate: {}", args.traj_path.string());
+  if (sender != nullptr) {
+    sender->sendDiagnosticText("generator: loading input files");
+  }
   // Read the ProjectFile and TrajectoryFile from the specified paths
   std::string chor_contents;
   std::string traj_contents;
@@ -165,12 +197,12 @@ choreo::TrajectoryFile read_and_generate(const CliArgs& args) {
     return generate<
   choreo::TrajectoryGenerator<choreo::SwerveDriveType, trajopt::SwerveSolution,
                               trajopt::SwerveDrivetrain,
-                              trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>>(chor, traj);
+                              trajopt::SwerveTrajectoryGenerator, trajopt::SwerveTrajectory>>(chor, traj, sender);
     case choreo::DriveType::Differential: 
     return generate<
   choreo::TrajectoryGenerator<choreo::DifferentialDriveType, trajopt::DifferentialSolution,
                               trajopt::DifferentialDrivetrain,
-                              trajopt::DifferentialTrajectoryGenerator, trajopt::DifferentialTrajectory>>(chor, traj);
+                              trajopt::DifferentialTrajectoryGenerator, trajopt::DifferentialTrajectory>>(chor, traj, sender);
     default:
       throw std::runtime_error("Unsupported drive type");
   }
@@ -179,19 +211,38 @@ choreo::TrajectoryFile read_and_generate(const CliArgs& args) {
 int main(int argc, char** argv) {
     std::println("Choreo Generator CLI");
 
+    
     try {
       CliArgs args = parse_arguments(argc, argv);
+      std::optional<choreo::progress_update_sender::Client> progress_sender;
+
+      if (!args.progress_url.empty()) {
+        progress_sender.emplace();
+        progress_sender->open(args.progress_url);
+        progress_sender->sendDiagnosticText("generator: progress sender initialized");
+      }
 
       if (!args.error_message.empty()) {
         std::println(stderr, "Error: {}", args.error_message);
+        if (progress_sender.has_value()) {
+          progress_sender->sendError(args.error_message);
+        }
         return 1;
       }
-      const choreo::TrajectoryFile traj = read_and_generate(args);
+      const choreo::TrajectoryFile traj =
+          read_and_generate(args,
+                            progress_sender.has_value() ? &*progress_sender : nullptr);
 
       // at this point the traj is fully edited. Send it where it needs to go.
+      const auto serialized_traj = wpi::util::json(traj).to_string();
+
       if (!args.output_path.empty()) {
         std::ofstream output_file(args.output_path);
         output_file << wpi::util::json(traj).to_string_pretty();
+      }
+
+      if (progress_sender.has_value()) {
+        progress_sender->sendCompleteTrajectory(serialized_traj);
       }
       std::println("Trajectory generation complete");
       return 0;

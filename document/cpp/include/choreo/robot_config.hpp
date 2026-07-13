@@ -18,7 +18,7 @@
 #include "geometry/translation2e.hpp"
 #include "type_traits"
 #include "variables/variable.hpp"
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/differential_trajectory_generator.hpp>
 #include <trajopt/geometry/translation2.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
@@ -118,7 +118,7 @@ struct RobotConfig {
   wpi::units::radians_per_second_t wheel_max_velocity() {
     return motor.free_speed.unit() / gearing.unit();
   }
-#ifdef WITH_TRAJOPT
+#ifdef CHOREO_WITH_TRAJOPT
 
   trajopt::SwerveDrivetrain to_swerve_drivetrain() {
     std::vector<trajopt::Translation2d> trajoptModules;

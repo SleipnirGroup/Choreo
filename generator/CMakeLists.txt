@@ -20,33 +20,42 @@ endif()
 
 FetchContent_Declare(
     TCLAP
+    EXCLUDE_FROM_ALL
     GIT_REPOSITORY "https://github.com/mirror/tclap"
 )
 FetchContent_MakeAvailable(TCLAP)
 
-FetchContent_Declare(
-    TrajoptLib
-    SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib/"
-)
-FetchContent_MakeAvailable(TrajoptLib)
+if(NOT TARGET TrajoptLib)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib"
+        "${CMAKE_CURRENT_BINARY_DIR}/trajoptlib"
+    )
+endif()
+
+include(../cmake/CompilerFlags.cmake)
 
 include (../cmake/FetchWPILib.cmake)
 fetch_wpilib()
-set(WITH_TRAJOPT ON)
-FetchContent_Declare(
-    choreo_document
-    SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../document/cpp/"
-)
-FetchContent_MakeAvailable(choreo_document)
+if(NOT TARGET choreo_document)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../document/cpp"
+        "${CMAKE_CURRENT_BINARY_DIR}/choreo_document"
+    )
+endif()
 
-FetchContent_Declare(
-    choreo_renderer
-    SOURCE_DIR
-    "${CMAKE_CURRENT_LIST_DIR}/../renderer/"
-)
-FetchContent_MakeAvailable(choreo_renderer)
+if(NOT TARGET choreo_renderer)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../renderer"
+        "${CMAKE_CURRENT_BINARY_DIR}/choreo_renderer"
+    )
+endif()
+
+if(NOT TARGET choreo_progress_update_sender)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../progress-update-sender"
+        "${CMAKE_CURRENT_BINARY_DIR}/choreo_progress_update_sender"
+    )
+endif()
 # Collect sources for the executable
 file(
     GLOB_RECURSE generator_SOURCES
@@ -56,6 +65,10 @@ file(
 )
 
 add_executable(generator ${generator_SOURCES})
+
+suppress_clangcl_unused_command_line_argument(generator)
+
+target_compile_definitions(generator PRIVATE CHOREO_WITH_TRAJOPT)
 
 # C++ standard
 #target_compile_features(generator PRIVATE cxx_std_23)
@@ -70,7 +83,7 @@ target_include_directories(
 
 target_link_libraries(
     generator
-    PRIVATE TrajoptLib wpimath wpiutil choreo_document choreo_renderer
+    PRIVATE TrajoptLib wpimath wpiutil choreo_document choreo_renderer choreo_progress_update_sender
 )
 
 # Optional: install rule

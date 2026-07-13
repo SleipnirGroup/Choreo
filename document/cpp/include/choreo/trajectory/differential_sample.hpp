@@ -26,7 +26,9 @@
 #include <wpi/units/time.hpp>
 #include <wpi/units/velocity.hpp>
 #include <wpi/util/json.hpp>
+#ifdef CHOREO_WITH_TRAJOPT
 #include <trajopt/differential_trajectory_generator.hpp>
+#endif
 #include <wpi/math/trajectory/DifferentialSample.hpp>
 #include "sample_concept.hpp"
 #include "wpi/math/kinematics/ChassisAccelerations.hpp"
@@ -39,9 +41,12 @@ struct DifferentialDriveType{
   DifferentialDriveType(const DifferentialDriveType&) = default;
   using WPILibSample = wpi::math::DifferentialSample;
   using WPILibTrajectory = wpi::math::DifferentialTrajectory;
+#ifdef CHOREO_WITH_TRAJOPT
   using TrajoptSample = trajopt::DifferentialTrajectorySample;
+#endif
   constexpr static inline DriveType driveType = DriveType::Differential;
   constexpr static inline const char* tag = "Differential";
+#ifdef CHOREO_WITH_TRAJOPT
   constexpr static WPILibSample fromTrajopt(const TrajoptSample& sample) {
     using namespace wpi::units::literals;
     auto pose = wpi::math::Pose2d{wpi::units::meter_t(sample.x), wpi::units::meter_t(sample.y), wpi::units::radian_t(sample.heading)};
@@ -64,6 +69,7 @@ struct DifferentialDriveType{
       rightSpeed
     };
   }
+#endif
 };
 static_assert(DriveTypeLike<DifferentialDriveType>, "DifferentialDriveType must satisfy DriveTypeLike");
 }  // namespace choreo

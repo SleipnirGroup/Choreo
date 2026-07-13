@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add subdirectories for builds
 add_subdirectory(trajoptlib)
-add_subdirectory(generator)
-add_subdirectory(renderer)
 add_subdirectory(document)
+add_subdirectory(renderer)
+add_subdirectory(progress-update-sender)
+add_subdirectory(generator)
+add_subdirectory(progress-update-relay)

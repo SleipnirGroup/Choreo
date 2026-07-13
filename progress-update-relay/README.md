@@ -1,0 +1,1 @@
+This is a fully vibecoded viewer for the generator executables to connect to. Eventually the relaying functionality will be part of the native app that spawns the individual generators.

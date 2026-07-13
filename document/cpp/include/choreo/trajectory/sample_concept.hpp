@@ -2,11 +2,12 @@
 
 #include <concepts>
 #include <wpi/util/json.hpp>
-#include "wpi/math/geometry/Pose2d.hpp"
-#include "wpi/math/geometry/Transform2d.hpp"
-#include "wpi/math/kinematics/ChassisAccelerations.hpp"
-#include "wpi/math/kinematics/ChassisVelocities.hpp"
-#include "wpi/units/time.hpp"
+#include <wpi/math/geometry/Pose2d.hpp>
+#include <wpi/math/geometry/Transform2d.hpp>
+#include <wpi/math/kinematics/ChassisAccelerations.hpp>
+#include <wpi/math/kinematics/ChassisVelocities.hpp>
+#include <wpi/units/time.hpp>
+#include <wpi/util/struct/Struct.hpp>
 #include "../drive_type.hpp"
 namespace choreo {
 
@@ -14,6 +15,7 @@ namespace choreo {
 /// components.
 template <typename T>
 concept SampleLike = requires(T sample, wpi::math::Transform2d transform, wpi::math::Pose2d otherPose, wpi::units::second_t newTimestamp) {
+  requires wpi::util::StructSerializable<T>;
   {sample.time} -> std::convertible_to<wpi::units::second_t>;
   // Must have pose member
   { sample.pose } -> std::convertible_to<wpi::math::Pose2d>;
@@ -38,14 +40,25 @@ concept TrajectoryLike = requires(T traj, std::vector<Sample> samples, const Sam
 };
 
 template <typename T>
+#ifdef CHOREO_WITH_TRAJOPT
 concept DriveTypeLike = requires (T::TrajoptSample trajoptSample) {
-    typename T::WPILibSample;
-    SampleLike<typename T::WPILibSample>;
-    typename T::WPILibTrajectory;
-    TrajectoryLike<typename T::WPILibTrajectory, typename T::WPILibSample>;
-    typename T::TrajoptSample;
-    {T::driveType} -> std::convertible_to<DriveType>;
-    {T::tag} -> std::convertible_to<std::string>;
-    {T::fromTrajopt(trajoptSample) } -> std::convertible_to<typename T::WPILibSample>;
-}; 
+  typename T::WPILibSample;
+  SampleLike<typename T::WPILibSample>;
+  typename T::WPILibTrajectory;
+  TrajectoryLike<typename T::WPILibTrajectory, typename T::WPILibSample>;
+  typename T::TrajoptSample;
+  {T::driveType} -> std::convertible_to<DriveType>;
+  {T::tag} -> std::convertible_to<std::string>;
+  {T::fromTrajopt(trajoptSample) } -> std::convertible_to<typename T::WPILibSample>;
+};
+#else
+concept DriveTypeLike = requires {
+  typename T::WPILibSample;
+  SampleLike<typename T::WPILibSample>;
+  typename T::WPILibTrajectory;
+  TrajectoryLike<typename T::WPILibTrajectory, typename T::WPILibSample>;
+  {T::driveType} -> std::convertible_to<DriveType>;
+  {T::tag} -> std::convertible_to<std::string>;
+};
+#endif
 }  // namespace choreo
