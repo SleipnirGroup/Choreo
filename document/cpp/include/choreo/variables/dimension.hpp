@@ -24,78 +24,104 @@ namespace dimensions {
 
 template <typename T>
 struct Dimension {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "default value";
   using baseUnit = T;
 };
 
 template <>
 struct Dimension<wpi::units::scalar_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Number";
   using baseUnit = wpi::units::scalar_t;
 };
 
 template <>
 struct Dimension<wpi::units::meter_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Length";
   using baseUnit = wpi::units::meter_t;
 };
 
 template <>
 struct Dimension<wpi::units::meters_per_second_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "LinVel";
   using baseUnit = wpi::units::meters_per_second_t;
 };
 
 template <>
 struct Dimension<wpi::units::meters_per_second_squared_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "LinAcc";
   using baseUnit = wpi::units::meters_per_second_squared_t;
 };
 
 template <>
 struct Dimension<wpi::units::radian_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Angle";
   using baseUnit = wpi::units::radian_t;
 };
 
 template <>
 struct Dimension<wpi::units::radians_per_second_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "AngVel";
   using baseUnit = wpi::units::radians_per_second_t;
 };
 
 template <>
 struct Dimension<wpi::units::radians_per_second_squared_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "AngAcc";
   using baseUnit = wpi::units::radians_per_second_squared_t;
 };
 
 template <>
 struct Dimension<wpi::units::second_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Time";
   using baseUnit = wpi::units::second_t;
 };
 
 template <>
 struct Dimension<wpi::units::kilogram_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Mass";
   using baseUnit = wpi::units::kilogram_t;
 };
 
 template <>
 struct Dimension<wpi::units::newton_meter_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Torque";
   using baseUnit = wpi::units::newton_meter_t;
 };
 
 template <>
 struct Dimension<wpi::units::kilogram_square_meter_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "MoI";
   using baseUnit = wpi::units::kilogram_square_meter_t;
 };
 
 template <>
 struct Dimension<wpi::units::ampere_t> {
+  Dimension() = default;
+  Dimension(const Dimension&) = default;
   inline static constexpr std::string_view tag = "Current";
   using baseUnit = wpi::units::ampere_t;
 };

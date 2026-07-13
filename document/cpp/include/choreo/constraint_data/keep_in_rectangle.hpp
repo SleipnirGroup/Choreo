@@ -6,6 +6,8 @@
 
 namespace choreo::ConstraintData {
 struct KeepInRectangle : public Region2e{
+  KeepInRectangle() = default;
+  KeepInRectangle(const KeepInRectangle&) = default;
   static KeepInRectangle fromJson(const wpi::util::json& json);
   static std::string_view type_string() { return "KeepInRectangle"; }
   trajopt::Constraint toTrajoptConstraint(

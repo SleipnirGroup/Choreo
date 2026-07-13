@@ -14,6 +14,8 @@
 #include "waypoint.hpp"
 namespace choreo {
 struct Parameters {
+  Parameters() = default;
+  Parameters(const Parameters&) = default;
   static Parameters fromJson(const wpi::util::json& json);
   std::vector<Waypoint> waypoints;
   std::vector<Constraint> constraints;

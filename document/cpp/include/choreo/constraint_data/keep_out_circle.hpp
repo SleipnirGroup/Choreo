@@ -9,6 +9,8 @@
 
 namespace choreo::ConstraintData {
 struct KeepOutCircle {
+  KeepOutCircle() = default;
+  KeepOutCircle(const KeepOutCircle&) = default;
   static KeepOutCircle fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 0_m;
   Expr<dimensions::Length> y = 0_m;

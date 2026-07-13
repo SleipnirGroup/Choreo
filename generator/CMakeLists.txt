@@ -19,6 +19,12 @@ endif()
 
 
 FetchContent_Declare(
+    TCLAP
+    GIT_REPOSITORY "https://github.com/mirror/tclap"
+)
+FetchContent_MakeAvailable(TCLAP)
+
+FetchContent_Declare(
     TrajoptLib
     SOURCE_DIR
     "${CMAKE_CURRENT_LIST_DIR}/../trajoptlib/"
@@ -45,6 +51,7 @@ FetchContent_MakeAvailable(choreo_renderer)
 file(
     GLOB_RECURSE generator_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/cli_parser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/split_to_segments.cpp"
 )
 
@@ -57,6 +64,8 @@ add_executable(generator ${generator_SOURCES})
 target_include_directories(
     generator
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+    # Add TCLAP include directory
+    ${tclap_SOURCE_DIR}/include
 )
 
 target_link_libraries(

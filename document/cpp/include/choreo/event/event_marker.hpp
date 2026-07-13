@@ -14,10 +14,18 @@
 namespace choreo {
 
 struct EventMarkerData {
+  EventMarkerData() = default;
+  EventMarkerData(const EventMarkerData&) = default;
   static EventMarkerData fromJson(const wpi::util::json& json);
   std::optional<std::size_t> target;
   std::optional<dimensions::Time::baseUnit> targetTimestamp;
   Expr<dimensions::Time> offset;
+
+  void updateTimestamp(const std::vector<wpi::units::second_t>& waypoint_timestamps) {
+    if (target.has_value() && target.value() < waypoint_timestamps.size()) {
+      targetTimestamp = waypoint_timestamps[target.value()];
+    }
+  }
 };
 
 inline void to_json(wpi::util::json& json, const EventMarkerData& data) {
@@ -52,6 +60,8 @@ inline EventMarkerData EventMarkerData::fromJson(const wpi::util::json& json) {
 }
 
 struct EventMarker {
+  EventMarker() = default;
+  EventMarker(const EventMarker&) = default;
   static EventMarker fromJson(const wpi::util::json& json);
   std::string name;
   EventMarkerData from;

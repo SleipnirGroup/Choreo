@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <functional>
 #include <map>
 #include <string>
 #include <variant>
@@ -13,6 +14,7 @@ namespace choreo {
 
 template <typename DimensionType>
 struct Variable {
+  Variable(const Variable&) = default;
   using Unit = typename DimensionType::baseUnit;
   using Dimension = DimensionType;
   // NOLINTNEXTLINE (google-explicit-constructor)
@@ -68,20 +70,23 @@ inline void to_json(wpi::util::json& json, const VariableVariant& variable) {
       },
       variable);
 }
-inline std::map<std::string,
-                std::function<VariableVariant(const wpi::util::json&)>>
-    fromJsonMap = {
-        {dimensions::Number::tag, create<dimensions::Number>},
-        {dimensions::Length::tag, create<dimensions::Length>},
-        {dimensions::LinVel::tag, create<dimensions::LinVel>},
-        {dimensions::LinAcc::tag, create<dimensions::LinAcc>},
-        {dimensions::Angle::tag, create<dimensions::Angle>},
-        {dimensions::AngVel::tag, create<dimensions::AngVel>},
-        {dimensions::AngAcc::tag, create<dimensions::AngAcc>},
-        {dimensions::Time::tag, create<dimensions::Time>},
-        {dimensions::Mass::tag, create<dimensions::Mass>},
-        {dimensions::Torque::tag, create<dimensions::Torque>},
-        {dimensions::MoI::tag, create<dimensions::MoI>},
+using VariableParser = VariableVariant (*)(const wpi::util::json&);
+
+inline std::map<std::string, VariableParser> fromJsonMap = {
+    {std::string{dimensions::Number::tag}, &create<dimensions::Number>},
+    {std::string{dimensions::Length::tag}, &create<dimensions::Length>},
+    {std::string{dimensions::LinVel::tag}, &create<dimensions::LinVel>},
+    {std::string{dimensions::LinAcc::tag}, &create<dimensions::LinAcc>},
+    {std::string{dimensions::Angle::tag}, &create<dimensions::Angle>},
+    {std::string{dimensions::AngVel::tag}, &create<dimensions::AngVel>},
+    {std::string{dimensions::AngAcc::tag}, &create<dimensions::AngAcc>},
+    {std::string{dimensions::Time::tag}, &create<dimensions::Time>},
+    {std::string{dimensions::Mass::tag}, &create<dimensions::Mass>},
+    {std::string{dimensions::Torque::tag}, &create<dimensions::Torque>},
+    {std::string{dimensions::MoI::tag}, &create<dimensions::MoI>},
+    {std::string{dimensions::Current::tag}, &create<dimensions::Current>},
+    {std::string{dimensions::KT::tag}, &create<dimensions::KT>},
+    {std::string{dimensions::KV::tag}, &create<dimensions::KV>},
 };
 
 inline void from_json(const wpi::util::json& json, VariableVariant& c) {

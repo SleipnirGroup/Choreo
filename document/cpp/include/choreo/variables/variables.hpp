@@ -35,6 +35,8 @@ inline void from_json(const json& json, StringMap<T>& map) {
 namespace choreo {
 
 struct Variables {
+  Variables() = default;
+  Variables(const Variables&) = default;
   static Variables fromJson(const wpi::util::json& json);
   wpi::util::StringMap<VariableVariant> expressions;
   wpi::util::StringMap<Translation2e> translations;

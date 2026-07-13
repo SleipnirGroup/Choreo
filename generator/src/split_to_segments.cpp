@@ -5,6 +5,7 @@
 #include <numbers>
 #include <print>
 #include <ranges>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,15 @@ namespace choreo {
  /// @return A vector of Segments, where each Segment contains a start Waypoint and the constraints that apply to it.
 
 std::vector<Segment> convert_to_segments(const Parameters& params) {
+  if (params.waypoints.empty()) {
+    throw std::runtime_error(
+        "Trajectory has no waypoints; cannot generate segments");
+  }
+  if (params.waypoints.size() < 2) {
+    throw std::runtime_error(
+        "Trajectory must have at least two waypoints; cannot generate segments");
+  }
+
   std::vector<ConstraintIDX> constraints;
   // First, we need to convert the constraints from the parameters into a more convenient format for processing. We also need to validate that the 'from' and 'to' indices are within bounds of the waypoints vector, and print warnings for any malformed constraints.
   // This filters out constraints with invalid indices.

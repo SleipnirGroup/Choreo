@@ -3,6 +3,7 @@
 #include <print>
 #include <ranges>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <choreo/project.hpp>
@@ -25,10 +26,11 @@ class TrajectoryGenerator {
   using Sample = ChoreoDriveType::WPILibSample;
   using Builder = trajopt::PathBuilder<TrajoptDrivetrainType, TrajoptSolutionType>;
   // Owns projectFile and trajectoryFile;
-  TrajectoryGenerator(choreo::ProjectFile& projectFile,
-                      choreo::TrajectoryFile& trajectoryFile)
+  TrajectoryGenerator(choreo::ProjectFile projectFile,
+                      choreo::TrajectoryFile trajectoryFile)
       : projectFile(std::move(projectFile)),
         trajectoryFile(std::move(trajectoryFile)) {
+    // This is still one segment per Choreo waypoint.
     segments = 
         convert_to_segments(this->trajectoryFile.params);
 
@@ -51,9 +53,11 @@ class TrajectoryGenerator {
     apply_waypoints();
     apply_constraints();
   }
+  std::vector<Segment> get_segments() const { return segments; }
   // TODO: temporary, eventually generate returns a modified TrajectoryFile
   std::expected<std::vector<Sample>, slp::ExitStatus> generate() {
     return generate_internal(); }
+  
  private:
   choreo::ProjectFile projectFile;
   choreo::TrajectoryFile trajectoryFile;
@@ -91,11 +95,17 @@ class TrajectoryGenerator {
   }
   void apply_waypoints() {
     std::vector<trajopt::Pose2d> initial_guess_points;
+    std::vector<size_t> intervals;
     for (int i = 0; i < segments.size(); i++) {
       const auto& wpt = segments[i].start;
       if (!segments[i].coalesce_with_previous) {
-        generator.sgmt_initial_guess_points(only_waypoint_segments.size(),
-                                            initial_guess_points);
+        if (i != segments.size() - 1) {
+          intervals.push_back(wpt.intervals);
+        }
+        if (!only_waypoint_segments.empty()) {
+          generator.sgmt_initial_guess_points(
+              only_waypoint_segments.size() - 1, initial_guess_points);
+        }
         initial_guess_points.clear();
         if (wpt.fix_translation && wpt.fix_heading) {
           generator.pose_wpt(only_waypoint_segments.size(), wpt.x.val.value(),
@@ -110,9 +120,13 @@ class TrajectoryGenerator {
         }
         only_waypoint_segments.push_back(segments[i]);
       } else {
+        intervals.back() += wpt.intervals;
         initial_guess_points.push_back(wpt.toTrajoptPose2d());
       }
+      
     }
+    std::println("Intervals: {}", intervals);
+    generator.set_control_interval_counts(std::move(intervals));
   }
 
   std::expected<std::vector<Sample>, slp::ExitStatus>
@@ -131,4 +145,19 @@ class TrajectoryGenerator {
     return samples;
   }
 };
+
+template <typename T>
+struct is_choreo_trajectory_generator : std::false_type {};
+
+template <typename DriveType, typename SolutionType, typename DrivetrainType,
+          typename TrajectoryGeneratorType, typename TrajectoryType>
+struct is_choreo_trajectory_generator<
+    choreo::TrajectoryGenerator<DriveType, SolutionType, DrivetrainType,
+                                TrajectoryGeneratorType, TrajectoryType>>
+    : std::true_type {};
+
+template <typename T>
+concept ChoreoTrajectoryGenerator =
+    is_choreo_trajectory_generator<std::remove_cvref_t<T>>::value;
+
 }  // namespace choreo

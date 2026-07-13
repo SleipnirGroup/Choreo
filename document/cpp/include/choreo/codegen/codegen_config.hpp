@@ -27,6 +27,8 @@ impl CodeGenConfig {
 #include <wpi/util/json.hpp>
 namespace choreo {
     struct CodeGenConfig {
+      CodeGenConfig() = default;
+      CodeGenConfig(const CodeGenConfig&) = default;
         std::optional<std::string> root;
         bool genVars = true;
         bool genTrajData = true;

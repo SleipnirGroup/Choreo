@@ -18,6 +18,8 @@ namespace choreo {
 /// center. Standard configuration is FL: (+x, +y), BL: (+x, -y), BR: (-x, -y),
 /// FR: (-x, +y)
 struct Translation2e {
+  Translation2e() = default;
+  Translation2e(const Translation2e&) = default;
   static Translation2e fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x;
   Expr<dimensions::Length> y;

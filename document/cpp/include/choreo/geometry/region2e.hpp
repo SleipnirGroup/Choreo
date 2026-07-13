@@ -17,6 +17,8 @@ namespace choreo {
 /// Represents a rotated region parameterized by its center, dimensions, and
 /// heading. This can represent a rect or an ellipse
 struct Region2e {
+  Region2e() = default;
+  Region2e(const Region2e&) = default;
   static Region2e fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x;
   Expr<dimensions::Length> y;

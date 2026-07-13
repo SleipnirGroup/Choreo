@@ -16,19 +16,21 @@
 #include "../drive_type.hpp"
 namespace choreo {
 struct SwerveDriveType {
-  using WPILibSample = wpi::math::TrajectorySample;
+  SwerveDriveType() = default;
+  SwerveDriveType(const SwerveDriveType&) = default;
+  using WPILibSample = wpi::math::HolonomicSample;
   static_assert(SampleLike<WPILibSample>, "SwerveDriveType::WPILibSample must match SampleLike");
   using WPILibTrajectory = wpi::math::HolonomicTrajectory;
   using TrajoptSample = trajopt::SwerveTrajectorySample;
   constexpr static inline DriveType driveType = DriveType::Swerve;
   constexpr static inline const char* tag = "Swerve";
   constexpr static WPILibSample fromTrajopt(const TrajoptSample& sample) {
-    return WPILibSample{
+    return WPILibSample(
     wpi::units::second_t(sample.timestamp),
-    {wpi::units::meter_t(sample.x), wpi::units::meter_t(sample.y), wpi::units::radian_t(sample.heading)},
+    wpi::math::Pose2d{wpi::units::meter_t(sample.x), wpi::units::meter_t(sample.y), wpi::math::Rotation2d(wpi::units::radian_t(sample.heading))},
     {wpi::units::meters_per_second_t(sample.velocity_x), wpi::units::meters_per_second_t(sample.velocity_y), wpi::units::radians_per_second_t(sample.angular_velocity)},
     {wpi::units::meters_per_second_squared_t(sample.acceleration_x), wpi::units::meters_per_second_squared_t(sample.acceleration_y), wpi::units::radians_per_second_squared_t(sample.angular_acceleration)}
-    };
+    );
   }
   
 };

@@ -10,6 +10,8 @@
 #include "wpi/util/json.hpp"
 namespace choreo {
 struct Waypoint {
+  Waypoint() = default;
+  Waypoint(const Waypoint&) = default;
   static Waypoint fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 1_m;
   Expr<dimensions::Length> y = 0_m;

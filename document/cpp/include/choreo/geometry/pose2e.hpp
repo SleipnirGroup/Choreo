@@ -19,6 +19,8 @@ namespace choreo {
 /// center. Standard configuration is FL: (+x, +y), BL: (+x, -y), BR: (-x, -y),
 /// FR: (-x, +y)
 struct Pose2e {
+  Pose2e() = default;
+  Pose2e(const Pose2e&) = default;
   static Pose2e fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x;
   Expr<dimensions::Length> y;

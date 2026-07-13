@@ -10,6 +10,8 @@
 
 namespace choreo::ConstraintData {
 struct PointAt {
+  PointAt() = default;
+  PointAt(const PointAt&) = default;
   static PointAt fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 0_m;
   Expr<dimensions::Length> y = 0_m;

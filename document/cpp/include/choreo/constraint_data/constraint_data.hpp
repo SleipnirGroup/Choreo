@@ -127,6 +127,8 @@ struct HoldsConstraintTypes;
 /// Type trait that evaluates to true if variant only holds constraint types.
 template <typename... Ts>
 struct HoldsConstraintTypes<std::variant<Ts...>> {
+  HoldsConstraintTypes() = default;
+  HoldsConstraintTypes(const HoldsConstraintTypes&) = default;
   /// True if variant only holds constraint types.
   static constexpr bool value = (ConstraintLike<Ts> && ...);
 };

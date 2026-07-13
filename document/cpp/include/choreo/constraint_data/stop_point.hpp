@@ -5,6 +5,8 @@
 
 namespace choreo::ConstraintData {
 struct StopPoint {
+  StopPoint() = default;
+  StopPoint(const StopPoint&) = default;
   static StopPoint from(const wpi::util::json&) { return StopPoint(); }
   static StopPoint fromJson(const wpi::util::json& json);
 };

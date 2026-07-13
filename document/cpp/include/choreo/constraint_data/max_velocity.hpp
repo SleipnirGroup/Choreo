@@ -21,6 +21,8 @@
 
 namespace choreo::ConstraintData {
 struct MaxVelocity {
+  MaxVelocity() = default;
+  MaxVelocity(const MaxVelocity&) = default;
   static MaxVelocity fromJson(const wpi::util::json& json);
   Expr<dimensions::LinVel> max = 0_mps;
 

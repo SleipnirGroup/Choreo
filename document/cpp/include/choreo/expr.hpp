@@ -12,6 +12,7 @@ namespace choreo {
 
 template <typename Dim>
 struct Expr {
+  Expr(const Expr&) = default;
   using BaseUnit = typename Dim::baseUnit;
   std::string exp;
   BaseUnit val;
@@ -49,7 +50,7 @@ struct Expr {
   operator double() const { return val.value(); }
   BaseUnit unit() const { return val; }
   static Expr fromJson(const wpi::util::json& json);
-  bool equivalent(const Expr& other) const {
+  inline bool equivalent(const Expr& other) const {
     return val.value() == other.val.value();
   }
 };

@@ -1,0 +1,143 @@
+{
+  "codegen": {
+    "genTrajData": true,
+    "genVars": true,
+    "root": "",
+    "useChoreoLib": true
+  },
+  "config": {
+    "bumpers": [{
+      "x": {
+        "exp": "0.381",
+        "val": 0.381
+      },
+      "y": {
+        "exp": "0.381",
+        "val": 0.381
+      }
+    }, {
+      "x": {
+        "exp": "0.381",
+        "val": 0.381
+      },
+      "y": {
+        "exp": "-0.381",
+        "val": -0.381
+      }
+    }, {
+      "x": {
+        "exp": "-0.381",
+        "val": -0.381
+      },
+      "y": {
+        "exp": "-0.381",
+        "val": -0.381
+      }
+    }, {
+      "x": {
+        "exp": "-0.381",
+        "val": -0.381
+      },
+      "y": {
+        "exp": "0.381",
+        "val": 0.381
+      }
+    }],
+    "cof": {
+      "exp": "1.5",
+      "val": 1.5
+    },
+    "differential_track_width": {
+      "exp": "0.5588",
+      "val": 0.5588
+    },
+    "gearing": {
+      "exp": "6.5",
+      "val": 6.5
+    },
+    "inertia": {
+      "exp": "6",
+      "val": 6
+    },
+    "mass": {
+      "exp": "68.0388555",
+      "val": 68.0388555
+    },
+    "motor": {
+      "free_speed": {
+        "exp": "668.1120376634294",
+        "val": 668.1120376634294
+      },
+      "kT": {
+        "exp": "0.027",
+        "val": 0.027
+      },
+      "kV": {
+        "exp": "0.016",
+        "val": 0.016
+      },
+      "stall_torque": {
+        "exp": "2.41",
+        "val": 2.41
+      },
+      "stator_limit": {
+        "exp": "40",
+        "val": 40
+      },
+      "supply_limit": {
+        "exp": "40",
+        "val": 40
+      }
+    },
+    "radius": {
+      "exp": "0.0508",
+      "val": 0.0508
+    },
+    "wheels": [{
+      "x": {
+        "exp": "0.2794",
+        "val": 0.2794
+      },
+      "y": {
+        "exp": "0.2794",
+        "val": 0.2794
+      }
+    }, {
+      "x": {
+        "exp": "-0.2794",
+        "val": -0.2794
+      },
+      "y": {
+        "exp": "0",
+        "val": 0
+      }
+    }, {
+      "x": {
+        "exp": "-0.2794",
+        "val": -0.2794
+      },
+      "y": {
+        "exp": "0.2794",
+        "val": 0.2794
+      }
+    }, {
+      "x": {
+        "exp": "-0.2794",
+        "val": -0.2794
+      },
+      "y": {
+        "exp": "-0.2794",
+        "val": -0.2794
+      }
+    }]
+  },
+  "name": "New Project",
+  "type": "Swerve",
+  "variables": {
+    "expressions": {},
+    "poses": {},
+    "regions": {},
+    "translations": {}
+  },
+  "version": 4
+}

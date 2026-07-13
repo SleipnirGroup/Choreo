@@ -28,6 +28,8 @@ namespace choreo {
 using namespace wpi::units::literals;
 
 struct MotorConfig {
+  MotorConfig() = default;
+  MotorConfig(const MotorConfig&) = default;
   static MotorConfig fromJson(const wpi::util::json& json);
   Expr<dimensions::AngVel> free_speed;
   Expr<dimensions::Torque> stall_torque;
@@ -68,6 +70,8 @@ inline MotorConfig MotorConfig::fromJson(const wpi::util::json& json) {
 }
 
 struct RobotConfig {
+  RobotConfig() = default;
+  RobotConfig(const RobotConfig&) = default;
   static RobotConfig fromJson(const wpi::util::json& json);
   // TODO: decide if these should be hardcoded in the struct definition.
   Expr<dimensions::Mass> mass;

@@ -34,8 +34,8 @@ inline void make_animateMotion(SVGPP::Group* parent,
     return;
 }
 
-  const auto t0 = samples.front().timestamp;
-  const auto tN = samples.back().timestamp;
+  const auto t0 = samples.front().time;
+  const auto tN = samples.back().time;
   const auto duration = (tN - t0 >= 0.0_s) ? (tN - t0) : 0.0_s;
 
   std::ostringstream vals;
@@ -48,7 +48,7 @@ inline void make_animateMotion(SVGPP::Group* parent,
     vals << s.pose.X().value() << "," << s.pose.Y().value();
     double normalized_time = 0.0;
     if (duration > 0.0_s) {
-      normalized_time = (s.timestamp - t0) / duration;
+      normalized_time = (s.time - t0) / duration;
 }
     kt << normalized_time;
     if (i + 1 < samples.size()) {

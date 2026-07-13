@@ -20,13 +20,14 @@
 namespace choreo {
 
 struct TrajectoryFile {
+  TrajectoryFile() = default;
+  TrajectoryFile(const TrajectoryFile&) = default;
   static TrajectoryFile fromJson(const wpi::util::json& json);
   std::string name;
   std::uint32_t version;
   std::optional<RobotConfig> config;
   std::optional<Parameters> snapshot;
   Parameters params;
-  DriveType drive_type;
   std::optional<std::variant<Trajectory<SwerveDriveType>, Trajectory<DifferentialDriveType>>> trajectory;
   std::vector<EventMarker> events;
 
@@ -46,15 +47,9 @@ inline void to_json(wpi::util::json& json, const TrajectoryFile& trajFile) {
       trajFile.snapshot ? wpi::util::json(*trajFile.snapshot)
                         : wpi::util::json();
   wpi::util::json trajectory_json;
-  std::string sample_type;
   if (trajFile.trajectory) {
     std::visit([&](auto&& arg){
       trajectory_json = wpi::util::json(arg);
-      if (std::same_as<decltype(arg), Trajectory<SwerveDriveType>>) {
-        sample_type = SwerveDriveType::tag;
-      } else if (std::same_as<decltype(arg), Trajectory<DifferentialDriveType>>) {
-        sample_type = DifferentialDriveType::tag;
-      }
     }, *trajFile.trajectory);
   } else {
     trajectory_json = wpi::util::json();
@@ -62,7 +57,7 @@ inline void to_json(wpi::util::json& json, const TrajectoryFile& trajFile) {
   json = wpi::util::json::object("name", trajFile.name, "version",
                                  trajFile.version, "config", config_json,
                                  "snapshot", snapshot_json, "params",
-                                 trajFile.params, "trajectory", trajectory_json, "sample_type", sample_type,
+                                 trajFile.params, "trajectory", trajectory_json,
                                  "events", trajFile.events);
 }
 inline void from_json(const wpi::util::json& json, TrajectoryFile& trajFile) {
@@ -86,10 +81,8 @@ inline void from_json(const wpi::util::json& json, TrajectoryFile& trajFile) {
       std::string s = trajectory_json.at("sample_type").get_string();
       if (s == SwerveDriveType::tag) {
         trajFile.trajectory = Trajectory<SwerveDriveType>::from_json(trajectory_json);
-        trajFile.drive_type = DriveType::Swerve;
       } else if (s == DifferentialDriveType::tag) {
         trajFile.trajectory = Trajectory<DifferentialDriveType>::from_json(trajectory_json);
-        trajFile.drive_type = DriveType::Differential;
       } else {
         throw std::invalid_argument("Parsing TrajectoryFile with unknown drive type" + s);
       }

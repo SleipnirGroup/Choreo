@@ -35,6 +35,8 @@
 #include "wpi/math/trajectory/DifferentialTrajectory.hpp"
 namespace choreo {
 struct DifferentialDriveType{
+  DifferentialDriveType() = default;
+  DifferentialDriveType(const DifferentialDriveType&) = default;
   using WPILibSample = wpi::math::DifferentialSample;
   using WPILibTrajectory = wpi::math::DifferentialTrajectory;
   using TrajoptSample = trajopt::DifferentialTrajectorySample;

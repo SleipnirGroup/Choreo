@@ -15,6 +15,8 @@
 namespace choreo {
 
 struct ProjectFile {
+  ProjectFile() = default;
+  ProjectFile(const ProjectFile&) = default;
   static ProjectFile fromJson(const wpi::util::json& json);
   std::string name;
   std::uint32_t version;

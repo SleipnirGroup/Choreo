@@ -13,6 +13,8 @@
 namespace choreo::ConstraintData {
 using namespace wpi::units::literals;
 struct HeadingConstraint {
+  HeadingConstraint() = default;
+  HeadingConstraint(const HeadingConstraint&) = default;
   static HeadingConstraint fromJson(const wpi::util::json& json);
   Expr<dimensions::Angle> heading = 0_rad;
   Expr<dimensions::Angle> tolerance = 0_rad;

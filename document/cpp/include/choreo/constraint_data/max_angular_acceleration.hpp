@@ -9,6 +9,8 @@
 
 namespace choreo::ConstraintData {
 struct MaxAngularAcceleration {
+  MaxAngularAcceleration() = default;
+  MaxAngularAcceleration(const MaxAngularAcceleration&) = default;
   static MaxAngularAcceleration fromJson(const wpi::util::json& json);
   Expr<dimensions::AngAcc> max = 0_rad_per_s_sq;
 };

@@ -21,6 +21,8 @@
 namespace choreo {
 namespace ConstraintData {
 struct KeepInCircle : public Region2e {
+  KeepInCircle() = default;
+  KeepInCircle(const KeepInCircle&) = default;
   static KeepInCircle fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x = 0_m;
   Expr<dimensions::Length> y = 0_m;

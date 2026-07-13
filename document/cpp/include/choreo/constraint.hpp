@@ -12,14 +12,20 @@
 // Waypoint ID types and helpers
 namespace choreo {
 struct WaypointIDX {
+  WaypointIDX() = default;
+  WaypointIDX(const WaypointIDX&) = default;
   size_t idx;
 
   bool equivalent(const WaypointIDX& other) const { return idx == other.idx; }
 };
 struct FirstWaypoint {
+  FirstWaypoint() = default;
+  FirstWaypoint(const FirstWaypoint&) = default;
   bool equivalent(const FirstWaypoint& other) const { return true; }
 };
 struct LastWaypoint {
+  LastWaypoint() = default;
+  LastWaypoint(const LastWaypoint&) = default;
   bool equivalent(const LastWaypoint& other) const { return true; }
 };
 using WaypointID = std::variant<WaypointIDX, FirstWaypoint, LastWaypoint>;
@@ -90,7 +96,9 @@ inline void from_json(const wpi::util::json& json, WaypointID& id) {
     int64_t index = json.at("idx").get_int();
     if (index < 0)
       throw std::invalid_argument("WaypointIDX index cannot be negative");
-    id = WaypointIDX{.idx = static_cast<size_t>(index)};
+    WaypointIDX waypointIdx;
+    waypointIdx.idx = static_cast<size_t>(index);
+    id = waypointIdx;
   } else if (json.is_string() && json.get_string() == "first") {
     id = FirstWaypoint{};
   } else if (json.is_string() && json.get_string() == "last") {
@@ -101,6 +109,8 @@ inline void from_json(const wpi::util::json& json, WaypointID& id) {
 }
 
 struct ConstraintIDX {
+  ConstraintIDX() = default;
+  ConstraintIDX(const ConstraintIDX&) = default;
   size_t from;
   std::optional<size_t> to;  // if not specified, applies only to
   ConstraintData::ConstraintVariant data;
@@ -112,6 +122,8 @@ struct ConstraintIDX {
 };
 
 struct Constraint {
+  Constraint() = default;
+  Constraint(const Constraint&) = default;
   static Constraint fromJson(const wpi::util::json& json);
   WaypointID from;
   std::optional<WaypointID>
@@ -150,7 +162,11 @@ struct Constraint {
         return std::nullopt;
     }
 
-    return ConstraintIDX{.from = fromIdx, .to = toIdxOpt, .data = data};
+    ConstraintIDX idx;
+    idx.from = fromIdx;
+    idx.to = toIdxOpt;
+    idx.data = data;
+    return idx;
   }
 };
 inline void to_json(wpi::util::json& json, const Constraint& constraint) {

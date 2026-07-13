@@ -288,7 +288,7 @@ SVGPP::SVG graph(const std::vector<Sample>& samples) {
   for(size_t row = 0; row < graph_configs.size(); ++row) {
     for(size_t col = 0; col < graph_configs[row].size(); ++col) {
       auto& config = graph_configs[row][col];
-      add_graph(graphPanelRoot, col, row, [accessor = config.accessor](Sample sample) { return std::pair{sample.timestamp, accessor(sample)}; }, config.title);
+      add_graph(graphPanelRoot, col, row, [accessor = config.accessor](Sample sample) { return std::pair{sample.time, accessor(sample)}; }, config.title);
     }
 }
 

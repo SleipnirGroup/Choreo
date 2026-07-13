@@ -14,7 +14,7 @@ namespace choreo {
 /// components.
 template <typename T>
 concept SampleLike = requires(T sample, wpi::math::Transform2d transform, wpi::math::Pose2d otherPose, wpi::units::second_t newTimestamp) {
-  {sample.timestamp} -> std::convertible_to<wpi::units::second_t>;
+  {sample.time} -> std::convertible_to<wpi::units::second_t>;
   // Must have pose member
   { sample.pose } -> std::convertible_to<wpi::math::Pose2d>;
   // Must have velocity member
@@ -24,7 +24,6 @@ concept SampleLike = requires(T sample, wpi::math::Transform2d transform, wpi::m
 
   { sample.Transform(transform) } -> std::convertible_to<T>;
   {sample.RelativeTo(otherPose) } -> std::convertible_to<T>;
-  {sample.WithNewTimestamp(newTimestamp) } -> std::convertible_to<T>;
 };
 
 template <typename T, typename Sample>

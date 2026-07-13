@@ -11,6 +11,8 @@
 
 namespace choreo::ConstraintData {
 struct KeepInLane {
+  KeepInLane() = default;
+  KeepInLane(const KeepInLane&) = default;
   static KeepInLane fromJson(const wpi::util::json& json);
   Expr<dimensions::Length> x1 = 0_m;
   Expr<dimensions::Length> y1 = 0_m;
