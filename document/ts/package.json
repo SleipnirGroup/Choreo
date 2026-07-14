@@ -1,0 +1,19 @@
+{
+  "name": "@choreo/document-types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TypeScript types and runtime validators for document/schema.json",
+  "scripts": {
+    "generate": "node ./scripts/generate-types.mjs",
+    "typecheck": "tsc -p ./tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^15.0.4",
+    "typescript": "^5.9.3"
+  }
+}
