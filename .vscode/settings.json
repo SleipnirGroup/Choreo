@@ -109,7 +109,7 @@
         "nnls": "cpp"
     },
     "java.configuration.updateBuildConfiguration": "interactive",
-    "cmake.sourceDirectory": "C:/Users/jashu/git/Choreo-2026/generator",
+    "cmake.sourceDirectory": "C:/Users/jashu/git/Choreo-2026",
     "editor.quickSuggestions": {
         "other": true,
         "comments": false,
