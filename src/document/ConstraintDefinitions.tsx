@@ -299,3 +299,26 @@ export const ConstraintDefinitions: defs = {
 
 export type ConstraintKey = keyof DataMap;
 export const consts = Object.values(ConstraintDefinitions);
+
+// Temporary gate while src migrates to generated constraint variants.
+// Keep only constraints that exist in document/ts generated types.
+export const GeneratedSupportedConstraintKeys = [
+  "MaxVelocity",
+  "MaxAngularVelocity",
+  "KeepInCircle"
+] as const;
+
+export type GeneratedSupportedConstraintKey =
+  (typeof GeneratedSupportedConstraintKeys)[number];
+
+export function isConstraintKeySupportedByGeneratedTypes(
+  key: ConstraintKey
+): key is GeneratedSupportedConstraintKey {
+  return (GeneratedSupportedConstraintKeys as readonly string[]).includes(key);
+}
+
+export const SupportedConstraintDefinitions = Object.fromEntries(
+  Object.entries(ConstraintDefinitions).filter(([key]) =>
+    isConstraintKeySupportedByGeneratedTypes(key as ConstraintKey)
+  )
+) as { [K in GeneratedSupportedConstraintKey]: ConstraintDefinition<K> };

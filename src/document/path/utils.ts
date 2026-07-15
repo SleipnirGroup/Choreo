@@ -9,7 +9,7 @@ export function findUUIDIndex(uuid: string, items: { uuid: string }[]) {
 export function waypointIdToSavedWaypointId(
   waypointId: IWaypointScope | undefined,
   points: IHolonomicWaypointStore[]
-): "first" | "last" | number | undefined {
+): WaypointIDX | undefined {
   if (waypointId === null || waypointId === undefined) {
     return undefined;
   }
@@ -18,7 +18,7 @@ export function waypointIdToSavedWaypointId(
     if (scopeIndex == -1) {
       return undefined; // don't try to save this constraint
     }
-    return scopeIndex;
+    return { idx: scopeIndex };
   } else {
     return waypointId;
   }
@@ -37,13 +37,13 @@ export function savedWaypointIdToWaypointId(
   if (savedId === "last") {
     return "last";
   }
-  if (savedId < 0 || savedId >= points.length) {
+  if (savedId.idx < 0 || savedId.idx >= points.length) {
     return undefined;
   }
-  if (!Number.isInteger(savedId)) {
+  if (!Number.isInteger(savedId.idx)) {
     return undefined;
   } else {
-    return { uuid: points[savedId]?.uuid as string };
+    return { uuid: points[savedId.idx]?.uuid as string };
   }
 }
 export function getByWaypointID(

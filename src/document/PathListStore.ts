@@ -1,5 +1,6 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { Trajectory } from "./schema/DocumentTypes";
+import { deepCopy } from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import {
   HolonomicPathStore,
@@ -143,26 +144,14 @@ export const PathListStore = types
               path.deserialize(contents);
             } else {
               path.setName(usedName);
-              path.params.addConstraint("StopPoint", true, "first");
-              path.params.addConstraint("StopPoint", true, "last");
-              path.params.addConstraint(
-                "KeepInRectangle",
-                false,
-                "first",
-                "last",
-                {
-                  x: { exp: "0 m", val: 0.0 },
-                  y: { exp: "0 m", val: 0.0 },
-                  w: {
-                    exp: `${FieldDimensions.FIELD_LENGTH} m`,
-                    val: FieldDimensions.FIELD_LENGTH
-                  },
-                  h: {
-                    exp: `${FieldDimensions.FIELD_WIDTH} m`,
-                    val: FieldDimensions.FIELD_WIDTH
-                  }
+              path.params.addConstraint("KeepInCircle", false, "first", "last", {
+                x: { exp: `${FieldDimensions.FIELD_LENGTH / 2} m`, val: FieldDimensions.FIELD_LENGTH / 2 },
+                y: { exp: `${FieldDimensions.FIELD_WIDTH / 2} m`, val: FieldDimensions.FIELD_WIDTH / 2 },
+                r: {
+                  exp: `${Math.max(FieldDimensions.FIELD_LENGTH, FieldDimensions.FIELD_WIDTH)} m`,
+                  val: Math.max(FieldDimensions.FIELD_LENGTH, FieldDimensions.FIELD_WIDTH)
                 }
-              );
+              });
             }
 
             if (self.paths.size === 1 || select) {
@@ -210,7 +199,8 @@ export const PathListStore = types
           }
           const newuuid = self.addPath(oldPath.name, false);
           const path = self.paths.get(newuuid);
-          const copyOfOldPath = { ...oldPath.serialize, name: path!.name };
+          const copyOfOldPath = deepCopy(oldPath.serialize);
+          copyOfOldPath.name = path!.name;
           path!.deserialize(copyOfOldPath);
         }
       }

@@ -64,15 +64,18 @@ export const EventMarkerDataStore = types
       return {
         target: waypointIdToSavedWaypointId(self.target, points),
         offset: self.offset.serialize,
-        targetTimestamp: self.targetTimestamp
+        targetTimestamp: self.targetTimestamp ?? null
       };
     }
   }))
   .actions((self) => ({
     deserialize(ser: EventMarkerData) {
       const points = self.getPath().params.waypoints;
-      self.target = savedWaypointIdToWaypointId(ser.target, points);
-      self.targetTimestamp = self.targetTimestamp ?? undefined;
+      self.target =
+        ser.target === null
+          ? undefined
+          : savedWaypointIdToWaypointId({ idx: ser.target }, points);
+      self.targetTimestamp = ser.targetTimestamp ?? undefined;
       self.offset.deserialize(ser.offset);
     },
     setTarget(target: WaypointUUID) {
@@ -101,7 +104,7 @@ export const EventMarkerDataStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        const splitTimes = traj.splits.map((idx) => traj.samples[idx]?.t);
+        const splitTimes = traj.splits.map((idx) => traj.samples[idx]?.time);
         [0, ...splitTimes, traj.getTotalTimeSeconds()].forEach(
           (stopTimestamp) => {
             if (

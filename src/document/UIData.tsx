@@ -15,7 +15,7 @@ import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel"
 import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
   ConstraintDefinition,
-  ConstraintDefinitions,
+  SupportedConstraintDefinitions,
   ConstraintKey
 } from "./ConstraintDefinitions";
 import { ConstraintStore } from "./ConstraintStore";
@@ -65,7 +65,8 @@ export const navbarIndexToConstraintKey: {
 } = {};
 {
   let constraintsOffset = Object.keys(NavbarData).length;
-  Object.entries(ConstraintDefinitions).forEach(([key, data], _index) => {
+  Object.entries(SupportedConstraintDefinitions).forEach(
+    ([key, data], _index) => {
     NavbarData[key] = {
       index: constraintsOffset,
       name: data.name,
@@ -75,9 +76,10 @@ export const navbarIndexToConstraintKey: {
     navbarIndexToConstraintKey[constraintsOffset] = key as ConstraintKey;
     constraintsIndices.push(constraintsOffset);
     constraintsOffset++;
-  });
+    }
+  );
 }
-const constraintNavbarCount = Object.keys(ConstraintDefinitions).length;
+const constraintNavbarCount = Object.keys(SupportedConstraintDefinitions).length;
 
 const eventMarkerCount = 1;
 NavbarData.EventMarker = {

@@ -8,12 +8,13 @@ import {
   types
 } from "mobx-state-tree";
 import {
+  ChoreoPath,
+  ChoreoPathValue,
+  deepCopy,
   EventMarker,
-  Expr,
   TRAJ_SCHEMA_VERSION,
   Waypoint,
   WaypointUUID,
-  type ChoreoPath,
   type Trajectory
 } from "../schema/DocumentTypes";
 import { Env, uiState } from "../DocumentManager";
@@ -42,12 +43,12 @@ export function waypointIDToText(
 export const DEFAULT_EVENT_MARKER: EventMarker = {
   name: "Marker",
   from: {
-    target: undefined,
+    target: null,
     offset: {
       exp: "0 s",
       val: 0
     },
-    targetTimestamp: undefined
+    targetTimestamp: null
   },
   event: undefined
 };
@@ -56,7 +57,7 @@ export const DEFAULT_EVENT_MARKER: EventMarker = {
 // to see all the places that change with every schema upgrade.
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
-    snapshot: types.frozen<ChoreoPath<number>>(),
+    snapshot: types.frozen<ChoreoPathValue>(),
     params: ChoreoPathStore,
     trajectory: ChoreoTrajectoryStore,
     ui: PathUIStore,
@@ -84,7 +85,7 @@ export const HolonomicPathStore = types
           version: TRAJ_SCHEMA_VERSION,
           params: self.params.serialize,
           trajectory: self.trajectory.serialize,
-          snapshot: self.snapshot,
+          snapshot: deepCopy(self.snapshot),
           events: markers
         };
       },
@@ -126,13 +127,13 @@ export const HolonomicPathStore = types
         toAdd.deserialize(m, getEnv<Env>(self).create.CommandStore);
         return toAdd;
       },
-      setSnapshot(snap: ChoreoPath<number>) {
-        self.snapshot = snap;
+      setSnapshot(snap: ChoreoPathValue) {
+        self.snapshot = deepCopy(snap);
       },
       setName(name: string) {
         self.name = name;
       },
-      addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
+      addWaypoint(waypoint?: Partial<Waypoint>): IHolonomicWaypointStore {
         self.params.waypoints.push(
           getEnv<Env>(self).create.WaypointStore(
             Object.assign({ ...DEFAULT_WAYPOINT }, waypoint)
@@ -186,7 +187,7 @@ export const HolonomicPathStore = types
 
       deserialize(ser: Trajectory) {
         self.name = ser.name;
-        self.snapshot = ser.snapshot;
+        self.snapshot = deepCopy(ser.snapshot);
         self.params.deserialize(ser.params);
         self.trajectory.deserialize(ser.trajectory);
         self.markers.clear();

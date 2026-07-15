@@ -1,10 +1,11 @@
 import { getEnv, Instance, types } from "mobx-state-tree";
 import {
+  deepCopy,
   DifferentialSample,
   SampleType,
   type SwerveSample,
   Output,
-  RobotConfig
+  RobotConfigValue
 } from "../schema/DocumentTypes";
 import { Env } from "../DocumentManager";
 import { Commands } from "../tauriCommands";
@@ -14,15 +15,15 @@ import { Commands } from "../tauriCommands";
 // to see all the places that change with every schema upgrade.
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
-    config: types.maybeNull(types.frozen<RobotConfig<number>>()),
+    config: types.maybeNull(types.frozen<RobotConfigValue>()),
     sampleType: types.maybe(types.frozen<SampleType>()),
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
     splits: types.frozen<number[]>()
   })
   .views((self) => ({
-    get currentConfigSnapshot(): RobotConfig<number> {
-      return getEnv<Env>(self).getConfigSnapshot();
+    get currentConfigSnapshot(): RobotConfigValue {
+      return deepCopy(getEnv<Env>(self).getConfigSnapshot());
     }
   }))
   .views((self) => ({
@@ -75,16 +76,16 @@ export const ChoreoTrajectoryStore = types
         return 0;
       }
       const last = self.samples[self.samples.length - 1];
-      return last.t;
+      return last.time;
     },
     get serialize(): Output {
-      return {
+      return deepCopy({
         config: self.config,
         sampleType: self.sampleType,
         waypoints: self.waypoints,
         samples: self.samples,
         splits: self.splits
-      };
+      });
     },
     async isConfigUpToDate(): Promise<boolean> {
       return (
@@ -96,25 +97,25 @@ export const ChoreoTrajectoryStore = types
   }))
   .actions((self) => ({
     deserialize(ser: Output) {
-      self.config = ser.config ?? null;
+      self.config = ser.config === null || ser.config === undefined ? null : deepCopy(ser.config);
       self.sampleType = ser.sampleType;
-      self.waypoints = ser.waypoints;
-      self.splits = ser.splits;
-      self.samples = ser.samples;
+      self.waypoints = deepCopy(ser.waypoints);
+      self.splits = deepCopy(ser.splits);
+      self.samples = deepCopy(ser.samples);
     },
     setSwerveSamples(samples: SwerveSample[]) {
       self.sampleType = "Swerve";
-      self.samples = samples;
+      self.samples = deepCopy(samples);
     },
     setDifferentialSamples(samples: DifferentialSample[]) {
       self.sampleType = "Differential";
-      self.samples = samples;
+      self.samples = deepCopy(samples);
     },
     setSplits(splits: number[]) {
-      self.splits = splits;
+      self.splits = deepCopy(splits);
     },
     setWaypoints(waypoints: number[]) {
-      self.waypoints = waypoints;
+      self.waypoints = deepCopy(waypoints);
     }
   }));
 

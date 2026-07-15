@@ -29,11 +29,10 @@ import Mass from "../assets/Mass";
 import MoI from "../assets/MoI";
 import Torque from "../assets/Torque";
 import Waypoint from "../assets/Waypoint";
+import { Expr, isExpr } from "./schema/DocumentTypes";
 import {
   PoseVariable as DocPoseVariable,
-  Variables as DocVariables,
-  Expr,
-  isExpr
+  Variables as DocVariables
 } from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { tracing } from "./tauriTracing";

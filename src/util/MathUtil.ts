@@ -33,7 +33,11 @@ export function angleModulus(input: number) {
 
 export type Pose = { x: number; y: number; rot: number };
 export function storeToPose(store: SwerveSample | DifferentialSample) {
-  return { x: store.x, y: store.y, rot: store.heading };
+  return {
+    x: store.pose.translation.x,
+    y: store.pose.translation.y,
+    rot: store.pose.rotation.radians
+  };
 }
 export function interpolate(p1: Pose, p2: Pose, frac: number) {
   const rot1 = p1.rot;
@@ -54,10 +58,10 @@ export function sample(
   if (m_states.length == 0) {
     return undefined;
   }
-  if (m_states.length == 1 || timeSeconds <= m_states[0].t) {
+  if (m_states.length == 1 || timeSeconds <= m_states[0].time) {
     return storeToPose(m_states[0]);
   }
-  if (timeSeconds >= m_states[m_states.length - 1].t) {
+  if (timeSeconds >= m_states[m_states.length - 1].time) {
     return storeToPose(m_states[m_states.length - 1]);
   }
 
@@ -72,7 +76,7 @@ export function sample(
 
   while (low !== high) {
     const mid = Math.floor((low + high) / 2);
-    if (m_states[mid].t < timeSeconds) {
+    if (m_states[mid].time < timeSeconds) {
       // This index and everything under it are less than the requested
       // timestamp. Therefore, we can discard them.
       low = mid + 1;
@@ -93,13 +97,13 @@ export function sample(
   const prevSample = m_states[low - 1];
 
   // If the difference in states is negligible, then we are spot on!
-  if (Math.abs(sample.t - prevSample.t) < 1e-9) {
+  if (Math.abs(sample.time - prevSample.time) < 1e-9) {
     return storeToPose(sample);
   }
   // Interpolate between the two states for the state that we want.
   return interpolate(
     storeToPose(prevSample),
     storeToPose(sample),
-    (timeSeconds - prevSample.t) / (sample.t - prevSample.t)
+    (timeSeconds - prevSample.time) / (sample.time - prevSample.time)
   );
 }

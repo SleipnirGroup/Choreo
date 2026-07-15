@@ -3,10 +3,11 @@ import { moveItem } from "mobx-utils";
 import {
   ChoreoPath,
   Constraint,
-  Expr,
+  fromGeneratedWaypoint,
+  toGeneratedWaypoint,
   Waypoint
 } from "../schema/DocumentTypes";
-import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
+import { ConstraintKey, DataMap, isConstraintKeySupportedByGeneratedTypes } from "../ConstraintDefinitions";
 import {
   ConstraintStore,
   IConstraintStore,
@@ -42,11 +43,16 @@ export const ChoreoPathStore = types
     }
   }))
   .views((self) => ({
-    get serialize(): ChoreoPath<Expr> {
+    get serialize(): ChoreoPath {
       return {
-        waypoints: self.waypoints.map((w) => w.serialize),
+        waypoints: self.waypoints.map((w) =>
+          fromGeneratedWaypoint(toGeneratedWaypoint(w.serialize))
+        ),
         constraints: self.constraints.flatMap((constraint) => {
           const con = constraint;
+          if (!isConstraintKeySupportedByGeneratedTypes(con.data.type)) {
+            return [];
+          }
           const from = waypointIdToSavedWaypointId(con.from, self.waypoints)!;
           const to = waypointIdToSavedWaypointId(con.to, self.waypoints);
           const toReturn: Constraint = {
@@ -69,6 +75,9 @@ export const ChoreoPathStore = types
       to?: IWaypointScope,
       data: Partial<DataMap[K]["props"]> = {}
     ): Instance<typeof ConstraintStore> | undefined {
+      if (!isConstraintKeySupportedByGeneratedTypes(key)) {
+        return undefined;
+      }
       self.constraints.push(
         getEnv<Env>(self).create.ConstraintStore(key, data, enabled, from, to)
       );
@@ -84,7 +93,7 @@ export const ChoreoPathStore = types
     reorderWaypoint(startIndex: number, endIndex: number) {
       moveItem(self.waypoints, startIndex, endIndex);
     },
-    addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
+    addWaypoint(waypoint?: Partial<Waypoint>): IHolonomicWaypointStore {
       self.waypoints.push(
         getEnv<Env>(self).create.WaypointStore(
           Object.assign({ ...DEFAULT_WAYPOINT }, waypoint)
@@ -219,14 +228,17 @@ export const ChoreoPathStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: ChoreoPath<Expr>) {
+    deserialize(ser: ChoreoPath) {
       self.waypoints.clear();
-      ser.waypoints.forEach((point: Waypoint<Expr>, _index: number): void => {
+      ser.waypoints.forEach((point: Waypoint, _index: number): void => {
         const waypoint = self.addWaypoint();
-        waypoint.deserialize(point);
+        waypoint.deserialize(fromGeneratedWaypoint(toGeneratedWaypoint(point)));
       });
       self.constraints.clear();
       ser.constraints.forEach((saved: Constraint) => {
+        if (!isConstraintKeySupportedByGeneratedTypes(saved.data.type)) {
+          return;
+        }
         const from = savedWaypointIdToWaypointId(saved.from, self.waypoints);
         if (from === undefined) {
           return;

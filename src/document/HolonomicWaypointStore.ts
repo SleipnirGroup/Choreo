@@ -1,11 +1,11 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
-import { Expr, Waypoint } from "./schema/DocumentTypes";
+import { Waypoint, WaypointValue } from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { NavbarItemData } from "./UIData";
 import { tracing } from "./tauriTracing";
 
-export const DEFAULT_WAYPOINT: Waypoint<number> = {
+export const DEFAULT_WAYPOINT: WaypointValue = {
   x: 0,
   y: 0,
   heading: 0,
@@ -47,7 +47,7 @@ export const HolonomicWaypointStore = types
         }
         return self.uuid === getEnv<Env>(self).selectedSidebar();
       },
-      get serialize(): Waypoint<Expr> {
+      get serialize(): Waypoint {
         return {
           x: self.x.serialize,
           y: self.y.serialize,
@@ -77,7 +77,7 @@ export const HolonomicWaypointStore = types
   }))
   .actions((self) => {
     return {
-      deserialize(point: Waypoint<Expr>) {
+      deserialize(point: Waypoint) {
         self.x.deserialize(point.x);
         self.y.deserialize(point.y);
         self.heading.deserialize(point.heading);
