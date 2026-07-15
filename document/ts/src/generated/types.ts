@@ -36,11 +36,7 @@ export type WaypointID =
  * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
  * via the `definition` "ConstraintVariant".
  */
-export type ConstraintVariant =
-  | MaxVelocity
-  | MaxAngularVelocity
-  | KeepInCircle
-  | HeadingConstraint;
+export type ConstraintVariant = MaxVelocity | MaxAngularVelocity | KeepInCircle | HeadingConstraint;
 /**
  * All supported JSON progress update messages emitted by the C++ progress-update-sender.
  *
@@ -491,6 +487,140 @@ export interface EventMarker {
   from: EventMarkerData;
 }
 /**
+ * WPILib Translation2d in metres.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "WpiTranslation2d".
+ */
+export interface WpiTranslation2D {
+  /**
+   * X position (m)
+   */
+  x: number;
+  /**
+   * Y position (m)
+   */
+  y: number;
+}
+/**
+ * WPILib Rotation2d in radians.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "WpiRotation2d".
+ */
+export interface WpiRotation2D {
+  /**
+   * Rotation angle (rad)
+   */
+  radians: number;
+}
+/**
+ * WPILib Pose2d with translation and rotation.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "WpiPose2d".
+ */
+export interface WpiPose2D {
+  translation: WpiTranslation2D;
+  rotation: WpiRotation2D;
+}
+/**
+ * WPILib ChassisVelocities in field coordinates.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "WpiChassisVelocities".
+ */
+export interface WpiChassisVelocities {
+  /**
+   * X velocity (m/s)
+   */
+  vx: number;
+  /**
+   * Y velocity (m/s)
+   */
+  vy: number;
+  /**
+   * Angular velocity (rad/s)
+   */
+  omega: number;
+}
+/**
+ * WPILib ChassisAccelerations in field coordinates.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "WpiChassisAccelerations".
+ */
+export interface WpiChassisAccelerations {
+  /**
+   * X acceleration (m/s^2)
+   */
+  ax: number;
+  /**
+   * Y acceleration (m/s^2)
+   */
+  ay: number;
+  /**
+   * Angular acceleration (rad/s^2)
+   */
+  alpha: number;
+}
+/**
+ * wpi::math::HolonomicSample serialized as JSON.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "HolonomicSample".
+ */
+export interface HolonomicSample {
+  /**
+   * Sample timestamp relative to trajectory start (s)
+   */
+  time: number;
+  pose: WpiPose2D;
+  velocity: WpiChassisVelocities;
+  acceleration: WpiChassisAccelerations;
+}
+/**
+ * wpi::math::DifferentialSample serialized as JSON.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "DifferentialSample".
+ */
+export interface DifferentialSample {
+  /**
+   * Sample timestamp relative to trajectory start (s)
+   */
+  time: number;
+  pose: WpiPose2D;
+  velocity: WpiChassisVelocities;
+  acceleration: WpiChassisAccelerations;
+  /**
+   * Left wheel speed (m/s)
+   */
+  leftVelocity: number;
+  /**
+   * Right wheel speed (m/s)
+   */
+  rightVelocity: number;
+}
+/**
+ * WPILib HolonomicTrajectory JSON sample container.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "HolonomicSamplesContainer".
+ */
+export interface HolonomicSamplesContainer {
+  samples: HolonomicSample[];
+}
+/**
+ * WPILib DifferentialTrajectory JSON sample container.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "DifferentialSamplesContainer".
+ */
+export interface DifferentialSamplesContainer {
+  samples: DifferentialSample[];
+}
+/**
  * A generated trajectory for one drive type (Trajectory<SwerveDriveType> or Trajectory<DifferentialDriveType>).
  *
  * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
@@ -502,10 +632,6 @@ export interface Trajectory {
    */
   sample_type: "Swerve" | "Differential";
   /**
-   * Robot config snapshot used when the trajectory was generated; null if not stored.
-   */
-  config?: RobotConfig | null;
-  /**
    * Trajectory timestamps (s) corresponding to each waypoint.
    */
   waypoints: number[];
@@ -514,9 +640,9 @@ export interface Trajectory {
    */
   splits: number[];
   /**
-   * Drive-type-specific trajectory samples serialized by WPILib.
+   * Drive-type-specific trajectory samples serialized by WPILib (Swerve -> HolonomicSample, Differential -> DifferentialSample).
    */
-  samples: unknown[];
+  samples: HolonomicSamplesContainer | DifferentialSamplesContainer;
 }
 /**
  * Contents of a .traj file: a single named trajectory with its parameters and events.
@@ -531,10 +657,14 @@ export interface TrajectoryFile {
    */
   version: number;
   /**
+   * Robot config snapshot used when the trajectory was generated; null if not stored.
+   */
+  config?: RobotConfig | null;
+  /**
    * Frozen parameter snapshot from the last generation run; null if not generated yet.
    */
   snapshot?: Parameters | null;
-  params: Parameters1;
+  params: Parameters;
   /**
    * Generated trajectory output; null if not yet generated.
    */
@@ -544,7 +674,7 @@ export interface TrajectoryFile {
 /**
  * Trajectory parameters: waypoints, constraints, and target time step.
  */
-export interface Parameters1 {
+export interface Parameters {
   waypoints: Waypoint[];
   constraints: Constraint[];
   /**
