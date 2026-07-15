@@ -20,11 +20,10 @@ import {
   GroupCommand,
   NamedCommand,
   Project,
+  RobotConfig,
   Trajectory,
   WaitCommand,
-  type Expr,
-  type RobotConfig,
-  type Waypoint
+  Waypoint
 } from "./schema/DocumentTypes";
 import {
   CommandStore,
@@ -87,8 +86,8 @@ type ConstraintDataConstructors = {
   [key in ConstraintKey]: ConstraintDataConstructor<key>;
 };
 export type EnvConstructors = {
-  RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
-  WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
+  RobotConfigStore: (config: RobotConfig) => IRobotConfigStore;
+  WaypointStore: (config: Waypoint) => IHolonomicWaypointStore;
   CommandStore: (
     command: Command &
       (
@@ -143,36 +142,37 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   ) as ConstraintDataConstructors;
 
   return {
-    RobotConfigStore: (config: RobotConfig<Expr>) => {
+    RobotConfigStore: (config: RobotConfig) => {
       return RobotConfigStore.create({
         mass: vars().createExpression(config.mass, "Mass"),
         inertia: vars().createExpression(config.inertia, "MoI"),
-        tmax: vars().createExpression(config.tmax, "Torque"),
         cof: vars().createExpression(config.cof, "Number"),
-        vmax: vars().createExpression(config.vmax, "AngVel"),
         gearing: vars().createExpression(config.gearing, "Number"),
         radius: vars().createExpression(config.radius, "Length"),
-        bumper: {
-          front: vars().createExpression(config.bumper.front, "Length"),
-          side: vars().createExpression(config.bumper.side, "Length"),
-          back: vars().createExpression(config.bumper.back, "Length")
-        },
-        frontLeft: {
-          x: vars().createExpression(config.frontLeft.x, "Length"),
-          y: vars().createExpression(config.frontLeft.y, "Length")
-        },
-        backLeft: {
-          x: vars().createExpression(config.backLeft.x, "Length"),
-          y: vars().createExpression(config.backLeft.y, "Length")
-        },
-        differentialTrackWidth: vars().createExpression(
-          config.differentialTrackWidth,
+        differential_track_width: vars().createExpression(
+          config.differential_track_width,
           "Length"
         ),
+        wheels: config.wheels.map((wheel) => ({
+          x: vars().createExpression(wheel.x, "Length"),
+          y: vars().createExpression(wheel.y, "Length")
+        })),
+        bumpers: config.bumpers.map((corner) => ({
+          x: vars().createExpression(corner.x, "Length"),
+          y: vars().createExpression(corner.y, "Length")
+        })),
+        motor: {
+          free_speed: vars().createExpression(config.motor.free_speed, "AngVel"),
+          stall_torque: vars().createExpression(config.motor.stall_torque, "Torque"),
+          kT: vars().createExpression(config.motor.kT, "KT"),
+          kV: vars().createExpression(config.motor.kV, "KV"),
+          supply_limit: vars().createExpression(config.motor.supply_limit, "Current"),
+          stator_limit: vars().createExpression(config.motor.stator_limit, "Current")
+        },
         identifier: crypto.randomUUID()
       });
     },
-    WaypointStore: (waypoint: Waypoint<Expr>) => {
+    WaypointStore: (waypoint: Waypoint) => {
       const w = WaypointStore.create({
         ...waypoint,
         x: vars().createExpression(waypoint.x, "Length"),
@@ -221,7 +221,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
 }
 
 const env = {
-  getConfigSnapshot: () => doc.robotConfig.snapshot,
+  getConfigSnapshot: () => doc.robotConfig.valueCopy,
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
   hoveredItem: () => safeGetIdentifier(doc.hoveredSidebarItem),
   select: (item: SelectableItemTypes) => select(item),

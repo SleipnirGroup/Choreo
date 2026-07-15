@@ -4,7 +4,14 @@ import {
   MotorCurves
 } from "../components/config/robotconfig/MotorCurves";
 import { InToM, LbsToKg, MToIn } from "../util/UnitConversions";
-import { Bumper, Expr, Module, RobotConfig } from "./schema/DocumentTypes";
+import {
+  deepCopy,
+  type Module,
+  type ModuleValue,
+  type MotorConfigValue,
+  RobotConfig,
+  RobotConfigValue
+} from "./schema/DocumentTypes";
 import { ExpressionStore } from "./ExpressionStore";
 
 const DEFAULT_FRAME_SIZE = InToM(28);
@@ -13,77 +20,73 @@ const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE - 2 * InToM(2.625); //SDS Mk4i cont
 
 const halfBumper = MToIn(DEFAULT_BUMPER / 2);
 const halfWheelbase = MToIn(DEFAULT_WHEELBASE / 2);
-export const EXPR_DEFAULTS: RobotConfig<Expr> = {
+export const EXPR_DEFAULTS: RobotConfig = {
   mass: { exp: "150 lbs", val: LbsToKg(150) },
   inertia: { exp: "6 kg*m^2", val: 6 },
-  vmax: {
-    exp: `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
-    val: MotorCurves.KrakenX60.vmax * 0.8
-  },
-  tmax: {
-    exp: `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
-    val: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
-  },
-  cof: { exp: "1.5", val: 1.5 },
   gearing: { exp: "6.75", val: 6.75 }, // SDS L2 mk4/mk4i
   radius: { exp: "2 in", val: InToM(2) },
-  bumper: {
-    front: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
-    side: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
-    back: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 }
-  },
-  frontLeft: {
-    x: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 },
-    y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
-  },
-  backLeft: {
-    x: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 },
-    y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
-  },
-  differentialTrackWidth: {
+  cof: { exp: "1.5", val: 1.5 },
+  differential_track_width: {
     exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
     val: DEFAULT_WHEELBASE
+  },
+  wheels: [
+    {
+      x: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 },
+      y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
+    },
+    {
+      x: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 },
+      y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
+    },
+    {
+      x: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 },
+      y: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 }
+    },
+    {
+      x: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 },
+      y: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 }
+    }
+  ],
+  bumpers: [
+    {
+      x: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
+      y: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 }
+    },
+    {
+      x: { exp: `${-halfBumper} in`, val: -DEFAULT_BUMPER / 2 },
+      y: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 }
+    },
+    {
+      x: { exp: `${-halfBumper} in`, val: -DEFAULT_BUMPER / 2 },
+      y: { exp: `${-halfBumper} in`, val: -DEFAULT_BUMPER / 2 }
+    },
+    {
+      x: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
+      y: { exp: `${-halfBumper} in`, val: -DEFAULT_BUMPER / 2 }
+    }
+  ],
+  motor: {
+    free_speed: {
+      exp: `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
+      val: MotorCurves.KrakenX60.vmax * 0.8
+    },
+    stall_torque: {
+      exp: `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
+      val: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
+    },
+    kT: {
+      exp: `${MotorCurves.KrakenX60.kt} N*m/A`,
+      val: MotorCurves.KrakenX60.kt
+    },
+    kV: {
+      exp: "0.1 V*s/rad",
+      val: 0.1
+    },
+    supply_limit: { exp: "60 A", val: 60 },
+    stator_limit: { exp: "60 A", val: 60 }
   }
 };
-
-// When adding new fields, consult
-// https://choreo.autos/contributing/schema-upgrade/
-// to see all the places that change with every schema upgrade.
-export const BumperStore = types
-  .model("BumperStore", {
-    front: ExpressionStore,
-    side: ExpressionStore,
-    back: ExpressionStore
-  })
-  .views((self) => ({
-    get serialize(): Bumper<Expr> {
-      return {
-        front: self.front.serialize,
-        side: self.side.serialize,
-        back: self.back.serialize
-      };
-    },
-    get snapshot(): Bumper<number> {
-      return {
-        front: self.front.value,
-        side: self.side.value,
-        back: self.back.value
-      };
-    },
-    get length() {
-      return self.front.value + self.back.value;
-    },
-    get width() {
-      return self.side.value * 2;
-    }
-  }))
-  .actions((self) => ({
-    deserialize(ser: Bumper<Expr>) {
-      self.front.deserialize(ser.front);
-      self.back.deserialize(ser.back);
-      self.side.deserialize(ser.side);
-    }
-  }));
 
 // When adding new fields, consult
 // https://choreo.autos/contributing/schema-upgrade/
@@ -94,23 +97,68 @@ export const ModuleStore = types
     y: ExpressionStore
   })
   .views((self) => ({
-    get serialize(): Module<Expr> {
+    get serialize(): Module {
       return {
         x: self.x.serialize,
         y: self.y.serialize
       };
     },
-    get snapshot(): Module<number> {
-      return {
+    get valueCopy(): ModuleValue {
+      return deepCopy({
         x: self.x.value,
         y: self.y.value
-      };
+      });
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Module<Expr>) {
+    deserialize(ser: Module) {
       self.x.deserialize(ser.x);
       self.y.deserialize(ser.y);
+    }
+  }));
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
+export const MotorStore = types
+  .model("MotorStore", {
+    free_speed: ExpressionStore,
+    stall_torque: ExpressionStore,
+    kT: ExpressionStore,
+    kV: ExpressionStore,
+    supply_limit: ExpressionStore,
+    stator_limit: ExpressionStore
+  })
+  .views((self) => ({
+    get serialize(): RobotConfig["motor"] {
+      return {
+        free_speed: self.free_speed.serialize,
+        stall_torque: self.stall_torque.serialize,
+        kT: self.kT.serialize,
+        kV: self.kV.serialize,
+        supply_limit: self.supply_limit.serialize,
+        stator_limit: self.stator_limit.serialize
+      };
+    },
+    get valueCopy(): MotorConfigValue {
+      return deepCopy({
+        free_speed: self.free_speed.value,
+        stall_torque: self.stall_torque.value,
+        kT: self.kT.value,
+        kV: self.kV.value,
+        supply_limit: self.supply_limit.value,
+        stator_limit: self.stator_limit.value
+      });
+    }
+  }))
+  .actions((self) => ({
+    deserialize(ser: RobotConfig["motor"]) {
+      self.free_speed.deserialize(ser.free_speed);
+      self.stall_torque.deserialize(ser.stall_torque);
+      self.kT.deserialize(ser.kT);
+      self.kV.deserialize(ser.kV);
+      self.supply_limit.deserialize(ser.supply_limit);
+      self.stator_limit.deserialize(ser.stator_limit);
     }
   }));
 
@@ -121,127 +169,128 @@ export const RobotConfigStore = types
   .model("RobotConfigStore", {
     mass: ExpressionStore,
     inertia: ExpressionStore,
-    vmax: ExpressionStore,
-    tmax: ExpressionStore,
     cof: ExpressionStore,
     gearing: ExpressionStore,
     radius: ExpressionStore,
-    bumper: BumperStore,
-    frontLeft: ModuleStore,
-    backLeft: ModuleStore,
-    differentialTrackWidth: ExpressionStore,
+    differential_track_width: ExpressionStore,
+    wheels: types.array(ModuleStore),
+    bumpers: types.array(ModuleStore),
+    motor: MotorStore,
     identifier: types.identifier
   })
   .views((self) => {
     return {
       get wheelMaxVelocity() {
-        return self.vmax.value / self.gearing.value;
+        return self.motor.free_speed.value / self.gearing.value;
       },
       get wheelMaxTorque() {
-        return self.tmax.value * self.gearing.value;
+        return self.motor.stall_torque.value * self.gearing.value;
       },
-      get serialize(): RobotConfig<Expr> {
+      get serialize(): RobotConfig {
+        const wheels = self.wheels.map((wheel) => wheel.serialize);
         return {
           mass: self.mass.serialize,
           inertia: self.inertia.serialize,
-          tmax: self.tmax.serialize,
           cof: self.cof.serialize,
-          vmax: self.vmax.serialize,
           gearing: self.gearing.serialize,
           radius: self.radius.serialize,
-          bumper: self.bumper.serialize,
-          frontLeft: self.frontLeft.serialize,
-          backLeft: self.backLeft.serialize,
-          differentialTrackWidth: self.differentialTrackWidth.serialize
+          differential_track_width: self.differential_track_width.serialize,
+          wheels: [
+            wheels[0],
+            wheels[1],
+            wheels[2],
+            wheels[3]
+          ] as RobotConfig["wheels"],
+          bumpers: self.bumpers.map((point) => point.serialize),
+          motor: self.motor.serialize
         };
+      },
+      get snapshot(): RobotConfigValue {
+        return this.valueCopy;
       },
       get moduleTranslations(): [
-        Module<number>,
-        Module<number>,
-        Module<number>,
-        Module<number>
+        ModuleValue,
+        ModuleValue,
+        ModuleValue,
+        ModuleValue
       ] {
-        const fl = self.frontLeft.snapshot;
-        const bl = self.backLeft.snapshot;
-        const br = {
-          x: bl.x,
-          y: -bl.y
-        };
-        const fr = {
-          x: fl.x,
-          y: -fl.y
-        };
+        const fl = self.wheels[0]?.valueCopy ?? { x: 0, y: 0 };
+        const bl = self.wheels[1]?.valueCopy ?? { x: 0, y: 0 };
+        const br = self.wheels[2]?.valueCopy ?? { x: 0, y: 0 };
+        const fr = self.wheels[3]?.valueCopy ?? { x: 0, y: 0 };
         return [fl, bl, br, fr];
       },
-      get snapshot(): RobotConfig<number> {
+      get bumper() {
+        if (self.bumpers.length === 0) {
+          return { length: 0, width: 0 };
+        }
+        const xs = self.bumpers.map((point) => point.x.value);
+        const ys = self.bumpers.map((point) => point.y.value);
         return {
+          length: Math.max(...xs) - Math.min(...xs),
+          width: Math.max(...ys) - Math.min(...ys)
+        };
+      },
+      get valueCopy(): RobotConfigValue {
+        const wheelValues = self.wheels.map((wheel) => wheel.valueCopy);
+        return deepCopy({
           mass: self.mass.value,
           inertia: self.inertia.value,
-          tmax: self.tmax.value,
           cof: self.cof.value,
-          vmax: self.vmax.value,
           gearing: self.gearing.value,
           radius: self.radius.value,
-          bumper: self.bumper.snapshot,
-          frontLeft: self.frontLeft.snapshot,
-          backLeft: self.backLeft.snapshot,
-          differentialTrackWidth: self.differentialTrackWidth.value
-        };
+          differential_track_width: self.differential_track_width.value,
+          wheels: [
+            wheelValues[0] ?? { x: 0, y: 0 },
+            wheelValues[1] ?? { x: 0, y: 0 },
+            wheelValues[2] ?? { x: 0, y: 0 },
+            wheelValues[3] ?? { x: 0, y: 0 }
+          ],
+          bumpers: self.bumpers.map((point) => point.valueCopy),
+          motor: self.motor.valueCopy
+        });
       }
     };
   })
   .actions((self) => {
     return {
-      deserialize(config: RobotConfig<Expr>) {
+      deserialize(config: RobotConfig) {
         self.mass.deserialize(config.mass);
         self.inertia.deserialize(config.inertia);
-        self.vmax.deserialize(config.vmax);
-        self.tmax.deserialize(config.tmax);
         self.cof.deserialize(config.cof);
         self.gearing.deserialize(config.gearing);
         self.radius.deserialize(config.radius);
-        self.bumper.deserialize(config.bumper);
-        self.frontLeft.deserialize(config.frontLeft);
-        self.backLeft.deserialize(config.backLeft);
-        self.differentialTrackWidth.deserialize(config.differentialTrackWidth);
+        self.differential_track_width.deserialize(config.differential_track_width);
+        config.wheels.forEach((wheel, index) => {
+          const current = self.wheels[index];
+          if (current !== undefined) {
+            current.deserialize(wheel);
+          }
+        });
+        config.bumpers.forEach((bumperPoint, index) => {
+          const current = self.bumpers[index];
+          if (current !== undefined) {
+            current.deserialize(bumperPoint);
+          }
+        });
+        self.motor.deserialize(config.motor);
       }
     };
   })
   .views((self) => {
     return {
       bumperSVGElement() {
-        const front = self.bumper.front.value;
-        const back = -self.bumper.back.value;
-        const left = self.bumper.side.value;
-        const right = -self.bumper.side.value;
-        return `M ${front} ${left}
-                L ${front} ${right}
-                L ${back} ${right}
-                L ${back} ${left}
-                L ${front} ${left}`;
+        if (self.bumpers.length === 0) {
+          return "";
+        }
+        const first = self.bumpers[0];
+        const commands = self.bumpers
+          .map((point, idx) => `${idx === 0 ? "M" : "L"} ${point.x.value} ${point.y.value}`)
+          .join(" ");
+        return `${commands} L ${first.x.value} ${first.y.value}`;
       },
       dashedBumperSVGElement() {
-        const front = self.bumper.front.value; //l/2
-        const back = -self.bumper.back.value; //-l/2
-        const left = self.bumper.side.value;
-        const right = -self.bumper.side.value;
-        return `
-            M ${front} ${left / 2}
-            L ${front} ${left}
-            L ${front / 2} ${left}
-
-            M ${back / 2} ${left}
-            L ${back} ${left}
-            L ${back} ${left / 2}
-
-            M ${back} ${right / 2}
-            L ${back} ${right}
-            L ${back / 2} ${right}
-
-            M ${front / 2} ${right}
-            L ${front} ${right}
-            L ${front} ${right / 2}
-            `;
+        return this.bumperSVGElement();
       }
     };
   });

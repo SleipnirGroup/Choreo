@@ -1,16 +1,16 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
   CustomFieldData,
-  Expr,
   Project,
   RobotConfig,
+  RobotConfigValue,
   Trajectory
 } from "./schema/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
 export type ChoreoError = { type: string; content: string };
 export type ChoreoResult<T> = T | ChoreoError;
 export const Commands = {
-  guessIntervals: (config: RobotConfig<Expr>, trajectory: Trajectory) =>
+  guessIntervals: (config: RobotConfig, trajectory: Trajectory) =>
     invoke<number[]>("guess_control_interval_counts", { config, trajectory }),
 
   /**
@@ -148,7 +148,7 @@ export const Commands = {
    * @param trajectory The `Trajectory` to check
    * @returns true if the parameters and snapshots are equivalent, false if not.
    */
-  configMatches: (config1: RobotConfig<number>, config2: RobotConfig<number>) =>
+  configMatches: (config1: RobotConfigValue, config2: RobotConfigValue) =>
     invoke<boolean>("config_matches", { config1, config2 }),
 
   /**
