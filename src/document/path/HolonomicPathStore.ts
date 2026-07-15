@@ -8,7 +8,6 @@ import {
   types
 } from "mobx-state-tree";
 import {
-  ChoreoPath,
   ChoreoPathValue,
   deepCopy,
   EventMarker,
@@ -41,6 +40,7 @@ export function waypointIDToText(
 }
 
 export const DEFAULT_EVENT_MARKER: EventMarker = {
+  uuid: "",
   name: "Marker",
   from: {
     target: null,
@@ -81,6 +81,7 @@ export const HolonomicPathStore = types
       get serialize(): Trajectory {
         const markers = self.markers.map((m) => m.serialize);
         return {
+          uuid: self.uuid,
           name: self.name,
           version: TRAJ_SCHEMA_VERSION,
           params: self.params.serialize,
@@ -134,9 +135,15 @@ export const HolonomicPathStore = types
         self.name = name;
       },
       addWaypoint(waypoint?: Partial<Waypoint>): IHolonomicWaypointStore {
+        const waypointData = Object.assign(
+          { ...DEFAULT_WAYPOINT },
+          waypoint
+        ) as Omit<Waypoint, "uuid">;
         self.params.waypoints.push(
           getEnv<Env>(self).create.WaypointStore(
-            Object.assign({ ...DEFAULT_WAYPOINT }, waypoint)
+            Object.assign(waypointData, {
+              uuid: waypoint?.uuid ?? crypto.randomUUID()
+            })
           )
         );
         if (self.params.waypoints.length === 1) {
@@ -202,7 +209,7 @@ export const HolonomicPathStore = types
     let autosaveDisposer: IReactionDisposer;
     let robotConfigListenerDisposer: IReactionDisposer;
     let exporter: Env["exporter"] = (uuid) => getEnv(self)?.exporter(uuid);
-    let debounceId: NodeJS.Timeout | undefined = undefined;
+    let debounceId: ReturnType<typeof setTimeout> | undefined = undefined;
     const afterCreate = () => {
       const performSave = () => {
         if (!uiState.hasSaveLocation) {
@@ -240,7 +247,7 @@ export const HolonomicPathStore = types
           debounceId = setTimeout(performSave, 50);
         }
       );
-      let checkUpToDateDebounceId: NodeJS.Timeout | undefined = undefined;
+      let checkUpToDateDebounceId: ReturnType<typeof setTimeout> | undefined = undefined;
       robotConfigListenerDisposer = reaction(
         () => self.trajectory.currentConfigSnapshot,
         () => {

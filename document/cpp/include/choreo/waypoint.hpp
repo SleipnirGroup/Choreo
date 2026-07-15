@@ -1,6 +1,7 @@
 // Copyright (c) Choreo contributors
 
 #pragma once
+#include <string>
 #include <wpi/math/geometry/Pose2d.hpp>
 
 #include "expr.hpp"
@@ -13,6 +14,7 @@ struct Waypoint {
   Waypoint() = default;
   Waypoint(const Waypoint&) = default;
   static Waypoint fromJson(const wpi::util::json& json);
+  std::string uuid;
   Expr<dimensions::Length> x = 1_m;
   Expr<dimensions::Length> y = 0_m;
   Expr<dimensions::Angle> heading = 0_rad;
@@ -43,13 +45,15 @@ struct Waypoint {
 
 inline void to_json(wpi::util::json& json, const Waypoint& waypoint) {
   json = wpi::util::json::object(
-      "x", waypoint.x, "y", waypoint.y, "heading", waypoint.heading,
+      "uuid", waypoint.uuid, "x", waypoint.x, "y", waypoint.y,
+      "heading", waypoint.heading,
       "intervals", waypoint.intervals, "split", waypoint.split,
       "fix_translation", waypoint.fix_translation, "fix_heading",
       waypoint.fix_heading, "override_intervals", waypoint.override_intervals);
 }
 
 inline void from_json(const wpi::util::json& json, Waypoint& waypoint) {
+  waypoint.uuid = json.at("uuid").get_string();
   waypoint.x = json.at("x").get<Expr<dimensions::Length>>();
   waypoint.y = json.at("y").get<Expr<dimensions::Length>>();
   waypoint.heading = json.at("heading").get<Expr<dimensions::Angle>>();

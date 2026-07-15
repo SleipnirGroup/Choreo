@@ -56,6 +56,7 @@ export const ChoreoPathStore = types
           const from = waypointIdToSavedWaypointId(con.from, self.waypoints)!;
           const to = waypointIdToSavedWaypointId(con.to, self.waypoints);
           const toReturn: Constraint = {
+            uuid: con.uuid,
             data: con.data.serialize,
             enabled: con.enabled,
             from,
@@ -73,13 +74,21 @@ export const ChoreoPathStore = types
       enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope,
-      data: Partial<DataMap[K]["props"]> = {}
+      data: Partial<DataMap[K]["props"]> = {},
+      uuid?: string
     ): Instance<typeof ConstraintStore> | undefined {
       if (!isConstraintKeySupportedByGeneratedTypes(key)) {
         return undefined;
       }
       self.constraints.push(
-        getEnv<Env>(self).create.ConstraintStore(key, data, enabled, from, to)
+        getEnv<Env>(self).create.ConstraintStore(
+          key,
+          data,
+          enabled,
+          from,
+          to,
+          uuid
+        )
       );
       const store = self.constraints[self.constraints.length - 1];
       store.data.deserPartial(data);
@@ -94,9 +103,15 @@ export const ChoreoPathStore = types
       moveItem(self.waypoints, startIndex, endIndex);
     },
     addWaypoint(waypoint?: Partial<Waypoint>): IHolonomicWaypointStore {
+      const waypointData = Object.assign(
+        { ...DEFAULT_WAYPOINT },
+        waypoint
+      ) as Omit<Waypoint, "uuid">;
       self.waypoints.push(
         getEnv<Env>(self).create.WaypointStore(
-          Object.assign({ ...DEFAULT_WAYPOINT }, waypoint)
+          Object.assign(waypointData, {
+            uuid: waypoint?.uuid ?? crypto.randomUUID()
+          })
         )
       );
       if (self.waypoints.length === 1) {
@@ -231,25 +246,28 @@ export const ChoreoPathStore = types
     deserialize(ser: ChoreoPath) {
       self.waypoints.clear();
       ser.waypoints.forEach((point: Waypoint, _index: number): void => {
-        const waypoint = self.addWaypoint();
-        waypoint.deserialize(fromGeneratedWaypoint(toGeneratedWaypoint(point)));
+        self.addWaypoint(fromGeneratedWaypoint(toGeneratedWaypoint(point)));
       });
       self.constraints.clear();
       ser.constraints.forEach((saved: Constraint) => {
         if (!isConstraintKeySupportedByGeneratedTypes(saved.data.type)) {
           return;
         }
+        const data = saved.data.props as Partial<
+          DataMap[(typeof saved.data)["type"]]["props"]
+        >;
         const from = savedWaypointIdToWaypointId(saved.from, self.waypoints);
         if (from === undefined) {
           return;
         }
         const to = savedWaypointIdToWaypointId(saved.to, self.waypoints);
-        self.addConstraint(
+        self.addConstraint<ConstraintKey>(
           saved.data.type,
           saved.enabled,
           from,
           to,
-          saved.data.props
+          data,
+          saved.uuid
         );
       });
       self.targetDt.deserialize(ser.targetDt);

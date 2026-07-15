@@ -62,7 +62,7 @@ export const EventMarkerDataStore = types
     get serialize(): EventMarkerData {
       const points = self.getPath().params.waypoints;
       return {
-        target: waypointIdToSavedWaypointId(self.target, points),
+        target: waypointIdToSavedWaypointId(self.target, points) ?? null,
         offset: self.offset.serialize,
         targetTimestamp: self.targetTimestamp ?? null
       };
@@ -74,7 +74,7 @@ export const EventMarkerDataStore = types
       self.target =
         ser.target === null
           ? undefined
-          : savedWaypointIdToWaypointId({ idx: ser.target }, points);
+          : savedWaypointIdToWaypointId(ser.target, points);
       self.targetTimestamp = ser.targetTimestamp ?? undefined;
       self.offset.deserialize(ser.offset);
     },
@@ -132,6 +132,7 @@ export const EventMarkerStore = types
   .views((self) => ({
     get serialize(): EventMarker {
       return {
+        uuid: self.uuid,
         name: self.name,
         from: self.from.serialize,
         event: self.event.serialize

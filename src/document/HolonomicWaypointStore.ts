@@ -49,6 +49,7 @@ export const HolonomicWaypointStore = types
       },
       get serialize(): Waypoint {
         return {
+          uuid: self.uuid,
           x: self.x.serialize,
           y: self.y.serialize,
           heading: self.heading.serialize,

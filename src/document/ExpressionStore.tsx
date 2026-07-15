@@ -81,7 +81,10 @@ export const Units = {
   KgM2: math.unit("kg m^2"),
   Newton: math.unit("N"),
   NewtonMeter: math.unit("N*m"),
+  NewtonMeterPerAmp: math.unit("N*m/A"),
   Kg: math.unit("kg"),
+  Amp: math.unit("A"),
+  VoltSecondPerRadian: math.unit("V*s/rad"),
   RPM: math.createUnit("RPM", "1 cycle/min", { aliases: ["rpm"] })
 };
 // not sure why the alias above doesn't work
@@ -105,7 +108,10 @@ export const DimensionNames = [
   "Time",
   "Mass",
   "Torque",
-  "MoI"
+  "MoI",
+  "Current",
+  "KT",
+  "KV"
 ] as const;
 export type DimensionName = (typeof DimensionNames)[number];
 export type Dimension<T> = {
@@ -180,6 +186,24 @@ export const Dimensions = {
     unit: Units.NewtonMeter,
     icon: () => <Torque></Torque>,
     type: "Torque"
+  },
+  Current: {
+    type: "Current",
+    name: "Current",
+    unit: Units.Amp,
+    icon: () => <Numbers></Numbers>
+  },
+  KT: {
+    type: "KT",
+    name: "Torque Constant",
+    unit: Units.NewtonMeterPerAmp,
+    icon: () => <Numbers></Numbers>
+  },
+  KV: {
+    type: "KV",
+    name: "Back-EMF Constant",
+    unit: Units.VoltSecondPerRadian,
+    icon: () => <Numbers></Numbers>
   }
 } as const satisfies {
   [key in DimensionName]: Dimension<key>;

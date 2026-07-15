@@ -111,7 +111,7 @@ export const PathListStore = types
       ): string {
         const usedName = this.disambiguateName(name);
         const env = getEnv<Env>(self);
-        const newUUID = crypto.randomUUID();
+        const newUUID = contents?.uuid ?? crypto.randomUUID();
         env.startGroup(() => {
           try {
             const path = HolonomicPathStore.create({

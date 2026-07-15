@@ -23,6 +23,7 @@ struct TrajectoryFile {
   TrajectoryFile() = default;
   TrajectoryFile(const TrajectoryFile&) = default;
   static TrajectoryFile fromJson(const wpi::util::json& json);
+  std::string uuid;
   std::string name;
   std::uint32_t version;
   std::optional<RobotConfig> config;
@@ -55,12 +56,14 @@ inline void to_json(wpi::util::json& json, const TrajectoryFile& trajFile) {
     trajectory_json = wpi::util::json();
   }
   json = wpi::util::json::object("name", trajFile.name, "version",
-                                 trajFile.version, "config", config_json,
+                                 trajFile.version, "uuid", trajFile.uuid,
+                                 "config", config_json,
                                  "snapshot", snapshot_json, "params",
                                  trajFile.params, "trajectory", trajectory_json,
                                  "events", trajFile.events);
 }
 inline void from_json(const wpi::util::json& json, TrajectoryFile& trajFile) {
+  trajFile.uuid = json.at("uuid").get_string();
   trajFile.name = json.at("name").get_string();
   trajFile.version =
       static_cast<std::uint32_t>(json.at("version").get_number());

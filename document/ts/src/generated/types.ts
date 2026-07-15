@@ -19,14 +19,21 @@ export type DriveType = "Swerve" | "Differential";
  */
 export type ConstraintScope = "both" | "waypoint" | "segment";
 /**
- * Identifies a waypoint by index or by a first/last sentinel string.
+ * A stable persisted UUID string.
+ *
+ * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
+ * via the `definition` "UUID".
+ */
+export type UUID = string;
+/**
+ * Identifies a waypoint by UUID or by a first/last sentinel string.
  *
  * This interface was referenced by `ChoreoDocumentSchema`'s JSON-Schema
  * via the `definition` "WaypointID".
  */
 export type WaypointID =
   | {
-      idx: number;
+      uuid: UUID;
     }
   | "first"
   | "last";
@@ -318,6 +325,10 @@ export interface CodeGenConfig {
  */
 export interface Waypoint {
   /**
+   * A stable persisted UUID string.
+   */
+  uuid: string;
+  /**
    * X position (m)
    */
   x: Expr;
@@ -422,11 +433,15 @@ export interface HeadingConstraint {
  */
 export interface Constraint {
   /**
+   * A stable persisted UUID string.
+   */
+  uuid: string;
+  /**
    * Waypoint the constraint starts at
    */
   from:
     | {
-        idx: number;
+        uuid: UUID;
       }
     | "first"
     | "last";
@@ -435,7 +450,7 @@ export interface Constraint {
    */
   to?:
     | {
-        idx: number;
+        uuid: UUID;
       }
     | "first"
     | "last";
@@ -464,9 +479,9 @@ export interface Parameters {
  */
 export interface EventMarkerData {
   /**
-   * Index of the target waypoint; null if not set.
+   * Target waypoint reference; null if not set.
    */
-  target: number | null;
+  target: WaypointID | null;
   /**
    * Pre-computed trajectory time at the target waypoint (s); null if not available.
    */
@@ -483,6 +498,10 @@ export interface EventMarkerData {
  * via the `definition` "EventMarker".
  */
 export interface EventMarker {
+  /**
+   * A stable persisted UUID string.
+   */
+  uuid: string;
   name: string;
   from: EventMarkerData;
 }
@@ -651,6 +670,10 @@ export interface Trajectory {
  * via the `definition` "TrajectoryFile".
  */
 export interface TrajectoryFile {
+  /**
+   * A stable persisted UUID string.
+   */
+  uuid: string;
   name: string;
   /**
    * File format version
@@ -755,6 +778,10 @@ export interface CompleteTrajectoryProgressMessage {
  * via the `definition` "ProjectFile".
  */
 export interface ProjectFile {
+  /**
+   * A stable persisted UUID string.
+   */
+  uuid: string;
   name: string;
   /**
    * File format version

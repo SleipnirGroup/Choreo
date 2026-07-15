@@ -18,6 +18,7 @@ struct ProjectFile {
   ProjectFile() = default;
   ProjectFile(const ProjectFile&) = default;
   static ProjectFile fromJson(const wpi::util::json& json);
+  std::string uuid;
   std::string name;
   std::uint32_t version;
   DriveType type;
@@ -28,11 +29,13 @@ struct ProjectFile {
 
 inline void to_json(wpi::util::json& json, const ProjectFile& project) {
   json = wpi::util::json::object(
-      "name", project.name, "version", project.version, "type", project.type,
-      "variables", project.variables, "config", project.config, "codegen", project.codegen);
+      "uuid", project.uuid, "name", project.name, "version",
+      project.version, "type", project.type, "variables", project.variables,
+      "config", project.config, "codegen", project.codegen);
 }
 
 inline void from_json(const wpi::util::json& json, ProjectFile& project) {
+  project.uuid = json.at("uuid").get_string();
   project.name = json.at("name").get_string();
   project.version = static_cast<std::uint32_t>(json.at("version").get_number());
   project.type = json.at("type").get<DriveType>();

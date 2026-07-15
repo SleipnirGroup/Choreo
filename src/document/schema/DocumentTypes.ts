@@ -100,6 +100,7 @@ export interface CodeGenConfig {
 }
 
 export interface Project {
+  uuid: string;
   name: string;
   type: SampleType;
   version: typeof PROJECT_SCHEMA_VERSION;
@@ -109,6 +110,7 @@ export interface Project {
 }
 
 export interface Waypoint {
+  uuid: GeneratedWaypoint["uuid"];
   x: GeneratedWaypoint["x"];
   y: GeneratedWaypoint["y"];
   heading: GeneratedWaypoint["heading"];
@@ -135,6 +137,7 @@ export type WaypointIDX = GeneratedWaypointID;
 export type WaypointUUID = "first" | "last" | { uuid: string };
 
 export interface Constraint {
+  uuid: string;
   from: WaypointIDX;
   to?: WaypointIDX;
   data: ConstraintData;
@@ -175,6 +178,7 @@ export interface Output {
 }
 
 export interface Trajectory {
+  uuid: string;
   name: string;
   version: typeof TRAJ_SCHEMA_VERSION;
   params: ChoreoPath;
@@ -203,13 +207,14 @@ export type NamedCommand = {
 };
 
 export type EventMarkerData = {
-  target: number | null;
+  target: WaypointIDX | null;
   offset: Expr;
   targetTimestamp: number | null;
 };
 export type PplibCommand = WaitCommand | GroupCommand | NamedCommand;
 export type Command = PplibCommand | undefined | null;
 export interface EventMarker {
+  uuid: string;
   name: string;
   from: EventMarkerData;
   event: Command;
@@ -319,6 +324,7 @@ export function fromGeneratedTrajectory(output: GeneratedTrajectory): Output {
 
 export function toGeneratedWaypoint(waypoint: Waypoint): GeneratedWaypoint {
   return {
+    uuid: waypoint.uuid,
     x: deepCopy(waypoint.x),
     y: deepCopy(waypoint.y),
     heading: deepCopy(waypoint.heading),
@@ -332,6 +338,7 @@ export function toGeneratedWaypoint(waypoint: Waypoint): GeneratedWaypoint {
 
 export function fromGeneratedWaypoint(waypoint: GeneratedWaypoint): Waypoint {
   return {
+    uuid: waypoint.uuid,
     x: deepCopy(waypoint.x),
     y: deepCopy(waypoint.y),
     heading: deepCopy(waypoint.heading),

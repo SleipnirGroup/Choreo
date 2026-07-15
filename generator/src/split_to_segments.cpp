@@ -42,7 +42,7 @@ std::vector<Segment> convert_to_segments(const Parameters& params) {
   // First, we need to convert the constraints from the parameters into a more convenient format for processing. We also need to validate that the 'from' and 'to' indices are within bounds of the waypoints vector, and print warnings for any malformed constraints.
   // This filters out constraints with invalid indices.
   for (const auto& constraint : params.constraints) {
-    if (auto idx = constraint.toConstraintIDX(params.waypoints.size());
+    if (auto idx = constraint.toConstraintIDX(params.waypoints);
         idx.has_value() && constraint.enabled) {
       constraints.push_back(idx.value());
     }

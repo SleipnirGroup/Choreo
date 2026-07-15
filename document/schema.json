@@ -34,16 +34,21 @@
       "enum": ["both", "waypoint", "segment"]
     },
 
+    "UUID": {
+      "type": "string",
+      "description": "A stable persisted UUID string."
+    },
+
     "WaypointID": {
-      "description": "Identifies a waypoint by index or by a first/last sentinel string.",
+      "description": "Identifies a waypoint by UUID or by a first/last sentinel string.",
       "oneOf": [
         {
           "type": "object",
-          "description": "Waypoint by zero-based index.",
+          "description": "Waypoint by UUID.",
           "properties": {
-            "idx": { "type": "integer", "minimum": 0 }
+            "uuid": { "$ref": "#/$defs/UUID" }
           },
-          "required": ["idx"],
+          "required": ["uuid"],
           "additionalProperties": false
         },
         {
@@ -286,6 +291,10 @@
       "type": "object",
       "description": "A trajectory waypoint with pose and optimization hints.",
       "properties": {
+        "uuid": {
+          "$ref": "#/$defs/UUID",
+          "description": "Stable UUID for this waypoint."
+        },
         "x": { "$ref": "#/$defs/Expr", "description": "X position (m)" },
         "y": { "$ref": "#/$defs/Expr", "description": "Y position (m)" },
         "heading": { "$ref": "#/$defs/Expr", "description": "Heading (rad)" },
@@ -312,6 +321,7 @@
         }
       },
       "required": [
+        "uuid",
         "x",
         "y",
         "heading",
@@ -394,6 +404,10 @@
       "type": "object",
       "description": "A typed constraint applied at or between waypoints.",
       "properties": {
+        "uuid": {
+          "$ref": "#/$defs/UUID",
+          "description": "Stable UUID for this constraint."
+        },
         "from": {
           "$ref": "#/$defs/WaypointID",
           "description": "Waypoint the constraint starts at"
@@ -405,7 +419,7 @@
         "data": { "$ref": "#/$defs/ConstraintVariant" },
         "enabled": { "type": "boolean" }
       },
-      "required": ["from", "data", "enabled"],
+      "required": ["uuid", "from", "data", "enabled"],
       "additionalProperties": false
     },
 
@@ -435,8 +449,8 @@
       "description": "Timing information anchoring an event marker to the trajectory.",
       "properties": {
         "target": {
-          "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
-          "description": "Index of the target waypoint; null if not set."
+          "oneOf": [{ "$ref": "#/$defs/WaypointID" }, { "type": "null" }],
+          "description": "Target waypoint reference; null if not set."
         },
         "targetTimestamp": {
           "oneOf": [{ "type": "number" }, { "type": "null" }],
@@ -455,10 +469,14 @@
       "type": "object",
       "description": "A named event placed at a time on the trajectory.",
       "properties": {
+        "uuid": {
+          "$ref": "#/$defs/UUID",
+          "description": "Stable UUID for this event marker."
+        },
         "name": { "type": "string" },
         "from": { "$ref": "#/$defs/EventMarkerData" }
       },
-      "required": ["name", "from"],
+      "required": ["uuid", "name", "from"],
       "additionalProperties": false
     },
 
@@ -614,6 +632,10 @@
       "type": "object",
       "description": "Contents of a .traj file: a single named trajectory with its parameters and events.",
       "properties": {
+        "uuid": {
+          "$ref": "#/$defs/UUID",
+          "description": "Stable UUID for this trajectory document."
+        },
         "name": { "type": "string" },
         "version": {
           "type": "integer",
@@ -641,7 +663,7 @@
           "items": { "$ref": "#/$defs/EventMarker" }
         }
       },
-      "required": ["name", "version", "params", "events"],
+      "required": ["uuid", "name", "version", "params", "events"],
       "additionalProperties": false
     },
 
@@ -753,6 +775,10 @@
       "type": "object",
       "description": "Contents of a .chor project file: robot config, drive type, document-level variables, and code-gen settings.",
       "properties": {
+        "uuid": {
+          "$ref": "#/$defs/UUID",
+          "description": "Stable UUID for this project document."
+        },
         "name": { "type": "string" },
         "version": {
           "type": "integer",
@@ -764,7 +790,7 @@
         "config": { "$ref": "#/$defs/RobotConfig" },
         "codegen": { "$ref": "#/$defs/CodeGenConfig" }
       },
-      "required": ["name", "version", "type", "variables", "config", "codegen"],
+      "required": ["uuid", "name", "version", "type", "variables", "config", "codegen"],
       "additionalProperties": false
     }
   }

@@ -70,6 +70,7 @@ export const ISampleType = types.enumeration<SampleType>([
 // to see all the places that change with every schema upgrade.
 export const DocumentStore = types
   .model("DocumentStore", {
+    uuid: types.string,
     name: types.string,
     type: ISampleType,
     pathlist: PathListStore,
@@ -88,6 +89,7 @@ export const DocumentStore = types
     },
     serializeChor(): Project {
       return {
+        uuid: self.uuid,
         name: self.name,
         version: PROJECT_SCHEMA_VERSION,
         type: self.type,
@@ -130,6 +132,7 @@ export const DocumentStore = types
   }))
   .actions((self) => ({
     deserializeChor(ser: Project) {
+      self.uuid = ser.uuid;
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);

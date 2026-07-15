@@ -9,6 +9,7 @@
 
 #include <wpi/util/json.hpp>
 
+#include "choreo/constraint.hpp"
 #include "choreo/expr.hpp"
 #include "choreo/variables/dimension.hpp"
 namespace choreo {
@@ -17,13 +18,18 @@ struct EventMarkerData {
   EventMarkerData() = default;
   EventMarkerData(const EventMarkerData&) = default;
   static EventMarkerData fromJson(const wpi::util::json& json);
-  std::optional<std::size_t> target;
+  std::optional<WaypointID> target;
   std::optional<dimensions::Time::baseUnit> targetTimestamp;
   Expr<dimensions::Time> offset;
 
-  void updateTimestamp(const std::vector<wpi::units::second_t>& waypoint_timestamps) {
-    if (target.has_value() && target.value() < waypoint_timestamps.size()) {
-      targetTimestamp = waypoint_timestamps[target.value()];
+  void updateTimestamp(const std::vector<Waypoint>& waypoints,
+                       const std::vector<wpi::units::second_t>& waypoint_timestamps) {
+    if (!target.has_value()) {
+      return;
+    }
+    auto index = getWaypointIndex(*target, waypoints);
+    if (index.has_value() && index.value() < waypoint_timestamps.size()) {
+      targetTimestamp = waypoint_timestamps[index.value()];
     }
   }
 };
@@ -40,7 +46,7 @@ inline void to_json(wpi::util::json& json, const EventMarkerData& data) {
 
 inline void from_json(const wpi::util::json& json, EventMarkerData& data) {
   if (json.contains("target") && !json.at("target").empty()) {
-    data.target = static_cast<std::size_t>(json.at("target").get_number());
+    data.target = json.at("target").get<WaypointID>();
   } else {
     data.target = std::nullopt;
   }
@@ -63,14 +69,17 @@ struct EventMarker {
   EventMarker() = default;
   EventMarker(const EventMarker&) = default;
   static EventMarker fromJson(const wpi::util::json& json);
+  std::string uuid;
   std::string name;
   EventMarkerData from;
 };
 
 inline void to_json(wpi::util::json& json, const EventMarker& marker) {
-  json = wpi::util::json::object("name", marker.name, "from", marker.from);
+  json = wpi::util::json::object("uuid", marker.uuid, "name", marker.name,
+                                 "from", marker.from);
 }
 inline void from_json(const wpi::util::json& json, EventMarker& marker) {
+  marker.uuid = json.at("uuid").get_string();
   marker.name = json.at("name").get_string();
   marker.from = json.at("from").get<EventMarkerData>();
 }

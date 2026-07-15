@@ -106,7 +106,8 @@ export type EnvConstructors = {
     data: Partial<DataMap[K]["props"]>,
     enabled: boolean,
     from: IWaypointScope,
-    to?: IWaypointScope
+    to?: IWaypointScope,
+    uuid?: string
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
@@ -178,7 +179,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
-        uuid: crypto.randomUUID()
+        uuid: waypoint.uuid || crypto.randomUUID()
       });
       return w;
     },
@@ -194,7 +195,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           offset: vars().createExpression(marker.from.offset, "Time")
         },
         event: createCommandStore(marker.event),
-        uuid: crypto.randomUUID()
+        uuid: marker.uuid || crypto.randomUUID()
       });
       return m;
     },
@@ -204,12 +205,13 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       data: Partial<DataMap[K]["props"]>,
       enabled: boolean,
       from: IWaypointScope,
-      to?: IWaypointScope
+      to?: IWaypointScope,
+      uuid?: string
     ) => {
       const store = ConstraintStore.create({
         from,
         to,
-        uuid: crypto.randomUUID(),
+        uuid: uuid ?? crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
         data: constraintDataConstructors[type](data),
         enabled
@@ -246,6 +248,7 @@ const env = {
 export type Env = typeof env;
 export const doc = DocumentStore.create(
   {
+    uuid: crypto.randomUUID(),
     robotConfig: getConstructors(() => variables).RobotConfigStore(
       EXPR_DEFAULTS
     ),
@@ -447,7 +450,7 @@ export async function setupEventListeners() {
         unlisten();
       });
     });
-  let autoSaveDebounce: NodeJS.Timeout | undefined = undefined;
+  let autoSaveDebounce: ReturnType<typeof setTimeout> | undefined = undefined;
   const performAutoSave = () => {
     if (uiState.hasSaveLocation) {
       uiState.setProjectSavingState(SavingState.SAVING);

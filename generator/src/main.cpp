@@ -58,7 +58,7 @@ void validate_generation_input(const choreo::ProjectFile& project,
     if (!constraint.enabled) {
       continue;
     }
-    if (!constraint.toConstraintIDX(params.waypoints.size()).has_value()) {
+    if (!constraint.toConstraintIDX(params.waypoints).has_value()) {
       invalid_enabled_constraints++;
     }
   }
@@ -147,7 +147,8 @@ choreo::TrajectoryFile generate(const choreo::ProjectFile& chor,
     for (auto& event : traj_unscratch.events) {
       //Update the timestamp for the event based on the waypoint timestamps and offset
       // Assuming the event has a timestamp offset, update it based on the waypoint timestamps
-      event.from.updateTimestamp(waypoint_timestamps);
+      event.from.updateTimestamp(originalTrajectory.params.waypoints,
+                 waypoint_timestamps);
     }
 
     std::println("Was trajectory outdated? {}", originalTrajectory.must_be_generated(chor));

@@ -18,7 +18,7 @@ export function waypointIdToSavedWaypointId(
     if (scopeIndex == -1) {
       return undefined; // don't try to save this constraint
     }
-    return { idx: scopeIndex };
+    return { uuid: waypointId.uuid };
   } else {
     return waypointId;
   }
@@ -37,14 +37,11 @@ export function savedWaypointIdToWaypointId(
   if (savedId === "last") {
     return "last";
   }
-  if (savedId.idx < 0 || savedId.idx >= points.length) {
+  const scopeIndex = findUUIDIndex(savedId.uuid, points);
+  if (scopeIndex === -1) {
     return undefined;
   }
-  if (!Number.isInteger(savedId.idx)) {
-    return undefined;
-  } else {
-    return { uuid: points[savedId.idx]?.uuid as string };
-  }
+  return { uuid: savedId.uuid };
 }
 export function getByWaypointID(
   id: IWaypointScope | undefined,
