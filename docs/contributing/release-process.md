@@ -19,7 +19,7 @@ git clone git@github.com:SleipnirGroup/ChoreoLib
 Update the vendordep JSON in ChoreoLib/dep.
 
 1. Update the Choreo version keys to VERSION
-2. Update the frcYear key if needed
+2. Update the wpilibYear key if needed
 
 ## Choreo Release
 

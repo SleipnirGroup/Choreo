@@ -27,8 +27,7 @@ def load_differential_trajectory_string(
     Parameter ``trajectory_json_string``:
         The JSON string.
     """
-    # Usage report
-    hal.report(hal.tResourceType.kResourceType_ChoreoTrajectory, 2)
+    hal.reportUsage("ChoreoTrajectory", 2, "Differential")
 
     data = json.loads(trajectory_json_string)
     name = data["name"]
@@ -95,8 +94,7 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     Parameter ``trajectory_json_string``:
         The JSON string.
     """
-    # Usage report
-    hal.report(hal.tResourceType.kResourceType_ChoreoTrajectory, 1)
+    hal.reportUsage("ChoreoTrajectory", 1, "Swerve")
 
     data = json.loads(trajectory_json_string)
     name = data["name"]

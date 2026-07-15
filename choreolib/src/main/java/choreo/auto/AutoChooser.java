@@ -2,20 +2,21 @@
 
 package choreo.auto;
 
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+import static org.wpilib.driverstation.Alert.Level.HIGH;
 
 import choreo.util.ChoreoAlert;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.framework.RobotBase;
+import org.wpilib.util.sendable.Sendable;
+import org.wpilib.util.sendable.SendableBuilder;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
@@ -30,8 +31,7 @@ import java.util.function.Supplier;
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
  * #addRoutine} or add {@link Command}s to it using {@link #addCmd}. Similar to {@code
  * SendableChooser} this chooser can be added to the {@link
- * edu.wpi.first.wpilibj.smartdashboard.SmartDashboard} using {@code
- * SmartDashboard.putData(Sendable)}.
+ * org.wpilib.smartdashboard.SmartDashboard} using {@code SmartDashboard.putData(Sendable)}.
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 public class AutoChooser implements Sendable {
   private final String DO_NOTHING_NAME;
   private static final Alert selectedNonexistentAuto =
-      ChoreoAlert.alert("Selected an auto that isn't an option", kError);
+      ChoreoAlert.alert("Selected an auto that isn't an option", HIGH);
 
   private final HashMap<String, Supplier<Command>> autoRoutines = new HashMap<>();
 
@@ -92,11 +92,11 @@ public class AutoChooser implements Sendable {
   private String select(String selectStr, boolean force) {
     selected = selectStr;
     if (selected.equals(nameAtGeneration)
-        && allianceAtGeneration.equals(DriverStation.getAlliance())) {
+        && allianceAtGeneration.equals(MatchState.getAlliance())) {
       // early return if the selected auto matches the active auto
       return nameAtGeneration;
     }
-    boolean dsValid = DriverStation.isDisabled() && DriverStation.getAlliance().isPresent();
+    boolean dsValid = RobotState.isDisabled() && MatchState.getAlliance().isPresent();
     if (dsValid || force) {
       if (!autoRoutines.containsKey(selected) && !selected.equals(DO_NOTHING_NAME)) {
         selected = DO_NOTHING_NAME;
@@ -104,7 +104,7 @@ public class AutoChooser implements Sendable {
       } else {
         selectedNonexistentAuto.set(false);
       }
-      allianceAtGeneration = DriverStation.getAlliance();
+      allianceAtGeneration = MatchState.getAlliance();
       nameAtGeneration = selected;
       generatedCommand = autoRoutines.get(nameAtGeneration).get().withName(nameAtGeneration);
     } else {

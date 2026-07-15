@@ -102,8 +102,8 @@ pub fn vars_file_contents(project: &ProjectFile, package_name: String) -> String
     let pose_imports = if pose_variables.is_empty() {
         ""
     } else {
-        "import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;"
+        "import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;"
     };
     format!(
         r#"// spotless:off

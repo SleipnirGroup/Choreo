@@ -5,18 +5,17 @@ package choreo.auto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
-import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.wpilib.command2.Commands;
+import org.wpilib.hardware.hal.AllianceStationID;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.simulation.DriverStationSim;
+import org.wpilib.smartdashboard.SendableBuilderImpl;
 
 public class AutoChooserTest {
   private static final String NOT_FOUND = "__NOT_FOUND__";
@@ -138,11 +137,10 @@ public class AutoChooserTest {
     // DriverStation should report disconnected causing the active to not update
     assertNTActive(fnName, chooser.getDefaultName());
 
-    DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+    DriverStationSim.setAllianceStationId(AllianceStationID.BLUE_1);
     DriverStationSim.setEnabled(false);
     DriverStationSim.setDsAttached(true);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
 
     builder.update();
     builder.update();
@@ -151,9 +149,8 @@ public class AutoChooserTest {
 
     assertEquals(chooser.selectedCommand().getName(), "SelectTestRoutine");
 
-    DriverStationSim.setAllianceStationId(AllianceStationID.Unknown);
+    DriverStationSim.setAllianceStationId(AllianceStationID.UNKNOWN);
     DriverStationSim.setDsAttached(false);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
   }
 }

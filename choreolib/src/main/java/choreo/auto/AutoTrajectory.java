@@ -3,7 +3,7 @@
 package choreo.auto;
 
 import static choreo.util.ChoreoAlert.allianceNotReady;
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+import static org.wpilib.driverstation.Alert.Level.HIGH;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AllianceContext;
@@ -15,21 +15,21 @@ import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.ScheduleCommand;
+import org.wpilib.command2.Subsystem;
+import org.wpilib.command2.button.Trigger;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.system.Timer;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -44,18 +44,18 @@ public class AutoTrajectory {
   // and far between. This helps with more novice users
 
   private static final MultiAlert triggerTimeNegative =
-      ChoreoAlert.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Trigger time cannot be negative for " + causes, HIGH);
   private static final MultiAlert triggerTimeAboveMax =
       ChoreoAlert.multiAlert(
           causes -> "Trigger time cannot be greater than total trajectory time for " + causes + ".",
-          kError);
+          HIGH);
   private static final MultiAlert eventNotFound =
-      ChoreoAlert.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
+      ChoreoAlert.multiAlert(causes -> "Event Markers " + causes + " not found.", HIGH);
   private static final MultiAlert noSamples =
-      ChoreoAlert.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+      ChoreoAlert.multiAlert(causes -> "Trajectories " + causes + " have no samples.", HIGH);
   private static final MultiAlert noInitialPose =
       ChoreoAlert.multiAlert(
-          causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
+          causes -> "Unable to get initial pose for trajectories " + causes + ".", HIGH);
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
