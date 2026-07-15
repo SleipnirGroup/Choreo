@@ -83,10 +83,10 @@ class PathGradientFunctions {
 
     // Linear velocity magnitude
     let v = 0;
-    if (sample.vl !== undefined) {
-      v = Math.abs(sample.vl + sample.vr) / 2;
+    if ("leftVelocity" in sample && "rightVelocity" in sample) {
+      v = Math.abs(sample.leftVelocity + sample.rightVelocity) / 2;
     } else {
-      v = Math.hypot(sample.vx, sample.vy);
+      v = Math.hypot(sample.velocity.vx, sample.velocity.vy);
     }
 
     const floorSpeed =
@@ -122,12 +122,10 @@ class PathGradientFunctions {
     const sample = samples[index];
 
     // Linear acceleration magnitude
-    let acceleration = 0;
-    if (sample.vl !== undefined) {
-      acceleration = Math.abs(sample.al + sample.ar) / 2;
-    } else {
-      acceleration = Math.hypot(sample.ax, sample.ay);
-    }
+    const acceleration = Math.hypot(
+      sample.acceleration.ax,
+      sample.acceleration.ay
+    );
 
     // Divide by 10 to scale linear acceleration to [0, 1], invert range, then
     // scale to red-green hue [0, 100]
@@ -143,7 +141,7 @@ class PathGradientFunctions {
    * @returns The color value in HSL format.
    */
   static intervalDt({ samples, index }: PathGradientArgs<any>): string {
-    const dt = samples[index + 1].t - samples[index].t;
+    const dt = samples[index + 1].time - samples[index].time;
     return `hsl(${100 * (1.5 - 10 * dt)}, 100%, 50%)`;
   }
 
@@ -157,7 +155,7 @@ class PathGradientFunctions {
   static angularVelocity({ samples, index }: PathGradientArgs<any>): string {
     // Scale angular velocity magnitude to [0, 1] using artificial 2π rad/s max,
     // then normalize to red-green hue [0, 100]
-    return `hsl(${100 * (Math.abs(samples[index].omega) / (2 * Math.PI))}, 100%, 50%)`;
+    return `hsl(${100 * (Math.abs(samples[index].velocity.omega) / (2 * Math.PI))}, 100%, 50%)`;
   }
 
   /**

@@ -17,6 +17,7 @@ import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { isConstraintKeySupportedByGeneratedTypes } from "../../document/ConstraintDefinitions";
 
 import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
 
@@ -32,6 +33,9 @@ class Sidebar extends Component<Props, State> {
 
   render() {
     const { toggleMainMenu } = uiState;
+    const visibleConstraints = doc.pathlist.activePath.params.constraints.filter(
+      (constraint) => isConstraintKeySupportedByGeneratedTypes(constraint.data.type)
+    );
     return (
       <div className={styles.Container}>
         <div
@@ -175,7 +179,7 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.params.constraints.map((constraint) => {
+            {visibleConstraints.map((constraint) => {
               return (
                 <SidebarConstraint
                   path={doc.pathlist.activePath}
@@ -185,7 +189,7 @@ class Sidebar extends Component<Props, State> {
               );
             })}
           </div>
-          {doc.pathlist.activePath.params.constraints.length == 0 && (
+          {visibleConstraints.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>

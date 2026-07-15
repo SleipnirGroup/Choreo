@@ -16,7 +16,7 @@ function FieldGeneratedLines() {
   // to trigger rerenders when mutating the in-progress trajectory in place
   const _ = path.ui.generationIterationNumber;
   trajectory.forEach((sample) => {
-    generatedPathString += `${sample.x},${sample.y} `;
+    generatedPathString += `${sample.pose.translation.x},${sample.pose.translation.y} `;
   });
   const key = uiState.selectedPathGradient as keyof typeof PathGradients;
   const pathGradient = PathGradients[key];
@@ -58,10 +58,10 @@ function FieldGeneratedLines() {
             return (
               <line
                 key={i}
-                x1={sample.x}
-                y1={sample.y}
-                x2={nextSample.x}
-                y2={nextSample.y}
+                x1={sample.pose.translation.x}
+                y1={sample.pose.translation.y}
+                x2={nextSample.pose.translation.x}
+                y2={nextSample.pose.translation.y}
                 strokeWidth={0.05}
                 stroke={pathGradient.function(args)}
               ></line>

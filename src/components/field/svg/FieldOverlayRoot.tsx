@@ -8,7 +8,7 @@ import {
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { Expr, Waypoint } from "../../../document/schema/DocumentTypes";
+import { Waypoint } from "../../../document/schema/DocumentTypes";
 import { ConstraintKey } from "../../../document/ConstraintDefinitions";
 import { IConstraintStoreKeyed } from "../../../document/ConstraintStore";
 import { doc, uiState } from "../../../document/DocumentManager";
@@ -448,7 +448,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       y: e.clientY
     });
     doc.history.startGroup(() => {
-      const initial: Partial<Waypoint<Expr>> = {};
+      const initial: Partial<Waypoint> = {};
       if (
         waypointType == NavbarLabels.TranslationWaypoint ||
         waypointType == NavbarLabels.EmptyWaypoint
