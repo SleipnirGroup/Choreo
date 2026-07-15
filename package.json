@@ -20,6 +20,7 @@
     "fmtRs": "cargo fmt",
     "lintJs": "eslint --fix src",
     "lintPy": "mypy --pretty --show-column-numbers choreolib/py",
+    "document:types:generate": "pnpm install --dir document/ts --ignore-workspace && pnpm --dir document/ts generate",
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRs && pnpm run lintJs",
     "clean": "cargo clean && rm -rf dist && rm -rf node_modules",
     "dev": "tauri dev",

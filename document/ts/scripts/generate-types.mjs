@@ -160,6 +160,104 @@ function applySchemaExprDescriptions(typeText, exprDescriptionMap) {
   return outputLines.join("\n");
 }
 
+function normalizeInterfaceBody(bodyText) {
+  return bodyText
+    .replace(/\/\*\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function dedupeNumberedAliasInterfaces(typeText) {
+  const lines = typeText.split("\n");
+  const interfaces = new Map();
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const match = /^export interface ([A-Za-z_][A-Za-z0-9_]*)\s*\{\s*$/.exec(lines[i]);
+    if (!match) {
+      continue;
+    }
+
+    const name = match[1];
+    const start = i;
+    let braceDepth = 0;
+    do {
+      braceDepth += (lines[i].match(/\{/g) ?? []).length;
+      braceDepth -= (lines[i].match(/\}/g) ?? []).length;
+      i += 1;
+    } while (i < lines.length && braceDepth > 0);
+
+    const end = i - 1;
+    interfaces.set(name, {
+      start,
+      end,
+      body: lines.slice(start + 1, end).join("\n")
+    });
+  }
+
+  const aliasToBase = new Map();
+  for (const [name, data] of interfaces.entries()) {
+    const aliasMatch = /^([A-Za-z_][A-Za-z0-9_]*?)(\d+)$/.exec(name);
+    if (!aliasMatch) {
+      continue;
+    }
+
+    const baseName = aliasMatch[1];
+    const base = interfaces.get(baseName);
+    if (!base) {
+      continue;
+    }
+
+    if (normalizeInterfaceBody(data.body) === normalizeInterfaceBody(base.body)) {
+      aliasToBase.set(name, baseName);
+    }
+  }
+
+  if (aliasToBase.size === 0) {
+    return typeText;
+  }
+
+  let output = typeText;
+  for (const [alias, base] of aliasToBase.entries()) {
+    const aliasRegex = new RegExp(`\\b${alias}\\b`, "g");
+    output = output.replace(aliasRegex, base);
+  }
+
+  const outputLines = output.split("\n");
+  const keptLines = [];
+  for (let i = 0; i < outputLines.length; i += 1) {
+    const match = /^export interface ([A-Za-z_][A-Za-z0-9_]*)\s*\{\s*$/.exec(outputLines[i]);
+    if (match && aliasToBase.has(match[1])) {
+      // Remove immediate preceding JSDoc for alias declaration.
+      let removeCommentStart = keptLines.length;
+      if (keptLines.length > 0 && keptLines[keptLines.length - 1].trim() === "*/") {
+        let j = keptLines.length - 1;
+        while (j >= 0 && !keptLines[j].includes("/**")) {
+          j -= 1;
+        }
+        if (j >= 0) {
+          removeCommentStart = j;
+        }
+      }
+      keptLines.length = removeCommentStart;
+
+      let braceDepth = 0;
+      do {
+        braceDepth += (outputLines[i].match(/\{/g) ?? []).length;
+        braceDepth -= (outputLines[i].match(/\}/g) ?? []).length;
+        i += 1;
+      } while (i < outputLines.length && braceDepth > 0);
+
+      i -= 1;
+      continue;
+    }
+
+    keptLines.push(outputLines[i]);
+  }
+
+  return keptLines.join("\n");
+}
+
 function normalizeExprTypes(typeText) {
   const exprCommentById = new Map();
   const linesForExtraction = typeText.split("\n");
@@ -246,6 +344,7 @@ function normalizeExprTypes(typeText) {
 
   output = keptLines.join("\n");
   output = output.replace(/\bExpr\d+\b/g, "Expr");
+  output = dedupeNumberedAliasInterfaces(output);
 
   const exprDescriptionMap = buildExprDescriptionMap(schema);
   return applySchemaExprDescriptions(output, exprDescriptionMap);
