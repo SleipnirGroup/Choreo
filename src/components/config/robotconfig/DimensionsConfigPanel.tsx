@@ -12,6 +12,10 @@ class RobotConfigPanel extends Component<Props, State> {
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
     const config = doc.robotConfig;
+    const frontLeft = config.bumpers[0];
+    const backLeft = config.bumpers[1];
+    const backRight = config.bumpers[2];
+    const frontRight = config.bumpers[3];
     return (
       <ExpressionInputList rowGap={this.props.rowGap}>
         <ExpressionInput
@@ -31,30 +35,75 @@ class RobotConfigPanel extends Component<Props, State> {
         />
 
         <ExpressionInput
-          title="Bumper Front"
+          title="Bumper FL X"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.front}
+          number={frontLeft.x}
           maxWidthCharacters={8}
-          titleTooltip="Distance from robot center to front bumper edge"
+          titleTooltip="Front-left bumper corner X"
         />
 
         <ExpressionInput
-          title="Bumper Back"
+          title="Bumper FL Y"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.back}
+          number={frontLeft.y}
           maxWidthCharacters={8}
-          titleTooltip="Distance from robot center to back bumper edge"
+          titleTooltip="Front-left bumper corner Y"
         />
 
         <ExpressionInput
-          title="Bumper Side"
+          title="Bumper BL X"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.side}
+          number={backLeft.x}
           maxWidthCharacters={8}
-          titleTooltip="Distance from robot center to bumper side edge"
+          titleTooltip="Back-left bumper corner X"
+        />
+
+        <ExpressionInput
+          title="Bumper BL Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={backLeft.y}
+          maxWidthCharacters={8}
+          titleTooltip="Back-left bumper corner Y"
+        />
+
+        <ExpressionInput
+          title="Bumper BR X"
+          enabled={true}
+          roundingPrecision={3}
+          number={backRight.x}
+          maxWidthCharacters={8}
+          titleTooltip="Back-right bumper corner X"
+        />
+
+        <ExpressionInput
+          title="Bumper BR Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={backRight.y}
+          maxWidthCharacters={8}
+          titleTooltip="Back-right bumper corner Y"
+        />
+
+        <ExpressionInput
+          title="Bumper FR X"
+          enabled={true}
+          roundingPrecision={3}
+          number={frontRight.x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-right bumper corner X"
+        />
+
+        <ExpressionInput
+          title="Bumper FR Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={frontRight.y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-right bumper corner Y"
         />
       </ExpressionInputList>
     );

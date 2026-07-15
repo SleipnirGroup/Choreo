@@ -41,7 +41,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Motor Max Speed"
           enabled={true}
           roundingPrecision={0}
-          number={config.vmax}
+          number={config.motor.free_speed}
           maxWidthCharacters={8}
           titleTooltip="Actual motor speed at 12V"
         />
@@ -50,7 +50,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Motor Max Torque"
           enabled={true}
           roundingPrecision={3}
-          number={config.tmax}
+          number={config.motor.stall_torque}
           maxWidthCharacters={8}
           titleTooltip="Motor torque as current-limited"
         />

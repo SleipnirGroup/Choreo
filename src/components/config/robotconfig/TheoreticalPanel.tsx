@@ -27,7 +27,8 @@ class RobotConfigPanel extends Component<Props, State> {
     );
 
     const floorLinearAccel = minimumLinearForce / config.mass;
-    const driveRadius = Math.hypot(config.frontLeft.x, config.frontLeft.y); // TODO proper sum of forces from four wheels
+  const frontLeft = config.wheels[0];
+  const driveRadius = Math.hypot(frontLeft.x, frontLeft.y); // TODO proper sum of forces from four wheels
     const chassisTorque = minimumLinearForce * driveRadius; // N*m
     //N*m/(kg*m*m) = N/(kg*m) = (kg*m/s^2)/(kg*m)=1/s^2= rad/s^2
     const chassisAngularAccel = chassisTorque / config.inertia; //N*m/(kg*m*m) = N/(kg*m)
