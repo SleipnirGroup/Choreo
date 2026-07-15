@@ -462,6 +462,123 @@
       "additionalProperties": false
     },
 
+    "WpiTranslation2d": {
+      "type": "object",
+      "description": "WPILib Translation2d in metres.",
+      "properties": {
+        "x": { "type": "number", "description": "X position (m)" },
+        "y": { "type": "number", "description": "Y position (m)" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+
+    "WpiRotation2d": {
+      "type": "object",
+      "description": "WPILib Rotation2d in radians.",
+      "properties": {
+        "radians": { "type": "number", "description": "Rotation angle (rad)" }
+      },
+      "required": ["radians"],
+      "additionalProperties": false
+    },
+
+    "WpiPose2d": {
+      "type": "object",
+      "description": "WPILib Pose2d with translation and rotation.",
+      "properties": {
+        "translation": { "$ref": "#/$defs/WpiTranslation2d" },
+        "rotation": { "$ref": "#/$defs/WpiRotation2d" }
+      },
+      "required": ["translation", "rotation"],
+      "additionalProperties": false
+    },
+
+    "WpiChassisVelocities": {
+      "type": "object",
+      "description": "WPILib ChassisVelocities in field coordinates.",
+      "properties": {
+        "vx": { "type": "number", "description": "X velocity (m/s)" },
+        "vy": { "type": "number", "description": "Y velocity (m/s)" },
+        "omega": { "type": "number", "description": "Angular velocity (rad/s)" }
+      },
+      "required": ["vx", "vy", "omega"],
+      "additionalProperties": false
+    },
+
+    "WpiChassisAccelerations": {
+      "type": "object",
+      "description": "WPILib ChassisAccelerations in field coordinates.",
+      "properties": {
+        "ax": { "type": "number", "description": "X acceleration (m/s^2)" },
+        "ay": { "type": "number", "description": "Y acceleration (m/s^2)" },
+        "alpha": { "type": "number", "description": "Angular acceleration (rad/s^2)" }
+      },
+      "required": ["ax", "ay", "alpha"],
+      "additionalProperties": false
+    },
+
+    "HolonomicSample": {
+      "type": "object",
+      "description": "wpi::math::HolonomicSample serialized as JSON.",
+      "properties": {
+        "time": { "type": "number", "description": "Sample timestamp relative to trajectory start (s)" },
+        "pose": { "$ref": "#/$defs/WpiPose2d" },
+        "velocity": { "$ref": "#/$defs/WpiChassisVelocities" },
+        "acceleration": { "$ref": "#/$defs/WpiChassisAccelerations" }
+      },
+      "required": ["time", "pose", "velocity", "acceleration"],
+      "additionalProperties": false
+    },
+
+    "DifferentialSample": {
+      "type": "object",
+      "description": "wpi::math::DifferentialSample serialized as JSON.",
+      "properties": {
+        "time": { "type": "number", "description": "Sample timestamp relative to trajectory start (s)" },
+        "pose": { "$ref": "#/$defs/WpiPose2d" },
+        "velocity": { "$ref": "#/$defs/WpiChassisVelocities" },
+        "acceleration": { "$ref": "#/$defs/WpiChassisAccelerations" },
+        "leftVelocity": { "type": "number", "description": "Left wheel speed (m/s)" },
+        "rightVelocity": { "type": "number", "description": "Right wheel speed (m/s)" }
+      },
+      "required": [
+        "time",
+        "pose",
+        "velocity",
+        "acceleration",
+        "leftVelocity",
+        "rightVelocity"
+      ],
+      "additionalProperties": false
+    },
+
+    "HolonomicSamplesContainer": {
+      "type": "object",
+      "description": "WPILib HolonomicTrajectory JSON sample container.",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/HolonomicSample" }
+        }
+      },
+      "required": ["samples"],
+      "additionalProperties": false
+    },
+
+    "DifferentialSamplesContainer": {
+      "type": "object",
+      "description": "WPILib DifferentialTrajectory JSON sample container.",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/DifferentialSample" }
+        }
+      },
+      "required": ["samples"],
+      "additionalProperties": false
+    },
+
     "Trajectory": {
       "type": "object",
       "description": "A generated trajectory for one drive type (Trajectory<SwerveDriveType> or Trajectory<DifferentialDriveType>).",
@@ -470,10 +587,6 @@
           "type": "string",
           "enum": ["Swerve", "Differential"],
           "description": "Drive-type discriminator tag."
-        },
-        "config": {
-          "oneOf": [{ "$ref": "#/$defs/RobotConfig" }, { "type": "null" }],
-          "description": "Robot config snapshot used when the trajectory was generated; null if not stored."
         },
         "waypoints": {
           "type": "array",
@@ -486,8 +599,11 @@
           "description": "Sample indices at which trajectory splits begin."
         },
         "samples": {
-          "type": "array",
-          "description": "Drive-type-specific trajectory samples serialized by WPILib."
+          "oneOf": [
+            { "$ref": "#/$defs/HolonomicSamplesContainer" },
+            { "$ref": "#/$defs/DifferentialSamplesContainer" }
+          ],
+          "description": "Drive-type-specific trajectory samples serialized by WPILib (Swerve -> HolonomicSample, Differential -> DifferentialSample)."
         }
       },
       "required": ["sample_type", "waypoints", "splits", "samples"],
@@ -503,6 +619,10 @@
           "type": "integer",
           "minimum": 0,
           "description": "File format version"
+        },
+        "config": {
+          "oneOf": [{ "$ref": "#/$defs/RobotConfig" }, { "type": "null" }],
+          "description": "Robot config snapshot used when the trajectory was generated; null if not stored."
         },
         "snapshot": {
           "oneOf": [{ "$ref": "#/$defs/Parameters" }, { "type": "null" }],
