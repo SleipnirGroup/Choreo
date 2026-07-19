@@ -152,6 +152,8 @@ void BuildJsonPatchRecursive(const wpi::util::json& from,
     const auto& to_array = to.get_array();
 
     if (from_array.size() != to_array.size()) {
+      // Keep array diffs simple and deterministic: size changes become a
+      // whole-array replace instead of add/remove index juggling.
       AppendReplaceOp(patch, path, to);
       return;
     }
@@ -181,19 +183,23 @@ wpi::util::json BuildJsonPatch(const wpi::util::json& from,
 namespace choreo::state_server {
 
 HistoryEntry MakeHistoryEntryFromSnapshots(
-    std::string scope_key,
     std::string reason,
     const wpi::util::json& before,
     const wpi::util::json& after,
     std::chrono::system_clock::time_point recorded_at) {
-  return HistoryEntry{.scope_key = std::move(scope_key),
-                      .reason = std::move(reason),
+  // Undo reverses after -> before, redo replays before -> after.
+  return HistoryEntry{.reason = std::move(reason),
                       .undo_patch = BuildJsonPatch(after, before),
                       .redo_patch = BuildJsonPatch(before, after),
                       .recorded_at = recorded_at};
 }
 
-HistoryEngine::HistoryEngine(size_t max_depth) : m_max_depth(max_depth) {}
+HistoryEngine::HistoryEngine(std::string scope_key, size_t max_depth)
+    : m_scope_key(std::move(scope_key)), m_max_depth(max_depth) {}
+
+std::string_view HistoryEngine::ScopeKey() const {
+  return m_scope_key;
+}
 
 void HistoryEngine::Record(HistoryEntry entry) {
   if (!entry.undo_patch.is_array() || !entry.redo_patch.is_array()) {
@@ -208,77 +214,55 @@ void HistoryEngine::Record(HistoryEntry entry) {
     entry.recorded_at = std::chrono::system_clock::now();
   }
 
-  auto& scope = EnsureScope(entry.scope_key);
-  scope.redo.clear();
-  scope.undo.push_back(std::move(entry));
+  m_stacks.redo.clear();
+  m_stacks.undo.push_back(std::move(entry));
 
-  while (scope.undo.size() > m_max_depth) {
-    scope.undo.pop_front();
+  while (m_stacks.undo.size() > m_max_depth) {
+    m_stacks.undo.pop_front();
   }
 }
 
-std::optional<HistoryEntry> HistoryEngine::Undo(std::string_view scope_key) {
-  auto& scope = EnsureScope(scope_key);
-  if (scope.undo.empty()) {
+std::optional<HistoryEntry> HistoryEngine::Undo() {
+  if (m_stacks.undo.empty()) {
     return std::nullopt;
   }
 
-  auto entry = std::move(scope.undo.back());
-  scope.undo.pop_back();
-  scope.redo.push_back(entry);
+  auto entry = std::move(m_stacks.undo.back());
+  m_stacks.undo.pop_back();
+  m_stacks.redo.push_back(entry);
   return entry;
 }
 
-std::optional<HistoryEntry> HistoryEngine::Redo(std::string_view scope_key) {
-  auto& scope = EnsureScope(scope_key);
-  if (scope.redo.empty()) {
+std::optional<HistoryEntry> HistoryEngine::Redo() {
+  if (m_stacks.redo.empty()) {
     return std::nullopt;
   }
 
-  auto entry = std::move(scope.redo.back());
-  scope.redo.pop_back();
-  scope.undo.push_back(entry);
+  auto entry = std::move(m_stacks.redo.back());
+  m_stacks.redo.pop_back();
+  m_stacks.undo.push_back(entry);
   return entry;
 }
 
-bool HistoryEngine::CanUndo(std::string_view scope_key) const {
-  const auto* scope = FindScope(scope_key);
-  return scope != nullptr && !scope->undo.empty();
+bool HistoryEngine::CanUndo() const {
+  return !m_stacks.undo.empty();
 }
 
-bool HistoryEngine::CanRedo(std::string_view scope_key) const {
-  const auto* scope = FindScope(scope_key);
-  return scope != nullptr && !scope->redo.empty();
+bool HistoryEngine::CanRedo() const {
+  return !m_stacks.redo.empty();
 }
 
-size_t HistoryEngine::UndoDepth(std::string_view scope_key) const {
-  const auto* scope = FindScope(scope_key);
-  return scope != nullptr ? scope->undo.size() : 0;
+size_t HistoryEngine::UndoDepth() const {
+  return m_stacks.undo.size();
 }
 
-size_t HistoryEngine::RedoDepth(std::string_view scope_key) const {
-  const auto* scope = FindScope(scope_key);
-  return scope != nullptr ? scope->redo.size() : 0;
+size_t HistoryEngine::RedoDepth() const {
+  return m_stacks.redo.size();
 }
 
-void HistoryEngine::ClearScope(std::string_view scope_key) {
-  m_scopes.erase(std::string(scope_key));
-}
-
-void HistoryEngine::ClearAll() {
-  m_scopes.clear();
-}
-
-HistoryStacks& HistoryEngine::EnsureScope(std::string_view scope_key) {
-  return m_scopes[std::string(scope_key)];
-}
-
-const HistoryStacks* HistoryEngine::FindScope(std::string_view scope_key) const {
-  const auto it = m_scopes.find(std::string(scope_key));
-  if (it == m_scopes.end()) {
-    return nullptr;
-  }
-  return &it->second;
+void HistoryEngine::Clear() {
+  m_stacks.undo.clear();
+  m_stacks.redo.clear();
 }
 
 bool ApplyJsonPatch(wpi::util::json& target,

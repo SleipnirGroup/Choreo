@@ -153,6 +153,7 @@ class ApiServer {
     bool BumpScopeRevision(std::string_view scope_key);
     [[nodiscard]] std::optional<std::string> CurrentScopeRevisionToken(
       std::string_view scope_key) const;
+    HistoryEngine& EnsureHistoryEngine(std::string_view scope_key);
 
     std::optional<rest_router::Response> HandleUndo(std::string_view scope_key);
     std::optional<rest_router::Response> HandleRedo(std::string_view scope_key);
@@ -217,8 +218,8 @@ class ApiServer {
   /// Per-trajectory revision counters for change tracking
   std::unordered_map<std::string, uint64_t> m_trajectory_revisions;
 
-  /// Generic in-memory undo/redo history engine scoped by resource key.
-  HistoryEngine m_history{50};
+  /// In-memory undo/redo history engines keyed by immutable scope key.
+  std::unordered_map<std::string, HistoryEngine> m_history_by_scope;
 
   /// Timestamp when the server started
   std::chrono::steady_clock::time_point m_started_at;

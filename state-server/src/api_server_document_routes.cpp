@@ -22,6 +22,8 @@ using namespace choreo::state_server::detail;
 }  // namespace
 
 void ApiServer::RegisterDocumentRoutes() {
+  // Record one scope-local history entry after a successful mutation.
+  // The history engine stores the change as forward/reverse JSON Patch.
     const auto record_scope_mutation =
       [this](std::string_view scope_key, std::string_view reason,
              const wpi::util::json& before) {
@@ -30,8 +32,8 @@ void ApiServer::RegisterDocumentRoutes() {
           return;
         }
 
-        m_history.Record(MakeHistoryEntryFromSnapshots(
-            std::string(scope_key), std::string(reason), before, *after,
+        EnsureHistoryEngine(scope_key).Record(MakeHistoryEntryFromSnapshots(
+            std::string(reason), before, *after,
             std::chrono::system_clock::now()));
       };
 
@@ -1342,7 +1344,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         const int original_count =
                             static_cast<int>(m_trajectories.size());
 
-                        m_history.ClearAll();
+                        m_history_by_scope.clear();
 
                         m_project = std::move(imported_project);
                         ++m_project_revision;

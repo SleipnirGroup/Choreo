@@ -341,9 +341,17 @@ std::optional<std::string> ApiServer::CurrentScopeRevisionToken(
   return TrajectoryRevisionToken(uuid);
 }
 
+HistoryEngine& ApiServer::EnsureHistoryEngine(std::string_view scope_key) {
+  const std::string key(scope_key);
+  const auto [it, inserted] =
+      m_history_by_scope.try_emplace(key, key, 50);
+  (void)inserted;
+  return it->second;
+}
+
 std::optional<rest_router::Response> ApiServer::HandleUndo(
     std::string_view scope_key) {
-  auto entry = m_history.Undo(scope_key);
+  auto entry = EnsureHistoryEngine(scope_key).Undo();
   if (!entry.has_value()) {
     return detail::ErrorResponse(409, "no_undo_available",
                                  "No undo entry available for this scope");
@@ -355,6 +363,8 @@ std::optional<rest_router::Response> ApiServer::HandleUndo(
                                  "Unknown history scope");
   }
 
+  // Apply undo patch to the current snapshot, then validate by reloading via
+  // ApplyScopeSnapshot to keep parsing/normalization in one code path.
   auto target = *current;
   std::string error;
   if (!ApplyJsonPatch(target, entry->undo_patch, error)) {
@@ -372,7 +382,7 @@ std::optional<rest_router::Response> ApiServer::HandleUndo(
 
 std::optional<rest_router::Response> ApiServer::HandleRedo(
     std::string_view scope_key) {
-  auto entry = m_history.Redo(scope_key);
+  auto entry = EnsureHistoryEngine(scope_key).Redo();
   if (!entry.has_value()) {
     return detail::ErrorResponse(409, "no_redo_available",
                                  "No redo entry available for this scope");
@@ -384,6 +394,7 @@ std::optional<rest_router::Response> ApiServer::HandleRedo(
                                  "Unknown history scope");
   }
 
+  // Redo follows the same flow but uses the forward patch.
   auto target = *current;
   std::string error;
   if (!ApplyJsonPatch(target, entry->redo_patch, error)) {
