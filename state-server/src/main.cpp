@@ -16,8 +16,15 @@ void HandleSignal(int) { g_running = false; }
 
 }  // namespace choreo::state_server
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "Usage: state-server <workspace-dir>\n"
+              << "workspace-dir must contain exactly one .chor and zero or more .traj files\n";
+    return 2;
+  }
+
   choreo::state_server::ServerOptions opts;
+  opts.workspace_dir = argv[1];
   choreo::state_server::ApiServer server(opts);
 
   std::signal(SIGINT, choreo::state_server::HandleSignal);
@@ -29,6 +36,8 @@ int main() {
 
   std::cout << "state-server listening\n"
             << "  HTTP: http://" << opts.bind_address << ":" << opts.http_port
+            << "\n"
+            << "  Workspace: " << opts.workspace_dir.string()
             << "\n"
             << "Press Ctrl+C to stop.\n";
 

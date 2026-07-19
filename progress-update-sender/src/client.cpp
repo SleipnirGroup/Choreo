@@ -192,10 +192,10 @@ void Client::open(const std::string& url) {
         return;
       }
 
-      ws->open.connect([this, ws = ws.get(), state](std::string_view) {
+      ws->open.connect([this, ws, state](std::string_view) {
         {
           std::scoped_lock lock(m_impl->mutex);
-          m_impl->websocket = ws->shared_from_this();
+          m_impl->websocket = ws;
         }
         std::scoped_lock state_lock(state->mutex);
         state->done = true;

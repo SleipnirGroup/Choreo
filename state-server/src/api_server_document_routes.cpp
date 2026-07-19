@@ -1157,21 +1157,16 @@ void ApiServer::RegisterDocumentRoutes() {
 
                         PersistStateSnapshot();
 
-                        OperationRecord record;
-                        record.id = GenerateUuid();
-                        record.trajectory_uuid = "";
-                        record.state = "completed";
-                        record.started_at = NowIso8601Utc();
-                        record.updated_at = record.started_at;
-                        record.error_message = std::nullopt;
-                        record.result_revision = ProjectRevisionToken();
-                        record.completion_status = "completed";
-                        record.last_progress_event = std::nullopt;
-                        m_operations[record.id] = record;
+
+                        // TODO: whatever this is doing, it shouldn't use the operation system like this
+                        OperationId operation_id = generateNextOperationId();
+                        OperationRecord record("");
+                        record.markComplete(ProjectRevisionToken());
+                        m_operations.insert_or_assign(operation_id, std::move(record));
 
                         wpi::util::json response_body = wpi::util::json::object();
-                        response_body["operationId"] = record.id;
-                        response_body["state"] = "completed";
+                        response_body["operationId"] = operation_id;
+                        response_body["state"] = record.state;
                         response_body["summary"] = wpi::util::json::object(
                             "projectAction", mode == "replace" ? "replace" : "merge",
                             "trajectoryCreates", creates,

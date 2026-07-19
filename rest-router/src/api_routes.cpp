@@ -87,7 +87,7 @@ void RegisterApiV1Routes(Router& router) {
   RegisterNotImplemented(router, HttpMethod::kGet,
                          "/api/v1/trajectories/{uuid}/generation-state");
   RegisterNotImplemented(router, HttpMethod::kPost,
-                         "/api/v1/trajectories/{uuid}/generate/cancel-all");
+                         "/api/v1/generate/cancel-all");
 
   RegisterNotImplemented(router, HttpMethod::kGet,
                          "/api/v1/operations/{operationId}");

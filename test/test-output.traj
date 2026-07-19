@@ -1,4 +1,5 @@
 {
+  "uuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   "config": {
     "bumpers": [{
       "x": {
@@ -129,6 +130,7 @@
   "name": "New Trajectory",
   "params": {
     "constraints": [{
+      "uuid": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       "data": {
         "max": {
           "exp": "0 m \/ s",
@@ -139,6 +141,7 @@
       "enabled": true,
       "from": "first"
     }, {
+      "uuid": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
       "data": {
         "max": {
           "exp": "0 m \/ s",
@@ -154,6 +157,7 @@
       "val": 0.05
     },
     "waypoints": [{
+      "uuid": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       "fix_heading": true,
       "fix_translation": true,
       "heading": {
@@ -172,6 +176,7 @@
         "val": 0
       }
     }, {
+      "uuid": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
       "fix_heading": true,
       "fix_translation": true,
       "heading": {
@@ -193,6 +198,7 @@
   },
   "snapshot": {
     "constraints": [{
+      "uuid": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
       "data": {
         "max": {
           "exp": "0 m \/ s",
@@ -203,6 +209,7 @@
       "enabled": true,
       "from": "first"
     }, {
+      "uuid": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
       "data": {
         "max": {
           "exp": "0 m \/ s",
@@ -218,6 +225,7 @@
       "val": 0.05
     },
     "waypoints": [{
+      "uuid": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       "fix_heading": true,
       "fix_translation": true,
       "heading": {
@@ -236,6 +244,7 @@
         "val": 0
       }
     }, {
+      "uuid": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
       "fix_heading": true,
       "fix_translation": true,
       "heading": {

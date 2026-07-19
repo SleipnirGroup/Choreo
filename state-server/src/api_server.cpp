@@ -2,10 +2,13 @@
 
 #include <array>
 #include <cstdio>
+#include <fstream>
 #include <format>
 #include <memory>
 #include <random>
 #include <utility>
+
+#include <wpi/util/json.hpp>
 
 #include "choreo/rest_router/http_server_connection.hpp"
 
@@ -23,28 +26,16 @@ class ServerHttpConnection final : public choreo::rest_router::HttpRouterConnect
 }  // namespace
 
 ApiServer::ApiServer(ServerOptions options) : m_options(std::move(options)) {
-  m_project = ProjectFile{};
-  EnsureUuid(m_project.uuid);
-  m_project.name = "New Project";
-  m_project.version = 4;
-  m_project.type = DriveType::Swerve;
-
-  auto traj = TrajectoryFile{};
-  traj.name = "Example Trajectory";
-  traj.version = 4;
-  traj.snapshot = std::nullopt;
-  traj.trajectory = std::nullopt;
-  traj.events.clear();
-  EnsureUuid(traj.uuid);
-  m_trajectories.emplace(traj.uuid, traj);
-  m_trajectory_revisions[traj.uuid] = 1;
-
   RegisterRoutes();
 }
 
 bool ApiServer::Start() {
   bool ok = true;
   m_started_at = std::chrono::steady_clock::now();
+
+  if (!LoadInitialStateFromWorkspace()) {
+    return false;
+  }
 
   m_loop_runner.ExecSync([this, &ok](wpi::net::uv::Loop& loop) {
     m_server = wpi::net::uv::Tcp::Create(loop);
@@ -79,6 +70,78 @@ bool ApiServer::Start() {
   });
 
   return ok;
+}
+
+bool ApiServer::LoadInitialStateFromWorkspace() {
+  if (m_options.workspace_dir.empty()) {
+    std::fprintf(stderr,
+                 "state-server: workspace directory is required (must contain one .chor)\n");
+    return false;
+  }
+
+  std::error_code ec;
+  if (!std::filesystem::exists(m_options.workspace_dir, ec) ||
+      !std::filesystem::is_directory(m_options.workspace_dir, ec)) {
+    std::fprintf(stderr,
+                 "state-server: workspace directory not found or not a directory: %s\n",
+                 m_options.workspace_dir.string().c_str());
+    return false;
+  }
+
+  std::vector<std::filesystem::path> project_files;
+  std::vector<std::filesystem::path> trajectory_files;
+  for (const auto& entry :
+       std::filesystem::directory_iterator(m_options.workspace_dir, ec)) {
+    if (ec || !entry.is_regular_file()) {
+      continue;
+    }
+
+    const auto ext = entry.path().extension().string();
+    if (ext == ".chor") {
+      project_files.push_back(entry.path());
+    } else if (ext == ".traj") {
+      trajectory_files.push_back(entry.path());
+    }
+  }
+
+  if (project_files.size() != 1) {
+    std::fprintf(stderr,
+                 "state-server: workspace must contain exactly one .chor file, found %zu\n",
+                 project_files.size());
+    return false;
+  }
+
+  try {
+    {
+      std::ifstream in(project_files[0]);
+      const std::string contents{std::istreambuf_iterator<char>(in),
+                                 std::istreambuf_iterator<char>()};
+      auto parsed = wpi::util::json::parse_or_throw(std::string_view{contents});
+      m_project = ProjectFile::fromJson(parsed);
+      EnsureUuid(m_project.uuid);
+      m_project_revision = 1;
+    }
+
+    m_trajectories.clear();
+    m_trajectory_revisions.clear();
+    for (const auto& traj_path : trajectory_files) {
+      std::ifstream in(traj_path);
+      const std::string contents{std::istreambuf_iterator<char>(in),
+                                 std::istreambuf_iterator<char>()};
+      auto parsed = wpi::util::json::parse_or_throw(std::string_view{contents});
+      auto traj = TrajectoryFile::fromJson(parsed);
+      EnsureUuid(traj.uuid);
+      m_trajectory_revisions[traj.uuid] = 1;
+      m_trajectories[traj.uuid] = std::move(traj);
+    }
+  } catch (const std::exception& ex) {
+    std::fprintf(stderr,
+                 "state-server: failed loading workspace documents: %s\n",
+                 ex.what());
+    return false;
+  }
+
+  return true;
 }
 
 void ApiServer::Stop() {

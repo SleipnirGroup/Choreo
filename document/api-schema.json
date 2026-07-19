@@ -10,56 +10,135 @@
     "Waypoint": { "$ref": "schema.json#/$defs/Waypoint" },
     "Constraint": { "$ref": "schema.json#/$defs/Constraint" },
     "EventMarker": { "$ref": "schema.json#/$defs/EventMarker" },
+    "OperationId": {
+      "type": "integer",
+      "minimum": 0
+    },
 
     "ErrorEnvelope": {
       "type": "object",
       "properties": {
         "code": { "type": "string" },
-        "message": { "type": "string" },
-        "details": {},
-        "correlationId": { "type": "string" }
+        "message": { "type": "string" }
       },
-      "required": ["code", "message", "correlationId"],
+      "required": ["code", "message"],
       "additionalProperties": false
+    },
+
+    "HealthResponse": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "const": "ok" },
+        "uptimeMs": { "type": "number", "minimum": 0 },
+        "serverVersion": { "type": "string" }
+      },
+      "required": ["status", "uptimeMs", "serverVersion"],
+      "additionalProperties": false
+    },
+
+    "ObjectMergePatch": {
+      "type": "object",
+      "additionalProperties": true
+    },
+
+    "PatchRequest": {
+      "oneOf": [
+        { "$ref": "#/$defs/ObjectMergePatch" },
+        { "$ref": "#/$defs/JsonPatchDocument" }
+      ]
     },
 
     "OperationAccepted": {
       "type": "object",
       "properties": {
-        "operationId": { "$ref": "#/$defs/UUID" },
+        "operationId": { "$ref": "#/$defs/OperationId" },
         "state": {
           "type": "string",
-          "enum": ["queued", "running", "completed", "failed", "cancelled"]
+          "enum": ["created", "queued", "running", "completed", "failed", "cancelled"]
         }
       },
       "required": ["operationId", "state"],
       "additionalProperties": false
     },
 
-    "OperationState": {
+    "OperationTimestamps": {
       "type": "object",
       "properties": {
-        "operationId": { "$ref": "#/$defs/UUID" },
+        "submitted_at": { "type": "string" },
+        "started_at": { "type": "string" },
+        "updated_at": { "type": "string" },
+        "completed_at": { "type": "string" }
+      },
+      "required": ["submitted_at"],
+      "additionalProperties": false
+    },
+
+    "OperationRecord": {
+      "type": "object",
+      "properties": {
+        "trajectory_uuid": {
+          "type": "string"
+        },
         "state": {
           "type": "string",
-          "enum": ["queued", "running", "completed", "failed", "cancelled"]
+          "enum": ["created", "queued", "running", "completed", "failed", "cancelled"]
         },
-        "startedAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" },
-        "error": {
+        "timestamps": { "$ref": "#/$defs/OperationTimestamps" },
+        "error_message": { "type": "string" },
+        "result_revision": { "type": "string" },
+        "last_progress_event": { "type": "string" }
+      },
+      "required": ["trajectory_uuid", "state", "timestamps"],
+      "additionalProperties": false
+    },
+
+    "CancelAllResponse": {
+      "type": "object",
+      "properties": {
+        "operationId": {
           "oneOf": [
-            { "$ref": "#/$defs/ErrorEnvelope" },
+            { "$ref": "#/$defs/OperationId" },
             { "type": "null" }
           ]
         },
-        "resultRevision": {
+        "state": {
+          "type": "string",
+          "enum": ["completed"]
+        },
+        "cancelledCount": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["operationId", "state", "cancelledCount"],
+      "additionalProperties": false
+    },
+
+    "TrajectoryDeleteResponse": {
+      "type": "null"
+    },
+
+    "GenerationStateResponse": {
+      "type": "object",
+      "properties": {
+        "trajectoryUuid": { "$ref": "#/$defs/UUID" },
+        "queuePosition": {
           "oneOf": [
-            { "type": "string" },
+            { "type": "integer", "minimum": 0 },
+            { "type": "null" }
+          ]
+        },
+        "latestOperationId": {
+          "oneOf": [
+            { "$ref": "#/$defs/OperationId" },
+            { "type": "null" }
+          ]
+        },
+        "lastCompletionStatus": {
+          "oneOf": [
+            { "type": "string", "enum": ["success", "failed", "cancelled"] },
             { "type": "null" }
           ]
         }
       },
-      "required": ["operationId", "state", "startedAt", "updatedAt", "error", "resultRevision"],
+      "required": ["trajectoryUuid", "queuePosition", "latestOperationId", "lastCompletionStatus"],
       "additionalProperties": false
     },
 
@@ -71,7 +150,7 @@
         "version": { "type": "integer", "minimum": 0 },
         "upToDate": { "type": "boolean" },
         "hasTrajectoryData": { "type": "boolean" },
-        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string" },
         "revision": { "type": "string" }
       },
       "required": ["uuid", "name", "version", "upToDate", "hasTrajectoryData", "updatedAt", "revision"],
@@ -216,40 +295,7 @@
 
     "GenerateRequest": {
       "type": "object",
-      "properties": {
-        "priority": { "type": "integer", "minimum": 0, "maximum": 100 },
-        "debounceMs": { "type": "integer", "minimum": 0, "maximum": 10000 },
-        "reason": { "type": "string" },
-        "idempotencyKey": { "type": "string", "minLength": 1 }
-      },
-      "additionalProperties": false
-    },
-
-    "GenerationStateResponse": {
-      "type": "object",
-      "properties": {
-        "trajectoryUuid": { "$ref": "#/$defs/UUID" },
-        "queuePosition": {
-          "oneOf": [
-            { "type": "integer", "minimum": 0 },
-            { "type": "null" }
-          ]
-        },
-        "latestOperationId": {
-          "oneOf": [
-            { "$ref": "#/$defs/UUID" },
-            { "type": "null" }
-          ]
-        },
-        "lastCompletionStatus": {
-          "oneOf": [
-            { "type": "string", "enum": ["completed", "failed", "cancelled"] },
-            { "type": "null" }
-          ]
-        }
-      },
-      "required": ["trajectoryUuid", "queuePosition", "latestOperationId", "lastCompletionStatus"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
 
     "DiagnosticsResponse": {
@@ -258,7 +304,7 @@
         "queueDepth": { "type": "integer", "minimum": 0 },
         "activeOperations": { "type": "integer", "minimum": 0 },
         "avgPersistLatencyMs": { "type": "number", "minimum": 0 },
-        "wsClientCount": { "type": "integer", "minimum": 0 },
+        "wsClientCount": { "type": "number", "minimum": 0 },
         "lastErrorSummary": {
           "oneOf": [
             { "type": "string" },
@@ -274,7 +320,7 @@
       "type": "object",
       "properties": {
         "schemaVersion": { "type": "integer", "minimum": 1 },
-        "exportedAt": { "type": "string", "format": "date-time" },
+        "exportedAt": { "type": "string" },
         "project": { "$ref": "#/$defs/ProjectFile" },
         "trajectories": {
           "type": "array",
@@ -310,7 +356,7 @@
               "properties": {
                 "projectAction": {
                   "type": "string",
-                  "enum": ["none", "replace", "merge"]
+                  "enum": ["replace", "merge"]
                 },
                 "trajectoryCreates": { "type": "integer", "minimum": 0 },
                 "trajectoryUpdates": { "type": "integer", "minimum": 0 },
@@ -326,70 +372,43 @@
       ]
     },
 
-    "WsSnapshotEvent": {
+    "ProgressProducerEvent": {
       "type": "object",
+      "description": "Raw JSON progress frame sent by a generator producer over /progress/{operationId}.",
       "properties": {
-        "seq": { "type": "integer", "minimum": 0 },
-        "event": { "type": "string", "const": "snapshot" },
-        "payload": {
-          "type": "object",
-          "properties": {
-            "project": { "$ref": "#/$defs/ProjectFile" },
-            "trajectories": {
-              "type": "array",
-              "items": { "$ref": "#/$defs/TrajectoryFile" }
-            }
-          },
-          "required": ["project", "trajectories"],
-          "additionalProperties": false
-        }
+        "event": { "type": "string" }
       },
-      "required": ["seq", "event", "payload"],
-      "additionalProperties": false
+      "required": ["event"],
+      "additionalProperties": true
     },
 
-    "WsDeltaEvent": {
+    "ProgressSubscriberEvent": {
       "type": "object",
+      "description": "Wrapped progress frame rebroadcast to subscribers connected to /progress.",
       "properties": {
-        "seq": { "type": "integer", "minimum": 0 },
-        "event": {
-          "type": "string",
-          "enum": [
-            "project.updated",
-            "trajectory.created",
-            "trajectory.updated",
-            "trajectory.deleted",
-            "waypoint.added",
-            "waypoint.updated",
-            "waypoint.deleted",
-            "waypoint.reordered",
-            "constraint.added",
-            "constraint.updated",
-            "constraint.deleted",
-            "constraint.reordered",
-            "marker.added",
-            "marker.updated",
-            "marker.deleted",
-            "marker.reordered",
-            "operation.updated",
-            "error"
-          ]
-        },
-        "payload": { "type": "object" }
+        "operationId": { "$ref": "#/$defs/OperationId" },
+        "frame": { "$ref": "#/$defs/ProgressProducerEvent" }
       },
-      "required": ["seq", "event", "payload"],
+      "required": ["operationId", "frame"],
       "additionalProperties": false
-    },
-
-    "WsEvent": {
-      "oneOf": [
-        { "$ref": "#/$defs/WsSnapshotEvent" },
-        { "$ref": "#/$defs/WsDeltaEvent" }
-      ]
     }
   },
 
   "x-endpoints": {
+    "GET /api/v1/health": {
+      "response200": { "$ref": "#/$defs/HealthResponse" }
+    },
+    "GET /api/v1/project": {
+      "response200": { "$ref": "#/$defs/ProjectFile" }
+    },
+    "PUT /api/v1/project": {
+      "request": { "$ref": "#/$defs/ProjectFile" },
+      "response200": { "$ref": "#/$defs/ProjectFile" }
+    },
+    "PATCH /api/v1/project": {
+      "request": { "$ref": "#/$defs/PatchRequest" },
+      "response200": { "$ref": "#/$defs/ProjectFile" }
+    },
     "GET /api/v1/trajectories": {
       "query": { "$ref": "#/$defs/TrajectoryListQuery" },
       "response200": { "$ref": "#/$defs/TrajectoryListResponse" }
@@ -398,13 +417,34 @@
       "request": { "$ref": "#/$defs/TrajectoryFile" },
       "response201": { "$ref": "#/$defs/TrajectoryFile" }
     },
+    "GET /api/v1/trajectories/{uuid}": {
+      "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "PUT /api/v1/trajectories/{uuid}": {
+      "request": { "$ref": "#/$defs/TrajectoryFile" },
+      "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "PATCH /api/v1/trajectories/{uuid}": {
+      "request": { "$ref": "#/$defs/PatchRequest" },
+      "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "DELETE /api/v1/trajectories/{uuid}": {
+      "response204": { "$ref": "#/$defs/TrajectoryDeleteResponse" }
+    },
+    "POST /api/v1/trajectories/{uuid}/rename": {
+      "request": { "$ref": "#/$defs/RenameTrajectoryRequest" },
+      "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
     "POST /api/v1/trajectories/{uuid}/waypoints": {
       "request": { "$ref": "#/$defs/AddWaypointRequest" },
       "response201": { "$ref": "#/$defs/TrajectoryFile" }
     },
     "PATCH /api/v1/trajectories/{uuid}/waypoints/{waypointUuid}": {
-      "request": { "$ref": "#/$defs/JsonPatchDocument" },
+      "request": { "$ref": "#/$defs/PatchRequest" },
       "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "DELETE /api/v1/trajectories/{uuid}/waypoints/{waypointUuid}": {
+      "response204": { "$ref": "#/$defs/TrajectoryDeleteResponse" }
     },
     "POST /api/v1/trajectories/{uuid}/waypoints/reorder": {
       "request": { "$ref": "#/$defs/ReorderRequest" },
@@ -415,8 +455,11 @@
       "response201": { "$ref": "#/$defs/TrajectoryFile" }
     },
     "PATCH /api/v1/trajectories/{uuid}/constraints/{constraintUuid}": {
-      "request": { "$ref": "#/$defs/JsonPatchDocument" },
+      "request": { "$ref": "#/$defs/PatchRequest" },
       "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "DELETE /api/v1/trajectories/{uuid}/constraints/{constraintUuid}": {
+      "response204": { "$ref": "#/$defs/TrajectoryDeleteResponse" }
     },
     "POST /api/v1/trajectories/{uuid}/constraints/reorder": {
       "request": { "$ref": "#/$defs/ReorderRequest" },
@@ -427,15 +470,14 @@
       "response201": { "$ref": "#/$defs/TrajectoryFile" }
     },
     "PATCH /api/v1/trajectories/{uuid}/markers/{markerUuid}": {
-      "request": { "$ref": "#/$defs/JsonPatchDocument" },
+      "request": { "$ref": "#/$defs/PatchRequest" },
       "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "DELETE /api/v1/trajectories/{uuid}/markers/{markerUuid}": {
+      "response204": { "$ref": "#/$defs/TrajectoryDeleteResponse" }
     },
     "POST /api/v1/trajectories/{uuid}/markers/reorder": {
       "request": { "$ref": "#/$defs/ReorderRequest" },
-      "response200": { "$ref": "#/$defs/TrajectoryFile" }
-    },
-    "POST /api/v1/trajectories/{uuid}/rename": {
-      "request": { "$ref": "#/$defs/RenameTrajectoryRequest" },
       "response200": { "$ref": "#/$defs/TrajectoryFile" }
     },
     "POST /api/v1/trajectories/{uuid}/generate": {
@@ -445,8 +487,8 @@
     "GET /api/v1/trajectories/{uuid}/generation-state": {
       "response200": { "$ref": "#/$defs/GenerationStateResponse" }
     },
-    "POST /api/v1/trajectories/{uuid}/generate/cancel-all": {
-      "response202": { "$ref": "#/$defs/OperationAccepted" }
+    "POST /api/v1/generate/cancel-all": {
+      "response202": { "$ref": "#/$defs/CancelAllResponse" }
     },
     "GET /api/v1/diagnostics": {
       "response200": { "$ref": "#/$defs/DiagnosticsResponse" }
@@ -459,10 +501,16 @@
       "response202": { "$ref": "#/$defs/ImportAcceptedResponse" }
     },
     "GET /api/v1/operations/{operationId}": {
-      "response200": { "$ref": "#/$defs/OperationState" }
+      "response200": { "$ref": "#/$defs/OperationRecord" }
     },
-    "WS /api/v1/ws": {
-      "event": { "$ref": "#/$defs/WsEvent" }
+    "POST /api/v1/operations/{operationId}/cancel": {
+      "response202": { "$ref": "#/$defs/OperationAccepted" }
+    },
+    "WS /progress/{operationId}": {
+      "event": { "$ref": "#/$defs/ProgressProducerEvent" }
+    },
+    "WS /progress": {
+      "event": { "$ref": "#/$defs/ProgressSubscriberEvent" }
     }
   }
 }
