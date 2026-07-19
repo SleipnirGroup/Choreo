@@ -20,6 +20,7 @@
 
 #include "choreo/rest_router/router.hpp"
 #include "choreo/state_server/completion_status.hpp"
+#include "history_engine.hpp"
 #include "choreo/state_server/operation_id.hpp"
 #include "choreo/state_server/operation_state.hpp"
 #include "choreo/state_server/operation_record.hpp"
@@ -141,6 +142,21 @@ class ApiServer {
   /// @return String representation of trajectory revision number
   std::string TrajectoryRevisionToken(const std::string& uuid) const;
 
+    [[nodiscard]] std::string ProjectScopeKey() const;
+    [[nodiscard]] std::string TrajectoryScopeKey(std::string_view uuid) const;
+
+    [[nodiscard]] std::optional<wpi::util::json> CaptureScopeSnapshot(
+      std::string_view scope_key) const;
+    bool ApplyScopeSnapshot(std::string_view scope_key,
+                const wpi::util::json& snapshot,
+                std::string& error_message);
+    bool BumpScopeRevision(std::string_view scope_key);
+    [[nodiscard]] std::optional<std::string> CurrentScopeRevisionToken(
+      std::string_view scope_key) const;
+
+    std::optional<rest_router::Response> HandleUndo(std::string_view scope_key);
+    std::optional<rest_router::Response> HandleRedo(std::string_view scope_key);
+
   /// Server configuration (bind address and port settings)
   ServerOptions m_options;
 
@@ -200,6 +216,9 @@ class ApiServer {
 
   /// Per-trajectory revision counters for change tracking
   std::unordered_map<std::string, uint64_t> m_trajectory_revisions;
+
+  /// Generic in-memory undo/redo history engine scoped by resource key.
+  HistoryEngine m_history{50};
 
   /// Timestamp when the server started
   std::chrono::steady_clock::time_point m_started_at;

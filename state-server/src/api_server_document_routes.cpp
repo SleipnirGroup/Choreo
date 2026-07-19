@@ -22,12 +22,25 @@ using namespace choreo::state_server::detail;
 }  // namespace
 
 void ApiServer::RegisterDocumentRoutes() {
+    const auto record_scope_mutation =
+      [this](std::string_view scope_key, std::string_view reason,
+             const wpi::util::json& before) {
+        const auto after = CaptureScopeSnapshot(scope_key);
+        if (!after.has_value()) {
+          return;
+        }
+
+        m_history.Record(MakeHistoryEntryFromSnapshots(
+            std::string(scope_key), std::string(reason), before, *after,
+            std::chrono::system_clock::now()));
+      };
+
   // Route: Health probe.
   // Preconditions: none.
   // Body: none.
   // Response: 200 with { status, uptimeMs, serverVersion }.
   m_router.Register(HttpMethod::kGet, "/api/v1/health",
-                    [this](const Request&, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request&, const RouteParams&) {
                       const auto uptime_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::steady_clock::now() - m_started_at)
                                                  .count();
@@ -45,7 +58,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: none.
   // Response: 200 with full ProjectFile JSON and ETag header.
   m_router.Register(HttpMethod::kGet, "/api/v1/project",
-                    [this](const Request&, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request&, const RouteParams&) {
                       return JsonModelResponseWithEtag(
                           200, ProjectRevisionToken(), m_project);
                     });
@@ -55,7 +68,11 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: full ProjectFile JSON.
   // Response: 200 with updated ProjectFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPut, "/api/v1/project",
-                    [this](const Request& request, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams&) {
+                      const auto project_scope = ProjectScopeKey();
+                      const auto before =
+                          CaptureScopeSnapshot(project_scope).value_or(
+                              wpi::util::json(nullptr));
                       const auto current_revision = ProjectRevisionToken();
                       if (auto error =
                               ValidateIfMatchPrecondition(request, current_revision)) {
@@ -69,6 +86,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         EnsureUuid(updated.uuid);
                         m_project = std::move(updated);
                         ++m_project_revision;
+                        record_scope_mutation(project_scope, "put_project", before);
 
                         return JsonModelResponseWithEtag(
                           200, ProjectRevisionToken(), m_project);
@@ -82,7 +100,11 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: object-merge JSON or RFC6902 patch array over ProjectFile fields.
   // Response: 200 with updated ProjectFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPatch, "/api/v1/project",
-                    [this](const Request& request, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams&) {
+                      const auto project_scope = ProjectScopeKey();
+                      const auto before =
+                          CaptureScopeSnapshot(project_scope).value_or(
+                              wpi::util::json(nullptr));
                       const auto current_revision = ProjectRevisionToken();
                       if (auto error =
                               ValidateIfMatchPrecondition(request, current_revision)) {
@@ -102,6 +124,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         EnsureUuid(updated.uuid);
                         m_project = std::move(updated);
                         ++m_project_revision;
+                        record_scope_mutation(project_scope, "patch_project", before);
 
                         return JsonModelResponseWithEtag(
                           200, ProjectRevisionToken(), m_project);
@@ -110,12 +133,46 @@ void ApiServer::RegisterDocumentRoutes() {
                       }
                     });
 
+  m_router.Register(HttpMethod::kPost, "/api/v1/project/undo",
+                    [this, &record_scope_mutation](const Request& request, const RouteParams&) {
+                      const auto project_scope = ProjectScopeKey();
+                      const auto current_revision = ProjectRevisionToken();
+                      if (auto error =
+                              ValidateIfMatchPrecondition(request, current_revision)) {
+                        return *error;
+                      }
+
+                      if (auto undo_error = HandleUndo(project_scope)) {
+                        return *undo_error;
+                      }
+
+                      return JsonModelResponseWithEtag(
+                          200, ProjectRevisionToken(), m_project);
+                    });
+
+  m_router.Register(HttpMethod::kPost, "/api/v1/project/redo",
+                    [this, &record_scope_mutation](const Request& request, const RouteParams&) {
+                      const auto project_scope = ProjectScopeKey();
+                      const auto current_revision = ProjectRevisionToken();
+                      if (auto error =
+                              ValidateIfMatchPrecondition(request, current_revision)) {
+                        return *error;
+                      }
+
+                      if (auto redo_error = HandleRedo(project_scope)) {
+                        return *redo_error;
+                      }
+
+                      return JsonModelResponseWithEtag(
+                          200, ProjectRevisionToken(), m_project);
+                    });
+
   // Route: List trajectory summaries.
   // Preconditions: none.
   // Body: none.
   // Response: 200 with { items, nextCursor, totalEstimate } summary payload.
   m_router.Register(HttpMethod::kGet, "/api/v1/trajectories",
-                    [this](const Request&, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request&, const RouteParams&) {
                       wpi::util::json body = wpi::util::json::object(
                           "items", wpi::util::json::array(), "nextCursor",
                           nullptr, "totalEstimate",
@@ -141,7 +198,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: full TrajectoryFile JSON.
   // Response: 201 with created TrajectoryFile JSON, Location, and ETag.
   m_router.Register(HttpMethod::kPost, "/api/v1/trajectories",
-                    [this](const Request& request, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams&) {
                       try {
                         auto parsed = wpi::util::json::parse_or_throw(
                             std::string_view{request.body});
@@ -154,8 +211,14 @@ void ApiServer::RegisterDocumentRoutes() {
                         }
 
                         const auto uuid = created.uuid;
+                        const auto trajectory_scope = TrajectoryScopeKey(uuid);
+                        const auto before =
+                            CaptureScopeSnapshot(trajectory_scope).value_or(
+                                wpi::util::json(nullptr));
                         m_trajectories.emplace(uuid, std::move(created));
-                        m_trajectory_revisions[uuid] = 1;
+                        ++m_trajectory_revisions[uuid];
+                        record_scope_mutation(trajectory_scope, "create_trajectory",
+                                              before);
 
                         auto response = JsonModelResponseWithEtag(
                           201, TrajectoryRevisionToken(uuid),
@@ -173,7 +236,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: none.
   // Response: 200 with full TrajectoryFile JSON and ETag.
   m_router.Register(HttpMethod::kGet, "/api/v1/trajectories/{uuid}",
-                    [this](const Request&, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request&, const RouteParams& params) {
                       const auto trajectory_uuid = FindRouteParam(params, "uuid");
                       if (!trajectory_uuid.has_value()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -191,17 +254,88 @@ void ApiServer::RegisterDocumentRoutes() {
                           trajectory->get());
                     });
 
+  m_router.Register(HttpMethod::kPost, "/api/v1/trajectories/{uuid}/undo",
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
+                      const auto trajectory_uuid = FindRouteParam(params, "uuid");
+                      if (!trajectory_uuid.has_value()) {
+                        return BadRoute("Missing trajectory UUID parameter");
+                      }
+                      const auto& uuid = trajectory_uuid->get();
+
+                      const auto scope_key = TrajectoryScopeKey(uuid);
+                      const auto current_revision = TrajectoryRevisionToken(uuid);
+                      if (auto error =
+                              ValidateIfMatchPrecondition(request, current_revision)) {
+                        return *error;
+                      }
+
+                      if (auto undo_error = HandleUndo(scope_key)) {
+                        return *undo_error;
+                      }
+
+                      auto trajectory = FindMappedValue(m_trajectories, uuid);
+                      if (!trajectory.has_value()) {
+                        auto body = wpi::util::json::object();
+                        body["uuid"] = uuid;
+                        body["deleted"] = true;
+                        auto response = JsonResponse(200, body);
+                        response.headers["ETag"] = QuotedEtag(TrajectoryRevisionToken(uuid));
+                        return response;
+                      }
+
+                      return JsonModelResponseWithEtag(
+                          200, TrajectoryRevisionToken(uuid), trajectory->get());
+                    });
+
+  m_router.Register(HttpMethod::kPost, "/api/v1/trajectories/{uuid}/redo",
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
+                      const auto trajectory_uuid = FindRouteParam(params, "uuid");
+                      if (!trajectory_uuid.has_value()) {
+                        return BadRoute("Missing trajectory UUID parameter");
+                      }
+                      const auto& uuid = trajectory_uuid->get();
+
+                      const auto scope_key = TrajectoryScopeKey(uuid);
+                      const auto current_revision = TrajectoryRevisionToken(uuid);
+                      if (auto error =
+                              ValidateIfMatchPrecondition(request, current_revision)) {
+                        return *error;
+                      }
+
+                      if (auto redo_error = HandleRedo(scope_key)) {
+                        return *redo_error;
+                      }
+
+                      auto trajectory = FindMappedValue(m_trajectories, uuid);
+                      if (!trajectory.has_value()) {
+                        auto body = wpi::util::json::object();
+                        body["uuid"] = uuid;
+                        body["deleted"] = true;
+                        auto response = JsonResponse(200, body);
+                        response.headers["ETag"] = QuotedEtag(TrajectoryRevisionToken(uuid));
+                        return response;
+                      }
+
+                      return JsonModelResponseWithEtag(
+                          200, TrajectoryRevisionToken(uuid), trajectory->get());
+                    });
+
   // Route: Replace the entire trajectory document.
   // Preconditions: trajectory must exist and If-Match must match its ETag.
   // Body: full TrajectoryFile JSON.
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPut, "/api/v1/trajectories/{uuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto trajectory_uuid = FindRouteParam(params, "uuid");
                       if (!trajectory_uuid.has_value()) {
                         return BadRoute("Missing trajectory UUID parameter");
                       }
                       const auto& trajectory_uuid_value = trajectory_uuid->get();
+                        const auto trajectory_scope =
+                          TrajectoryScopeKey(trajectory_uuid_value);
+                        const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                            wpi::util::json(nullptr));
 
                       if (!FindMappedValue(m_trajectories, trajectory_uuid_value)) {
                         return NotFound("Trajectory not found");
@@ -221,6 +355,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         updated.uuid = trajectory_uuid_value;
                         m_trajectories[trajectory_uuid_value] = std::move(updated);
                         ++m_trajectory_revisions[trajectory_uuid_value];
+                        record_scope_mutation(trajectory_scope, "put_trajectory", before);
 
                         return JsonModelResponseWithEtag(
                           200, TrajectoryRevisionToken(trajectory_uuid_value),
@@ -235,12 +370,17 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: object-merge JSON or RFC6902 patch array over TrajectoryFile fields.
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPatch, "/api/v1/trajectories/{uuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto trajectory_uuid = FindRouteParam(params, "uuid");
                       if (!trajectory_uuid.has_value()) {
                         return BadRoute("Missing trajectory UUID parameter");
                       }
                       const auto& trajectory_uuid_value = trajectory_uuid->get();
+                        const auto trajectory_scope =
+                          TrajectoryScopeKey(trajectory_uuid_value);
+                        const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                            wpi::util::json(nullptr));
 
                       const auto existing =
                           FindMappedValue(m_trajectories, trajectory_uuid_value);
@@ -269,6 +409,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         updated.uuid = trajectory_uuid_value;
                         m_trajectories[trajectory_uuid_value] = std::move(updated);
                         ++m_trajectory_revisions[trajectory_uuid_value];
+                        record_scope_mutation(trajectory_scope, "patch_trajectory", before);
 
                         return JsonModelResponseWithEtag(
                           200, TrajectoryRevisionToken(trajectory_uuid_value),
@@ -283,12 +424,17 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: { name }.
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost, "/api/v1/trajectories/{uuid}/rename",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto trajectory_uuid = FindRouteParam(params, "uuid");
                       if (!trajectory_uuid.has_value()) {
                         return BadRoute("Missing trajectory UUID parameter");
                       }
                       const auto& trajectory_uuid_value = trajectory_uuid->get();
+                        const auto trajectory_scope =
+                          TrajectoryScopeKey(trajectory_uuid_value);
+                        const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                            wpi::util::json(nullptr));
 
                       auto trajectory =
                           FindMappedValue(m_trajectories, trajectory_uuid_value);
@@ -328,6 +474,7 @@ void ApiServer::RegisterDocumentRoutes() {
 
                         trajectory_value.name = name;
                         ++m_trajectory_revisions[trajectory_uuid_value];
+                        record_scope_mutation(trajectory_scope, "rename_trajectory", before);
 
                         return JsonModelResponseWithEtag(
                             200, TrajectoryRevisionToken(trajectory_uuid_value),
@@ -342,7 +489,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: { waypoint, insertIndex? }.
   // Response: 201 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost, "/api/v1/trajectories/{uuid}/waypoints",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto it = params.find("uuid");
                       if (it == params.end()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -352,6 +499,10 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope = TrajectoryScopeKey(it->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       const auto current_revision = TrajectoryRevisionToken(it->second);
                       if (auto error =
@@ -389,6 +540,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         waypoints.insert(waypoints.begin() + insert_index,
                                          std::move(waypoint));
                         ++m_trajectory_revisions[it->second];
+                        record_scope_mutation(trajectory_scope, "add_waypoint", before);
 
                         return JsonModelResponseWithEtag(
                           201, TrajectoryRevisionToken(it->second),
@@ -405,7 +557,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPatch,
                     "/api/v1/trajectories/{uuid}/waypoints/{waypointUuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       const auto waypoint_param = params.find("waypointUuid");
                       if (traj_param == params.end() || waypoint_param == params.end()) {
@@ -416,6 +568,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       auto waypoint_index =
                           FindByUuid(traj_it->second.params.waypoints,
@@ -447,6 +604,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         traj_it->second.params.waypoints[*waypoint_index] =
                             std::move(updated);
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "patch_waypoint", before);
 
                         return JsonModelResponseWithEtag(
                           200, TrajectoryRevisionToken(traj_param->second),
@@ -463,7 +621,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 204 with no body after related references are cleaned up.
   m_router.Register(HttpMethod::kDelete,
                     "/api/v1/trajectories/{uuid}/waypoints/{waypointUuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       const auto waypoint_param = params.find("waypointUuid");
                       if (traj_param == params.end() || waypoint_param == params.end()) {
@@ -474,6 +632,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       auto waypoint_index =
                           FindByUuid(traj_it->second.params.waypoints,
@@ -532,6 +695,7 @@ void ApiServer::RegisterDocumentRoutes() {
                       }
 
                       ++m_trajectory_revisions[traj_param->second];
+                      record_scope_mutation(trajectory_scope, "delete_waypoint", before);
                       return EmptyResponse(204);
                     });
 
@@ -541,7 +705,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost,
                     "/api/v1/trajectories/{uuid}/waypoints/reorder",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       if (traj_param == params.end()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -551,6 +715,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       const auto current_revision =
                           TrajectoryRevisionToken(traj_param->second);
@@ -596,6 +765,8 @@ void ApiServer::RegisterDocumentRoutes() {
 
                         traj_it->second.params.waypoints = std::move(reordered);
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "reorder_waypoints",
+                                              before);
 
                         return JsonModelResponseWithEtag(
                           200, TrajectoryRevisionToken(traj_param->second),
@@ -612,7 +783,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 201 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost,
                     "/api/v1/trajectories/{uuid}/constraints",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       if (traj_param == params.end()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -622,6 +793,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       const auto current_revision =
                           TrajectoryRevisionToken(traj_param->second);
@@ -663,6 +839,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         constraints.insert(constraints.begin() + insert_index,
                                            std::move(constraint));
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "add_constraint", before);
 
                         return JsonModelResponseWithEtag(
                           201, TrajectoryRevisionToken(traj_param->second),
@@ -679,7 +856,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPatch,
                     "/api/v1/trajectories/{uuid}/constraints/{constraintUuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       const auto constraint_param = params.find("constraintUuid");
                       if (traj_param == params.end() ||
@@ -691,6 +868,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       auto constraint_index =
                           FindByUuid(traj_it->second.params.constraints,
@@ -722,6 +904,8 @@ void ApiServer::RegisterDocumentRoutes() {
                         traj_it->second.params.constraints[*constraint_index] =
                             std::move(updated);
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "patch_constraint",
+                                    before);
 
                         return JsonModelResponseWithEtag(
                           200, TrajectoryRevisionToken(traj_param->second),
@@ -738,7 +922,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 204 with no body.
   m_router.Register(HttpMethod::kDelete,
                     "/api/v1/trajectories/{uuid}/constraints/{constraintUuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       const auto constraint_param = params.find("constraintUuid");
                       if (traj_param == params.end() ||
@@ -750,6 +934,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       auto constraint_index =
                           FindByUuid(traj_it->second.params.constraints,
@@ -768,6 +957,7 @@ void ApiServer::RegisterDocumentRoutes() {
                       auto& constraints = traj_it->second.params.constraints;
                       constraints.erase(constraints.begin() + *constraint_index);
                       ++m_trajectory_revisions[traj_param->second];
+                      record_scope_mutation(trajectory_scope, "delete_constraint", before);
 
                       return EmptyResponse(204);
                     });
@@ -778,7 +968,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost,
                     "/api/v1/trajectories/{uuid}/constraints/reorder",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       if (traj_param == params.end()) {
                         return choreo::rest_router::MakeJsonErrorResponse(
@@ -790,6 +980,11 @@ void ApiServer::RegisterDocumentRoutes() {
                         return choreo::rest_router::MakeJsonErrorResponse(
                             404, "not_found", "Trajectory not found");
                       }
+                        const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                        const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                            wpi::util::json(nullptr));
 
                       const auto current_revision =
                           TrajectoryRevisionToken(traj_param->second);
@@ -833,6 +1028,8 @@ void ApiServer::RegisterDocumentRoutes() {
 
                         traj_it->second.params.constraints = std::move(reordered);
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope,
+                                    "reorder_constraints", before);
                         return JsonModelResponseWithEtag(
                             200, TrajectoryRevisionToken(traj_param->second),
                             traj_it->second);
@@ -846,7 +1043,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: { marker, insertIndex? }.
   // Response: 201 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost, "/api/v1/trajectories/{uuid}/markers",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       if (traj_param == params.end()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -856,6 +1053,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       const auto current_revision =
                           TrajectoryRevisionToken(traj_param->second);
@@ -892,6 +1094,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         markers.insert(markers.begin() + insert_index,
                                        std::move(marker));
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "add_marker", before);
                         return JsonModelResponseWithEtag(
                             201, TrajectoryRevisionToken(traj_param->second),
                             traj_it->second);
@@ -906,7 +1109,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPatch,
                     "/api/v1/trajectories/{uuid}/markers/{markerUuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       const auto marker_param = params.find("markerUuid");
                       if (traj_param == params.end() || marker_param == params.end()) {
@@ -917,6 +1120,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       auto marker_index =
                           FindByUuid(traj_it->second.events, marker_param->second);
@@ -945,6 +1153,7 @@ void ApiServer::RegisterDocumentRoutes() {
                         updated.uuid = marker_param->second;
                         traj_it->second.events[*marker_index] = std::move(updated);
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "patch_marker", before);
                         return JsonModelResponseWithEtag(
                             200, TrajectoryRevisionToken(traj_param->second),
                             traj_it->second);
@@ -959,7 +1168,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 204 with no body.
   m_router.Register(HttpMethod::kDelete,
                     "/api/v1/trajectories/{uuid}/markers/{markerUuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       const auto marker_param = params.find("markerUuid");
                       if (traj_param == params.end() || marker_param == params.end()) {
@@ -970,6 +1179,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       auto marker_index =
                           FindByUuid(traj_it->second.events, marker_param->second);
@@ -987,6 +1201,7 @@ void ApiServer::RegisterDocumentRoutes() {
                       auto& markers = traj_it->second.events;
                       markers.erase(markers.begin() + *marker_index);
                       ++m_trajectory_revisions[traj_param->second];
+                      record_scope_mutation(trajectory_scope, "delete_marker", before);
                       return EmptyResponse(204);
                     });
 
@@ -996,7 +1211,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Response: 200 with updated TrajectoryFile JSON and a fresh ETag.
   m_router.Register(HttpMethod::kPost,
                     "/api/v1/trajectories/{uuid}/markers/reorder",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto traj_param = params.find("uuid");
                       if (traj_param == params.end()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -1006,6 +1221,11 @@ void ApiServer::RegisterDocumentRoutes() {
                       if (traj_it == m_trajectories.end()) {
                         return NotFound("Trajectory not found");
                       }
+                      const auto trajectory_scope =
+                          TrajectoryScopeKey(traj_param->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
 
                       const auto current_revision =
                           TrajectoryRevisionToken(traj_param->second);
@@ -1047,6 +1267,8 @@ void ApiServer::RegisterDocumentRoutes() {
 
                         traj_it->second.events = std::move(reordered);
                         ++m_trajectory_revisions[traj_param->second];
+                        record_scope_mutation(trajectory_scope, "reorder_markers",
+                                    before);
                         return JsonModelResponseWithEtag(
                             200, TrajectoryRevisionToken(traj_param->second),
                             traj_it->second);
@@ -1060,7 +1282,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: none.
   // Response: 200 with { schemaVersion, exportedAt, project, trajectories }.
   m_router.Register(HttpMethod::kGet, "/api/v1/export",
-                    [this](const Request&, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request&, const RouteParams&) {
                       wpi::util::json body = wpi::util::json::object();
                       body["schemaVersion"] = 1;
                       body["exportedAt"] = "";
@@ -1078,7 +1300,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: { mode, bundle }.
   // Response: 202 with completed operation summary for creates, updates, and deletes.
   m_router.Register(HttpMethod::kPost, "/api/v1/import",
-                    [this](const Request& request, const RouteParams&) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams&) {
                       try {
                         auto body = wpi::util::json::parse_or_throw(
                             std::string_view{request.body});
@@ -1119,6 +1341,8 @@ void ApiServer::RegisterDocumentRoutes() {
 
                         const int original_count =
                             static_cast<int>(m_trajectories.size());
+
+                        m_history.ClearAll();
 
                         m_project = std::move(imported_project);
                         ++m_project_revision;
@@ -1184,7 +1408,7 @@ void ApiServer::RegisterDocumentRoutes() {
   // Body: none.
   // Response: 204 with no body.
   m_router.Register(HttpMethod::kDelete, "/api/v1/trajectories/{uuid}",
-                    [this](const Request& request, const RouteParams& params) {
+                    [this, &record_scope_mutation](const Request& request, const RouteParams& params) {
                       const auto it = params.find("uuid");
                       if (it == params.end()) {
                         return BadRoute("Missing trajectory UUID parameter");
@@ -1194,6 +1418,11 @@ void ApiServer::RegisterDocumentRoutes() {
                         return NotFound("Trajectory not found");
                       }
 
+                      const auto trajectory_scope = TrajectoryScopeKey(it->second);
+                      const auto before =
+                          CaptureScopeSnapshot(trajectory_scope).value_or(
+                              wpi::util::json(nullptr));
+
                       const auto current_revision = TrajectoryRevisionToken(it->second);
                       if (auto error =
                               ValidateIfMatchPrecondition(request, current_revision)) {
@@ -1201,9 +1430,13 @@ void ApiServer::RegisterDocumentRoutes() {
                       }
 
                       m_trajectories.erase(it->second);
-                      m_trajectory_revisions.erase(it->second);
+                      ++m_trajectory_revisions[it->second];
+                      record_scope_mutation(trajectory_scope, "delete_trajectory", before);
 
-                      return EmptyResponse(204);
+                      auto response = EmptyResponse(204);
+                      response.headers["ETag"] =
+                          QuotedEtag(TrajectoryRevisionToken(it->second));
+                      return response;
                     });
 }
 

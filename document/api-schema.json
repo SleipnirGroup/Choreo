@@ -115,6 +115,23 @@
       "type": "null"
     },
 
+    "TrajectoryDeletedStateResponse": {
+      "type": "object",
+      "properties": {
+        "uuid": { "$ref": "#/$defs/UUID" },
+        "deleted": { "type": "boolean", "const": true }
+      },
+      "required": ["uuid", "deleted"],
+      "additionalProperties": false
+    },
+
+    "TrajectoryUndoRedoResponse": {
+      "oneOf": [
+        { "$ref": "#/$defs/TrajectoryFile" },
+        { "$ref": "#/$defs/TrajectoryDeletedStateResponse" }
+      ]
+    },
+
     "GenerationStateResponse": {
       "type": "object",
       "properties": {
@@ -409,6 +426,12 @@
       "request": { "$ref": "#/$defs/PatchRequest" },
       "response200": { "$ref": "#/$defs/ProjectFile" }
     },
+    "POST /api/v1/project/undo": {
+      "response200": { "$ref": "#/$defs/ProjectFile" }
+    },
+    "POST /api/v1/project/redo": {
+      "response200": { "$ref": "#/$defs/ProjectFile" }
+    },
     "GET /api/v1/trajectories": {
       "query": { "$ref": "#/$defs/TrajectoryListQuery" },
       "response200": { "$ref": "#/$defs/TrajectoryListResponse" }
@@ -419,6 +442,12 @@
     },
     "GET /api/v1/trajectories/{uuid}": {
       "response200": { "$ref": "#/$defs/TrajectoryFile" }
+    },
+    "POST /api/v1/trajectories/{uuid}/undo": {
+      "response200": { "$ref": "#/$defs/TrajectoryUndoRedoResponse" }
+    },
+    "POST /api/v1/trajectories/{uuid}/redo": {
+      "response200": { "$ref": "#/$defs/TrajectoryUndoRedoResponse" }
     },
     "PUT /api/v1/trajectories/{uuid}": {
       "request": { "$ref": "#/$defs/TrajectoryFile" },

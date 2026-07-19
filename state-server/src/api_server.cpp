@@ -10,6 +10,7 @@
 
 #include <wpi/util/json.hpp>
 
+#include "api_server_internal.hpp"
 #include "choreo/rest_router/http_server_connection.hpp"
 
 namespace choreo::state_server {
@@ -231,6 +232,171 @@ std::string ApiServer::TrajectoryRevisionToken(const std::string& uuid) const {
   const auto it = m_trajectory_revisions.find(uuid);
   const uint64_t rev = it != m_trajectory_revisions.end() ? it->second : 0;
   return std::format("traj-{}-{}", uuid, rev);
+}
+
+std::string ApiServer::ProjectScopeKey() const {
+  return "project";
+}
+
+std::string ApiServer::TrajectoryScopeKey(std::string_view uuid) const {
+  return std::format("trajectory:{}", uuid);
+}
+
+std::optional<wpi::util::json> ApiServer::CaptureScopeSnapshot(
+    std::string_view scope_key) const {
+  if (scope_key == ProjectScopeKey()) {
+    return wpi::util::json(m_project);
+  }
+
+  constexpr std::string_view kTrajectoryPrefix = "trajectory:";
+  if (!scope_key.starts_with(kTrajectoryPrefix)) {
+    return std::nullopt;
+  }
+
+  const std::string uuid(scope_key.substr(kTrajectoryPrefix.size()));
+  const auto it = m_trajectories.find(uuid);
+  if (it == m_trajectories.end()) {
+    return wpi::util::json(nullptr);
+  }
+  return wpi::util::json(it->second);
+}
+
+bool ApiServer::ApplyScopeSnapshot(std::string_view scope_key,
+                                   const wpi::util::json& snapshot,
+                                   std::string& error_message) {
+  if (scope_key == ProjectScopeKey()) {
+    if (!snapshot.is_object()) {
+      error_message = "project snapshot must be an object";
+      return false;
+    }
+
+    try {
+      auto updated = ProjectFile::fromJson(snapshot);
+      EnsureUuid(updated.uuid);
+      m_project = std::move(updated);
+      return true;
+    } catch (const std::exception& ex) {
+      error_message = ex.what();
+      return false;
+    }
+  }
+
+  constexpr std::string_view kTrajectoryPrefix = "trajectory:";
+  if (!scope_key.starts_with(kTrajectoryPrefix)) {
+    error_message = "unknown history scope";
+    return false;
+  }
+
+  const std::string uuid(scope_key.substr(kTrajectoryPrefix.size()));
+  if (snapshot.is_null()) {
+    m_trajectories.erase(uuid);
+    return true;
+  }
+
+  if (!snapshot.is_object()) {
+    error_message = "trajectory snapshot must be an object or null";
+    return false;
+  }
+
+  try {
+    auto updated = TrajectoryFile::fromJson(snapshot);
+    updated.uuid = uuid;
+    EnsureUuid(updated.uuid);
+    m_trajectories[uuid] = std::move(updated);
+    return true;
+  } catch (const std::exception& ex) {
+    error_message = ex.what();
+    return false;
+  }
+}
+
+bool ApiServer::BumpScopeRevision(std::string_view scope_key) {
+  if (scope_key == ProjectScopeKey()) {
+    ++m_project_revision;
+    return true;
+  }
+
+  constexpr std::string_view kTrajectoryPrefix = "trajectory:";
+  if (!scope_key.starts_with(kTrajectoryPrefix)) {
+    return false;
+  }
+
+  const std::string uuid(scope_key.substr(kTrajectoryPrefix.size()));
+  ++m_trajectory_revisions[uuid];
+  return true;
+}
+
+std::optional<std::string> ApiServer::CurrentScopeRevisionToken(
+    std::string_view scope_key) const {
+  if (scope_key == ProjectScopeKey()) {
+    return ProjectRevisionToken();
+  }
+
+  constexpr std::string_view kTrajectoryPrefix = "trajectory:";
+  if (!scope_key.starts_with(kTrajectoryPrefix)) {
+    return std::nullopt;
+  }
+
+  const std::string uuid(scope_key.substr(kTrajectoryPrefix.size()));
+  return TrajectoryRevisionToken(uuid);
+}
+
+std::optional<rest_router::Response> ApiServer::HandleUndo(
+    std::string_view scope_key) {
+  auto entry = m_history.Undo(scope_key);
+  if (!entry.has_value()) {
+    return detail::ErrorResponse(409, "no_undo_available",
+                                 "No undo entry available for this scope");
+  }
+
+  const auto current = CaptureScopeSnapshot(scope_key);
+  if (!current.has_value()) {
+    return detail::ErrorResponse(422, "invalid_history_scope",
+                                 "Unknown history scope");
+  }
+
+  auto target = *current;
+  std::string error;
+  if (!ApplyJsonPatch(target, entry->undo_patch, error)) {
+    return detail::ErrorResponse(422, "invalid_history_patch", error);
+  }
+  if (!ApplyScopeSnapshot(scope_key, target, error)) {
+    return detail::ErrorResponse(422, "invalid_history_snapshot", error);
+  }
+  if (!BumpScopeRevision(scope_key)) {
+    return detail::ErrorResponse(422, "invalid_history_scope",
+                                 "Failed to bump revision for history scope");
+  }
+  return std::nullopt;
+}
+
+std::optional<rest_router::Response> ApiServer::HandleRedo(
+    std::string_view scope_key) {
+  auto entry = m_history.Redo(scope_key);
+  if (!entry.has_value()) {
+    return detail::ErrorResponse(409, "no_redo_available",
+                                 "No redo entry available for this scope");
+  }
+
+  const auto current = CaptureScopeSnapshot(scope_key);
+  if (!current.has_value()) {
+    return detail::ErrorResponse(422, "invalid_history_scope",
+                                 "Unknown history scope");
+  }
+
+  auto target = *current;
+  std::string error;
+  if (!ApplyJsonPatch(target, entry->redo_patch, error)) {
+    return detail::ErrorResponse(422, "invalid_history_patch", error);
+  }
+  if (!ApplyScopeSnapshot(scope_key, target, error)) {
+    return detail::ErrorResponse(422, "invalid_history_snapshot", error);
+  }
+  if (!BumpScopeRevision(scope_key)) {
+    return detail::ErrorResponse(422, "invalid_history_scope",
+                                 "Failed to bump revision for history scope");
+  }
+  return std::nullopt;
 }
 
 }  // namespace choreo::state_server

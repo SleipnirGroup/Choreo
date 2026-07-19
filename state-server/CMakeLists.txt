@@ -24,6 +24,13 @@ if(NOT TARGET rest_router)
     )
 endif()
 
+if(NOT TARGET choreo_history_engine)
+    add_subdirectory(
+        "${CMAKE_CURRENT_LIST_DIR}/../history-engine"
+        "${CMAKE_CURRENT_BINARY_DIR}/choreo_history_engine"
+    )
+endif()
+
 include(../cmake/CompilerFlags.cmake)
 
 file(GLOB_RECURSE state_server_SOURCES CONFIGURE_DEPENDS
@@ -45,6 +52,7 @@ target_include_directories(
 target_link_libraries(
     state-server
     PRIVATE
+    choreo_history_engine
         rest_router
         choreo_document
         wpinet
