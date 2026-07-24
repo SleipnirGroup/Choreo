@@ -26,7 +26,7 @@ def get_version():
             ( -([0-9]+) )? # group 7 alpha or beta number
             """,
             proc.stdout.rstrip(),
-            re.X,
+            re.VERBOSE,
         )
 
         version = match.group(1)
