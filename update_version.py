@@ -105,7 +105,7 @@ def update_version(version: str) -> None:
         ( -([0-9]+) )? # group 7 alpha or beta number
         """,
         version,
-        re.X,
+        re.VERBOSE,
     )
 
     version = m.group(1)
@@ -130,11 +130,11 @@ def update_version(version: str) -> None:
                 for key in location.version_path[:-1]:
                     data = data[key]
                 data[location.version_path[-1]] = version_str
-            except KeyError as e:
+            except KeyError:
                 print(
                     f"Version path not found: {location.version_path} in {location.relative_path}"
                 )
-                raise e
+                raise
             with open(file_path, mode="w", newline="\n") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
                 f.write("\n")
@@ -153,11 +153,11 @@ def update_version(version: str) -> None:
                 for key in location.version_path[:-1]:
                     data = data[key]
                 data[location.version_path[-1]] = version_str
-            except KeyError as e:
+            except KeyError:
                 print(
                     f"Version path not found: {location.version_path} in {location.relative_path}"
                 )
-                raise e
+                raise
             with open(file_path, mode="w", newline="\n") as f:
                 tomlkit.dump(og, f)
         else:
