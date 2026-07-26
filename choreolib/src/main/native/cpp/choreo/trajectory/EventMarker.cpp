@@ -4,22 +4,23 @@
 
 #include <string>
 
-#include <wpi/json.h>
+#include <wpi/util/json.hpp>
 
-void choreo::to_json(wpi::json& json, const EventMarker& event) {
-  json = wpi::json{{"data", wpi::json{{"t", event.timestamp.value()}}},
-                   {"event", wpi::json{{"name", event.event}}}};
+void choreo::to_json(wpi::util::json& json, const EventMarker& event) {
+  json = wpi::util::json::object(
+      "data", wpi::util::json::object("t", event.timestamp.value()), "event",
+      wpi::util::json::object("name", event.event));
 }
 
-void choreo::from_json(const wpi::json& json, EventMarker& event) {
+void choreo::from_json(const wpi::util::json& json, EventMarker& event) {
   auto targetTimestamp = json.at("from").at("targetTimestamp");
   if (!targetTimestamp.is_number()) {
-    event.timestamp = units::second_t{-1};
+    event.timestamp = wpi::units::second_t{-1};
     event.event = "";
   } else {
-    event.timestamp =
-        units::second_t{json.at("from").at("offset").at("val").get<double>() +
-                        targetTimestamp.get<double>()};
-    event.event = json.at("name").get<std::string>();
+    event.timestamp = wpi::units::second_t{
+        json.at("from").at("offset").at("val").get_number() +
+        targetTimestamp.get_number()};
+    event.event = json.at("name").get_string();
   }
 }

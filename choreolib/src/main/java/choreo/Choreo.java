@@ -2,36 +2,25 @@
 
 package choreo;
 
-import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+import static org.wpilib.util.ErrorMessages.requireNonNullParam;
 
-import choreo.trajectory.DifferentialSample;
-import choreo.trajectory.EventMarker;
-import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
-import choreo.trajectory.TrajectorySample;
+import choreo.trajectory.*;
 import choreo.util.ChoreoAlert;
-import choreo.util.ChoreoAlert.*;
+import choreo.util.ChoreoAlert.MultiAlert;
 import choreo.util.TrajSchemaVersion;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
+import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.system.Filesystem;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -42,9 +31,9 @@ public final class Choreo {
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final int TRAJ_SCHEMA_VERSION = TrajSchemaVersion.TRAJ_SCHEMA_VERSION;
   private static final MultiAlert cantFindTrajectory =
-      ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, Level.HIGH);
   private static final MultiAlert cantParseTrajectory =
-      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, Level.HIGH);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -58,8 +47,7 @@ public final class Choreo {
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
    *
-   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
-   *     choreo.trajectory.SwerveSample}
+   * @param <ST> {@link DifferentialSample} or {@link SwerveSample}
    */
   public interface TrajectoryLogger<ST extends TrajectorySample<ST>>
       extends BiConsumer<Trajectory<ST>, Boolean> {}
@@ -101,9 +89,9 @@ public final class Choreo {
     } catch (Exception ex) {
       ChoreoAlert.alert(
               "Unknown error when parsing " + trajectoryFile + "; check console for more details",
-              kError)
+              Level.HIGH)
           .set(true);
-      DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
+      DriverStationErrors.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return Optional.empty();
   }
@@ -171,17 +159,16 @@ public final class Choreo {
     }
     String sampleType = trajectoryObj.get("sampleType").getAsString();
     if (sampleType.equals("Swerve")) {
-      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
+      //      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (sampleType.equals("Differential")) {
-      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
+      //      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
 
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);
-      return new Trajectory<DifferentialSample>(
-          name, List.of(sampleArray), List.of(splits), List.of(events));
+      return new Trajectory<>(name, List.of(sampleArray), List.of(splits), List.of(events));
     } else {
       throw new RuntimeException("Unknown drive type: " + sampleType);
     }

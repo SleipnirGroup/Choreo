@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include <units/time.h>
-#include <wpi/json_fwd.h>
+#include <wpi/units/time.hpp>
+#include <wpi/util/json.hpp>
 
 #include "choreo/trajectory/DifferentialSample.hpp"
 #include "choreo/trajectory/EventMarker.hpp"
@@ -122,7 +122,7 @@ class Trajectory {
   /// @param mirrorForRedAlliance whether or not to return the sample mirrored.
   /// @return The SampleType at the given time.
   template <int Year = util::kDefaultYear>
-  std::optional<SampleType> SampleAt(units::second_t timestamp,
+  std::optional<SampleType> SampleAt(wpi::units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
     if (auto state = SampleInternal(timestamp)) {
       return mirrorForRedAlliance ? state.value().template Flipped<Year>()
@@ -140,7 +140,7 @@ class Trajectory {
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The first Pose in the trajectory.
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetInitialPose(
+  std::optional<wpi::math::Pose2d> GetInitialPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
@@ -160,7 +160,7 @@ class Trajectory {
   /// @param mirrorForRedAlliance whether or not to return the Pose mirrored.
   /// @return The last Pose in the trajectory.
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetFinalPose(
+  std::optional<wpi::math::Pose2d> GetFinalPose(
       bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
@@ -176,7 +176,7 @@ class Trajectory {
   ///
   /// @return The total time the trajectory will take to follow, if empty will
   ///     return 0 seconds.
-  units::second_t GetTotalTime() const {
+  wpi::units::second_t GetTotalTime() const {
     if (samples.size() == 0) {
       return 0_s;
     }
@@ -186,8 +186,8 @@ class Trajectory {
   /// Returns the vector of poses corresponding to the trajectory.
   ///
   /// @return the vector of poses corresponding to the trajectory.
-  std::vector<frc::Pose2d> GetPoses() const {
-    std::vector<frc::Pose2d> poses;
+  std::vector<wpi::math::Pose2d> GetPoses() const {
+    std::vector<wpi::math::Pose2d> poses;
     for (const auto& sample : samples) {
       poses.push_back(sample.GetPose());
     }
@@ -248,8 +248,8 @@ class Trajectory {
           name + "[" + std::to_string(splitIndex) + "]", {}, {}, {}};
     }
     // Now we know sublist.size() >= 1
-    units::second_t startTime = sublist.front().GetTimestamp();
-    units::second_t endTime = sublist.back().GetTimestamp();
+    wpi::units::second_t startTime = sublist.front().GetTimestamp();
+    wpi::units::second_t endTime = sublist.back().GetTimestamp();
 
     auto offsetSamples =
         sublist | std::views::transform([startTime](const SampleType& s) {
@@ -313,7 +313,8 @@ class Trajectory {
   std::vector<EventMarker> events;
 
  private:
-  std::optional<SampleType> SampleInternal(units::second_t timestamp) const {
+  std::optional<SampleType> SampleInternal(
+      wpi::units::second_t timestamp) const {
     if (samples.size() == 0) {
       return {};
     }
@@ -354,11 +355,13 @@ class Trajectory {
   }
 };
 
-void to_json(wpi::json& json, const Trajectory<SwerveSample>& trajectory);
-void from_json(const wpi::json& json, Trajectory<SwerveSample>& trajectory);
+void to_json(wpi::util::json& json, const Trajectory<SwerveSample>& trajectory);
+void from_json(const wpi::util::json& json,
+               Trajectory<SwerveSample>& trajectory);
 
-void to_json(wpi::json& json, const Trajectory<DifferentialSample>& trajectory);
-void from_json(const wpi::json& json,
+void to_json(wpi::util::json& json,
+             const Trajectory<DifferentialSample>& trajectory);
+void from_json(const wpi::util::json& json,
                Trajectory<DifferentialSample>& trajectory);
 
 }  // namespace choreo
