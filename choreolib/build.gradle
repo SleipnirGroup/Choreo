@@ -207,12 +207,7 @@ javadoc {
 
     title = "ChoreoLib API"
 
-    // Treat javadoc warnings as errors.
-    //
-    // The second argument '-quiet' is a hack. The one parameter
-    // addStringOption() doesn't work, so we add '-quiet', which is added
-    // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
-    options.addStringOption('Werror', '-quiet')
+    options.addBooleanOption('Werror', true)
 }
 
 jacocoTestReport {
