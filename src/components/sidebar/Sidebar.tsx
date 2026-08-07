@@ -2,7 +2,7 @@ import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
-import { Divider, IconButton, Tooltip } from "@mui/material";
+import { Divider, IconButton, TextField, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -11,7 +11,10 @@ import {
   Redo,
   ShapeLine,
   Polyline,
-  Undo
+  Undo,
+  Search,
+  Clear,
+  Abc
 } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
@@ -21,8 +24,107 @@ import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
 
 type Props = object;
-
 type State = object;
+
+class TrajectorySearch extends Component<Props, State> {
+  render() {
+    const { trajSearchQuery, setTrajSearchQuery } = uiState;
+
+    return (
+      <div
+        style={{
+          position: "sticky",
+          top: "-8px",
+          zIndex: 10,
+          backgroundColor: "var(--background-dark-gray)",
+          paddingInline: "8px",
+          paddingBottom: "8px",
+          paddingTop: "8px"
+        }}
+      >
+        <TextField
+          variant="outlined"
+          size="small"
+          placeholder="Search paths..."
+          value={trajSearchQuery}
+          onChange={(e) => setTrajSearchQuery(e.target.value)}
+          fullWidth
+          slotProps={{
+            input: {
+              startAdornment: (
+                <Search
+                  sx={{
+                    color: "gray",
+                    marginRight: "4px",
+                    fontSize: "20px"
+                  }}
+                />
+              ),
+              endAdornment: (
+                <>
+                  <Tooltip
+                    disableInteractive
+                    title={
+                      uiState.trajSearchRegex
+                        ? "Disable regex search"
+                        : "Enable regex search"
+                    }
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={uiState.toggleTrajSearchRegex}
+                      sx={{
+                        borderRadius: "3px",
+                        fontFamily: "monospace",
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        lineHeight: 1,
+                        color: uiState.trajSearchRegex
+                          ? "var(--accent-purple)"
+                          : "white",
+                        border: uiState.trajSearchRegex
+                          ? "1px solid var(--accent-purple)"
+                          : "1px solid transparent"
+                      }}
+                    >
+                      Re
+                    </IconButton>
+                  </Tooltip>
+                  {trajSearchQuery && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setTrajSearchQuery("")}
+                    >
+                      <Clear sx={{ fontSize: "18px", color: "white" }} />
+                    </IconButton>
+                  )}
+                </>
+              ),
+              style: {
+                color: "white",
+                backgroundColor: "var(--background-light-gray)",
+                borderRadius: "4px",
+                height: "32px",
+                fontSize: "14px"
+              }
+            }
+          }}
+          sx={{
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "transparent"
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--divider-gray)"
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "var(--accent-purple)"
+            }
+          }}
+        />
+      </div>
+    );
+  }
+}
 
 class Sidebar extends Component<Props, State> {
   state = {};
@@ -30,10 +132,33 @@ class Sidebar extends Component<Props, State> {
     super(props);
   }
 
+  startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.addEventListener("mousemove", this.resize);
+    document.addEventListener("mouseup", this.stopResize);
+  };
+
+  resize = (e: MouseEvent) => {
+    const newWidth = Math.max(260, Math.min(560, e.clientX));
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      `${newWidth}px`
+    );
+  };
+
+  stopResize = () => {
+    document.removeEventListener("mousemove", this.resize);
+    document.removeEventListener("mouseup", this.stopResize);
+  };
+
+  componentWillUnmount() {
+    this.stopResize();
+  }
+
   render() {
-    const { toggleMainMenu } = uiState;
     return (
       <div className={styles.Container}>
+        <div onMouseDown={this.startResize} className={styles.ResizeHandle} />
         <div
           style={{
             flexShrink: 0,
@@ -49,11 +174,7 @@ class Sidebar extends Component<Props, State> {
         >
           <span>
             <Tooltip disableInteractive title="Main Menu">
-              <IconButton
-                onClick={() => {
-                  toggleMainMenu();
-                }}
-              >
+              <IconButton onClick={uiState.toggleMainMenu}>
                 <MenuIcon></MenuIcon>
               </IconButton>
             </Tooltip>
@@ -92,9 +213,28 @@ class Sidebar extends Component<Props, State> {
         </div>
         <div
           className={styles.SidebarHeading}
-          style={{ gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px" }}
+          style={{
+            gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px 33.6px"
+          }}
         >
           PATHS
+          <Tooltip disableInteractive title="Sort by Alphabetical Order">
+            <span>
+              <IconButton
+                size="small"
+                color="default"
+                style={{ float: "right" }}
+                sx={{
+                  color: uiState.sortAlphabetical
+                    ? "var(--accent-purple)"
+                    : "white"
+                }}
+                onClick={uiState.toggleSortAlphabetical}
+              >
+                <Abc />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip disableInteractive title="Generate All">
             <span>
               <IconButton
@@ -155,12 +295,18 @@ class Sidebar extends Component<Props, State> {
             </IconButton>
           </Tooltip>
         </div>
-        <Divider></Divider>
+        <Divider />
+        <TrajectorySearch />
+        <Divider />
         <div
           className={styles.Sidebar}
           style={{ maxHeight: "300px", minHeight: "50px" }}
         >
-          <PathSelector></PathSelector>
+          <PathSelector
+            searchQuery={uiState.trajSearchQuery ?? ""}
+            regexMode={uiState.trajSearchRegex}
+            sortAlphabetical={uiState.sortAlphabetical}
+          ></PathSelector>
         </div>
         <Divider></Divider>
         <div className={styles.SidebarHeading}>FEATURES</div>
