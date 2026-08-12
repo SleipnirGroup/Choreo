@@ -52,9 +52,11 @@ These values should be determined by consulting the motor's documentation.
 
 The torque-speed curve is applied in addition to Motor Speed Limit and Motor Max Torque. Those existing values remain independent planning and current limits.
 
-![The available forward torque is the lower of the configured current limit and the voltage-limited motor curve, up to the planner speed limit.](../media/motor-torque-speed-envelope.svg)
+[![REV NEO Vortex motor curve](https://4148826207-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fe0CWwhMSoCEH7NLVoLhF%2Fuploads%2FhZxihxChU3uObbZTT9Cq%2FREV%20NEO%20Vortex%20Motor%20Curve.svg?alt=media&token=497ab0b0-ad33-496d-9d68-fc049463179e)](https://docs.revrobotics.com/brushless/neo/vortex#neo-vortex-motor-curve)
 
-The current and planner limits in the diagram are illustrative. It shows the forward-driving quadrant; Choreo applies the signed voltage constraint in reverse and while braking as well.
+_Source: [REV Robotics NEO Vortex documentation](https://docs.revrobotics.com/brushless/neo/vortex#neo-vortex-motor-curve)._
+
+The blue torque curve is the relevant line for trajectory generation: torque starts at the stall value at zero speed and decreases toward zero as the motor approaches free speed. The red current curve falls with it, while the orange power curve peaks around the middle of the speed range. Choreo reconstructs the ideal torque-speed line from Motor Stall Torque and Motor Free Speed, then combines it with the independently configured Motor Max Torque current limit. This keeps torque flat while the current limit is lower, then follows the falling voltage-limited curve at higher speed. Power and efficiency are shown for context but are not separate constraints in this model.
 
 ## Theoretical
 
