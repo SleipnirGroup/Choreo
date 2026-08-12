@@ -52,6 +52,10 @@ These values should be determined by consulting the motor's documentation.
 
 The torque-speed curve is applied in addition to Motor Speed Limit and Motor Max Torque. Those existing values remain independent planning and current limits.
 
+![The available forward torque is the lower of the configured current limit and the voltage-limited motor curve, up to the planner speed limit.](../media/motor-torque-speed-envelope.svg)
+
+The current and planner limits in the diagram are illustrative. It shows the forward-driving quadrant; Choreo applies the signed voltage constraint in reverse and while braking as well.
+
 ## Theoretical
 
 This panel displays calculated metrics about your robot, for reference and validation.

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title description">
+  <title id="title">Choreo motor torque-speed constraint</title>
+  <desc id="description">The available forward motor torque is the lower of the current-limited torque and the voltage-limited torque-speed line, up to the configured planner speed limit.</desc>
+  <style>
+    text { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #172033; }
+    .muted { fill: #64748b; }
+    .grid { stroke: #dbe3ee; stroke-width: 1; }
+    .axis { stroke: #172033; stroke-width: 2; }
+    .guide { fill: none; stroke-width: 3; stroke-dasharray: 9 8; }
+    .label { font-size: 17px; font-weight: 600; }
+    .tick { font-size: 14px; }
+  </style>
+
+  <rect width="960" height="560" rx="12" fill="#ffffff"/>
+  <text x="480" y="42" text-anchor="middle" font-size="25" font-weight="700">How Choreo combines motor limits</text>
+  <text x="480" y="69" text-anchor="middle" class="muted" font-size="15">Forward-driving quadrant, normalized to the physical motor curve</text>
+
+  <g>
+    <line class="grid" x1="105" y1="104" x2="105" y2="464"/>
+    <line class="grid" x1="261" y1="104" x2="261" y2="464"/>
+    <line class="grid" x1="417" y1="104" x2="417" y2="464"/>
+    <line class="grid" x1="573" y1="104" x2="573" y2="464"/>
+    <line class="grid" x1="729" y1="104" x2="729" y2="464"/>
+    <line class="grid" x1="885" y1="104" x2="885" y2="464"/>
+
+    <line class="grid" x1="105" y1="104" x2="885" y2="104"/>
+    <line class="grid" x1="105" y1="176" x2="885" y2="176"/>
+    <line class="grid" x1="105" y1="248" x2="885" y2="248"/>
+    <line class="grid" x1="105" y1="320" x2="885" y2="320"/>
+    <line class="grid" x1="105" y1="392" x2="885" y2="392"/>
+    <line class="grid" x1="105" y1="464" x2="885" y2="464"/>
+  </g>
+
+  <path d="M105 464 L105 338 L612 338 L729 392 L729 464 Z" fill="#dbeafe" opacity="0.85"/>
+
+  <line class="guide" x1="105" y1="104" x2="885" y2="464" stroke="#f59e0b"/>
+  <line class="guide" x1="105" y1="338" x2="885" y2="338" stroke="#ef4444"/>
+  <line class="guide" x1="729" y1="104" x2="729" y2="464" stroke="#8b5cf6"/>
+
+  <path d="M105 338 L612 338 L729 392" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <line class="axis" x1="105" y1="464" x2="897" y2="464"/>
+  <line class="axis" x1="105" y1="476" x2="105" y2="92"/>
+
+  <g class="tick muted" text-anchor="middle">
+    <text x="105" y="488">0</text>
+    <text x="261" y="488">0.2</text>
+    <text x="417" y="488">0.4</text>
+    <text x="573" y="488">0.6</text>
+    <text x="729" y="488">0.8</text>
+    <text x="885" y="488">1.0</text>
+  </g>
+  <g class="tick muted" text-anchor="end">
+    <text x="94" y="469">0</text>
+    <text x="94" y="397">0.2</text>
+    <text x="94" y="325">0.4</text>
+    <text x="94" y="253">0.6</text>
+    <text x="94" y="181">0.8</text>
+    <text x="94" y="109">1.0</text>
+  </g>
+
+  <text x="495" y="530" text-anchor="middle" class="label">Motor speed / physical free speed</text>
+  <text x="30" y="284" text-anchor="middle" class="label" transform="rotate(-90 30 284)">Motor torque / physical stall torque</text>
+
+  <g class="label">
+    <rect x="500" y="122" width="360" height="38" rx="6" fill="#ffffff" opacity="0.9"/>
+    <line x1="518" y1="141" x2="554" y2="141" stroke="#f59e0b" stroke-width="4" stroke-dasharray="8 6"/>
+    <text x="567" y="147">Voltage-limited torque-speed line</text>
+
+    <rect x="500" y="170" width="360" height="38" rx="6" fill="#ffffff" opacity="0.9"/>
+    <line x1="518" y1="189" x2="554" y2="189" stroke="#ef4444" stroke-width="4" stroke-dasharray="8 6"/>
+    <text x="567" y="195">Configured current/torque limit</text>
+
+    <rect x="500" y="218" width="360" height="38" rx="6" fill="#ffffff" opacity="0.9"/>
+    <line x1="518" y1="237" x2="554" y2="237" stroke="#8b5cf6" stroke-width="4" stroke-dasharray="8 6"/>
+    <text x="567" y="243">Configured planner speed limit</text>
+  </g>
+
+  <rect x="118" y="365" width="390" height="54" rx="8" fill="#ffffff" opacity="0.92"/>
+  <line x1="136" y1="392" x2="180" y2="392" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/>
+  <text x="194" y="388" class="label">Available forward torque</text>
+  <text x="194" y="409" class="muted" font-size="14">lower of the current and voltage limits</text>
+</svg>
