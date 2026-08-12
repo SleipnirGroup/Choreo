@@ -34,11 +34,11 @@ This panel asks for details about the drive motors used to propel the robot arou
 
 These values should be determined by consulting the motor's documentation.
 
-- **Motor Max Speed** $[\text{RPM}]$: The maximum speed of each drive motor
+- **Motor Speed Limit** $[\text{RPM}]$: The planner speed limit for each drive motor
 
-!!! tip "Choosing a Motor Max Speed"
+!!! tip "Choosing a Motor Speed Limit"
 
-    A reasonable choice of Motor Max Speed is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory.
+    A reasonable Motor Speed Limit is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory.
 
 - **Motor Max Torque** $[N * m]$: The maximum torque applied by each drive motor
 
@@ -50,7 +50,7 @@ These values should be determined by consulting the motor's documentation.
 - **Motor Free Speed** $[\text{RPM}]$: The physical no-load motor speed at nominal voltage
 - **Motor Stall Torque** $[N * m]$: The physical motor torque at zero speed and nominal voltage
 
-The torque-speed curve is applied in addition to Motor Max Speed and Motor Max Torque. Those existing values remain independent planning and current limits.
+The torque-speed curve is applied in addition to Motor Speed Limit and Motor Max Torque. Those existing values remain independent planning and current limits.
 
 ## Theoretical
 
@@ -60,7 +60,7 @@ This panel displays calculated metrics about your robot, for reference and valid
 
 - **Traction Accel Limit**  $[m/s^2]$: The robot's maximum acceleration before wheels begin slipping
 - **Motor Accel Limit** $[m/s^2]$: The robot's maximum acceleration based on motor torque
-- **Floor Speed** $[m/s]$: The maximum speed reached by the robot when driving in a straight line and not rotating
+- **Floor Speed** $[m/s]$: The straight-line robot speed corresponding to the Motor Speed Limit
 - **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating. The minimum of traction and motor limits.
 - **Ang Speed** $[rad/s]$: The robot's maximum angular speed when spinning in place
 - **Ang Accel** $[rad/s^2]$: The robot's maximum angular acceleration when spinning in place

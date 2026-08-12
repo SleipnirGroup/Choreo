@@ -39,7 +39,7 @@ class RobotConfigPanel extends Component<Props, State> {
           titleTooltip="Gearing between motor shaft and wheel axle (>1)"
         />
         <ExpressionInput
-          title="Motor Max Speed"
+          title="Motor Speed Limit"
           enabled={true}
           roundingPrecision={0}
           number={config.vmax}
