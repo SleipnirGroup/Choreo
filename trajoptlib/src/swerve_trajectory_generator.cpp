@@ -14,6 +14,7 @@
 
 #include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/util/cancellation.hpp"
+#include "trajopt/util/motor_model.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
 // Physics notation in this file:
@@ -265,6 +266,24 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       // |F|₂² ≤ Fₘₐₓ²
       problem.subject_to(module_force.squared_norm() <= F_max * F_max);
+
+      if (path.drivetrain.motor_curve_enabled) {
+        auto module_force_wrt_robot = module_force.rotate_by(-θ_k);
+        Translation2v<double> voltage_fraction{
+            motor_voltage_fraction(
+                module_force_wrt_robot.x() * path.drivetrain.wheel_radius,
+                v_wheel_wrt_robot.x() / path.drivetrain.wheel_radius,
+                path.drivetrain.wheel_stall_torque,
+                path.drivetrain.wheel_free_angular_velocity),
+            motor_voltage_fraction(
+                module_force_wrt_robot.y() * path.drivetrain.wheel_radius,
+                v_wheel_wrt_robot.y() / path.drivetrain.wheel_radius,
+                path.drivetrain.wheel_stall_torque,
+                path.drivetrain.wheel_free_angular_velocity)};
+
+        // The voltage vector magnitude cannot exceed the nominal bus voltage.
+        problem.subject_to(voltage_fraction.squared_norm() <= 1.0);
+      }
     }
 
     // Apply dynamics constraints

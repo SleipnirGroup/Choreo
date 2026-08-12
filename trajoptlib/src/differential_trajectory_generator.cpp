@@ -13,6 +13,7 @@
 #include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/geometry/translation2.hpp"
 #include "trajopt/util/cancellation.hpp"
+#include "trajopt/util/motor_model.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
 // Physics notation in this file:
@@ -254,6 +255,22 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
     // −Fₘₐₓ < Fᵣ < Fₘₐₓ
     problem.subject_to(slp::bounds(-F_max, Fr.at(index), F_max));
+
+    if (path.drivetrain.motor_curve_enabled) {
+      auto left_voltage_fraction =
+          motor_voltage_fraction(Fl.at(index) * path.drivetrain.wheel_radius,
+                                 vl.at(index) / path.drivetrain.wheel_radius,
+                                 path.drivetrain.wheel_stall_torque,
+                                 path.drivetrain.wheel_free_angular_velocity);
+      auto right_voltage_fraction =
+          motor_voltage_fraction(Fr.at(index) * path.drivetrain.wheel_radius,
+                                 vr.at(index) / path.drivetrain.wheel_radius,
+                                 path.drivetrain.wheel_stall_torque,
+                                 path.drivetrain.wheel_free_angular_velocity);
+
+      problem.subject_to(slp::bounds(-1.0, left_voltage_fraction, 1.0));
+      problem.subject_to(slp::bounds(-1.0, right_voltage_fraction, 1.0));
+    }
   }
 
   for (size_t wpt_index = 0; wpt_index < wpt_cnt; ++wpt_index) {

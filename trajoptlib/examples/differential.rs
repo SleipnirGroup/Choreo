@@ -16,6 +16,11 @@ fn main() {
         wheel_max_torque: 0.9,
         // unitless
         wheel_cof: 1.5,
+        motor_curve_enabled: true,
+        // rad/s
+        wheel_free_angular_velocity: 6000.0 * 2.0 * f64::consts::PI / (60.0 * 6.5),
+        // N-m
+        wheel_stall_torque: 7.09 * 6.5,
         // m
         trackwidth: 0.5588,
     };

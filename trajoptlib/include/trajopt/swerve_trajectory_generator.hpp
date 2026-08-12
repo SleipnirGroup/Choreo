@@ -40,6 +40,15 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   /// system to the center of the module (m). There's usually one in each
   /// corner.
   std::vector<Translation2d> modules;
+
+  /// Whether to apply the motor torque-speed curve.
+  bool motor_curve_enabled = false;
+
+  /// Free angular velocity of the wheel (rad/s).
+  double wheel_free_angular_velocity = 0.0;
+
+  /// Stall torque applied to the wheel (N-m).
+  double wheel_stall_torque = 0.0;
 };
 
 /// The swerve drive trajectory optimization solution.

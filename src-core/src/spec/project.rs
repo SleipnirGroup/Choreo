@@ -93,6 +93,11 @@ pub struct RobotConfig<T: SnapshottableType> {
     pub vmax: T, // motor rad/s
     /// motor N*m
     pub tmax: T, // N*m
+    pub motor_curve_enabled: bool,
+    /// motor rad/s
+    pub motor_free_speed: T,
+    /// motor N*m
+    pub motor_stall_torque: T,
     pub cof: T,
     pub bumper: Bumper<T>,
     pub differential_track_width: T,
@@ -109,6 +114,9 @@ impl<T: SnapshottableType> RobotConfig<T> {
             radius: self.radius.snapshot(),
             vmax: self.vmax.snapshot(),
             tmax: self.tmax.snapshot(),
+            motor_curve_enabled: self.motor_curve_enabled,
+            motor_free_speed: self.motor_free_speed.snapshot(),
+            motor_stall_torque: self.motor_stall_torque.snapshot(),
             cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
@@ -121,6 +129,12 @@ impl<T: SnapshottableType> RobotConfig<T> {
     }
     pub fn wheel_max_velocity(&self) -> f64 {
         self.vmax.snapshot() / self.gearing.snapshot()
+    }
+    pub fn wheel_free_speed(&self) -> f64 {
+        self.motor_free_speed.snapshot() / self.gearing.snapshot()
+    }
+    pub fn wheel_stall_torque(&self) -> f64 {
+        self.motor_stall_torque.snapshot() * self.gearing.snapshot()
     }
 }
 impl RobotConfig<f64> {
@@ -203,6 +217,9 @@ impl Default for ProjectFile {
                 radius: Expr::new("2 in", 0.0508),
                 vmax: Expr::new("6000.0 RPM", (6000.0 / 60.0) * std::f64::consts::TAU),
                 tmax: Expr::new("1.2 N*m", 1.2),
+                motor_curve_enabled: true,
+                motor_free_speed: Expr::new("6000.0 RPM", (6000.0 / 60.0) * std::f64::consts::TAU),
+                motor_stall_torque: Expr::new("7.09 N*m", 7.09),
                 front_left: Module {
                     x: Expr::new("11 in", 0.2794),
                     y: Expr::new("11 in", 0.2794),

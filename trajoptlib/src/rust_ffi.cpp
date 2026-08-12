@@ -33,7 +33,9 @@ void SwerveTrajectoryGenerator::set_drivetrain(
   path_builder.set_drivetrain(trajopt::SwerveDrivetrain{
       drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
       drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
-      drivetrain.wheel_cof, std::move(cpp_modules)});
+      drivetrain.wheel_cof, std::move(cpp_modules),
+      drivetrain.motor_curve_enabled, drivetrain.wheel_free_angular_velocity,
+      drivetrain.wheel_stall_torque});
 }
 
 void SwerveTrajectoryGenerator::set_bumpers(double front, double left,
@@ -380,7 +382,9 @@ void DifferentialTrajectoryGenerator::set_drivetrain(
   path_builder.set_drivetrain(trajopt::DifferentialDrivetrain{
       drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
       drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
-      drivetrain.wheel_cof, drivetrain.trackwidth});
+      drivetrain.wheel_cof, drivetrain.trackwidth,
+      drivetrain.motor_curve_enabled, drivetrain.wheel_free_angular_velocity,
+      drivetrain.wheel_stall_torque});
 }
 
 void DifferentialTrajectoryGenerator::set_bumpers(double front, double left,

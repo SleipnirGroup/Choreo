@@ -14,6 +14,11 @@ fn main() {
         wheel_max_torque: 2.0,
         // unitless
         wheel_cof: 1.5,
+        motor_curve_enabled: true,
+        // rad/s
+        wheel_free_angular_velocity: 85.0,
+        // N-m
+        wheel_stall_torque: 8.0,
         // m
         modules: vec![
             Translation2d { x: 0.6, y: 0.6 },

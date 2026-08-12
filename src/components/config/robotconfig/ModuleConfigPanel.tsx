@@ -1,4 +1,5 @@
 import { observer } from "mobx-react";
+import { Checkbox, FormControlLabel } from "@mui/material";
 import { Component } from "react";
 import { doc } from "../../../document/DocumentManager";
 import ExpressionInput from "../../input/ExpressionInput";
@@ -43,7 +44,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={0}
           number={config.vmax}
           maxWidthCharacters={8}
-          titleTooltip="Actual motor speed at 12V"
+          titleTooltip="Planner motor speed limit (typically 80% of free speed)"
         />
 
         <ExpressionInput
@@ -53,6 +54,33 @@ class RobotConfigPanel extends Component<Props, State> {
           number={config.tmax}
           maxWidthCharacters={8}
           titleTooltip="Motor torque as current-limited"
+        />
+        <FormControlLabel
+          sx={{ gridColumn: "1 / 3", justifySelf: "end", marginRight: 0 }}
+          control={
+            <Checkbox
+              size="small"
+              checked={config.motorCurveEnabled}
+              onChange={(_, enabled) => config.setMotorCurveEnabled(enabled)}
+            />
+          }
+          label="Use torque-speed curve"
+        />
+        <ExpressionInput
+          title="Motor Free Speed"
+          enabled={config.motorCurveEnabled}
+          roundingPrecision={0}
+          number={config.motorFreeSpeed}
+          maxWidthCharacters={8}
+          titleTooltip="Physical no-load motor speed at nominal voltage"
+        />
+        <ExpressionInput
+          title="Motor Stall Torque"
+          enabled={config.motorCurveEnabled}
+          roundingPrecision={3}
+          number={config.motorStallTorque}
+          maxWidthCharacters={8}
+          titleTooltip="Physical motor stall torque at nominal voltage"
         />
       </ExpressionInputList>
     );

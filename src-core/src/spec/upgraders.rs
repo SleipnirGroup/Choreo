@@ -18,6 +18,7 @@ mod traj_file {
         upgrader.add_version_action(up_0_1);
         upgrader.add_version_action(up_1_2);
         upgrader.add_version_action(up_2_3);
+        upgrader.add_version_action(up_3_4);
         // Ensure the new upgrader is added here
         upgrader
     }
@@ -51,6 +52,20 @@ mod traj_file {
 
     fn up_2_3(editor: &mut Editor) -> ChoreoResult<()> {
         clear_generation_result(editor)
+    }
+
+    fn up_3_4(editor: &mut Editor) -> ChoreoResult<()> {
+        if editor
+            .get_path_raw("trajectory.config")
+            .is_some_and(|config| !config.is_null())
+        {
+            let max_speed: f64 = editor.get_path("trajectory.config.vmax")?;
+            let max_torque: f64 = editor.get_path("trajectory.config.tmax")?;
+            editor.set_path("trajectory.config.motorCurveEnabled", false)?;
+            editor.set_path("trajectory.config.motorFreeSpeed", max_speed)?;
+            editor.set_path("trajectory.config.motorStallTorque", max_torque)?;
+        }
+        Ok(())
     }
 
     #[cfg(test)]
@@ -102,11 +117,20 @@ mod traj_file {
         }
         #[test]
         pub fn test_3_swerve() -> ChoreoResult<()> {
-            test_trajectory("3", "swerve")
+            let file = load_trajectory("3", "swerve")?;
+            let config = file.trajectory.config.expect("config snapshot");
+            assert!(!config.motor_curve_enabled);
+            assert_eq!(config.motor_free_speed, config.vmax);
+            assert_eq!(config.motor_stall_torque, config.tmax);
+            Ok(())
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
         fn test_trajectory(version: &str, file_name: &str) -> ChoreoResult<()> {
+            load_trajectory(version, file_name).map(|_| ())
+        }
+
+        fn load_trajectory(version: &str, file_name: &str) -> ChoreoResult<TrajectoryFile> {
             let contents = get_contents(FileType::Trajectory, version, file_name);
             let file = TrajectoryFile::from_content(&(contents))?;
             assert!(
@@ -115,7 +139,7 @@ mod traj_file {
                 file.version,
                 TRAJ_SCHEMA_VERSION
             );
-            Ok(())
+            Ok(file)
         }
     }
 }
@@ -174,6 +198,7 @@ mod project_file {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
         upgrader.add_version_action(up_1_2);
+        upgrader.add_version_action(up_2_3);
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
@@ -187,6 +212,13 @@ mod project_file {
         editor.set_path("codegen.genTrajData", true)?;
         editor.set_path("codegen.useChoreoLib", true)?;
         Ok(())
+    }
+    fn up_2_3(editor: &mut Editor) -> ChoreoResult<()> {
+        let max_speed: Expr = editor.get_path("config.vmax")?;
+        let max_torque: Expr = editor.get_path("config.tmax")?;
+        editor.set_path("config.motorCurveEnabled", false)?;
+        editor.set_path_serialize("config.motorFreeSpeed", max_speed)?;
+        editor.set_path_serialize("config.motorStallTorque", max_torque)
     }
 
     #[cfg(test)]
@@ -240,7 +272,20 @@ mod project_file {
         }
         #[test]
         pub fn test_2_swerve() -> ChoreoResult<()> {
-            test_project("2", "swerve")
+            let file = load_project("2", "swerve")?;
+            assert!(!file.config.motor_curve_enabled);
+            assert_eq!(file.config.motor_free_speed.exp, file.config.vmax.exp);
+            assert_eq!(file.config.motor_free_speed.val, file.config.vmax.val);
+            assert_eq!(file.config.motor_stall_torque.exp, file.config.tmax.exp);
+            assert_eq!(file.config.motor_stall_torque.val, file.config.tmax.val);
+            Ok(())
+        }
+
+        fn load_project(version: &str, file_name: &str) -> ChoreoResult<ProjectFile> {
+            let contents = get_contents(FileType::Project, version, file_name);
+            let file = ProjectFile::from_content(&(contents))?;
+            assert_eq!(file.version, PROJECT_SCHEMA_VERSION);
+            Ok(file)
         }
     }
 }

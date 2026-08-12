@@ -29,6 +29,9 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
             wheel_max_torque: config.tmax * config.gearing,
             wheel_cof: config.cof,
             modules: config.module_translations(),
+            motor_curve_enabled: config.motor_curve_enabled,
+            wheel_free_angular_velocity: config.wheel_free_speed(),
+            wheel_stall_torque: config.wheel_stall_torque(),
         };
 
         generator.set_drivetrain(&drivetrain);
@@ -59,6 +62,9 @@ impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
             wheel_max_torque: config.tmax * config.gearing,
             wheel_cof: config.cof,
             trackwidth: config.differential_track_width,
+            motor_curve_enabled: config.motor_curve_enabled,
+            wheel_free_angular_velocity: config.wheel_free_speed(),
+            wheel_stall_torque: config.wheel_stall_torque(),
         };
 
         generator.set_drivetrain(&drivetrain);

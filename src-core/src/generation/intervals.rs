@@ -12,6 +12,10 @@ pub fn guess_control_interval_counts(
         return Err(ChoreoError::sign("Wheel max torque", "positive"));
     } else if config.wheel_max_velocity() <= 0.0 {
         return Err(ChoreoError::sign("Wheel max velocity", "positive"));
+    } else if config.motor_curve_enabled && config.wheel_stall_torque() <= 0.0 {
+        return Err(ChoreoError::sign("Wheel stall torque", "positive"));
+    } else if config.motor_curve_enabled && config.wheel_free_speed() <= 0.0 {
+        return Err(ChoreoError::sign("Wheel free speed", "positive"));
     } else if config.mass <= 0.0 {
         return Err(ChoreoError::sign("Robot mass", "positive"));
     } else if config.radius <= 0.0 {

@@ -148,6 +148,15 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         mass: vars().createExpression(config.mass, "Mass"),
         inertia: vars().createExpression(config.inertia, "MoI"),
         tmax: vars().createExpression(config.tmax, "Torque"),
+        motorCurveEnabled: config.motorCurveEnabled,
+        motorFreeSpeed: vars().createExpression(
+          config.motorFreeSpeed,
+          "AngVel"
+        ),
+        motorStallTorque: vars().createExpression(
+          config.motorStallTorque,
+          "Torque"
+        ),
         cof: vars().createExpression(config.cof, "Number"),
         vmax: vars().createExpression(config.vmax, "AngVel"),
         gearing: vars().createExpression(config.gearing, "Number"),

@@ -24,6 +24,15 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
     exp: `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
     val: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
   },
+  motorCurveEnabled: true,
+  motorFreeSpeed: {
+    exp: `${(MotorCurves.KrakenX60.vmax * 60) / (2 * Math.PI)} rpm`,
+    val: MotorCurves.KrakenX60.vmax
+  },
+  motorStallTorque: {
+    exp: `${MotorCurves.KrakenX60.stallTorque} N*m`,
+    val: MotorCurves.KrakenX60.stallTorque
+  },
   cof: { exp: "1.5", val: 1.5 },
   gearing: { exp: "6.75", val: 6.75 }, // SDS L2 mk4/mk4i
   radius: { exp: "2 in", val: InToM(2) },
@@ -123,6 +132,9 @@ export const RobotConfigStore = types
     inertia: ExpressionStore,
     vmax: ExpressionStore,
     tmax: ExpressionStore,
+    motorCurveEnabled: types.boolean,
+    motorFreeSpeed: ExpressionStore,
+    motorStallTorque: ExpressionStore,
     cof: ExpressionStore,
     gearing: ExpressionStore,
     radius: ExpressionStore,
@@ -145,6 +157,9 @@ export const RobotConfigStore = types
           mass: self.mass.serialize,
           inertia: self.inertia.serialize,
           tmax: self.tmax.serialize,
+          motorCurveEnabled: self.motorCurveEnabled,
+          motorFreeSpeed: self.motorFreeSpeed.serialize,
+          motorStallTorque: self.motorStallTorque.serialize,
           cof: self.cof.serialize,
           vmax: self.vmax.serialize,
           gearing: self.gearing.serialize,
@@ -178,6 +193,9 @@ export const RobotConfigStore = types
           mass: self.mass.value,
           inertia: self.inertia.value,
           tmax: self.tmax.value,
+          motorCurveEnabled: self.motorCurveEnabled,
+          motorFreeSpeed: self.motorFreeSpeed.value,
+          motorStallTorque: self.motorStallTorque.value,
           cof: self.cof.value,
           vmax: self.vmax.value,
           gearing: self.gearing.value,
@@ -197,6 +215,9 @@ export const RobotConfigStore = types
         self.inertia.deserialize(config.inertia);
         self.vmax.deserialize(config.vmax);
         self.tmax.deserialize(config.tmax);
+        self.motorCurveEnabled = config.motorCurveEnabled;
+        self.motorFreeSpeed.deserialize(config.motorFreeSpeed);
+        self.motorStallTorque.deserialize(config.motorStallTorque);
         self.cof.deserialize(config.cof);
         self.gearing.deserialize(config.gearing);
         self.radius.deserialize(config.radius);
@@ -207,6 +228,11 @@ export const RobotConfigStore = types
       }
     };
   })
+  .actions((self) => ({
+    setMotorCurveEnabled(enabled: boolean) {
+      self.motorCurveEnabled = enabled;
+    }
+  }))
   .views((self) => {
     return {
       bumperSVGElement() {

@@ -53,6 +53,11 @@ export interface RobotConfig<T extends ExprOrNumber> {
   vmax: T;
   /// motor N*m
   tmax: T; // N*m
+  motorCurveEnabled: boolean;
+  /// motor rad/s
+  motorFreeSpeed: T;
+  /// motor N*m
+  motorStallTorque: T;
   cof: T;
   bumper: Bumper<T>;
   differentialTrackWidth: T;

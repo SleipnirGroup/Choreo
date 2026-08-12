@@ -39,6 +39,15 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
 
   /// Distance between the two driverails (m).
   double trackwidth;
+
+  /// Whether to apply the motor torque-speed curve.
+  bool motor_curve_enabled = false;
+
+  /// Free angular velocity of the wheel (rad/s).
+  double wheel_free_angular_velocity = 0.0;
+
+  /// Stall torque applied to the wheel (N-m).
+  double wheel_stall_torque = 0.0;
 };
 
 /// The holonomic trajectory optimization solution.

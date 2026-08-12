@@ -15,6 +15,9 @@ mod ffi {
         wheel_max_torque: f64,
         wheel_cof: f64,
         modules: Vec<Translation2d>,
+        motor_curve_enabled: bool,
+        wheel_free_angular_velocity: f64,
+        wheel_stall_torque: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -26,6 +29,9 @@ mod ffi {
         wheel_max_torque: f64,
         wheel_cof: f64,
         trackwidth: f64,
+        motor_curve_enabled: bool,
+        wheel_free_angular_velocity: f64,
+        wheel_stall_torque: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]

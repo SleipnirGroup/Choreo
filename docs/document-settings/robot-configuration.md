@@ -46,6 +46,12 @@ These values should be determined by consulting the motor's documentation.
 
     A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s). Although your motors have more torque available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the motor's manual or published performance curves to determine an appropriate value.
 
+- **Use torque-speed curve**: Limits the voltage required by the planned wheel torque and speed to the motor's nominal voltage. Leave this disabled only when preserving the behavior of a project created before this setting was available.
+- **Motor Free Speed** $[\text{RPM}]$: The physical no-load motor speed at nominal voltage
+- **Motor Stall Torque** $[N * m]$: The physical motor torque at zero speed and nominal voltage
+
+The torque-speed curve is applied in addition to Motor Max Speed and Motor Max Torque. Those existing values remain independent planning and current limits.
+
 ## Theoretical
 
 This panel displays calculated metrics about your robot, for reference and validation.
