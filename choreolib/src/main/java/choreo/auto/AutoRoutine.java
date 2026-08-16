@@ -2,20 +2,20 @@
 
 package choreo.auto;
 
-import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
+import static org.wpilib.driverstation.Alert.Level.MEDIUM;
 
 import choreo.auto.AutoFactory.AllianceContext;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.BooleanSupplier;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.button.Trigger;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.event.EventLoop;
+import org.wpilib.system.Timer;
 
 /**
  * An object that represents an autonomous routine.
@@ -45,7 +45,7 @@ public class AutoRoutine {
   private boolean isActive = false;
 
   private final Trigger isActiveTrigger =
-      new Trigger(loop, () -> isActive && DriverStation.isEnabled());
+      new Trigger(loop, () -> isActive && RobotState.isEnabled());
 
   /** A boolean indicating if a trajectory is running on the routine right now */
   private boolean isIdle = true;
@@ -89,7 +89,7 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (DriverStation.isDisabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
+    if (RobotState.isDisabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
       isActive = false;
       return;
     }
@@ -153,7 +153,7 @@ public class AutoRoutine {
       return;
     }
     reset();
-    ChoreoAlert.alert("Killed an auto loop", kWarning).set(true);
+    ChoreoAlert.alert("Killed an auto loop", MEDIUM).set(true);
     isKilled = true;
   }
 
@@ -293,11 +293,11 @@ public class AutoRoutine {
     return Commands.either(
         Commands.run(this::poll)
             .finallyDo(this::reset)
-            .until(() -> DriverStation.isDisabled() || finishCondition.getAsBoolean())
+            .until(() -> RobotState.isDisabled() || finishCondition.getAsBoolean())
             .withName(name),
         Commands.runOnce(
             () -> {
-              ChoreoAlert.alert("Alliance not known when starting routine", kWarning).set(true);
+              ChoreoAlert.alert("Alliance not known when starting routine", MEDIUM).set(true);
               kill();
             }),
         allianceCtx::allianceKnownOrIgnored);

@@ -8,17 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectoryTestHelper;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.simulation.SimHooks;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.SchedulerMaker;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.SchedulerMaker;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.hardware.hal.RobotMode;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.simulation.DriverStationSim;
+import org.wpilib.simulation.SimHooks;
 
 public class TrajectoryCmdTest {
   private static final Pose2d start = new Pose2d();
@@ -44,10 +44,9 @@ public class TrajectoryCmdTest {
 
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setEnabled(true);
-    DriverStationSim.setAutonomous(true);
+    DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
-    assertTrue(DriverStation.isAutonomousEnabled());
+    assertTrue(DriverStationSim.getRobotMode() == RobotMode.AUTONOMOUS);
 
     for (int i = 0; i < 149; i++) {
       scheduler.run();
@@ -64,10 +63,9 @@ public class TrajectoryCmdTest {
 
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setEnabled(true);
-    DriverStationSim.setAutonomous(true);
+    DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
-    assertTrue(DriverStation.isAutonomousEnabled());
+    assertTrue(DriverStationSim.getRobotMode() == RobotMode.AUTONOMOUS);
 
     SimHooks.resumeTiming();
   }

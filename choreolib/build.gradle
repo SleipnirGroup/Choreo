@@ -1,15 +1,15 @@
-import edu.wpi.first.toolchain.*
+import org.wpilib.toolchain.*
 
 plugins {
     id 'cpp'
     id 'java'
     id 'java-library'
     id 'google-test'
-    id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2025.0'
-    id 'edu.wpi.first.NativeUtils' version '2026.0.1'
-    id 'edu.wpi.first.GradleJni' version '1.1.0'
-    id 'edu.wpi.first.GradleVsCode' version '2.1.0'
-    id 'com.diffplug.spotless' version '8.0.0'
+    id 'org.wpilib.WPILibRepositoriesPlugin' version '2027.0.0'
+    id 'org.wpilib.NativeUtils' version '2027.13.1'
+    id 'org.wpilib.GradleJni' version '2027.0.0'
+    id 'org.wpilib.GradleVsCode' version '2027.0.0'
+    id 'com.diffplug.spotless' version '8.4.0'
     id 'jacoco'
 }
 
@@ -18,15 +18,18 @@ ext.getCurrentArch = {
 }
 
 def systemArch = getCurrentArch()
+ext.wpilibVersion = '2027.0.0-alpha-6'
+def javaVersion = 25
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 repositories {
     mavenCentral()
 }
+wpilibRepositories.use2027Repos()
 if (project.hasProperty('releaseMode')) {
     wpilibRepositories.addAllReleaseRepositories(project)
 } else {
@@ -38,14 +41,13 @@ apply from: 'config.gradle'
 
 // Apply Java configuration
 dependencies {
-    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2026.1.1'
-    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2026.1.1'
-    implementation 'edu.wpi.first.wpimath:wpimath-java:2026.1.1'
-    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2026.1.1'
-    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2026.1.1'
-    implementation 'edu.wpi.first.ntcore:ntcore-java:2026.1.1'
-    implementation 'edu.wpi.first.ntcore:ntcore-cpp:2026.1.1'
-    implementation 'edu.wpi.first.hal:hal-java:2026.1.1'
+    implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
+    implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
+    implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
+    implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
+    implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
+    implementation "org.wpilib.hal:hal-java:$wpilibVersion"
+    implementation "org.wpilib.commandsv2:commandsv2-java:$wpilibVersion"
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.19.2"
     api "com.fasterxml.jackson.core:jackson-core:2.19.2"
@@ -54,9 +56,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.13.1'
 
     // This is needed to use wpilibj Filesystem class
-    testImplementation 'edu.wpi.first.cscore:cscore-java:2026.1.1'
-    testImplementation 'edu.wpi.first.cameraserver:cameraserver-java:2026.1.1'
-    testImplementation 'edu.wpi.first.hal:hal-java:2026.1.1'
+    testImplementation "org.wpilib.cscore:cscore-java:$wpilibVersion"
+    testImplementation "org.wpilib.cameraserver:cameraserver-java:$wpilibVersion"
 
     testImplementation 'us.hebi.quickbuf:quickbuf-runtime:1.4'
 
@@ -77,7 +78,8 @@ test {
     }
 }
 
-if (project.hasProperty('onlylinuxathena') || project.hasProperty('onlylinuxarm32') || project.hasProperty('onlylinuxarm64') || project.hasProperty('onlywindowsarm64')) {
+if (project.hasProperty('onlylinuxsystemcore') || project.hasProperty('onlylinuxarm64') || project.hasProperty('onlywindowsarm64')
+        || project.hasProperty('onlylinuxathena') || project.hasProperty('onlylinuxarm32')) {
     test.enabled = false
 }
 
@@ -141,7 +143,7 @@ model {
                 }
             }
 
-            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared", "googletest_static")
 
             binaries.all {
                 def arch = it.targetPlatform.name
@@ -157,8 +159,10 @@ model {
     }
 }
 
-compileJava {
+tasks.withType(JavaCompile) {
+    options.compilerArgs.add '-XDstringConcat=inline'
     options.encoding = 'UTF-8'
+    options.release = javaVersion
 }
 
 spotless {
@@ -195,7 +199,7 @@ spotless {
 }
 
 javadoc {
-    options.links("https://docs.oracle.com/en/java/javase/17/docs/api/")
+    options.links("https://docs.oracle.com/en/java/javase/$javaVersion/docs/api/")
     options.links("https://github.wpilib.org/allwpilib/docs/release/java/")
     options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
     options.addBooleanOption('html5', true)
@@ -233,5 +237,5 @@ test {
 apply from: 'publish.gradle'
 
 wrapper {
-    gradleVersion = '8.14.3'
+    gradleVersion = '9.4.1'
 }

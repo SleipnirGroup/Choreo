@@ -2,11 +2,11 @@
 
 package choreo.util;
 
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.Alert.Level;
 
 /** A utility class for creating alerts under the "Choreo Alerts" group. */
 public class ChoreoAlert {
@@ -17,7 +17,7 @@ public class ChoreoAlert {
    * @param type The type of alert
    * @return an Alert published under the "Choreo" group
    */
-  public static Alert alert(String name, AlertType type) {
+  public static Alert alert(String name, Level type) {
     return new Alert("Choreo Alerts", name, type);
   }
 
@@ -28,8 +28,7 @@ public class ChoreoAlert {
    * @param type The type of alert
    * @return a MultiAlert published under the "Choreo" group
    */
-  public static MultiAlert multiAlert(
-      Function<List<String>, String> textGenerator, AlertType type) {
+  public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Level type) {
     return new MultiAlert(textGenerator, type);
   }
 
@@ -41,7 +40,7 @@ public class ChoreoAlert {
     private final Function<List<String>, String> textGenerator;
     private final List<String> causes = new ArrayList<>();
 
-    MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
+    MultiAlert(Function<List<String>, String> textGenerator, Level type) {
       super("Choreo Alerts", textGenerator.apply(List.of()), type);
       this.textGenerator = textGenerator;
     }
@@ -67,5 +66,5 @@ public class ChoreoAlert {
    * determined.
    */
   public static final Alert allianceNotReady =
-      ChoreoAlert.alert("Alliance used but not ready", AlertType.kError);
+      ChoreoAlert.alert("Alliance used but not ready", Level.HIGH);
 }

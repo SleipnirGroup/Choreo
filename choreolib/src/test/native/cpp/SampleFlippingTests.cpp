@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include <gtest/gtest.h>
-#include <units/force.h>
-#include <wpi/json.h>
+#include <wpi/units/force.hpp>
+#include <wpi/util/json.hpp>
 
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/Trajectory.h"
@@ -29,7 +29,7 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
     SwerveSample mirrored2024{0_s,
                               util::fieldLength - 0_m,
                               0_m,
-                              units::radian_t{std::numbers::pi} - 0_rad,
+                              wpi::units::radian_t{std::numbers::pi} - 0_rad,
                               0_mps,
                               0_mps,
                               0_rad_per_s,
@@ -41,7 +41,7 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
     SwerveSample rotated2022{0_s,
                              util::fieldLength - 0_m,
                              util::fieldWidth - 0_m,
-                             units::radian_t{std::numbers::pi} + 0_rad,
+                             wpi::units::radian_t{std::numbers::pi} + 0_rad,
                              0_mps,
                              0_mps,
                              0_rad_per_s,
@@ -76,7 +76,7 @@ TEST(SampleFlippingTest, SwerveSample) {
     SwerveSample mirrored2024{0_s,
                               util::fieldLength - 1_m,
                               2_m,
-                              units::radian_t{std::numbers::pi} - 3_rad,
+                              wpi::units::radian_t{std::numbers::pi} - 3_rad,
                               -4_mps,
                               5_mps,
                               -6_rad_per_s,
@@ -88,7 +88,7 @@ TEST(SampleFlippingTest, SwerveSample) {
     SwerveSample rotated2022{0_s,
                              util::fieldLength - 1_m,
                              util::fieldWidth - 2_m,
-                             units::radian_t{std::numbers::pi} + 3_rad,
+                             wpi::units::radian_t{std::numbers::pi} + 3_rad,
                              -4_mps,
                              -5_mps,
                              6_rad_per_s,
@@ -113,7 +113,7 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
         0_rad_per_s, 0_mps_sq, 0_mps_sq, 0_rad_per_s_sq, 0_N,   0_N};
     DifferentialSample mirrored2024{
         0_s,         util::fieldLength - 0_m,
-        0_m,         units::radian_t{std::numbers::pi} - 0_rad,
+        0_m,         wpi::units::radian_t{std::numbers::pi} - 0_rad,
         0_mps,       0_mps,
         0_rad_per_s, 0_mps_sq,
         0_mps_sq,    0_rad_per_s_sq,
@@ -121,7 +121,7 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
     DifferentialSample rotated2022{0_s,
                                    util::fieldLength - 0_m,
                                    util::fieldWidth - 0_m,
-                                   units::radian_t{std::numbers::pi} + 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi} + 0_rad,
                                    0_mps,
                                    0_mps,
                                    0_rad_per_s,
@@ -146,7 +146,7 @@ TEST(SampleFlippingTest, DifferentialSample) {
         6_rad_per_s, 7_mps_sq, 8_mps_sq, 9_rad_per_s_sq, 10_N,  11_N};
     DifferentialSample mirrored2024{
         0_s,          util::fieldLength - 1_m,
-        2_m,          units::radian_t{std::numbers::pi} - 3_rad,
+        2_m,          wpi::units::radian_t{std::numbers::pi} - 3_rad,
         5_mps,        4_mps,
         -6_rad_per_s, 8_mps_sq,
         7_mps_sq,     -9_rad_per_s_sq,
@@ -154,7 +154,7 @@ TEST(SampleFlippingTest, DifferentialSample) {
     DifferentialSample rotated2022{0_s,
                                    util::fieldLength - 1_m,
                                    util::fieldWidth - 2_m,
-                                   units::radian_t{std::numbers::pi} + 3_rad,
+                                   wpi::units::radian_t{std::numbers::pi} + 3_rad,
                                    4_mps,
                                    5_mps,
                                    6_rad_per_s,

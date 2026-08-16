@@ -58,6 +58,21 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
+        relative_path=Path("choreolib/vendor_jsons/ChoreoLib2027Alpha.json"),
+        version_path=["version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/vendor_jsons/ChoreoLib2027Alpha.json"),
+        version_path=["javaDependencies", 0, "version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/vendor_jsons/ChoreoLib2027Alpha.json"),
+        version_path=["cppDependencies", 0, "version"],
+        file_format="json2",
+    ),
+    VersionLocation(
         relative_path=Path("src-tauri/tauri.conf.json"),
         version_path=["version"],
         file_format="json2",

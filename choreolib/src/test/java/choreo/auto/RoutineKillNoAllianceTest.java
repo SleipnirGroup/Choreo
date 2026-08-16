@@ -6,12 +6,12 @@ import static choreo.auto.AutoTestHelper.setAlliance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.hardware.hal.HAL;
 
 public class RoutineKillNoAllianceTest {
   AutoFactory factoryFlip;
@@ -42,13 +42,13 @@ public class RoutineKillNoAllianceTest {
 
   @Test
   void testUnFlippedBlue() {
-    setAlliance((Optional.of(Alliance.Blue)));
+    setAlliance((Optional.of(Alliance.BLUE)));
     testRoutineKill(routineNoFlip, false);
   }
 
   @Test
   void testUnFlippedRed() {
-    setAlliance(Optional.of(Alliance.Red));
+    setAlliance(Optional.of(Alliance.RED));
     testRoutineKill(routineNoFlip, false);
   }
 
@@ -60,13 +60,13 @@ public class RoutineKillNoAllianceTest {
 
   @Test
   void testFlippedBlue() {
-    setAlliance(Optional.of(Alliance.Blue));
+    setAlliance(Optional.of(Alliance.BLUE));
     testRoutineKill(routineFlip, false);
   }
 
   @Test
   void testFlippedRed() {
-    setAlliance(Optional.of(Alliance.Red));
+    setAlliance(Optional.of(Alliance.RED));
     testRoutineKill(routineFlip, false);
   }
 }
