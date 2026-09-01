@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
           fetch-depth: 0
@@ -84,7 +84,7 @@ jobs:
     name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
           persist-credentials: false
@@ -134,7 +134,7 @@ jobs:
     name: Upload vendordep JSON
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -148,13 +148,13 @@ jobs:
     name: Python
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.12
 
