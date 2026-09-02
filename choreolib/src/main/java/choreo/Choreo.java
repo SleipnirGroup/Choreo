@@ -31,6 +31,7 @@ import java.util.function.BiConsumer;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.system.Filesystem;
+import org.wpilib.util.Alert.Level;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
