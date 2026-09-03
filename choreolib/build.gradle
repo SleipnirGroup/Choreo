@@ -6,7 +6,7 @@ plugins {
     id 'java-library'
     id 'google-test'
     id 'org.wpilib.WPILibRepositoriesPlugin' version '2027.0.0'
-    id 'org.wpilib.NativeUtils' version '2027.13.1'
+    id 'org.wpilib.NativeUtils' version '2027.14.3'
     id 'org.wpilib.GradleJni' version '2027.0.0'
     id 'org.wpilib.GradleVsCode' version '2027.0.0'
     id 'com.diffplug.spotless' version '8.4.0'
@@ -41,13 +41,15 @@ apply from: 'config.gradle'
 
 // Apply Java configuration
 dependencies {
+    implementation "org.wpilib.hal:hal-java:$wpilibVersion"
     implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
+    implementation "org.wpilib.telemetry:telemetry-java:$wpilibVersion"
+    implementation "org.wpilib.tunables:tunables-java:$wpilibVersion"
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
-    implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
-    implementation "org.wpilib.hal:hal-java:$wpilibVersion"
-    implementation "org.wpilib.commandsv2:commandsv2-java:$wpilibVersion"
+    implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
+    implementation "org.wpilib:commands3-java:$wpilibVersion"
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.19.2"
     api "com.fasterxml.jackson.core:jackson-core:2.19.2"
@@ -154,7 +156,8 @@ model {
                     test.environment 'LD_LIBRARY_PATH', filePath
                     test.workingDir filePath
                 }
-            }
+                }
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared", "catch2_static")
         }
     }
 }
@@ -213,10 +216,8 @@ javadoc {
 
     // Treat javadoc warnings as errors.
     //
-    // The second argument '-quiet' is a hack. The one parameter
-    // addStringOption() doesn't work, so we add '-quiet', which is added
+
     // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
-    options.addStringOption('Werror', '-quiet')
 }
 
 jacocoTestReport {
