@@ -3,12 +3,13 @@
 #pragma once
 
 #include <concepts>
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 
-#include <fmt/format.h>
+#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/system/Errors.hpp>
 #include <wpi/system/Filesystem.hpp>
 #include <wpi/util/MemoryBuffer.hpp>
@@ -41,7 +42,7 @@ class Choreo {
           0, trajectoryName.size() - TRAJECTORY_FILE_EXTENSION.size());
     }
 
-    std::string trajectoryFileName = fmt::format(
+    std::string trajectoryFileName = std::format(
         "{}/{}{}", CHOREO_DIR, trajectoryName, TRAJECTORY_FILE_EXTENSION);
 
     auto fileBuffer = wpi::util::MemoryBuffer::GetFile(trajectoryFileName);
@@ -80,7 +81,7 @@ class Choreo {
       wpi::util::json::parse_or_throw(trajectoryJsonString);
     uint32_t version = json["version"];
     if (version != kTrajSchemaVersion) {
-      throw fmt::format("{}.traj: Wrong version {}. Expected {}",
+      throw std::format("{}.traj: Wrong version {}. Expected {}",
                         trajectoryName, version, kTrajSchemaVersion);
     }
     Trajectory<SampleType> trajectory;
@@ -131,7 +132,7 @@ class Choreo {
     /// @see Choreo#LoadTrajectory(std::string_view)
     static std::optional<Trajectory<SampleType>> LoadTrajectory(
         std::string_view trajectoryName, int splitIndex) {
-      std::string key = fmt::format("{}.:.{}", trajectoryName, splitIndex);
+      std::string key = std::format("{}.:.{}", trajectoryName, splitIndex);
 
       if (!cache.contains(key)) {
         if (cache.contains(std::string{trajectoryName})) {
