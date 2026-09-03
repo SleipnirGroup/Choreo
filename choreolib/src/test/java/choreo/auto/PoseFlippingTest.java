@@ -49,7 +49,7 @@ public class PoseFlippingTest {
     Scheduler scheduler = Scheduler.createIndependentScheduler();
     factoryFlip = AutoTestHelper.factory(scheduler, true);
     factoryNoFlip = AutoTestHelper.factory(scheduler, false);
-    Pose2d start = Pose2d.kZero;
+    Pose2d start = Pose2d.ZERO;
     Pose2d end = new Pose2d(1, 1, Rotation2d.fromRadians(1));
     Pose2d startFlipped = ChoreoAllianceFlipUtil.flip(start);
     Pose2d endFlipped = ChoreoAllianceFlipUtil.flip(end);

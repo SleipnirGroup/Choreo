@@ -18,7 +18,7 @@ ext.getCurrentArch = {
 }
 
 def systemArch = getCurrentArch()
-ext.wpilibVersion = '2027.0.0-alpha-6'
+ext.wpilibVersion = '2027.0.0-alpha-7+'
 def javaVersion = 25
 
 java {
@@ -29,7 +29,6 @@ java {
 repositories {
     mavenCentral()
 }
-wpilibRepositories.use2027Repos()
 if (project.hasProperty('releaseMode')) {
     wpilibRepositories.addAllReleaseRepositories(project)
 } else {
@@ -49,7 +48,7 @@ dependencies {
     implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
-    implementation "org.wpilib:commands3-java:$wpilibVersion"
+    implementation "org.wpilib:commandsv3-java:$wpilibVersion"
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.19.2"
     api "com.fasterxml.jackson.core:jackson-core:2.19.2"

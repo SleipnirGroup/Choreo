@@ -32,6 +32,7 @@ import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.system.Filesystem;
 import org.wpilib.util.Alert.Level;
+import org.wpilib.util.UsageReporting;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -44,7 +45,11 @@ public final class Choreo {
   private static final MultiAlert cantFindTrajectory =
       ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, HIGH);
   private static final MultiAlert cantParseTrajectory =
-      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, HIGH);
+      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, Level.HIGH);
+  private static final MultiAlert unknownTrajectoryError =
+      ChoreoAlert.multiAlert(
+          causes -> "Unknown error when parsing " + causes + "; check console for more details",
+          Level.HIGH);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -99,10 +104,7 @@ public final class Choreo {
     } catch (JsonSyntaxException ex) {
       cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
-      ChoreoAlert.alert(
-              "Unknown error when parsing " + trajectoryFile + "; check console for more details",
-              HIGH)
-          .set(true);
+      unknownTrajectoryError.addCause(trajectoryFile.toString());
       DriverStationErrors.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return Optional.empty();
@@ -171,12 +173,12 @@ public final class Choreo {
     }
     String sampleType = trajectoryObj.get("sampleType").getAsString();
     if (sampleType.equals("Swerve")) {
-      HAL.reportUsage("ChoreoTrajectory", 1, "Swerve");
+      UsageReporting.reportUsage("ChoreoTrajectory", "Swerve");
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (sampleType.equals("Differential")) {
-      HAL.reportUsage("ChoreoTrajectory", 2, "Differential");
+      UsageReporting.reportUsage("ChoreoTrajectory", "Differential");
 
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);
