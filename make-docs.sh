@@ -13,7 +13,7 @@ popd
 pushd trajoptlib
 mkdir -p build/docs
 doxygen docs/Doxyfile
-cargo doc
+cargo doc --no-deps
 popd
 
 mkdir -p site/api/{choreolib,trajoptlib}
