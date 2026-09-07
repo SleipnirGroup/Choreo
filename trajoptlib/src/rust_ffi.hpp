@@ -32,6 +32,7 @@ struct DifferentialTrajectory;
 struct Pose2d;
 struct SwerveDrivetrain;
 struct DifferentialDrivetrain;
+struct MotorConfig;
 
 class SwerveTrajectoryGenerator {
  public:

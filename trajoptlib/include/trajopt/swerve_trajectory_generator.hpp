@@ -12,6 +12,7 @@
 
 #include "trajopt/geometry/translation2.hpp"
 #include "trajopt/path/path_builder.hpp"
+#include "trajopt/motor.hpp"
 #include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
@@ -27,11 +28,9 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   /// Radius of the wheels (m).
   double wheel_radius;
 
-  /// Maximum angular velocity of each wheel (rad/s).
-  double wheel_max_angular_velocity;
-
-  /// Maximum torque applied to each wheel (N−m).
-  double wheel_max_torque;
+  /// The motor model of each drive wheel. All quantities are wheel-referenced
+  /// (motor constants scaled by the gear ratio).
+  MotorConfig motor_config;
 
   /// The Coefficient of Friction (CoF) of the wheels.
   double wheel_cof;

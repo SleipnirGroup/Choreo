@@ -4,8 +4,17 @@ import {
   MotorCurves
 } from "../components/config/robotconfig/MotorCurves";
 import { InToM, LbsToKg, MToIn } from "../util/UnitConversions";
-import { Bumper, Expr, Module, RobotConfig } from "./schema/DocumentTypes";
+import {
+  Bumper,
+  Expr,
+  Module,
+  MotorConfig,
+  RobotConfig
+} from "./schema/DocumentTypes";
 import { ExpressionStore } from "./ExpressionStore";
+
+// Nominal battery voltage assumed by the solver (v_supply in trajoptlib)
+const SUPPLY_VOLTAGE = 12;
 
 const DEFAULT_FRAME_SIZE = InToM(28);
 const DEFAULT_BUMPER = DEFAULT_FRAME_SIZE + 2 * InToM(2.5 + 0.75); // 28x28 bot with 2.5" noodle and 0.75" backing
@@ -43,6 +52,18 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   differentialTrackWidth: {
     exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
     val: DEFAULT_WHEELBASE
+  },
+  motorConfig: {
+    stall_torque: { exp: "9.36 N * m", val: 9.36 },
+    free_speed: { exp: "5800 RPM", val: (5800.0 / 60.0) * 2 * Math.PI },
+    kT: { exp: "0.0197 N * m / A", val: 0.0197 },
+    kV: {
+      exp: "0.00206896552 V / RPM",
+      val: (0.00206896552 * 60) / (2 * Math.PI)
+    },
+    kS: { exp: "0.4 V", val: 0.4 },
+    supply_limit: { exp: "60 A", val: 60.0 },
+    stator_limit: { exp: "120 A", val: 120.0 }
   }
 };
 
@@ -82,6 +103,55 @@ export const BumperStore = types
       self.front.deserialize(ser.front);
       self.back.deserialize(ser.back);
       self.side.deserialize(ser.side);
+    }
+  }));
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
+export const MotorConfigStore = types
+  .model("MotorConfig", {
+    free_speed: ExpressionStore,
+    stall_torque: ExpressionStore,
+    kT: ExpressionStore,
+    kV: ExpressionStore,
+    kS: ExpressionStore,
+    supply_limit: ExpressionStore,
+    stator_limit: ExpressionStore
+  })
+  .views((self) => ({
+    get serialize(): MotorConfig<Expr> {
+      return {
+        free_speed: self.free_speed.serialize,
+        stall_torque: self.stall_torque.serialize,
+        kT: self.kT.serialize,
+        kV: self.kV.serialize,
+        kS: self.kS.serialize,
+        supply_limit: self.supply_limit.serialize,
+        stator_limit: self.stator_limit.serialize
+      };
+    },
+    get snapshot(): MotorConfig<number> {
+      return {
+        free_speed: self.free_speed.value,
+        stall_torque: self.stall_torque.value,
+        kT: self.kT.value,
+        kV: self.kV.value,
+        kS: self.kS.value,
+        supply_limit: self.supply_limit.value,
+        stator_limit: self.stator_limit.value
+      };
+    }
+  }))
+  .actions((self) => ({
+    deserialize(ser: MotorConfig<Expr>) {
+      self.free_speed.deserialize(ser.free_speed);
+      self.stall_torque.deserialize(ser.stall_torque);
+      self.kT.deserialize(ser.kT);
+      self.kV.deserialize(ser.kV);
+      self.kS.deserialize(ser.kS);
+      self.supply_limit.deserialize(ser.supply_limit);
+      self.stator_limit.deserialize(ser.stator_limit);
     }
   }));
 
@@ -130,15 +200,21 @@ export const RobotConfigStore = types
     frontLeft: ModuleStore,
     backLeft: ModuleStore,
     differentialTrackWidth: ExpressionStore,
+    motorConfig: MotorConfigStore,
     identifier: types.identifier
   })
   .views((self) => {
     return {
       get wheelMaxVelocity() {
-        return self.vmax.value / self.gearing.value;
+        const motor = self.motorConfig;
+        return (
+          (SUPPLY_VOLTAGE - motor.kS.value) /
+          (motor.kV.value * self.gearing.value)
+        );
       },
       get wheelMaxTorque() {
-        return self.tmax.value * self.gearing.value;
+        const motor = self.motorConfig;
+        return motor.kT.value * self.gearing.value * motor.stator_limit.value;
       },
       get serialize(): RobotConfig<Expr> {
         return {
@@ -152,6 +228,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.serialize,
           frontLeft: self.frontLeft.serialize,
           backLeft: self.backLeft.serialize,
+          motorConfig: self.motorConfig.serialize,
           differentialTrackWidth: self.differentialTrackWidth.serialize
         };
       },
@@ -185,6 +262,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.snapshot,
           frontLeft: self.frontLeft.snapshot,
           backLeft: self.backLeft.snapshot,
+          motorConfig: self.motorConfig.snapshot,
           differentialTrackWidth: self.differentialTrackWidth.value
         };
       }
@@ -203,6 +281,7 @@ export const RobotConfigStore = types
         self.bumper.deserialize(config.bumper);
         self.frontLeft.deserialize(config.frontLeft);
         self.backLeft.deserialize(config.backLeft);
+        self.motorConfig.deserialize(config.motorConfig);
         self.differentialTrackWidth.deserialize(config.differentialTrackWidth);
       }
     };

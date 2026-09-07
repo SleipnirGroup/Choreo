@@ -62,6 +62,15 @@
     "side":0.4064,
     "back":0.4064
    },
+   "motorConfig":{
+    "free_speed":607.3745796940267,
+    "stall_torque":9.36,
+    "kT":0.0197,
+    "kV":0.019757165375681618,
+    "kS":0.4,
+    "supply_limit":60.0,
+    "stator_limit":120.0
+   },
    "differentialTrackWidth":0.5588
   },
   "sampleType":"Swerve",

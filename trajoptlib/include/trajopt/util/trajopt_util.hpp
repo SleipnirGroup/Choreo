@@ -98,4 +98,22 @@ inline double calculate_trapezoidal_time(double distance, double velocity,
   }
 }
 
+/// Returns the time an exponential profile takes to travel a given distance
+/// from rest to rest.
+///
+/// @param distance The distance to travel.
+/// @param velocity The profile's maximum (steady-state) velocity.
+/// @param acceleration The profile's from-rest acceleration.
+inline double calculate_exponential_time(double distance, double velocity,
+                                         double acceleration) {
+  if (distance <= 0.0 || velocity <= 0.0 || acceleration <= 0.0) {
+    return 0.0;
+  }
+
+  const double tau = velocity / acceleration;
+  const double X = distance / (velocity * tau);
+  const double p = std::sqrt(1.0 - std::exp(-X));
+  return tau * (2.0 * std::log1p(p) + X);
+}
+
 }  // namespace trajopt

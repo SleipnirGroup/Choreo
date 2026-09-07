@@ -23,6 +23,8 @@ pkgs.mkShell {
     webkitgtk_4_1
   ];
 
+  hardeningDisable = [ "fortify" ];
+
   shellHook = ''
     export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH" # Needed on Wayland to report the correct display scale
     pipx install wpiformat

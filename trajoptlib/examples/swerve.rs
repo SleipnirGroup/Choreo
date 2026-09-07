@@ -1,4 +1,4 @@
-use trajoptlib::{SwerveDrivetrain, SwerveTrajectoryGenerator, Translation2d};
+use trajoptlib::{MotorConfig, SwerveDrivetrain, SwerveTrajectoryGenerator, Translation2d};
 
 fn main() {
     let drivetrain = SwerveDrivetrain {
@@ -8,10 +8,23 @@ fn main() {
         moi: 6.0,
         // m
         wheel_radius: 0.04,
-        // rad/s
-        wheel_max_angular_velocity: 70.0,
-        // N-m
-        wheel_max_torque: 2.0,
+        // wheel-referenced (motor constants scaled by gearing)
+        motor_config: MotorConfig {
+            // rad/s
+            free_speed: 70.0,
+            // N-m
+            stall_torque: 63.0,
+            // N-m/A
+            kT: 0.133,
+            // V/(rad/s)
+            kV: 0.133,
+            // V
+            kS: 0.4,
+            // A
+            supply_limit: 60.0,
+            // A
+            stator_limit: 120.0,
+        },
         // unitless
         wheel_cof: 1.5,
         // m

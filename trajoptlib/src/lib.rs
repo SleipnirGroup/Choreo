@@ -27,6 +27,35 @@ mod ffi {
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// A DC motor model for a single drive wheel.
+    ///
+    /// All rotational quantities are referenced to the wheel, not the motor
+    /// shaft. To convert from motor constants to wheel-referenced constants,
+    /// divide speeds by the gear ratio and multiply torques, kT, and kV by the
+    /// gear ratio. kS and the current limits are unaffected by gearing.
+    ///
+    /// The model assumes a 12 V nominal supply.
+    struct MotorConfig {
+        /// Free speed of the wheel at nominal voltage (rad/s).
+        free_speed: f64,
+        /// Stall torque applied to the wheel at nominal voltage (N−m).
+        stall_torque: f64,
+        /// Torque constant: wheel torque per amp of stator current (N−m/A).
+        kT: f64,
+        /// Velocity constant: back-EMF voltage per unit of wheel angular
+        /// velocity (V/(rad/s)).
+        kV: f64,
+        /// Static friction voltage: the voltage required to overcome friction
+        /// and start the wheel moving (V). This is the kS term from SysID.
+        kS: f64,
+        /// Maximum current drawn from the supply per motor (A).
+        supply_limit: f64,
+        /// Maximum stator current per motor (A). Also bounds the braking
+        /// current.
+        stator_limit: f64,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     /// A swerve drivetrain physical model.
     struct SwerveDrivetrain {
         /// The mass of the robot (kg).
@@ -35,10 +64,9 @@ mod ffi {
         moi: f64,
         /// Radius of the wheels (m).
         wheel_radius: f64,
-        /// Maximum angular velocity of each wheel (rad/s).
-        wheel_max_angular_velocity: f64,
-        /// Maximum torque applied to each wheel (N−m).
-        wheel_max_torque: f64,
+        /// The motor model of each drive wheel. All quantities are
+        /// wheel-referenced (motor constants scaled by the gear ratio).
+        motor_config: MotorConfig,
         /// The Coefficient of Friction (CoF) of the wheels.
         wheel_cof: f64,
         /// Translation of each swerve module from the origin of the robot
@@ -1744,6 +1772,7 @@ use error::TrajoptError;
 pub use ffi::DifferentialDrivetrain;
 pub use ffi::DifferentialTrajectory;
 pub use ffi::DifferentialTrajectorySample;
+pub use ffi::MotorConfig;
 pub use ffi::Pose2d;
 pub use ffi::SwerveDrivetrain;
 pub use ffi::SwerveTrajectory;
