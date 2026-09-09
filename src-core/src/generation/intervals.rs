@@ -51,7 +51,8 @@ pub fn guess_control_interval_count(
             let mut max_linear_vel = config.wheel_max_velocity() * config.radius;
             let mut max_linear_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
-            // find max wheel position radius for calculating max angular velocity
+            // find max wheel position radius for calculating max angular
+            // velocity
             let max_wheel_position_radius =
                 config.back_left.radius().max(config.front_left.radius());
             let mut max_ang_vel = max_linear_vel / max_wheel_position_radius;
@@ -123,7 +124,8 @@ pub fn guess_control_interval_count(
 }
 
 fn calculate_trapezoidal_time(distance: f64, max_vel: f64, max_accel: f64) -> f64 {
-    // accel + deccel distance = (max_linear_vel * max_linear_vel) / max_linear_accel
+    // accel + deccel distance = (max_linear_vel * max_linear_vel) /
+    // max_linear_accel
     if distance == 0.0 || max_vel == 0.0 {
         return 0.0;
     }

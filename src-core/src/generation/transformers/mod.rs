@@ -69,7 +69,8 @@ pub fn set_initial_guess(params: &mut Parameters<f64>) {
 }
 
 fn update_control_intervals(params: &mut Parameters<f64>, counts_vec: &Vec<usize>) {
-    // set the intervals on the waypoints correctly (instead of copying counts_vec through everything)
+    // set the intervals on the waypoints correctly (instead of copying
+    // counts_vec through everything)
     params
         .waypoints
         .iter_mut()
@@ -110,8 +111,8 @@ impl TrajectoryFileGenerator {
         handle: i64,
     ) -> ChoreoResult<Self> {
         // Mark unconstrained empty waypoints as initial guess points.
-        // Adjust non-equality-constrained waypoint headings to fit trajectory constraints; error if impossible.
-        // Estimate control intervals
+        // Adjust non-equality-constrained waypoint headings to fit trajectory
+        // constraints; error if impossible. Estimate control intervals
         let mut params = trajectory_file.params.snapshot();
         adjust_headings(&mut params)?;
         set_initial_guess(&mut params);
@@ -132,7 +133,8 @@ impl TrajectoryFileGenerator {
         })
     }
 
-    /// Add a transformer to the generator that is only applied when generating a swerve trajectory
+    /// Add a transformer to the generator that is only applied when generating
+    /// a swerve trajectory
     pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(&mut self) {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
@@ -143,7 +145,8 @@ impl TrajectoryFileGenerator {
             .push(transformer);
     }
 
-    /// Add a transformer to the generator that is only applied when generating a differential trajectory
+    /// Add a transformer to the generator that is only applied when generating
+    /// a differential trajectory
     pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
@@ -154,7 +157,8 @@ impl TrajectoryFileGenerator {
             .push(transformer);
     }
 
-    /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
+    /// Add a transformer to the generator that is applied when generating both
+    /// swerve and differential trajectories
     pub fn add_omni_transformer<
         T: SwerveGenerationTransformer + DifferentialGenerationTransformer + 'static,
     >(
@@ -214,14 +218,16 @@ impl TrajectoryFileGenerator {
         let snapshot = original_params.snapshot();
         let mut original_events = self.original_file.events.clone();
 
-        // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
-        // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
+        // Calculate the waypoint timing (a vec of the timestamps of each
+        // waypoint) starting value of 0, plus 0 (intervals before the
+        // first waypoint) = 0 (index of the first waypoint)
         let mut interval = 0;
         // `intervals` contains (
-        //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
-        //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
-        //    The timestamp of the sample indexed by the previous parameter
-        // )
+        //    was the waypoint either a non-ending split point or the start
+        // point (i.e, was it the beginning of a split segment)
+        //    the total number of intervals before this waypoint (not including
+        // the one the waypoint constrains),    The timestamp of the
+        // sample indexed by the previous parameter )
         let intervals = snapshot
             .waypoints
             .iter()
@@ -248,8 +254,9 @@ impl TrajectoryFileGenerator {
             .map(|a| a.1) // map to associate an index in the samples array
             .collect::<Vec<usize>>();
 
-        // update event markers' target timestamps with the corresponding timestamp from waypoint_times
-        // or None if the targeted index is None or out of bounds
+        // update event markers' target timestamps with the corresponding
+        // timestamp from waypoint_times or None if the targeted index
+        // is None or out of bounds
         original_events.iter_mut().for_each(|marker| {
             marker.from.target_timestamp = marker.from.target.and_then(|idx| {
                 waypoint_times
@@ -311,7 +318,8 @@ impl<T> FeatureLockedTransformer<T> {
 
 /// An object safe variant of the [`SwerveGenerationTransformer`] trait,
 ///
-/// Should not be implemented directly, instead implement [`SwerveGenerationTransformer`]
+/// Should not be implemented directly, instead implement
+/// [`SwerveGenerationTransformer`]
 pub(super) trait InitializedSwerveGenerationTransformer {
     fn trans(&self, generator: &mut SwerveTrajectoryGenerator);
 }
@@ -332,7 +340,8 @@ impl<T: SwerveGenerationTransformer> InitializedSwerveGenerationTransformer for 
 
 /// An object safe variant of the [`DifferentialGenerationTransformer`] trait,
 ///
-/// Should not be implemented directly, instead implement [`DifferentialGenerationTransformer`]
+/// Should not be implemented directly, instead implement
+/// [`DifferentialGenerationTransformer`]
 pub(super) trait InitializedDifferentialGenerationTransformer {
     fn trans(&self, generator: &mut DifferentialTrajectoryGenerator);
 }

@@ -1,79 +1,140 @@
+#![deny(missing_docs)]
+#![doc = include_str!("../README.md")]
+
+// cxx generates `Clone` impls for the FFI structs below; nightly clippy flags
+// the derive-expanded field copies as `clone_on_copy` false positives.
+#[allow(clippy::clone_on_copy)]
 #[cxx::bridge(namespace = "trajopt::rsffi")]
 mod ffi {
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Represents a translation in 2D space.
     struct Translation2d {
+        /// The x component of the translation.
         x: f64,
+        /// The y component of the translation.
         y: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Represents a 2D pose with translation and rotation.
+    struct Pose2d {
+        /// The x component of the translational component of the pose.
+        x: f64,
+        /// The y component of the translational component of the pose.
+        y: f64,
+        /// The rotational component of the pose.
+        heading: f64,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// A swerve drivetrain physical model.
     struct SwerveDrivetrain {
+        /// The mass of the robot (kg).
         mass: f64,
+        /// The moment of inertia of the robot about the origin (kg−m²).
         moi: f64,
+        /// Radius of the wheels (m).
         wheel_radius: f64,
+        /// Maximum angular velocity of each wheel (rad/s).
         wheel_max_angular_velocity: f64,
+        /// Maximum torque applied to each wheel (N−m).
         wheel_max_torque: f64,
+        /// The Coefficient of Friction (CoF) of the wheels.
         wheel_cof: f64,
+        /// Translation of each swerve module from the origin of the robot
+        /// coordinate system to the center of the module (m). There's
+        /// usually one in each corner.
         modules: Vec<Translation2d>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
-    struct DifferentialDrivetrain {
-        mass: f64,
-        moi: f64,
-        wheel_radius: f64,
-        wheel_max_angular_velocity: f64,
-        wheel_max_torque: f64,
-        wheel_cof: f64,
-        trackwidth: f64,
-    }
-
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    struct Pose2d {
-        x: f64,
-        y: f64,
-        heading: f64,
-    }
-
-    #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Swerve trajectory sample.
     struct SwerveTrajectorySample {
+        /// The timestamp.
         timestamp: f64,
+        /// The x coordinate.
         x: f64,
+        /// The y coordinate.
         y: f64,
+        /// The heading.
         heading: f64,
+        /// The velocity's x component.
         velocity_x: f64,
+        /// The velocity's y component.
         velocity_y: f64,
+        /// The angular velocity.
         angular_velocity: f64,
+        /// The acceleration's x component.
         acceleration_x: f64,
+        /// The acceleration's y component.
         acceleration_y: f64,
+        /// The angular acceleration.
         angular_acceleration: f64,
+        /// The force on each module in the X direction.
         module_forces_x: Vec<f64>,
+        /// The force on each module in the Y direction.
         module_forces_y: Vec<f64>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Swerve trajectory.
     struct SwerveTrajectory {
+        /// The samples that make up the trajectory.
         samples: Vec<SwerveTrajectorySample>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// A differential drivetrain physical model.
+    struct DifferentialDrivetrain {
+        /// The mass of the robot (kg).
+        mass: f64,
+        /// The moment of inertia of the robot about the origin (kg−m²).
+        moi: f64,
+        /// Radius of the wheels (m).
+        wheel_radius: f64,
+        /// Maximum angular velocity of the wheels (rad/s).
+        wheel_max_angular_velocity: f64,
+        /// Maximum torque applied to the wheels (N−m).
+        wheel_max_torque: f64,
+        /// The Coefficient of Friction (CoF) of the wheels.
+        wheel_cof: f64,
+        /// Distance between the two driverails (m).
+        trackwidth: f64,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Differential trajectory sample.
     struct DifferentialTrajectorySample {
+        /// The timestamp.
         timestamp: f64,
+        /// The x coordinate.
         x: f64,
+        /// The y coordinate.
         y: f64,
+        /// The heading.
         heading: f64,
+        /// The left wheel's velocity.
         velocity_l: f64,
+        /// The right wheel's velocity.
         velocity_r: f64,
+        /// The chassis angular velocity.
         angular_velocity: f64,
+        /// The left wheel's acceleration.
         acceleration_l: f64,
+        /// The right wheel's acceleration.
         acceleration_r: f64,
+        /// The chassis angular acceleration.
         angular_acceleration: f64,
+        /// The left wheel's force.
         force_l: f64,
+        /// The right wheel's force.
         force_r: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Differential trajectory.
     struct DifferentialTrajectory {
+        /// The samples that make up the trajectory.
         samples: Vec<DifferentialTrajectorySample>,
     }
 
@@ -503,6 +564,8 @@ mod ffi {
     }
 }
 
+/// This trajectory generator class contains functions to generate
+/// time-optimal trajectories for several drivetrain types.
 pub struct SwerveTrajectoryGenerator {
     generator: cxx::UniquePtr<crate::ffi::SwerveTrajectoryGenerator>,
 }
@@ -514,16 +577,25 @@ impl Default for SwerveTrajectoryGenerator {
 }
 
 impl SwerveTrajectoryGenerator {
+    /// Construct a new swerve trajectory optimization problem.
     pub fn new() -> SwerveTrajectoryGenerator {
         SwerveTrajectoryGenerator {
             generator: crate::ffi::swerve_trajectory_generator_new(),
         }
     }
 
+    /// Set the Drivetrain object.
     pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::SwerveDrivetrain) {
         crate::ffi::SwerveTrajectoryGenerator::set_drivetrain(self.generator.pin_mut(), drivetrain);
     }
 
+    /// Add a rectangular bumper to a list used when applying
+    /// keep-out constraints.
+    ///
+    /// * `front` - Distance in meters from center to front bumper edge
+    /// * `left` - Distance in meters from center to left bumper edge
+    /// * `right` - Distance in meters from center to right bumper edge
+    /// * `back` - Distance in meters from center to back bumper edge
     pub fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
         crate::ffi::SwerveTrajectoryGenerator::set_bumpers(
             self.generator.pin_mut(),
@@ -534,6 +606,11 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// If using a discrete algorithm, specify the number of discrete
+    /// samples for every segment of the trajectory
+    ///
+    /// * `counts` - the sequence of control interval counts per segment, length
+    ///   is number of waypoints - 1
     pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
         crate::ffi::SwerveTrajectoryGenerator::set_control_interval_counts(
             self.generator.pin_mut(),
@@ -543,6 +620,15 @@ impl SwerveTrajectoryGenerator {
 
     // Constraints with waypoint scope
 
+    /// Create a pose waypoint constraint on the waypoint at the provided
+    /// index, and add an initial guess with the same pose This specifies that
+    /// the position and heading of the robot at the waypoint must be fixed
+    /// at the values provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `heading` - the heading
     pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
         crate::ffi::SwerveTrajectoryGenerator::pose_wpt(
             self.generator.pin_mut(),
@@ -553,6 +639,15 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Create a translation waypoint constraint on the waypoint at the
+    /// provided index, and add an initial guess point with the same
+    /// translation. This specifies that the position of the robot at the
+    /// waypoint must be fixed at the value provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `headingGuess` - optionally, an initial guess of the heading
     pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
         crate::ffi::SwerveTrajectoryGenerator::translation_wpt(
             self.generator.pin_mut(),
@@ -563,6 +658,14 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Create an empty waypoint at the provided index, and provide a guess of
+    /// the instantaneous pose of the robot there. The waypoint itself is left
+    /// unconstrained.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `x_guess` - an initial guess of the x
+    /// * `y_guess` - an initial guess of the y
+    /// * `heading_guess` - an initial guess of the heading
     pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
         crate::ffi::SwerveTrajectoryGenerator::empty_wpt(
             self.generator.pin_mut(),
@@ -575,6 +678,15 @@ impl SwerveTrajectoryGenerator {
 
     // Segment initial guess points setter
 
+    /// Add a sequence of initial guess points between two waypoints. The points
+    /// are inserted between the waypoints at `from_index` and `from_index` + 1.
+    /// Linear interpolation between the waypoint initial guess points and these
+    /// segment initial guess points is used as the initial guess of the robot's
+    /// pose over the trajectory.
+    ///
+    /// * `from_index` - index of the waypoint the initial guess points come
+    ///   immediately after
+    /// * `guess_points` - the sequence of initial guess points
     pub fn sgmt_initial_guess_points(
         &mut self,
         from_index: usize,
@@ -589,6 +701,12 @@ impl SwerveTrajectoryGenerator {
 
     // Constraints with waypoint scope
 
+    /// Apply a linear velocity direction equality constraint to the waypoint
+    /// at the provided index. This constrains the direction of the robot's
+    /// linear velocity, but not its magnitude.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `angle` - the direction of the linear velocity (radians)
     pub fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_linear_velocity_direction(
             self.generator.pin_mut(),
@@ -597,6 +715,12 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear velocity max magnitude inequality constraint to
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `magnitude` - the maximum linear velocity magnitude (m/s). Must be
+    ///   nonnegative.
     pub fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_linear_velocity_max_magnitude(
             self.generator.pin_mut(),
@@ -605,6 +729,12 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply an angular velocity max magnitude inequality constraint to
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `angular_velocity` - the maximum angular velocity magnitude (rad/s).
+    ///   Must be nonnegative.
     pub fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_angular_velocity_max_magnitude(
             self.generator.pin_mut(),
@@ -613,6 +743,12 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear acceleration max magnitude inequality constraint to
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `magnitude` - the maximum linear acceleration magnitude (m/s²). Must
+    ///   be nonnegative.
     pub fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
             self.generator.pin_mut(),
@@ -621,6 +757,16 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply a point-at constraint to the waypoint at the provided index,
+    /// specifying a point on the field at which the robot should point.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_point_x` - the x coordinate of the field point
+    /// * `field_point_y` - the y coordinate of the field point
+    /// * `heading_tolerance` - the allowed robot heading tolerance (radians).
+    ///   Must be nonnegative.
+    /// * `flip` - false points at the field point while true points away from
+    ///   the field point
     pub fn wpt_point_at(
         &mut self,
         index: usize,
@@ -639,6 +785,13 @@ impl SwerveTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers within a circle on the field at the waypoint at
+    /// the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_point_x` - the x coordinate of the circle's center
+    /// * `field_point_y` - the y coordinate of the circle's center
+    /// * `keep_in_radius` - the radius of the circle (m). Must be nonnegative.
     pub fn wpt_keep_in_circle(
         &mut self,
         index: usize,
@@ -655,6 +808,14 @@ impl SwerveTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers within a polygon on the field at the waypoint
+    /// at the provided index. The polygon's points must be wound
+    /// counterclockwise. Does nothing if the two coordinate lists have
+    /// different lengths.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_points_x` - the x coordinates of the polygon's points
+    /// * `field_points_y` - the y coordinates of the polygon's points
     pub fn wpt_keep_in_polygon(
         &mut self,
         index: usize,
@@ -669,6 +830,18 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's center between two lines parallel to a center line over
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `center_line_start_x` - the x coordinate of the center line's start
+    ///   point
+    /// * `center_line_start_y` - the y coordinate of the center line's start
+    ///   point
+    /// * `center_line_end_x` - the x coordinate of the center line's end point
+    /// * `center_line_end_y` - the y coordinate of the center line's end point
+    /// * `tolerance` - distance from the center line to each lane edge (m).
+    ///   Passing zero constrains the robot to the center line itself.
     pub fn wpt_keep_in_lane(
         &mut self,
         index: usize,
@@ -689,6 +862,14 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's bumpers out of a circle on the field at the waypoint at
+    /// the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_point_x` - the x coordinate of the circle's center
+    /// * `field_point_y` - the y coordinate of the circle's center
+    /// * `keep_in_radius` - the radius of the keep-out circle (m). Must be
+    ///   nonnegative.
     pub fn wpt_keep_out_circle(
         &mut self,
         index: usize,
@@ -707,6 +888,14 @@ impl SwerveTrajectoryGenerator {
 
     // Constraints with segment scope
 
+    /// Apply a linear velocity direction equality constraint to the continuum
+    /// of state between the waypoints at `from_index` and `to_index`. This
+    /// constrains the direction of the robot's linear velocity, but not its
+    /// magnitude.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `angle` - the direction of the linear velocity (radians)
     pub fn sgmt_linear_velocity_direction(
         &mut self,
         from_index: usize,
@@ -721,6 +910,14 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear velocity max magnitude inequality constraint to
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `magnitude` - the maximum linear velocity magnitude (m/s). Must be
+    ///   nonnegative.
     pub fn sgmt_linear_velocity_max_magnitude(
         &mut self,
         from_index: usize,
@@ -735,6 +932,14 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply an angular velocity max magnitude inequality constraint to
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `angular_velocity` - the maximum angular velocity magnitude (rad/s).
+    ///   Must be nonnegative.
     pub fn sgmt_angular_velocity_max_magnitude(
         &mut self,
         from_index: usize,
@@ -749,6 +954,14 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear acceleration max magnitude inequality constraint to
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `magnitude` - the maximum linear acceleration magnitude (m/s²). Must
+    ///   be nonnegative.
     pub fn sgmt_linear_acceleration_max_magnitude(
         &mut self,
         from_index: usize,
@@ -763,6 +976,14 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's bumpers within a circle on the field over the continuum
+    /// of state between the waypoints at `from_index` and `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `field_point_x` - the x coordinate of the circle's center
+    /// * `field_point_y` - the y coordinate of the circle's center
+    /// * `keep_in_radius` - the radius of the circle (m). Must be nonnegative.
     pub fn sgmt_keep_in_circle(
         &mut self,
         from_index: usize,
@@ -781,6 +1002,16 @@ impl SwerveTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers within a polygon on the field over the
+    /// continuum of state between the waypoints at `from_index` and
+    /// `to_index`.The polygon's points must be wound
+    /// counterclockwise. Does nothing if the two coordinate lists have
+    /// different lengths.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `field_points_x` - the x coordinates of the polygon's points
+    /// * `field_points_y` - the y coordinates of the polygon's points
     pub fn sgmt_keep_in_polygon(
         &mut self,
         from_index: usize,
@@ -797,6 +1028,20 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's center between two lines parallel to a center line over
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `center_line_start_x` - the x coordinate of the center line's start
+    ///   point
+    /// * `center_line_start_y` - the y coordinate of the center line's start
+    ///   point
+    /// * `center_line_end_x` - the x coordinate of the center line's end point
+    /// * `center_line_end_y` - the y coordinate of the center line's end point
+    /// * `tolerance` - distance from the center line to each lane edge (m).
+    ///   Passing zero constrains the robot to the center line itself.
     #[allow(clippy::too_many_arguments)]
     pub fn sgmt_keep_in_lane(
         &mut self,
@@ -820,6 +1065,14 @@ impl SwerveTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers out of a circle on the field over the continuum
+    /// of state between the waypoints at `from_index` and `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `x` - the x coordinate of the circle's center
+    /// * `y` - the y coordinate of the circle's center
+    /// * `radius` - the radius of the keep-out circle (m). Must be nonnegative.
     pub fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
@@ -838,6 +1091,18 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Apply a point-at constraint to the continuum of state between the
+    /// waypoints at `from_index` and `to_index`, specifying a point on the
+    /// field at which the robot should point.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `field_point_x` - the x coordinate of the field point
+    /// * `field_point_y` - the y coordinate of the field point
+    /// * `heading_tolerance` - the allowed robot heading tolerance (radians).
+    ///   Must be nonnegative.
+    /// * `flip` - false points at the field point while true points away from
+    ///   the field point
     pub fn sgmt_point_at(
         &mut self,
         from_index: usize,
@@ -858,11 +1123,10 @@ impl SwerveTrajectoryGenerator {
         )
     }
 
-    ///
     /// Add a callback that will be called on each iteration of the solver.
     ///
-    /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///   parameter will be a `trajopt::SwerveTrajectory`, and the second
+    /// * `callback` - a `fn` (not a closure) to be executed. The callback's
+    ///   first parameter will be a `trajopt::SwerveTrajectory`, and the second
     ///   parameter will be an `i64` equal to the handle passed in `generate()`
     ///
     /// This function can be called multiple times to add multiple callbacks.
@@ -870,14 +1134,13 @@ impl SwerveTrajectoryGenerator {
         crate::ffi::SwerveTrajectoryGenerator::add_callback(self.generator.pin_mut(), callback);
     }
 
-    ///
     /// Generate the trajectory;
     ///
-    /// * diagnostics: If true, prints per-iteration details of the solver to
+    /// * `diagnostics` - If true, prints per-iteration details of the solver to
     ///   stdout.
-    /// * handle: A number used to identify results from this generation in the
-    ///   `add_callback` callback. If `add_callback` has not been called, this
-    ///   value has no significance.
+    /// * `handle` - A number used to identify results from this generation in
+    ///   the `add_callback` callback. If `add_callback` has not been called,
+    ///   this value has no significance.
     ///
     /// Returns a result with either the final `trajopt::SwerveTrajectory`,
     /// or a TrajoptError if generation failed.
@@ -899,6 +1162,8 @@ impl SwerveTrajectoryGenerator {
     }
 }
 
+/// This trajectory generator class contains functions to generate
+/// time-optimal trajectories for differential drivetrain types.
 pub struct DifferentialTrajectoryGenerator {
     generator: cxx::UniquePtr<crate::ffi::DifferentialTrajectoryGenerator>,
 }
@@ -910,12 +1175,14 @@ impl Default for DifferentialTrajectoryGenerator {
 }
 
 impl DifferentialTrajectoryGenerator {
+    /// Construct a new differential trajectory optimization problem.
     pub fn new() -> DifferentialTrajectoryGenerator {
         DifferentialTrajectoryGenerator {
             generator: crate::ffi::differential_trajectory_generator_new(),
         }
     }
 
+    /// Set the Drivetrain object.
     pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::DifferentialDrivetrain) {
         crate::ffi::DifferentialTrajectoryGenerator::set_drivetrain(
             self.generator.pin_mut(),
@@ -923,6 +1190,13 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Add a rectangular bumper to a list used when applying
+    /// keep-out constraints.
+    ///
+    /// * `front` - Distance in meters from center to front bumper edge
+    /// * `left` - Distance in meters from center to left bumper edge
+    /// * `right` - Distance in meters from center to right bumper edge
+    /// * `back` - Distance in meters from center to back bumper edge
     pub fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::set_bumpers(
             self.generator.pin_mut(),
@@ -933,6 +1207,11 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// If using a discrete algorithm, specify the number of discrete
+    /// samples for every segment of the trajectory
+    ///
+    /// * `counts` - the sequence of control interval counts per segment, length
+    ///   is number of waypoints - 1
     pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
         crate::ffi::DifferentialTrajectoryGenerator::set_control_interval_counts(
             self.generator.pin_mut(),
@@ -942,6 +1221,15 @@ impl DifferentialTrajectoryGenerator {
 
     // Pose constraints
 
+    /// Create a pose waypoint constraint on the waypoint at the provided
+    /// index, and add an initial guess with the same pose This specifies that
+    /// the position and heading of the robot at the waypoint must be fixed
+    /// at the values provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `heading` - the heading
     pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::pose_wpt(
             self.generator.pin_mut(),
@@ -952,6 +1240,15 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Create a translation waypoint constraint on the waypoint at the
+    /// provided index, and add an initial guess point with the same
+    /// translation. This specifies that the position of the robot at the
+    /// waypoint must be fixed at the value provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `headingGuess` - optionally, an initial guess of the heading
     pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::translation_wpt(
             self.generator.pin_mut(),
@@ -962,6 +1259,14 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Create an empty waypoint at the provided index, and provide a guess of
+    /// the instantaneous pose of the robot there. The waypoint itself is left
+    /// unconstrained.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `x_guess` - an initial guess of the x
+    /// * `y_guess` - an initial guess of the y
+    /// * `heading_guess` - an initial guess of the heading
     pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::empty_wpt(
             self.generator.pin_mut(),
@@ -974,6 +1279,15 @@ impl DifferentialTrajectoryGenerator {
 
     // Segment initial guess points setter
 
+    /// Add a sequence of initial guess points between two waypoints. The points
+    /// are inserted between the waypoints at `from_index` and `from_index` + 1.
+    /// Linear interpolation between the waypoint initial guess points and these
+    /// segment initial guess points is used as the initial guess of the robot's
+    /// pose over the trajectory.
+    ///
+    /// * `from_index` - index of the waypoint the initial guess points come
+    ///   immediately after
+    /// * `guess_points` - the sequence of initial guess points
     pub fn sgmt_initial_guess_points(
         &mut self,
         from_index: usize,
@@ -988,6 +1302,12 @@ impl DifferentialTrajectoryGenerator {
 
     // Constraints with waypoint scope
 
+    /// Apply a linear velocity direction equality constraint to the waypoint
+    /// at the provided index. This constrains the direction of the robot's
+    /// linear velocity, but not its magnitude.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `angle` - the direction of the linear velocity (radians)
     pub fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_linear_velocity_direction(
             self.generator.pin_mut(),
@@ -996,6 +1316,12 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear velocity max magnitude inequality constraint to
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `magnitude` - the maximum linear velocity magnitude (m/s). Must be
+    ///   nonnegative.
     pub fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_linear_velocity_max_magnitude(
             self.generator.pin_mut(),
@@ -1004,6 +1330,12 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply an angular velocity max magnitude inequality constraint to
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `angular_velocity` - the maximum angular velocity magnitude (rad/s).
+    ///   Must be nonnegative.
     pub fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_angular_velocity_max_magnitude(
             self.generator.pin_mut(),
@@ -1012,6 +1344,12 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear acceleration max magnitude inequality constraint to
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `magnitude` - the maximum linear acceleration magnitude (m/s²). Must
+    ///   be nonnegative.
     pub fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
             self.generator.pin_mut(),
@@ -1020,6 +1358,16 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply a point-at constraint to the waypoint at the provided index,
+    /// specifying a point on the field at which the robot should point.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_point_x` - the x coordinate of the field point
+    /// * `field_point_y` - the y coordinate of the field point
+    /// * `heading_tolerance` - the allowed robot heading tolerance (radians).
+    ///   Must be nonnegative.
+    /// * `flip` - false points at the field point while true points away from
+    ///   the field point
     pub fn wpt_point_at(
         &mut self,
         index: usize,
@@ -1038,6 +1386,13 @@ impl DifferentialTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers within a circle on the field at the waypoint at
+    /// the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_point_x` - the x coordinate of the circle's center
+    /// * `field_point_y` - the y coordinate of the circle's center
+    /// * `keep_in_radius` - the radius of the circle (m). Must be nonnegative.
     pub fn wpt_keep_in_circle(
         &mut self,
         index: usize,
@@ -1054,6 +1409,14 @@ impl DifferentialTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers within a polygon on the field at the waypoint
+    /// at the provided index. The polygon's points must be wound
+    /// counterclockwise. Does nothing if the two coordinate lists have
+    /// different lengths.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_points_x` - the x coordinates of the polygon's points
+    /// * `field_points_y` - the y coordinates of the polygon's points
     pub fn wpt_keep_in_polygon(
         &mut self,
         index: usize,
@@ -1068,6 +1431,18 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's center between two lines parallel to a center line over
+    /// the waypoint at the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `center_line_start_x` - the x coordinate of the center line's start
+    ///   point
+    /// * `center_line_start_y` - the y coordinate of the center line's start
+    ///   point
+    /// * `center_line_end_x` - the x coordinate of the center line's end point
+    /// * `center_line_end_y` - the y coordinate of the center line's end point
+    /// * `tolerance` - distance from the center line to each lane edge (m).
+    ///   Passing zero constrains the robot to the center line itself.
     pub fn wpt_keep_in_lane(
         &mut self,
         index: usize,
@@ -1088,6 +1463,14 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's bumpers out of a circle on the field at the waypoint at
+    /// the provided index.
+    ///
+    /// * `index` - index of the waypoint
+    /// * `field_point_x` - the x coordinate of the circle's center
+    /// * `field_point_y` - the y coordinate of the circle's center
+    /// * `keep_in_radius` - the radius of the keep-out circle (m). Must be
+    ///   nonnegative.
     pub fn wpt_keep_out_circle(
         &mut self,
         index: usize,
@@ -1106,6 +1489,14 @@ impl DifferentialTrajectoryGenerator {
 
     // Constraints with segment scope
 
+    /// Apply a linear velocity direction equality constraint to the continuum
+    /// of state between the waypoints at `from_index` and `to_index`. This
+    /// constrains the direction of the robot's linear velocity, but not its
+    /// magnitude.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `angle` - the direction of the linear velocity (radians)
     pub fn sgmt_linear_velocity_direction(
         &mut self,
         from_index: usize,
@@ -1120,6 +1511,14 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear velocity max magnitude inequality constraint to
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `magnitude` - the maximum linear velocity magnitude (m/s). Must be
+    ///   nonnegative.
     pub fn sgmt_linear_velocity_max_magnitude(
         &mut self,
         from_index: usize,
@@ -1134,6 +1533,14 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply an angular velocity max magnitude inequality constraint to
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `angular_velocity` - the maximum angular velocity magnitude (rad/s).
+    ///   Must be nonnegative.
     pub fn sgmt_angular_velocity_max_magnitude(
         &mut self,
         from_index: usize,
@@ -1148,6 +1555,14 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Apply a linear acceleration max magnitude inequality constraint to
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `magnitude` - the maximum linear acceleration magnitude (m/s²). Must
+    ///   be nonnegative.
     pub fn sgmt_linear_acceleration_max_magnitude(
         &mut self,
         from_index: usize,
@@ -1162,6 +1577,14 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's bumpers within a circle on the field over the continuum
+    /// of state between the waypoints at `from_index` and `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `field_point_x` - the x coordinate of the circle's center
+    /// * `field_point_y` - the y coordinate of the circle's center
+    /// * `keep_in_radius` - the radius of the circle (m). Must be nonnegative.
     pub fn sgmt_keep_in_circle(
         &mut self,
         from_index: usize,
@@ -1180,6 +1603,15 @@ impl DifferentialTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers within a polygon on the field over the
+    /// continuum of state between the waypoints at `from_index` and
+    /// `to_index`. The polygon's points must be wound counterclockwise.
+    /// Does nothing if the two coordinate lists have different lengths.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `field_points_x` - the x coordinates of the polygon's points
+    /// * `field_points_y` - the y coordinates of the polygon's points
     pub fn sgmt_keep_in_polygon(
         &mut self,
         from_index: usize,
@@ -1196,6 +1628,20 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Keep the robot's center between two lines parallel to a center line over
+    /// the continuum of state between the waypoints at `from_index` and
+    /// `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `center_line_start_x` - the x coordinate of the center line's start
+    ///   point
+    /// * `center_line_start_y` - the y coordinate of the center line's start
+    ///   point
+    /// * `center_line_end_x` - the x coordinate of the center line's end point
+    /// * `center_line_end_y` - the y coordinate of the center line's end point
+    /// * `tolerance` - distance from the center line to each lane edge (m).
+    ///   Passing zero constrains the robot to the center line itself.
     #[allow(clippy::too_many_arguments)]
     pub fn sgmt_keep_in_lane(
         &mut self,
@@ -1219,6 +1665,14 @@ impl DifferentialTrajectoryGenerator {
         )
     }
 
+    /// Keep the robot's bumpers out of a circle on the field over the continuum
+    /// of state between the waypoints at `from_index` and `to_index`.
+    ///
+    /// * `from_index` - index of the waypoint at the beginning of the continuum
+    /// * `to_index` - index of the waypoint at the end of the continuum
+    /// * `x` - the x coordinate of the circle's center
+    /// * `y` - the y coordinate of the circle's center
+    /// * `radius` - the radius of the keep-out circle (m). Must be nonnegative.
     pub fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
@@ -1237,12 +1691,12 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
-    ///
     /// Add a callback that will be called on each iteration of the solver.
     ///
-    /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///   parameter will be a `trajopt::DifferentialTrajectory`, and the second
-    ///   parameter will be an `i64` equal to the handle passed in `generate()`
+    /// * `callback` - a `fn` (not a closure) to be executed. The callback's
+    ///   first parameter will be a `trajopt::DifferentialTrajectory`, and the
+    ///   second parameter will be an `i64` equal to the handle passed in
+    ///   `generate()`
     ///
     /// This function can be called multiple times to add multiple callbacks.
     pub fn add_callback(&mut self, callback: fn(DifferentialTrajectory, i64)) {
@@ -1252,14 +1706,13 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
-    ///
     /// Generate the trajectory;
     ///
-    /// * diagnostics: If true, prints per-iteration details of the solver to
+    /// * `diagnostics` - If true, prints per-iteration details of the solver to
     ///   stdout.
-    /// * handle: A number used to identify results from this generation in the
-    ///   `add_callback` callback. If `add_callback` has not been called, this
-    ///   value has no significance.
+    /// * `handle` - A number used to identify results from this generation in
+    ///   the `add_callback` callback. If `add_callback` has not been called,
+    ///   this value has no significance.
     ///
     /// Returns a result with either the final
     /// `trajopt::DifferentialTrajectory`, or TrajoptError
@@ -1282,6 +1735,7 @@ impl DifferentialTrajectoryGenerator {
     }
 }
 
+/// Cancels all running generations.
 pub fn cancel_all() {
     crate::ffi::cancel_all();
 }
@@ -1296,4 +1750,5 @@ pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;
 pub use ffi::Translation2d;
 
+/// Solver error types.
 pub mod error;
