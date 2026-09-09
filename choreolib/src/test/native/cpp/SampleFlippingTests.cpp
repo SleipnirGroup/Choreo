@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <catch2/catch_test_macros.hpp>
+#include <gtest/gtest.h>
 #include <wpi/units/force.hpp>
 #include <wpi/util/json.hpp>
 
@@ -12,7 +12,7 @@
 
 using namespace choreo;
 
-TEST_CASE("SampleFlippingTest ZeroSwerveSample", "[choreolib]") {
+TEST(SampleFlippingTest, ZeroSwerveSample) {
   try {
     SwerveSample sample{0_s,
                         0_m,
@@ -51,14 +51,14 @@ TEST_CASE("SampleFlippingTest ZeroSwerveSample", "[choreolib]") {
                              {0_N, 0_N, 0_N, 0_N},
                              {0_N, 0_N, 0_N, 0_N}};
 
-    REQUIRE(sample.Flipped<2024>() == mirrored2024);
-    REQUIRE(sample.Flipped<2022>() == rotated2022);
+    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
+    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
   } catch (std::exception& e) {
-    FAIL(e.what());
+    FAIL() << e.what();
   }
 }
 
-TEST_CASE("SampleFlippingTest SwerveSample", "[choreolib]") {
+TEST(SampleFlippingTest, SwerveSample) {
   try {
     SwerveSample sample{0_s,
                         1_m,
@@ -97,14 +97,14 @@ TEST_CASE("SampleFlippingTest SwerveSample", "[choreolib]") {
                              {-10_N, -11_N, -12_N, -13_N},
                              {-14_N, -15_N, -16_N, -17_N}};
 
-    REQUIRE(sample.Flipped<2024>() == mirrored2024);
-    REQUIRE(sample.Flipped<2022>() == rotated2022);
+    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
+    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
   } catch (std::exception& e) {
-    FAIL(e.what());
+    FAIL() << e.what();
   }
 }
 
-TEST_CASE("SampleFlippingTest ZeroDifferentialSample", "[choreolib]") {
+TEST(SampleFlippingTest, ZeroDifferentialSample) {
   try {
     DifferentialSample sample{
         0_s,         0_m,      0_m,      0_rad,          0_mps, 0_mps,
@@ -116,27 +116,28 @@ TEST_CASE("SampleFlippingTest ZeroDifferentialSample", "[choreolib]") {
         0_rad_per_s, 0_mps_sq,
         0_mps_sq,    0_rad_per_s_sq,
         0_N,         0_N};
-    DifferentialSample rotated2022{0_s,
-                                   util::fieldLength - 0_m,
-                                   util::fieldWidth - 0_m,
-                                   wpi::units::radian_t{std::numbers::pi} + 0_rad,
-                                   0_mps,
-                                   0_mps,
-                                   0_rad_per_s,
-                                   0_mps_sq,
-                                   0_mps_sq,
-                                   0_rad_per_s_sq,
-                                   0_N,
-                                   0_N};
+    DifferentialSample rotated2022{
+        0_s,
+        util::fieldLength - 0_m,
+        util::fieldWidth - 0_m,
+        wpi::units::radian_t{std::numbers::pi} + 0_rad,
+        0_mps,
+        0_mps,
+        0_rad_per_s,
+        0_mps_sq,
+        0_mps_sq,
+        0_rad_per_s_sq,
+        0_N,
+        0_N};
 
-    REQUIRE(sample.Flipped<2024>() == mirrored2024);
-    REQUIRE(sample.Flipped<2022>() == rotated2022);
+    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
+    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
   } catch (std::exception& e) {
-    FAIL(e.what());
+    FAIL() << e.what();
   }
 }
 
-TEST_CASE("SampleFlippingTest DifferentialSample", "[choreolib]") {
+TEST(SampleFlippingTest, DifferentialSample) {
   try {
     DifferentialSample sample{
         0_s,         1_m,      2_m,      3_rad,          4_mps, 5_mps,
@@ -148,22 +149,23 @@ TEST_CASE("SampleFlippingTest DifferentialSample", "[choreolib]") {
         -6_rad_per_s, 8_mps_sq,
         7_mps_sq,     -9_rad_per_s_sq,
         11_N,         10_N};
-    DifferentialSample rotated2022{0_s,
-                                   util::fieldLength - 1_m,
-                                   util::fieldWidth - 2_m,
-                                   wpi::units::radian_t{std::numbers::pi} + 3_rad,
-                                   4_mps,
-                                   5_mps,
-                                   6_rad_per_s,
-                                   7_mps_sq,
-                                   8_mps_sq,
-                                   9_rad_per_s_sq,
-                                   10_N,
-                                   11_N};
+    DifferentialSample rotated2022{
+        0_s,
+        util::fieldLength - 1_m,
+        util::fieldWidth - 2_m,
+        wpi::units::radian_t{std::numbers::pi} + 3_rad,
+        4_mps,
+        5_mps,
+        6_rad_per_s,
+        7_mps_sq,
+        8_mps_sq,
+        9_rad_per_s_sq,
+        10_N,
+        11_N};
 
-    REQUIRE(sample.Flipped<2024>() == mirrored2024);
-    REQUIRE(sample.Flipped<2022>() == rotated2022);
+    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
+    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
   } catch (std::exception& e) {
-    FAIL(e.what());
+    FAIL() << e.what();
   }
 }

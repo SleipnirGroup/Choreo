@@ -1,9 +1,10 @@
 // Copyright (c) Choreo contributors
 
-#include <catch2/catch_session.hpp>
+#include <gtest/gtest.h>
 
 #include "choreo/Choreo.h"
 
 int main(int argc, char** argv) {
-  return Catch::Session().run(argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

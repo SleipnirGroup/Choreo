@@ -48,7 +48,7 @@ class Choreo {
     auto fileBuffer = wpi::util::MemoryBuffer::GetFile(trajectoryFileName);
     if (!fileBuffer) {
       WPILIB_ReportWarning("Could not find trajectory file: {}",
-                      trajectoryName);
+                           trajectoryName);
       return {};
     }
 
@@ -59,7 +59,7 @@ class Choreo {
           trajectoryName);
     } catch (const std::exception& ex) {
       WPILIB_ReportWarning("Could not parse trajectory file: {}",
-                      trajectoryName);
+                           trajectoryName);
       WPILIB_ReportWarning("{}", ex.what());
       return {};
     }
@@ -78,7 +78,7 @@ class Choreo {
   static std::optional<Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     wpi::util::json json =
-      wpi::util::json::parse_or_throw(trajectoryJsonString);
+        wpi::util::json::parse_or_throw(trajectoryJsonString);
     uint32_t version = json["version"];
     if (version != kTrajSchemaVersion) {
       throw std::format("{}.traj: Wrong version {}. Expected {}",

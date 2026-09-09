@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
-import org.wpilib.command3.Scheduler;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Pose2d;
@@ -45,11 +44,10 @@ public class PoseFlippingTest {
 
   @Test
   void testGetEndPose() {
-    assert HAL.initialize();
-    Scheduler scheduler = Scheduler.createIndependentScheduler();
-    factoryFlip = AutoTestHelper.factory(scheduler, true);
-    factoryNoFlip = AutoTestHelper.factory(scheduler, false);
-    Pose2d start = Pose2d.ZERO;
+    assert HAL.initialize(500, 0);
+    factoryFlip = AutoTestHelper.factory(true);
+    factoryNoFlip = AutoTestHelper.factory(false);
+    Pose2d start = Pose2d.kZero;
     Pose2d end = new Pose2d(1, 1, Rotation2d.fromRadians(1));
     Pose2d startFlipped = ChoreoAllianceFlipUtil.flip(start);
     Pose2d endFlipped = ChoreoAllianceFlipUtil.flip(end);
@@ -86,11 +84,13 @@ public class PoseFlippingTest {
             List.of(),
             List.of());
 
-    AutoTrajectory autoTrajFlipped = factoryFlip.trajectory(trajectory);
+    AutoTrajectory autoTrajFlipped =
+        factoryFlip.trajectory(trajectory, factoryFlip.newRoutine("flip"), true);
     testPoseProperlyFlipped(start, startFlipped, autoTrajFlipped::getInitialPose);
     testPoseProperlyFlipped(end, endFlipped, autoTrajFlipped::getFinalPose);
 
-    AutoTrajectory autoTrajNoFlip = factoryNoFlip.trajectory(trajectory);
+    AutoTrajectory autoTrajNoFlip =
+        factoryNoFlip.trajectory(trajectory, factoryNoFlip.newRoutine("noFlip"), true);
     testPoseProperlyNoFlipped(start, autoTrajNoFlip::getInitialPose);
     testPoseProperlyNoFlipped(end, autoTrajNoFlip::getFinalPose);
   }

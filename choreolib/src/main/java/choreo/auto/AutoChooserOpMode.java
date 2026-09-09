@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package choreo.auto;
 
 import org.wpilib.command2.Command;

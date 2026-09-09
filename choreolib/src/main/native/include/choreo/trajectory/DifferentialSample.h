@@ -46,8 +46,9 @@ class DifferentialSample {
   /// @param alpha The chassis angular acceleration
   /// @param fl The force of the left wheels
   /// @param fr The force of the right wheels
-  constexpr DifferentialSample(wpi::units::second_t timestamp, wpi::units::meter_t x,
-                               wpi::units::meter_t y, wpi::units::radian_t heading,
+  constexpr DifferentialSample(wpi::units::second_t timestamp,
+                               wpi::units::meter_t x, wpi::units::meter_t y,
+                               wpi::units::radian_t heading,
                                wpi::units::meters_per_second_t vl,
                                wpi::units::meters_per_second_t vr,
                                wpi::units::radians_per_second_t omega,
@@ -91,7 +92,8 @@ class DifferentialSample {
   ///
   /// @param timeStampOffset time to move sample by
   /// @return DifferentialSample that is moved forward by the offset
-  constexpr DifferentialSample OffsetBy(wpi::units::second_t timeStampOffset) const {
+  constexpr DifferentialSample OffsetBy(
+      wpi::units::second_t timeStampOffset) const {
     return DifferentialSample{timestamp + timeStampOffset,
                               x,
                               y,
@@ -113,7 +115,8 @@ class DifferentialSample {
   /// @return the interpolated sample
   DifferentialSample Interpolate(const DifferentialSample& endValue,
                                  wpi::units::second_t t) const {
-    wpi::units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
+    wpi::units::scalar_t scale =
+        (t - timestamp) / (endValue.timestamp - timestamp);
 
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations
@@ -155,7 +158,7 @@ class DifferentialSample {
         Eigen::Vector<double, 3>(al.value(), ar.value(), alpha.value()), τ);
 
     return DifferentialSample{
-      timestamp + (endValue.timestamp - timestamp) * scale.value(),
+        timestamp + (endValue.timestamp - timestamp) * scale.value(),
         wpi::units::meter_t{sample(0, 0)},
         wpi::units::meter_t{sample(1, 0)},
         wpi::units::radian_t{sample(2, 0)},
@@ -165,8 +168,8 @@ class DifferentialSample {
         al,
         ar,
         alpha,
-      fl + (endValue.fl - fl) * scale.value(),
-      fr + (endValue.fr - fr) * scale.value(),
+        fl + (endValue.fl - fl) * scale.value(),
+        fr + (endValue.fr - fr) * scale.value(),
     };
   }
 
@@ -281,7 +284,8 @@ class DifferentialSample {
 };
 
 void to_json(wpi::util::json& json, const DifferentialSample& trajectorySample);
-void from_json(const wpi::util::json& json, DifferentialSample& trajectorySample);
+void from_json(const wpi::util::json& json,
+               DifferentialSample& trajectorySample);
 
 }  // namespace choreo
 

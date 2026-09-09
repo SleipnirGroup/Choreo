@@ -15,17 +15,20 @@ import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
-import org.wpilib.command3.Trigger;
-import org.wpilib.driverstation.internal.DriverStationBackend;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.Subsystem;
+import org.wpilib.command2.button.Trigger;
+import org.wpilib.driverstation.Alert.Level;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.system.Timer;
-import org.wpilib.util.Alert.Level;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -60,7 +63,8 @@ public class AutoTrajectory {
   final Consumer<Pose2d> resetOdometry;
   final Consumer<? extends TrajectorySample<?>> controller;
   final AllianceContext allianceCtx;
-  final Mechanism driveMechanism;
+  final Subsystem driveSubsystem;
+  final AutoRoutine routine;
   final AutoBindings bindings;
 
   private final Timer activeTimer = new Timer();
@@ -68,6 +72,9 @@ public class AutoTrajectory {
 
   /** If this trajectory us currently running */
   private boolean isActive = false;
+
+  /** If the trajectory ran to completion. */
+  private boolean isCompleted = false;
 
   /** Whether to suppress warnings for this trajectory. */
   private boolean warnUser = true;
@@ -81,7 +88,8 @@ public class AutoTrajectory {
    * @param controller The controller function.
    * @param allianceCtx The alliance context.
    * @param trajectoryLogger Optional trajectory logger.
-   * @param driveMechanism Drive Mechanism.
+   * @param driveSubsystem Drive subsystem.
+   * @param routine Event loop.
    * @param bindings {@link AutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
@@ -92,7 +100,8 @@ public class AutoTrajectory {
       Consumer<SampleType> controller,
       AllianceContext allianceCtx,
       TrajectoryLogger<SampleType> trajectoryLogger,
-      Mechanism driveMechanism,
+      Subsystem driveSubsystem,
+      AutoRoutine routine,
       AutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
@@ -100,7 +109,8 @@ public class AutoTrajectory {
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.allianceCtx = allianceCtx;
-    this.driveMechanism = driveMechanism;
+    this.driveSubsystem = driveSubsystem;
+    this.routine = routine;
     this.trajectoryLogger = trajectoryLogger;
     this.bindings = bindings;
 
@@ -134,6 +144,7 @@ public class AutoTrajectory {
     inactiveTimer.stop();
     inactiveTimer.reset();
     isActive = true;
+    isCompleted = false;
     logTrajectory(true);
   }
 
@@ -163,6 +174,7 @@ public class AutoTrajectory {
     activeTimer.reset();
     inactiveTimer.start();
     isActive = false;
+    isCompleted = !interrupted;
 
     if (!interrupted && allianceCtx.allianceKnownOrIgnored()) {
       var sampleOpt = trajectory.getFinalSample(allianceCtx.doFlip());
@@ -183,7 +195,7 @@ public class AutoTrajectory {
 
   private boolean cmdIsFinished() {
     return activeTimer.get() > trajectory.getTotalTime()
-        || DriverStationBackend.isDisabled()
+        || !routine.active().getAsBoolean()
         || !allianceCtx.allianceKnownOrIgnored();
   }
 
@@ -193,29 +205,22 @@ public class AutoTrajectory {
   }
 
   /**
-   * Creates a command that allocates the drive Mechanism and follows the trajectory using the
+   * Creates a command that allocates the drive subsystem and follows the trajectory using the
    * factories control function
    *
    * @return The command that will follow the trajectory
    */
   public Command cmd() {
-    return driveMechanism
-        .run(
-            coro -> {
-              // if the trajectory is empty, return a command that will print an error
-              if (trajectory.samples().isEmpty() && warnUser) {
-                noSamples.addCause(name);
-                return;
-              }
-              cmdInitialize();
-              while (!cmdIsFinished()) {
-                cmdExecute();
-                coro.yield();
-              }
-              cmdEnd(false);
-            })
-        .whenCanceled(() -> cmdEnd(true))
-        .named("Trajectory_" + name);
+    if (trajectory.samples().isEmpty() && warnUser) {
+      return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
+    }
+    return new FunctionalCommand(
+            this::cmdInitialize,
+            this::cmdExecute,
+            this::cmdEnd,
+            this::cmdIsFinished,
+            driveSubsystem)
+        .withName("Trajectory_" + name);
   }
 
   /**
@@ -224,20 +229,18 @@ public class AutoTrajectory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry() {
-    return driveMechanism
-        .run(
-            coro -> {
-              var initialPose = getInitialPose();
-              if (initialPose.isPresent()) {
-                resetOdometry.accept(initialPose.get());
-              } else {
-                if (warnUser) {
-                  noInitialPose.addCause(name);
-                }
-                coro.park();
-              }
-            })
-        .named("Trajectory_ResetOdometry_" + name);
+    return Commands.runOnce(
+            () ->
+                getInitialPose()
+                    .ifPresentOrElse(
+                        resetOdometry,
+                        () -> {
+                          if (warnUser) {
+                            noInitialPose.addCause(name);
+                          }
+                        }),
+            driveSubsystem)
+        .withName("Trajectory_ResetOdometry_" + name);
   }
 
   /**
@@ -273,7 +276,8 @@ public class AutoTrajectory {
         (Consumer<SampleType>) controller,
         allianceCtx,
         (TrajectoryLogger<SampleType>) trajectoryLogger,
-        driveMechanism,
+        driveSubsystem,
+        routine,
         bindings);
   }
 
@@ -295,7 +299,8 @@ public class AutoTrajectory {
         (Consumer<SampleType>) controller,
         allianceCtx,
         (TrajectoryLogger<SampleType>) trajectoryLogger,
-        driveMechanism,
+        driveSubsystem,
+        routine,
         bindings);
   }
 
@@ -317,7 +322,8 @@ public class AutoTrajectory {
         (Consumer<SampleType>) controller,
         allianceCtx,
         (TrajectoryLogger<SampleType>) trajectoryLogger,
-        driveMechanism,
+        driveSubsystem,
+        routine,
         bindings);
   }
 
@@ -367,7 +373,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(() -> this.isActive);
+    return routine.active().and(new Trigger(routine.loop(), () -> this.isActive));
   }
 
   /**
@@ -381,9 +387,96 @@ public class AutoTrajectory {
     return active().negate();
   }
 
+  private Trigger enterExitTrigger(Trigger enter, Trigger exit) {
+    return new Trigger(
+        routine.loop(),
+        new BooleanSupplier() {
+          private boolean output = false;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (enter.getAsBoolean()) {
+              output = true;
+            }
+            if (exit.getAsBoolean()) {
+              output = false;
+            }
+            return output;
+          }
+        });
+  }
+
+  /**
+   * Returns a trigger that is true after the trajectory completes.
+   *
+   * @return a trigger that is true after the trajectory completes
+   */
+  public Trigger done() {
+    return doneDelayed(0);
+  }
+
+  /**
+   * Returns a trigger that becomes true after the trajectory completes and the given delay.
+   *
+   * @param seconds the delay after completion, in seconds
+   * @return a trigger that is true after the trajectory completes and the given delay
+   */
+  public Trigger doneDelayed(double seconds) {
+    return timeTrigger(seconds, inactiveTimer).and(new Trigger(routine.loop(), () -> isCompleted));
+  }
+
+  /**
+   * Returns a trigger that remains true for the given duration after completion.
+   *
+   * @param seconds the duration for which the trigger remains true, in seconds
+   * @return a trigger that remains true for the given duration after completion
+   */
+  public Trigger doneFor(double seconds) {
+    return enterExitTrigger(doneDelayed(0), doneDelayed(seconds));
+  }
+
+  /**
+   * Returns a trigger that remains true after completion until the routine becomes idle.
+   *
+   * @return a trigger that remains true after completion until the routine becomes idle
+   */
+  public Trigger recentlyDone() {
+    return enterExitTrigger(doneDelayed(0), routine.idle().negate());
+  }
+
   private Trigger timeTrigger(double targetTime, Timer timer) {
     // Make the trigger only be high for 1 cycle when the time has elapsed
-    return new Trigger(() -> timer.get() > targetTime).risingEdge();
+    return new Trigger(
+        routine.loop(),
+        new BooleanSupplier() {
+          double lastTimestamp = -1.0;
+          OptionalInt pollTarget = OptionalInt.empty();
+
+          @Override
+          public boolean getAsBoolean() {
+            if (!timer.isRunning()) {
+              lastTimestamp = -1.0;
+              pollTarget = OptionalInt.empty();
+              return false;
+            }
+            double nowTimestamp = timer.get();
+            try {
+              boolean timeAligns = lastTimestamp < targetTime && nowTimestamp >= targetTime;
+              if (pollTarget.isEmpty() && timeAligns) {
+                pollTarget = OptionalInt.of(routine.pollCount());
+                return true;
+              } else if (pollTarget.isPresent() && routine.pollCount() == pollTarget.getAsInt()) {
+                return true;
+              } else if (pollTarget.isPresent()) {
+                pollTarget = OptionalInt.empty();
+                return false;
+              }
+              return false;
+            } finally {
+              lastTimestamp = nowTimestamp;
+            }
+          }
+        });
   }
 
   /**
@@ -398,7 +491,7 @@ public class AutoTrajectory {
       if (warnUser) {
         triggerTimeNegative.addCause(name);
       }
-      return new Trigger(() -> false);
+      return new Trigger(routine.loop(), () -> false);
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
@@ -406,7 +499,7 @@ public class AutoTrajectory {
       if (warnUser) {
         triggerTimeAboveMax.addCause(name);
       }
-      return new Trigger(() -> false);
+      return new Trigger(routine.loop(), () -> false);
     }
 
     return timeTrigger(timeSinceStart, activeTimer);
@@ -438,7 +531,7 @@ public class AutoTrajectory {
    */
   public Trigger atTime(String eventName) {
     boolean foundEvent = false;
-    Trigger trig = new Trigger(() -> false);
+    Trigger trig = new Trigger(routine.loop(), () -> false);
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create a lot of objects, could be done a more efficient way

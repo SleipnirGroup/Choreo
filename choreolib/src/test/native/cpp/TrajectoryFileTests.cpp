@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <catch2/catch_test_macros.hpp>
+#include <gtest/gtest.h>
 #include <wpi/units/force.hpp>
 #include <wpi/util/json.hpp>
 
@@ -76,7 +76,7 @@ constexpr std::string_view swerveTrajectoryString =
 })";
 
 const wpi::util::json swerveTrajectoryJson =
-  wpi::util::json::parse_or_throw(swerveTrajectoryString);
+    wpi::util::json::parse_or_throw(swerveTrajectoryString);
 
 const Trajectory<SwerveSample> correctSwerveTrajectory{
     "New Path",
@@ -107,12 +107,12 @@ const Trajectory<SwerveSample> correctSwerveTrajectory{
     {0},
     {{0_s, "testEvent"}}};
 
-TEST_CASE("TrajectoryFileTest DeserializeSwerveTrajectory", "[choreolib]") {
+TEST(TrajectoryFileTest, DeserializeSwerveTrajectory) {
   try {
     Trajectory<SwerveSample> deserializedSwerveTrajectory =
         swerveTrajectoryJson.get<Trajectory<SwerveSample>>();
-    REQUIRE(correctSwerveTrajectory == deserializedSwerveTrajectory);
+    EXPECT_EQ(correctSwerveTrajectory, deserializedSwerveTrajectory);
   } catch (std::exception& e) {
-    FAIL(e.what());
+    FAIL() << e.what();
   }
 }

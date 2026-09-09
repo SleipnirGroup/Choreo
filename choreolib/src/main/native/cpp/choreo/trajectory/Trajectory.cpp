@@ -35,17 +35,16 @@ std::vector<int> readJsonIntVector(const wpi::util::json& jsonArray) {
 void choreo::to_json(wpi::util::json& json,
                      const Trajectory<SwerveSample>& trajectory) {
   json = wpi::util::json::object(
-      "name", trajectory.name.c_str(),
-      "samples", trajectory.samples,
-      "splits", trajectory.splits,
-      "events", trajectory.events);
+      "name", trajectory.name.c_str(), "samples", trajectory.samples, "splits",
+      trajectory.splits, "events", trajectory.events);
 }
 
 void choreo::from_json(const wpi::util::json& json,
                        Trajectory<SwerveSample>& trajectory) {
   trajectory.name = json.at("name").get_string();
   const auto& trajectoryJson = json.at("trajectory");
-  trajectory.samples = readJsonVector<SwerveSample>(trajectoryJson.at("samples"));
+  trajectory.samples =
+      readJsonVector<SwerveSample>(trajectoryJson.at("samples"));
   trajectory.splits = readJsonIntVector(trajectoryJson.at("splits"));
   // Add 0 as the first split index.
   if (trajectory.splits.size() == 0 || trajectory.splits.at(0) != 0) {
@@ -63,10 +62,8 @@ void choreo::from_json(const wpi::util::json& json,
 void choreo::to_json(wpi::util::json& json,
                      const Trajectory<DifferentialSample>& trajectory) {
   json = wpi::util::json::object(
-      "name", trajectory.name.c_str(),
-      "samples", trajectory.samples,
-      "splits", trajectory.splits,
-      "events", trajectory.events);
+      "name", trajectory.name.c_str(), "samples", trajectory.samples, "splits",
+      trajectory.splits, "events", trajectory.events);
 }
 
 void choreo::from_json(const wpi::util::json& json,

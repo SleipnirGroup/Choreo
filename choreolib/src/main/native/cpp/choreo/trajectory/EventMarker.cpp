@@ -8,8 +8,8 @@
 
 void choreo::to_json(wpi::util::json& json, const EventMarker& event) {
   json = wpi::util::json::object(
-      "data", wpi::util::json::object("t", event.timestamp.value()),
-      "event", wpi::util::json::object("name", event.event.c_str()));
+      "data", wpi::util::json::object("t", event.timestamp.value()), "event",
+      wpi::util::json::object("name", event.event.c_str()));
 }
 
 void choreo::from_json(const wpi::util::json& json, EventMarker& event) {
@@ -18,9 +18,9 @@ void choreo::from_json(const wpi::util::json& json, EventMarker& event) {
     event.timestamp = wpi::units::second_t{-1};
     event.event = "";
   } else {
-    event.timestamp =
-      wpi::units::second_t{json.at("from").at("offset").at("val").get_number() +
-              targetTimestamp.get_number()};
+    event.timestamp = wpi::units::second_t{
+        json.at("from").at("offset").at("val").get_number() +
+        targetTimestamp.get_number()};
     event.event = json.at("name").get_string();
   }
 }

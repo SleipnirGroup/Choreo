@@ -5,8 +5,8 @@ package choreo.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import org.wpilib.util.Alert;
-import org.wpilib.util.Alert.Level;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.Alert.Level;
 
 /** A utility class for creating alerts under the "Choreo Alerts" group. */
 public class ChoreoAlert {
@@ -30,7 +30,7 @@ public class ChoreoAlert {
    * @return an Alert published under the "Choreo" group
    */
   public static Alert alert(String name, String text, Level level) {
-    return new Alert("Choreo Alerts", name, text, level);
+    return new Alert(name, text, level);
   }
 
   /**
@@ -38,7 +38,7 @@ public class ChoreoAlert {
    * list of causes as the name.
    *
    * @param textGenerator A function that accepts a list of causes and returns an alert message
-   * @param type The type of alert
+   * @param level The level of alert
    * @return a MultiAlert published under the "Choreo" group
    */
   public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Level level) {
@@ -71,7 +71,7 @@ public class ChoreoAlert {
     }
 
     MultiAlert(String name, Function<List<String>, String> textGenerator, Level level) {
-      super("Choreo Alerts", name, textGenerator.apply(List.of()), level);
+      super(name, textGenerator.apply(List.of()), level);
       this.textGenerator = textGenerator;
     }
 

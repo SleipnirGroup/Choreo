@@ -27,13 +27,17 @@ using StructType = wpi::util::Struct<choreo::SwerveSample>;
 
 choreo::SwerveSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::SwerveSample{
-      wpi::units::second_t{wpi::util::UnpackStruct<double, kTimestampOff>(data)},
+      wpi::units::second_t{
+          wpi::util::UnpackStruct<double, kTimestampOff>(data)},
       wpi::units::meter_t{wpi::util::UnpackStruct<double, kXOff>(data)},
       wpi::units::meter_t{wpi::util::UnpackStruct<double, kYOff>(data)},
       wpi::units::radian_t{wpi::util::UnpackStruct<double, kHeadingOff>(data)},
-      wpi::units::meters_per_second_t{wpi::util::UnpackStruct<double, kVxOff>(data)},
-      wpi::units::meters_per_second_t{wpi::util::UnpackStruct<double, kVyOff>(data)},
-      wpi::units::radians_per_second_t{wpi::util::UnpackStruct<double, kOmegaOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVxOff>(data)},
+      wpi::units::meters_per_second_t{
+          wpi::util::UnpackStruct<double, kVyOff>(data)},
+      wpi::units::radians_per_second_t{
+          wpi::util::UnpackStruct<double, kOmegaOff>(data)},
       wpi::units::meters_per_second_squared_t{
           wpi::util::UnpackStruct<double, kAxOff>(data)},
       wpi::units::meters_per_second_squared_t{
@@ -53,22 +57,22 @@ choreo::SwerveSample StructType::Unpack(std::span<const uint8_t> data) {
 
 void StructType::Pack(std::span<uint8_t> data,
                       const choreo::SwerveSample& value) {
-    wpi::util::PackStruct<kTimestampOff>(data, value.timestamp.value());
-    wpi::util::PackStruct<kXOff>(data, value.x.value());
-    wpi::util::PackStruct<kYOff>(data, value.y.value());
-    wpi::util::PackStruct<kHeadingOff>(data, value.heading.value());
-    wpi::util::PackStruct<kVxOff>(data, value.vx.value());
-    wpi::util::PackStruct<kVyOff>(data, value.vy.value());
-    wpi::util::PackStruct<kOmegaOff>(data, value.omega.value());
-    wpi::util::PackStruct<kAxOff>(data, value.ax.value());
-    wpi::util::PackStruct<kAyOff>(data, value.ay.value());
-    wpi::util::PackStruct<kAlphaOff>(data, value.alpha.value());
-    wpi::util::PackStruct<kMfX0Off>(data, value.moduleForcesX[0].value());
-    wpi::util::PackStruct<kMfX1Off>(data, value.moduleForcesX[1].value());
-    wpi::util::PackStruct<kMfX2Off>(data, value.moduleForcesX[2].value());
-    wpi::util::PackStruct<kMfX3Off>(data, value.moduleForcesX[3].value());
-    wpi::util::PackStruct<kMfY0Off>(data, value.moduleForcesY[0].value());
-    wpi::util::PackStruct<kMfY1Off>(data, value.moduleForcesY[1].value());
-    wpi::util::PackStruct<kMfY2Off>(data, value.moduleForcesY[2].value());
-    wpi::util::PackStruct<kMfY3Off>(data, value.moduleForcesY[3].value());
+  wpi::util::PackStruct<kTimestampOff>(data, value.timestamp.value());
+  wpi::util::PackStruct<kXOff>(data, value.x.value());
+  wpi::util::PackStruct<kYOff>(data, value.y.value());
+  wpi::util::PackStruct<kHeadingOff>(data, value.heading.value());
+  wpi::util::PackStruct<kVxOff>(data, value.vx.value());
+  wpi::util::PackStruct<kVyOff>(data, value.vy.value());
+  wpi::util::PackStruct<kOmegaOff>(data, value.omega.value());
+  wpi::util::PackStruct<kAxOff>(data, value.ax.value());
+  wpi::util::PackStruct<kAyOff>(data, value.ay.value());
+  wpi::util::PackStruct<kAlphaOff>(data, value.alpha.value());
+  wpi::util::PackStruct<kMfX0Off>(data, value.moduleForcesX[0].value());
+  wpi::util::PackStruct<kMfX1Off>(data, value.moduleForcesX[1].value());
+  wpi::util::PackStruct<kMfX2Off>(data, value.moduleForcesX[2].value());
+  wpi::util::PackStruct<kMfX3Off>(data, value.moduleForcesX[3].value());
+  wpi::util::PackStruct<kMfY0Off>(data, value.moduleForcesY[0].value());
+  wpi::util::PackStruct<kMfY1Off>(data, value.moduleForcesY[1].value());
+  wpi::util::PackStruct<kMfY2Off>(data, value.moduleForcesY[2].value());
+  wpi::util::PackStruct<kMfY3Off>(data, value.moduleForcesY[3].value());
 }

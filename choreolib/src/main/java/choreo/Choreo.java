@@ -28,11 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import org.wpilib.driverstation.Alert.Level;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.system.Filesystem;
-import org.wpilib.util.Alert.Level;
-import org.wpilib.util.UsageReporting;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -173,12 +172,12 @@ public final class Choreo {
     }
     String sampleType = trajectoryObj.get("sampleType").getAsString();
     if (sampleType.equals("Swerve")) {
-      UsageReporting.reportUsage("ChoreoTrajectory", "Swerve");
+      HAL.reportUsage("ChoreoTrajectory", 1, "Swerve");
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (sampleType.equals("Differential")) {
-      UsageReporting.reportUsage("ChoreoTrajectory", "Differential");
+      HAL.reportUsage("ChoreoTrajectory", 2, "Differential");
 
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);
