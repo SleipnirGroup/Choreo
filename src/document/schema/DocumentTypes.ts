@@ -126,6 +126,20 @@ export interface DifferentialSample {
   fr: number;
 }
 
+export interface MecanumSample {
+  t: number;
+  x: number;
+  y: number;
+  heading: number;
+  vx: number;
+  vy: number;
+  omega: number;
+  ax: number;
+  ay: number;
+  alpha: number;
+  f: [number, number, number, number];
+}
+
 export interface ProgressUpdate {
   type:
     | "swerveTrajectory"
@@ -141,7 +155,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   targetDt: T;
 }
 
-export type SampleType = "Swerve" | "Differential";
+export type SampleType = "Swerve" | "Differential" | "Mecanum";
 export interface Output {
   config: RobotConfig<number> | null;
   sampleType: SampleType | undefined;

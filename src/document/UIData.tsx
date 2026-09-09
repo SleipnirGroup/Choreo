@@ -12,6 +12,7 @@ import {
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
 import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
+import FieldSettingsPanel from "../components/config/FieldSettingsPanel";
 import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
   ConstraintDefinition,
@@ -189,6 +190,8 @@ export const SETTINGS_TABS = [
   {
     name: "Code Generation",
     component: () => <CodeGenConfigPanel></CodeGenConfigPanel>
+    name: "Field",
+    component: () => <FieldSettingsPanel></FieldSettingsPanel>
   }
 ] as const;
 export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

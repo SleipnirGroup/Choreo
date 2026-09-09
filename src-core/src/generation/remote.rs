@@ -94,6 +94,9 @@ pub enum RemoteProgressUpdate {
     IncompleteTankTrajectory(Vec<Sample>),
     IntervalCounts(Vec<usize>),
     CompleteTrajectory(TrajectoryFile),
+    // Mecanum variant
+    IncompleteMecanumTrajectory(Vec<Sample>),
+    CompleteTrajectory(Trajectory),
     Error(ChoreoError),
 }
 
@@ -123,6 +126,11 @@ pub fn remote_generate_child(args: RemoteArgs) {
                         update: LocalProgressUpdate::IntervalCounts { update },
                         ..
                     } => serde_json::to_string(&RemoteProgressUpdate::IntervalCounts(update)),
+                        update: LocalProgressUpdate::MecanumTrajectory { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteMecanumTrajectory(
+                        update,
+                    )),
                     _ => continue,
                 }
                 .expect("Failed to serialize progress update");
@@ -313,6 +321,13 @@ pub async fn remote_generate_parent(
                             Ok(RemoteProgressUpdate::IncompleteTankTrajectory(trajectory)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::DifferentialTrajectory {
+                                        update: trajectory
+                                    }.handled(handle)
+                                );
+                            },
+                            Ok(RemoteProgressUpdate::IncompleteMecanumTrajectory(trajectory)) => {
+                                remote_resources.emit_progress(
+                                    LocalProgressUpdate::MecanumTrajectory {
                                         update: trajectory
                                     }.handled(handle)
                                 );

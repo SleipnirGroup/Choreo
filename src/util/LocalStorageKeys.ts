@@ -1,6 +1,7 @@
 enum LocalStorageKeys {
   LAST_OPENED_FILE_LOCATION = "last_opened_project_payload",
-  PATH_GRADIENT = "path_gradient"
+  PATH_GRADIENT = "path_gradient",
+  FIELD_SETTINGS = "field_settings"
 }
 
 export default LocalStorageKeys;

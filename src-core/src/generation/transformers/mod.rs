@@ -3,8 +3,8 @@
 use std::collections::{HashMap, HashSet};
 
 use trajoptlib::{
-    DifferentialTrajectory, DifferentialTrajectoryGenerator, SwerveTrajectory,
-    SwerveTrajectoryGenerator,
+    DifferentialTrajectory, DifferentialTrajectoryGenerator, MecanumTrajectory,
+    MecanumTrajectoryGenerator, SwerveTrajectory, SwerveTrajectoryGenerator,
 };
 
 use crate::{
@@ -101,6 +101,7 @@ pub(super) struct TrajectoryFileGenerator {
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
     differential_transformers:
         HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
+    mecanum_transformers: HashMap<String, Vec<Box<dyn InitializedMecanumGenerationTransformer>>>,
 }
 
 impl TrajectoryFileGenerator {
@@ -130,7 +131,8 @@ impl TrajectoryFileGenerator {
             original_file: trajectory_file,
             swerve_transformers: HashMap::new(),
             differential_transformers: HashMap::new(),
-        })
+            mecanum_transformers: HashMap::new(),
+        }
     }
 
     /// Add a transformer to the generator that is only applied when generating
@@ -157,15 +159,29 @@ impl TrajectoryFileGenerator {
             .push(transformer);
     }
 
-    /// Add a transformer to the generator that is applied when generating both
-    /// swerve and differential trajectories
+    /// Add a transformer to the generator that is only applied when generating a mecanum trajectory
+    pub fn add_mecanum_transformer<T: MecanumGenerationTransformer + 'static>(&mut self) {
+        let featurelocked_transformer = T::initialize(&self.ctx);
+        let feature = featurelocked_transformer.feature;
+        let transformer = Box::new(featurelocked_transformer.inner);
+        self.mecanum_transformers
+            .entry(feature)
+            .or_default()
+            .push(transformer);
+    }
+
+    /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
     pub fn add_omni_transformer<
-        T: SwerveGenerationTransformer + DifferentialGenerationTransformer + 'static,
+        T: SwerveGenerationTransformer
+            + DifferentialGenerationTransformer
+            + MecanumGenerationTransformer
+            + 'static,
     >(
         &mut self,
     ) {
         self.add_swerve_transformer::<T>();
         self.add_differential_transformer::<T>();
+        self.add_mecanum_transformer::<T>();
     }
 
     fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
@@ -202,84 +218,23 @@ impl TrajectoryFileGenerator {
         generator.generate(true, handle).map_err(Into::into)
     }
 
-    fn postprocess(&self, result: &[Sample]) -> TrajectoryFile {
-        let mut original_params = self.original_file.params.clone();
-        // Update the interval counts on each params waypoint.
-        original_params
-            .waypoints
-            .iter_mut()
-            .zip(&self.ctx.counts_vec)
-            .for_each(|(waypoint, counts)| {
-                if !waypoint.override_intervals {
-                    waypoint.intervals = *counts;
+    fn generate_mecanum(&self, handle: i64) -> ChoreoResult<MecanumTrajectory> {
+        let mut generator = MecanumTrajectoryGenerator::new();
+        let mut feature_set = HashSet::new();
+        feature_set.extend(self.ctx.project.generation_features.clone());
+        feature_set.insert("".to_string());
+
+        for feature in feature_set.iter() {
+            if let Some(transformers) = self.mecanum_transformers.get(feature) {
+                for transformer in transformers.iter() {
+                    transformer.trans(&mut generator);
                 }
-            });
-        // Snapshot, capturing that interval count update
-        let snapshot = original_params.snapshot();
-        let mut original_events = self.original_file.events.clone();
-
-        // Calculate the waypoint timing (a vec of the timestamps of each
-        // waypoint) starting value of 0, plus 0 (intervals before the
-        // first waypoint) = 0 (index of the first waypoint)
-        let mut interval = 0;
-        // `intervals` contains (
-        //    was the waypoint either a non-ending split point or the start
-        // point (i.e, was it the beginning of a split segment)
-        //    the total number of intervals before this waypoint (not including
-        // the one the waypoint constrains),    The timestamp of the
-        // sample indexed by the previous parameter )
-        let intervals = snapshot
-            .waypoints
-            .iter()
-            .enumerate()
-            .map(|pt| {
-                let total_intervals = interval;
-                interval += pt.1.intervals;
-                (
-                    pt.0 == 0 || (pt.1.split && pt.0 != snapshot.waypoints.len() - 1),
-                    total_intervals,
-                    result.get(total_intervals).map_or(0.0, |s| match s {
-                        Sample::Swerve { t, .. } => *t,
-                        Sample::DifferentialDrive { t, .. } => *t,
-                    }),
-                )
-            })
-            .collect::<Vec<(bool, usize, f64)>>();
-
-        let waypoint_times = intervals.iter().map(|a| a.2).collect::<Vec<f64>>();
-        // Calculate splits
-        let splits = intervals
-            .iter()
-            .filter(|a| a.0) // filter by "start of split" flag
-            .map(|a| a.1) // map to associate an index in the samples array
-            .collect::<Vec<usize>>();
-
-        // update event markers' target timestamps with the corresponding
-        // timestamp from waypoint_times or None if the targeted index
-        // is None or out of bounds
-        original_events.iter_mut().for_each(|marker| {
-            marker.from.target_timestamp = marker.from.target.and_then(|idx| {
-                waypoint_times
-                    .get(idx)
-                    .copied()
-                    .or(marker.from.target_timestamp)
-            });
-        });
-        TrajectoryFile {
-            name: self.original_file.name.clone(),
-            version: self.original_file.version,
-            snapshot: Some(snapshot),
-            params: original_params,
-            trajectory: Trajectory {
-                sample_type: Some(self.ctx.project.r#type),
-                waypoints: waypoint_times,
-                samples: result.to_vec(),
-                splits,
-                config: Some(self.ctx.project.config.snapshot()),
-            },
-            events: original_events,
+            }
         }
+
+        generator.generate(true, handle).map_err(Into::into)
     }
+
     /// Generate the trajectory file
     pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
@@ -291,6 +246,12 @@ impl TrajectoryFileGenerator {
                 .collect(),
             DriveType::Differential => self
                 .generate_differential(self.ctx.handle)?
+                .samples
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            DriveType::Mecanum => self
+                .generate_mecanum(self.ctx.handle)?
                 .samples
                 .into_iter()
                 .map(Into::into)
@@ -358,4 +319,93 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     fn trans(&self, generator: &mut DifferentialTrajectoryGenerator) {
         self.transform(generator);
     }
+}
+
+/// An object safe variant of the [`MecanumGenerationTransformer`] trait,
+///
+/// Should not be implemented directly, instead implement [`MecanumGenerationTransformer`]
+pub(super) trait InitializedMecanumGenerationTransformer {
+    fn trans(&self, generator: &mut MecanumTrajectoryGenerator);
+}
+
+/// A trait for objects that can transform a [`MecanumTrajectoryGenerator`]
+pub(super) trait MecanumGenerationTransformer:
+    InitializedMecanumGenerationTransformer + Sized
+{
+    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self>;
+    fn transform(&self, generator: &mut MecanumTrajectoryGenerator);
+}
+
+impl<T: MecanumGenerationTransformer> InitializedMecanumGenerationTransformer for T {
+    fn trans(&self, generator: &mut MecanumTrajectoryGenerator) {
+        self.transform(generator);
+    }
+}
+
+fn postprocess(
+    result: &[Sample],
+    mut path: TrajectoryFile,
+    project: ProjectFile,
+    counts_vec: Vec<usize>,
+) -> TrajectoryFile {
+    let mut snapshot = path.params.snapshot();
+    // Update the `intervals` field of each waypoint with the corresponding entry from `counts_vec`
+    path.params
+        .waypoints
+        .iter_mut()
+        .zip(snapshot.waypoints.iter_mut())
+        .zip(counts_vec)
+        .for_each(|w| {
+            w.0.0.intervals = w.1;
+            w.0.1.intervals = w.1;
+        });
+    // Calculate the waypoint timing (a vec of the timestamps of each waypoint)
+    // starting value of 0, plus 0 (intervals before the first waypoint) = 0 (index of the first waypoint)
+    let mut interval = 0;
+    // `intervals` contains (
+    //    was the waypoint either a non-ending split point or the start point (i.e, was it the beginning of a split segment)
+    //    the total number of intervals before this waypoint (not including the one the waypoint constrains),
+    //    The timestamp of the sample indexed by the previous parameter
+    // )
+    let intervals = snapshot
+        .waypoints
+        .iter()
+        .enumerate()
+        .map(|pt| {
+            let total_intervals = interval;
+            interval += pt.1.intervals;
+            (
+                pt.0 == 0 || (pt.1.split && pt.0 != snapshot.waypoints.len() - 1),
+                total_intervals,
+                result.get(total_intervals).map_or(0.0, |s| match s {
+                    Sample::Swerve { t, .. } => *t,
+                    Sample::DifferentialDrive { t, .. } => *t,
+                    Sample::Mecanum { t, .. } => *t,
+                }),
+            )
+        })
+        .collect::<Vec<(bool, usize, f64)>>();
+
+    let waypoint_times = intervals.iter().map(|a| a.2).collect::<Vec<f64>>();
+    // Calculate splits
+    let splits = intervals
+        .iter()
+        .filter(|a| a.0) // filter by "start of split" flag
+        .map(|a| a.1) // map to associate an index in the samples array
+        .collect::<Vec<usize>>();
+    // copy the above into the TrajectoryFile
+    path.trajectory.sample_type = Some(project.r#type);
+    path.trajectory.splits = splits;
+    path.trajectory.samples = result.to_vec();
+    path.trajectory.waypoints = waypoint_times;
+    path.snapshot = Some(snapshot);
+    // update event markers' target timestamps with the corresponding timestamp from trajectory.waypoints
+    // or None if the targeted index is None or out of bounds
+    path.events.iter_mut().for_each(|marker| {
+        marker.from.target_timestamp = marker
+            .from
+            .target
+            .and_then(|idx| path.trajectory.waypoints.get(idx).copied());
+    });
+    path
 }
