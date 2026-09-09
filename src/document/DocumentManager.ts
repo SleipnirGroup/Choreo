@@ -64,6 +64,7 @@ import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { DEFAULT_FIELD_SETTINGS } from "./FieldSettingsStore";
 
 const TRAJ_DATA_FILENAME = "ChoreoTraj";
 const VARS_FILENAME = "ChoreoVars";
@@ -77,8 +78,10 @@ export const uiState = UIStateStore.create({
   settingsTab: 0,
   projectSavingState: SavingState.NO_LOCATION,
   projectSaveTime: new Date(),
-  layers: ViewLayerDefaults
+  layers: ViewLayerDefaults,
+  fieldSettings: DEFAULT_FIELD_SETTINGS
 });
+uiState.loadFieldSettingsFromLocalStorage();
 type ConstraintDataConstructor<K extends ConstraintKey> = (
   data: Partial<DataMap[K]["props"]>
 ) => IConstraintDataStore<K>;
@@ -239,6 +242,7 @@ const env = {
   },
   history: () => doc.history,
   vars: () => doc.variables,
+  fieldSettings: () => uiState.fieldSettings,
   renameVariable: renameVariable,
   exporter: async (uuid: string) => writeTrajectory(uuid).catch(tracing.error),
   create: getConstructors(() => doc.variables)

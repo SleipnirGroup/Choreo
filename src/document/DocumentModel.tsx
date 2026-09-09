@@ -4,6 +4,7 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import {
   DifferentialSample,
+  MecanumSample,
   ProgressUpdate,
   Project,
   PROJECT_SCHEMA_VERSION,
@@ -62,7 +63,8 @@ function itemType(
 }
 export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
-  "Differential"
+  "Differential",
+  "Mecanum"
 ]);
 
 // When adding new fields, consult
@@ -254,6 +256,52 @@ export const DocumentStore = types
           );
         }
       })
+      await Commands.guessIntervals(config, pathStore.serialize)
+        .catch((e) => {
+          tracing.error("guessIntervals:", e);
+          throw e;
+        })
+        .then((counts) => {
+          tracing.debug(counts);
+          counts.forEach((count, i) => {
+            const waypoint = pathStore.params.waypoints[i];
+            if (waypoint.overrideIntervals && count !== waypoint.intervals) {
+              console.assert(
+                false,
+                "Control interval guessing did not ignore override intervals! %o",
+                {
+                  path: pathStore.name,
+                  waypoint: i,
+                  override: waypoint.intervals,
+                  calculated: count
+                }
+              );
+            } else {
+              waypoint.setIntervals(count);
+            }
+          });
+        })
+        .then(() => {
+          tracing.debug("generatePathPre");
+          return listen(`solver-status-${handle}`, async (rawEvent) => {
+            const event: Event<ProgressUpdate> =
+              rawEvent as Event<ProgressUpdate>;
+            if (
+              event.payload!.type === "swerveTrajectory" ||
+              event.payload!.type === "differentialTrajectory" ||
+              event.payload!.type === "mecanumTrajectory"
+            ) {
+              const samples = event.payload.update as
+                | SwerveSample[]
+                | DifferentialSample[]
+                | MecanumSample[];
+              pathStore.ui.setInProgressTrajectory(samples);
+              pathStore.ui.setIterationNumber(
+                pathStore.ui.generationIterationNumber + 1
+              );
+            }
+          });
+        })
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generate(
