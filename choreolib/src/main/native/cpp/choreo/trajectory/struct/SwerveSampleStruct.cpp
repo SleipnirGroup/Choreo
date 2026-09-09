@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/struct/SwerveSampleStruct.h"
+#include "choreo/trajectory/struct/SwerveSampleStruct.hpp"
 
 namespace {
 constexpr size_t kTimestampOff = 0;

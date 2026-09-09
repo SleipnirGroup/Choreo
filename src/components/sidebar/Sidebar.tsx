@@ -149,7 +149,7 @@ class Sidebar extends Component<Props, State> {
               style={{
                 float: "right"
               }}
-              onClick={() => doc.pathlist.addPath("New Path", true)}
+              onClick={() => doc.pathlist.addPath("NewPath", true)}
             >
               <Add fontSize="small"></Add>
             </IconButton>

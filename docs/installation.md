@@ -11,8 +11,8 @@ Start by downloading Choreo from **[Releases](https://github.com/SleipnirGroup/C
 | macOS x86\_64                        | ✅         |
 | macOS arm64                          | ✅         |
 | Linux x86\_64                        | ✅         |
-| Linux aarch64                        | ❌         |
+| Linux aarch64                        | ✅         |
 
-Checkout [Building Choreo](./contributing/building-choreo.md) for instruction on how to build Choreo as well as the tech stack.
+Alternatively, build Choreo from source by following [Building Choreo](./contributing/building-choreo.md).
 
 Once installed, head to [Robot Config](./document-settings/robot-configuration.md) to configure Choreo for your robot.

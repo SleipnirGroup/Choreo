@@ -17,20 +17,23 @@ mod traj_file {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
         upgrader.add_version_action(up_1_2);
+        upgrader.add_version_action(up_2_3);
         // Ensure the new upgrader is added here
         upgrader
     }
     /// To devs adding new schema versions:
     /// If the change adds/exposes a new field in the trajectory sample,
-    /// the upgrade process includes calling this function, which deletes the generation output.
-    /// The new field likely can't be derived from other .traj contents, so the upgrader does
-    /// not have enough information to autopopulate it without regenerating.
-    /// No other upgrader work is needed to accommodate new sample fields.
+    /// the upgrade process includes calling this function, which deletes the
+    /// generation output. The new field likely can't be derived from other
+    /// .traj contents, so the upgrader does not have enough information to
+    /// autopopulate it without regenerating. No other upgrader work is
+    /// needed to accommodate new sample fields.
     fn clear_generation_result(editor: &mut Editor) -> ChoreoResult<()> {
         // Clear generated output
         editor.set_path_serialize(
             "trajectory",
             Trajectory {
+                config: None,
                 sample_type: None,
                 waypoints: vec![],
                 samples: vec![],
@@ -47,6 +50,10 @@ mod traj_file {
         clear_generation_result(editor)
     }
 
+    fn up_2_3(editor: &mut Editor) -> ChoreoResult<()> {
+        clear_generation_result(editor)
+    }
+
     #[cfg(test)]
     mod tests {
         use crate::ChoreoResult;
@@ -54,7 +61,8 @@ mod traj_file {
         use crate::spec::upgraders::testing_shared::{FileType, get_contents};
 
         use crate::spec::trajectory::TrajectoryFile;
-        // beta6 is technically the same spec as 0, but with a string version number
+        // beta6 is technically the same spec as 0, but with a string version
+        // number
         #[test]
         pub fn test_beta6_differential() -> ChoreoResult<()> {
             test_trajectory("beta-6", "differential")
@@ -90,7 +98,17 @@ mod traj_file {
             test_trajectory("2", "swerve")
         }
 
-        /// Tests that the file upgrades to the current version and deserializes properly.
+        #[test]
+        pub fn test_3_differential() -> ChoreoResult<()> {
+            test_trajectory("3", "differential")
+        }
+        #[test]
+        pub fn test_3_swerve() -> ChoreoResult<()> {
+            test_trajectory("3", "swerve")
+        }
+
+        /// Tests that the file upgrades to the current version and deserializes
+        /// properly.
         fn test_trajectory(version: &str, file_name: &str) -> ChoreoResult<()> {
             let contents = get_contents(FileType::Trajectory, version, file_name);
             let file = TrajectoryFile::from_content(&(contents))?;
@@ -158,13 +176,20 @@ mod project_file {
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
         upgrader.add_version_action(up_0_1);
-
+        upgrader.add_version_action(up_1_2);
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
     // the up prefix lets version numerals be used
     fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         editor.set_path_serialize("config.cof", Expr::new("1.5", 1.5))
+    }
+    fn up_1_2(editor: &mut Editor) -> ChoreoResult<()> {
+        editor.set_path("codegen.root", Option::<String>::None)?;
+        editor.set_path("codegen.genVars", true)?;
+        editor.set_path("codegen.genTrajData", true)?;
+        editor.set_path("codegen.useChoreoLib", true)?;
+        Ok(())
     }
 
     #[cfg(test)]
@@ -175,7 +200,8 @@ mod project_file {
 
         use crate::spec::project::ProjectFile;
 
-        /// Tests that the file upgrades to the current version and deserializes properly.
+        /// Tests that the file upgrades to the current version and deserializes
+        /// properly.
         fn test_project(version: &str, file_name: &str) -> ChoreoResult<()> {
             let contents = get_contents(FileType::Project, version, file_name);
             let file = ProjectFile::from_content(&(contents))?;
@@ -211,6 +237,14 @@ mod project_file {
         #[test]
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_project("1", "swerve")
+        }
+        #[test]
+        pub fn test_2_differential() -> ChoreoResult<()> {
+            test_project("2", "differential")
+        }
+        #[test]
+        pub fn test_2_swerve() -> ChoreoResult<()> {
+            test_project("2", "swerve")
         }
     }
 }

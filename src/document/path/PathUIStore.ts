@@ -17,7 +17,9 @@ export const PathUIStore = types
   })
   .actions((self) => ({
     setSavingState(state: SavingState) {
-      self.savingState = state;
+      getEnv<Env>(self).withoutUndo(() => {
+        self.savingState = state;
+      });
     },
     setUpToDate(upToDate: boolean) {
       getEnv<Env>(self).withoutUndo(() => {

@@ -6,7 +6,7 @@ plugins {
     id 'java-library'
     id 'google-test'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2025.0'
-    id 'edu.wpi.first.NativeUtils' version '2026.+'
+    id 'edu.wpi.first.NativeUtils' version '2026.0.1'
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '8.0.0'
@@ -38,14 +38,14 @@ apply from: 'config.gradle'
 
 // Apply Java configuration
 dependencies {
-    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2026.+'
-    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2026.+'
-    implementation 'edu.wpi.first.wpimath:wpimath-java:2026.+'
-    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2026.+'
-    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2026.+'
-    implementation 'edu.wpi.first.ntcore:ntcore-java:2026.+'
-    implementation 'edu.wpi.first.ntcore:ntcore-cpp:2026.+'
-    implementation 'edu.wpi.first.hal:hal-java:2026.+'
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2026.1.1'
+    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2026.1.1'
+    implementation 'edu.wpi.first.wpimath:wpimath-java:2026.1.1'
+    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2026.1.1'
+    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2026.1.1'
+    implementation 'edu.wpi.first.ntcore:ntcore-java:2026.1.1'
+    implementation 'edu.wpi.first.ntcore:ntcore-cpp:2026.1.1'
+    implementation 'edu.wpi.first.hal:hal-java:2026.1.1'
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.19.2"
     api "com.fasterxml.jackson.core:jackson-core:2.19.2"
@@ -54,9 +54,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.13.1'
 
     // This is needed to use wpilibj Filesystem class
-    testImplementation 'edu.wpi.first.cscore:cscore-java:2026.+'
-    testImplementation 'edu.wpi.first.cameraserver:cameraserver-java:2026.+'
-    testImplementation 'edu.wpi.first.hal:hal-java:2026.+'
+    testImplementation 'edu.wpi.first.cscore:cscore-java:2026.1.1'
+    testImplementation 'edu.wpi.first.cameraserver:cameraserver-java:2026.1.1'
+    testImplementation 'edu.wpi.first.hal:hal-java:2026.1.1'
 
     testImplementation 'us.hebi.quickbuf:quickbuf-runtime:1.4'
 
@@ -207,12 +207,7 @@ javadoc {
 
     title = "ChoreoLib API"
 
-    // Treat javadoc warnings as errors.
-    //
-    // The second argument '-quiet' is a hack. The one parameter
-    // addStringOption() doesn't work, so we add '-quiet', which is added
-    // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
-    options.addStringOption('Werror', '-quiet')
+    options.addBooleanOption('Werror', true)
 }
 
 jacocoTestReport {
@@ -233,5 +228,5 @@ test {
 apply from: 'publish.gradle'
 
 wrapper {
-    gradleVersion = '9.2.0'
+    gradleVersion = '8.14.3'
 }

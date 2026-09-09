@@ -30,8 +30,9 @@ type lookup<T extends ConstraintPropertyType> = T extends Expr
     : never;
 
 type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
-  // @ts-expect-error lookup type is fragile
-  [propkey in keyof D["props"]]: lookup<D["props"][propkey]>;
+  [propkey in keyof D["props"]]: lookup<
+    D["props"][propkey] & ConstraintPropertyType
+  >;
 } & {
   type: ISimpleType<D["type"]>;
   def: IType<
@@ -100,8 +101,8 @@ function createDataStore<
       };
       serialize = (self) => {
         const part = oldSerialize(self);
-        //@ts-expect-error not assignable
-        part[key] = (self[key] as IExpressionStore).serialize;
+        part[key] = (self[key] as IExpressionStore)
+          .serialize as D["props"][typeof key];
 
         return part;
       };
@@ -147,13 +148,12 @@ function createDataStore<
     } as Props<K>)
     .actions(
       (self) =>
-        //@ts-expect-error the typing doesn't preserve through fromEntries()
         Object.fromEntries(
           Object.entries(setters).map(([key, val]) => [
             key as keyof ConstraintSetters<K>,
             val(self)
           ])
-        ) as ConstraintSetters<K>
+        ) as unknown as ConstraintSetters<K>
     )
     .views((self) => ({
       get serialize(): D {

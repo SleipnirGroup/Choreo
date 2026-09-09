@@ -1,9 +1,7 @@
 import math
 from enum import Enum
-from typing import *
 
 from choreo.util.field_dimensions import FIELD_LENGTH, FIELD_WIDTH
-from wpimath.geometry import Pose2d
 
 
 class FlipperType(Enum):
@@ -51,6 +49,46 @@ class MirroredFlipper:
         return math.pi - heading
 
 
+class MirroredYFlipper:
+    IS_MIRRORED: bool = True
+
+    @staticmethod
+    def flip_x(x: float) -> float:
+        """
+        Flips the X coordinate.
+
+        Parameter ``x``:
+            The X coordinate to flip.
+        Returns:
+            The flipped X coordinate.
+        """
+        return x
+
+    @staticmethod
+    def flip_y(y: float) -> float:
+        """
+        Flips the Y coordinate.
+
+        Parameter ``y``:
+            The Y coordinate to flip.
+        Returns:
+            The flipped Y coordinate.
+        """
+        return FIELD_WIDTH - y
+
+    @staticmethod
+    def flip_heading(heading: float) -> float:
+        """
+        Flips the heading.
+
+        Parameter ``heading``:
+            The heading to flip.
+        Returns:
+            The flipped heading.
+        """
+        return -heading
+
+
 class RotateAroundFlipper:
     IS_MIRRORED: bool = False
 
@@ -91,15 +129,16 @@ class RotateAroundFlipper:
         return math.pi + heading
 
 
-FLIPPER_MAP: Dict[int, FlipperType] = {
+FLIPPER_MAP: dict[int, FlipperType] = {
     2022: FlipperType.ROTATE_AROUND,
     2023: FlipperType.MIRRORED,
     2024: FlipperType.MIRRORED,
     2025: FlipperType.ROTATE_AROUND,
+    2026: FlipperType.ROTATE_AROUND,
 }
 
 
-DEFAULT_YEAR = 2025
+DEFAULT_YEAR = 2026
 
 
 def get_flipper_for_year(year: int = DEFAULT_YEAR):

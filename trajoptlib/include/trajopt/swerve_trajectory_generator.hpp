@@ -24,13 +24,13 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   /// The moment of inertia of the robot about the origin (kg−m²).
   double moi;
 
-  /// Radius of wheel (m).
+  /// Radius of the wheels (m).
   double wheel_radius;
 
-  /// Maximum angular velocity of wheel (rad/s).
+  /// Maximum angular velocity of each wheel (rad/s).
   double wheel_max_angular_velocity;
 
-  /// Maximum torque applied to wheel (N−m).
+  /// Maximum torque applied to each wheel (N−m).
   double wheel_max_torque;
 
   /// The Coefficient of Friction (CoF) of the wheels.
@@ -162,14 +162,14 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
 /// Swerve trajectory.
 class TRAJOPT_DLLEXPORT SwerveTrajectory {
  public:
-  /// Trajectory samples.
+  /// The samples that make up the trajectory.
   std::vector<SwerveTrajectorySample> samples;
 
   SwerveTrajectory() = default;
 
   /// Construct a SwerveTrajectory from samples.
   ///
-  /// @param samples The samples.
+  /// @param samples The samples that make up the trajectory.
   explicit SwerveTrajectory(std::vector<SwerveTrajectorySample> samples)
       : samples{std::move(samples)} {}
 

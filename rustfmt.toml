@@ -1,0 +1,5 @@
+# Format Rust code blocks inside doc comments, and wrap doc/regular comments to
+# `comment_width`. Both are nightly-only rustfmt options, hence the nightly
+# toolchain pinned in rust-toolchain.toml.
+format_code_in_doc_comments = true
+wrap_comments = true

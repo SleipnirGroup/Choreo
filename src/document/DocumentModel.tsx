@@ -23,6 +23,8 @@ import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { CodeGenStore } from "./CodeGenStore";
+import { genJavaFiles } from "./DocumentManager";
 
 export type SelectableItemTypes =
   | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {
@@ -75,6 +77,7 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
+    codegen: CodeGenStore,
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
@@ -91,7 +94,8 @@ export const DocumentStore = types
         version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
-        config: self.robotConfig.serialize
+        config: self.robotConfig.serialize,
+        codegen: self.codegen.serialize
       };
     },
     get isSidebarMarkerSelected() {
@@ -131,6 +135,7 @@ export const DocumentStore = types
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
+      self.codegen.deserialize(ser.codegen);
       self.type = ser.type;
     },
     setName(name: string) {
@@ -162,12 +167,35 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
+    async generateMultiple(uuidsToGenerate: string[]) {
+      const errors: unknown[] = [];
+      const makeWorker = async () => {
+        while (uuidsToGenerate.length > 0) {
+          const uuid = uuidsToGenerate.shift();
+          if (uuid === undefined) return;
+          try {
+            await this.generatePath(uuid);
+          } catch (e) {
+            errors.push(e);
+          }
+        }
+      };
+      const numWorkers = await Commands.getWorkerCount();
+      const workers = Array.from({ length: numWorkers }, makeWorker);
+      await Promise.allSettled(workers);
+      console.error("Collected errors: ", errors);
+      await genJavaFiles();
+    },
     async generateAll() {
-      const uuidsToGenerate: string[] = [];
+      // make sure the currently active path is generated first
+      const uuidsToGenerate: string[] = [self.pathlist.activePathUUID];
+
       self.pathlist.paths.forEach((pathStore) => {
-        uuidsToGenerate.push(pathStore.uuid);
+        if (pathStore.uuid !== self.pathlist.activePathUUID) {
+          uuidsToGenerate.push(pathStore.uuid);
+        }
       });
-      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+      await this.generateMultiple(uuidsToGenerate);
     },
     async generateAllOutdated() {
       const uuidsToGenerate: string[] = [];
@@ -176,7 +204,7 @@ export const DocumentStore = types
           uuidsToGenerate.push(pathStore.uuid);
         }
       });
-      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+      await this.generateMultiple(uuidsToGenerate);
     },
 
     async generatePath(uuid: string) {
@@ -190,7 +218,6 @@ export const DocumentStore = types
       }
 
       console.log(pathStore.serialize);
-      const config = self.robotConfig.serialize;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
@@ -202,12 +229,33 @@ export const DocumentStore = types
       pathStore.markers.forEach((m) => {
         m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
-      pathStore.ui.setGenerating(true);
-      const handle = pathStore.uuid
-        .split("")
-        .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
+      const handle = pathStore.handle;
       let unlisten: UnlistenFn = () => {};
       pathStore.ui.setIterationNumber(0);
+      await listen(`solver-status-${handle}`, async (rawEvent) => {
+        const event: Event<ProgressUpdate> = rawEvent as Event<ProgressUpdate>;
+        // Currently, generation can't be cancelled until the child is spawned,
+        // so we wait for feedback before marking the path as generating.
+        pathStore.ui.setGenerating(true);
+        if (
+          event.payload!.type === "swerveTrajectory" ||
+          event.payload!.type === "differentialTrajectory"
+        ) {
+          const samples = event.payload.update as
+            | SwerveSample[]
+            | DifferentialSample[];
+          pathStore.ui.setInProgressTrajectory(samples);
+          pathStore.ui.setIterationNumber(
+            pathStore.ui.generationIterationNumber + 1
+          );
+        } else if (event.payload!.type === "diagnosticText") {
+          /**/
+        } else if (event.payload!.type === "intervalCounts") {
+          (event.payload.update as number[]).forEach((c, i) =>
+            pathStore.params.waypoints[i].setIntervals(c)
+          );
+        }
+      })
       await Commands.guessIntervals(config, pathStore.serialize)
         .catch((e) => {
           tracing.error("guessIntervals:", e);
@@ -298,12 +346,6 @@ export const DocumentStore = types
           toast.error("Tried to generate unknown path.");
         }
         return toast.promise(self.generatePath(activePathUUID), {
-          success: {
-            render({ data, toastProps }) {
-              return `Generated "${pathName}"`;
-            }
-          },
-
           error: {
             render({ data, toastProps }) {
               tracing.error("generatePathWithToasts:", data);

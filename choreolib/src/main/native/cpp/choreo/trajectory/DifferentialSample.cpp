@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/DifferentialSample.h"
+#include "choreo/trajectory/DifferentialSample.hpp"
 
 #include <wpi/json.h>
 

@@ -1,24 +1,31 @@
-{ pkgs ? import <nixpkgs> { } }:
-
+let
+  pkgs = import <nixpkgs> { };
+in
 pkgs.mkShell {
-  name = "Choreo";
-
-  packages = with pkgs; [
-    cmake
-    gcc
-    git
-    nodejs
-    pnpm
-    rustup
-
-    cacert
-    gnome.libsoup
-    librsvg
+  nativeBuildInputs = with pkgs; [
     pkg-config
-    webkitgtk
+    wrapGAppsHook4
+    cargo
+    rustc
+    cargo-tauri
+    nodejs
+    corepack
+
+    pipx
+    ninja
+    gcc
+    cmake
+    clang-tools
+  ];
+
+  buildInputs = with pkgs; [
+    librsvg
+    webkitgtk_4_1
   ];
 
   shellHook = ''
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/src-tauri
+    export XDG_DATA_DIRS="$GSETTINGS_SCHEMAS_PATH" # Needed on Wayland to report the correct display scale
+    pipx install wpiformat
+    export PATH="~/.local/bin:$PATH"
   '';
 }

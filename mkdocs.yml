@@ -10,6 +10,7 @@ repo_url: https://github.com/SleipnirGroup/Choreo/
 # Configuration
 theme:
   name: material
+  custom_dir: overrides
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -79,6 +80,9 @@ markdown_extensions:
         kwds:
           case: lower
 
+extra_css:
+  - css/nav-dropdown.css
+
 extra_javascript:
   - js/mathjax.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
@@ -96,6 +100,7 @@ nav:
       - Saving: usage/saving.md
       - View Options Panel: usage/view-options-panel.md
       - Estimating Moment of Inertia: usage/estimating-moi.md
+      - Code Generation: usage/code-generation.md
   - ChoreoLib:
       - Getting Started: choreolib/getting-started.md
       - Auto Factory: choreolib/auto-factory.md
@@ -104,6 +109,7 @@ nav:
       - C++ API: api/choreolib/cpp/index.html
   - TrajoptLib (Internal API):
       - C++ API: api/trajoptlib/cpp/index.html
+      - Rust API: api/trajoptlib/rs/trajoptlib/index.html
   - Contributing:
       - Building Choreo: contributing/building-choreo.md
       - Building ChoreoLib: contributing/building-choreolib.md
@@ -112,3 +118,4 @@ nav:
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md
       - Sample Flipping Logic: contributing/sample-flipping.md
+      - Generation Invariants: contributing/generation-invariants.md

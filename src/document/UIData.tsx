@@ -6,7 +6,8 @@ import {
   Room,
   Route,
   ScatterPlot,
-  SquareOutlined
+  SquareOutlined,
+  Flip
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
@@ -19,6 +20,7 @@ import {
   ConstraintKey
 } from "./ConstraintDefinitions";
 import { ConstraintStore } from "./ConstraintStore";
+import CodeGenConfigPanel from "../components/config/CodeGenConfigPanel";
 
 /* Navbar stuff */
 export const WaypointData: {
@@ -149,6 +151,12 @@ export const ViewData = {
     name: "Focus",
     icon: <CropFree />,
     default: false
+  },
+  FlippedPath: {
+    index: 6,
+    name: "Flipped Trajectory",
+    icon: <Flip />,
+    default: false
   }
 };
 
@@ -180,6 +188,8 @@ export const SETTINGS_TABS = [
     component: () => <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
   },
   {
+    name: "Code Generation",
+    component: () => <CodeGenConfigPanel></CodeGenConfigPanel>
     name: "Field",
     component: () => <FieldSettingsPanel></FieldSettingsPanel>
   }

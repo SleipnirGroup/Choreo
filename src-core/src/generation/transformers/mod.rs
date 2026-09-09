@@ -8,10 +8,14 @@ use trajoptlib::{
 };
 
 use crate::{
-    ChoreoResult,
+    ChoreoResult, ResultExt,
+    generation::{
+        generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK},
+        heading::adjust_headings,
+    },
     spec::{
         project::ProjectFile,
-        trajectory::{DriveType, Parameters, Sample, TrajectoryFile},
+        trajectory::{DriveType, Parameters, Sample, Trajectory, TrajectoryFile},
     },
 };
 
@@ -22,20 +26,78 @@ mod callback;
 mod constraints;
 mod drivetrain_and_bumpers;
 mod interval_count;
+use crate::spec::trajectory::ConstraintScope;
 pub use callback::CallbackSetter;
 pub use constraints::ConstraintSetter;
 pub use drivetrain_and_bumpers::DrivetrainAndBumpersSetter;
 pub use interval_count::IntervalCountSetter;
 
+pub fn set_initial_guess(params: &mut Parameters<f64>) {
+    fn not_initial_guess_wpt(params: &mut Parameters<f64>, idx: usize) {
+        let wpt = &mut params.waypoints[idx];
+        wpt.is_initial_guess = false;
+    }
+    let waypoint_count = params.waypoints.len();
+    for waypoint in params.waypoints.iter_mut() {
+        waypoint.is_initial_guess = true;
+    }
+    for constraint in params.snapshot().constraints {
+        let from = constraint.from.get_idx(waypoint_count);
+        let to = constraint
+            .to
+            .as_ref()
+            .and_then(|id| id.get_idx(waypoint_count));
+
+        if let Some(from_idx) = from {
+            let valid_wpt = to.is_none();
+            let valid_sgmt = to.is_some();
+            // Check for valid scope
+            if match constraint.data.scope() {
+                ConstraintScope::Waypoint => valid_wpt,
+                ConstraintScope::Segment => valid_sgmt,
+                ConstraintScope::Both => valid_wpt || valid_sgmt,
+            } {
+                not_initial_guess_wpt(params, from_idx);
+                if let Some(to_idx) = to
+                    && to_idx != from_idx
+                {
+                    not_initial_guess_wpt(params, to_idx);
+                }
+            }
+        }
+    }
+}
+
+fn update_control_intervals(params: &mut Parameters<f64>, counts_vec: &Vec<usize>) {
+    // set the intervals on the waypoints correctly (instead of copying
+    // counts_vec through everything)
+    params
+        .waypoints
+        .iter_mut()
+        .zip(counts_vec)
+        .for_each(|(waypoint, counts)| {
+            waypoint.intervals = *counts;
+        });
+}
+
+fn send_interval_counts(counts: Vec<usize>, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        let _ = tx
+            .send(LocalProgressUpdate::from(counts).handled(handle))
+            .trace_warn();
+    };
+}
 pub(super) struct GenerationContext {
     pub project: ProjectFile,
     pub params: Parameters<f64>,
+    pub counts_vec: Vec<usize>,
     pub handle: i64,
 }
 
 pub(super) struct TrajectoryFileGenerator {
     ctx: GenerationContext,
-    trajectory_file: TrajectoryFile,
+    original_file: TrajectoryFile,
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
     differential_transformers:
         HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
@@ -44,21 +106,37 @@ pub(super) struct TrajectoryFileGenerator {
 
 impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> Self {
-        Self {
+    pub fn new(
+        project: ProjectFile,
+        trajectory_file: TrajectoryFile,
+        handle: i64,
+    ) -> ChoreoResult<Self> {
+        // Mark unconstrained empty waypoints as initial guess points.
+        // Adjust non-equality-constrained waypoint headings to fit trajectory
+        // constraints; error if impossible. Estimate control intervals
+        let mut params = trajectory_file.params.snapshot();
+        adjust_headings(&mut params)?;
+        set_initial_guess(&mut params);
+        let counts_vec = guess_control_interval_counts(&project.config.snapshot(), &params)?;
+        update_control_intervals(&mut params, &counts_vec);
+        send_interval_counts(counts_vec.clone(), handle);
+        send_interval_counts(counts_vec.clone(), handle); // TODO: the double send is to get around a bug that consumes the first message from the IPC queue
+        Ok(Self {
             ctx: GenerationContext {
                 project,
-                params: trajectory_file.params.snapshot(),
+                params,
+                counts_vec,
                 handle,
             },
-            trajectory_file,
+            original_file: trajectory_file,
             swerve_transformers: HashMap::new(),
             differential_transformers: HashMap::new(),
             mecanum_transformers: HashMap::new(),
         }
     }
 
-    /// Add a transformer to the generator that is only applied when generating a swerve trajectory
+    /// Add a transformer to the generator that is only applied when generating
+    /// a swerve trajectory
     pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(&mut self) {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
@@ -69,7 +147,8 @@ impl TrajectoryFileGenerator {
             .push(transformer);
     }
 
-    /// Add a transformer to the generator that is only applied when generating a differential trajectory
+    /// Add a transformer to the generator that is only applied when generating
+    /// a differential trajectory
     pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
@@ -179,17 +258,7 @@ impl TrajectoryFileGenerator {
                 .collect(),
         };
 
-        let counts_vec = guess_control_interval_counts(
-            &self.ctx.project.config.snapshot(),
-            &self.trajectory_file.params.snapshot(),
-        )?;
-
-        Ok(postprocess(
-            &samples,
-            self.trajectory_file,
-            self.ctx.project,
-            counts_vec,
-        ))
+        Ok(self.postprocess(&samples))
     }
 }
 
@@ -210,7 +279,8 @@ impl<T> FeatureLockedTransformer<T> {
 
 /// An object safe variant of the [`SwerveGenerationTransformer`] trait,
 ///
-/// Should not be implemented directly, instead implement [`SwerveGenerationTransformer`]
+/// Should not be implemented directly, instead implement
+/// [`SwerveGenerationTransformer`]
 pub(super) trait InitializedSwerveGenerationTransformer {
     fn trans(&self, generator: &mut SwerveTrajectoryGenerator);
 }
@@ -231,7 +301,8 @@ impl<T: SwerveGenerationTransformer> InitializedSwerveGenerationTransformer for 
 
 /// An object safe variant of the [`DifferentialGenerationTransformer`] trait,
 ///
-/// Should not be implemented directly, instead implement [`DifferentialGenerationTransformer`]
+/// Should not be implemented directly, instead implement
+/// [`DifferentialGenerationTransformer`]
 pub(super) trait InitializedDifferentialGenerationTransformer {
     fn trans(&self, generator: &mut DifferentialTrajectoryGenerator);
 }

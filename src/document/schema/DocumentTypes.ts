@@ -58,12 +58,20 @@ export interface RobotConfig<T extends ExprOrNumber> {
   differentialTrackWidth: T;
 }
 
+export interface CodeGenConfig {
+  root: string | null;
+  genVars: boolean;
+  genTrajData: boolean;
+  useChoreoLib: boolean;
+}
+
 export interface Project {
   name: string;
   type: SampleType;
   version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
+  codegen: CodeGenConfig;
 }
 
 export interface Waypoint<T extends ExprOrNumber> {
@@ -133,8 +141,12 @@ export interface MecanumSample {
 }
 
 export interface ProgressUpdate {
-  type: "swerveTrajectory" | "differentialTrajectory";
-  update: SwerveSample[] | DifferentialSample[] | string;
+  type:
+    | "swerveTrajectory"
+    | "differentialTrajectory"
+    | "diagnosticText"
+    | "intervalCounts";
+  update: SwerveSample[] | DifferentialSample[] | string | number[];
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {
@@ -145,6 +157,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 
 export type SampleType = "Swerve" | "Differential" | "Mecanum";
 export interface Output {
+  config: RobotConfig<number> | null;
   sampleType: SampleType | undefined;
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
@@ -193,4 +206,31 @@ export interface EventMarker {
   name: string;
   from: EventMarkerData;
   event: Command;
+}
+
+export type FieldJSON = {
+  game: string;
+
+  "field-image": string;
+  "size-pixels": [number, number];
+
+  "field-corners": {
+    "top-left": [number, number];
+
+    "bottom-right": [number, number];
+  };
+
+  "field-size": [number, number];
+
+  "field-unit": "meter" | "foot" | "inch";
+  // (0,_) means X origin is on left side.
+  // (_, 0) means Y origin is on bottom
+  // (1,_) means X origin is on right side.
+  // (_, 1) means Y origin is on top
+  "origin-fraction": [number, number];
+};
+export interface CustomFieldData {
+  fieldImageBase64: string;
+  fieldJson: FieldJSON;
+  fieldJSONRelativePath: string | undefined;
 }

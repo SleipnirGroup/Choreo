@@ -14,13 +14,13 @@
 
 namespace trajopt {
 
-/// Point-point constraint.
+/// Point-point minimum constraint.
 ///
 /// Specifies the required minimum distance between a point on the robot's frame
 /// and a point on the field.
 class TRAJOPT_DLLEXPORT PointPointMinConstraint {
  public:
-  /// Constructs a LinePointConstraint.
+  /// Constructs a PointPointMinConstraint.
   ///
   /// @param robot_point Robot point.
   /// @param field_point Field point.

@@ -2,9 +2,7 @@
 
 ![Build](https://github.com/SleipnirGroup/Choreo/actions/workflows/trajoptlib.yml/badge.svg)
 
-This library is used to generate time-optimal trajectories for FRC robots.
-
-Trajectory optimization works by mathematically formulating the problem of travelling along a given path with the minimum possible time. The physical constraints of motor power capacity are applied along with waypoint constraints, which force the robot to begin and end a segment of the trajectory with a certain state. A mathematical solver must vary the position of the robot at each discrete timestamp to minimize total time.
+TrajoptLib is a library for generating time-optimal drivetrain trajectories subject to waypoint, kinematic, and dynamic constraints.
 
 ## Features
 
@@ -38,8 +36,8 @@ On Windows, open a [Developer PowerShell](https://learn.microsoft.com/en-us/visu
 
 ```bash
 # Clone the repository
-git clone git@github.com:SleipnirGroup/TrajoptLib
-cd TrajoptLib
+git clone git@github.com:SleipnirGroup/Choreo
+cd Choreo/trajoptlib
 
 # Configure
 cmake -B build -S .
@@ -73,8 +71,8 @@ On Windows, open a [Developer PowerShell](https://learn.microsoft.com/en-us/visu
 
 ```bash
 # Clone the repository
-git clone git@github.com:SleipnirGroup/TrajoptLib
-cd TrajoptLib
+git clone git@github.com:SleipnirGroup/Choreo
+cd Choreo/trajoptlib
 
 cargo build
 ```

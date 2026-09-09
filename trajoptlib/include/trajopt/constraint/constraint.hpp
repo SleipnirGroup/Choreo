@@ -26,16 +26,9 @@
 
 namespace trajopt {
 
-/// ConstraintType concept.
-///
-/// To make TrajoptLib support a new constraint type, do the following in this
-/// file:
-///
-/// 1. Include the type's header file
-/// 2. Add a constraint static assert for the type
-/// 3. Add the type to Constraint's std::variant type list
+/// ConstraintLike concept.
 template <typename T>
-concept ConstraintType =
+concept ConstraintLike =
     requires(T self, slp::Problem<double>& problem, const Pose2v<double>& pose,
              const Translation2v<double>& linear_velocity,
              const slp::Variable<double>& angular_velocity,
@@ -47,20 +40,7 @@ concept ConstraintType =
       } -> std::same_as<void>;
     };
 
-static_assert(ConstraintType<AngularVelocityMaxMagnitudeConstraint>);
-static_assert(ConstraintType<LaneConstraint>);
-static_assert(ConstraintType<LinePointConstraint>);
-static_assert(ConstraintType<LinearAccelerationMaxMagnitudeConstraint>);
-static_assert(ConstraintType<LinearVelocityDirectionConstraint>);
-static_assert(ConstraintType<LinearVelocityMaxMagnitudeConstraint>);
-static_assert(ConstraintType<PointAtConstraint>);
-static_assert(ConstraintType<PointLineConstraint>);
-static_assert(ConstraintType<PointLineRegionConstraint>);
-static_assert(ConstraintType<PointPointMaxConstraint>);
-static_assert(ConstraintType<PointPointMinConstraint>);
-static_assert(ConstraintType<PoseEqualityConstraint>);
-static_assert(ConstraintType<TranslationEqualityConstraint>);
-
+/// List of constraint types (must satisfy ConstraintLike concept).
 using Constraint = std::variant<
     // clang-format off
     AngularVelocityMaxMagnitudeConstraint,
@@ -78,5 +58,17 @@ using Constraint = std::variant<
     TranslationEqualityConstraint
     // clang-format on
     >;
+
+template <typename>
+struct HoldsConstraintTypes;
+
+/// Type trait that evaluates to true if variant only holds constraint types.
+template <typename... Ts>
+struct HoldsConstraintTypes<std::variant<Ts...>> {
+  /// True if variant only holds constraint types.
+  static constexpr bool value = (ConstraintLike<Ts> && ...);
+};
+
+static_assert(HoldsConstraintTypes<Constraint>::value);
 
 }  // namespace trajopt

@@ -13,6 +13,10 @@ import {
 import ExpressionInput from "../../input/ExpressionInput";
 import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel";
 import VariableRenamingInput from "./VariableRenamingInput";
+import {
+  isNameIssueError,
+  NameIssue
+} from "../../../document/path/NameIsIdentifier";
 
 const VariablePanel = observer(
   (props: {
@@ -21,7 +25,7 @@ const VariablePanel = observer(
     setName: (name: string) => void;
     actionButton: () => React.JSX.Element;
     logo: () => React.JSX.Element;
-    validateName: (name: string) => boolean;
+    validateName: (name: string) => NameIssue | undefined;
   }) => {
     return (
       <>
@@ -32,7 +36,7 @@ const VariablePanel = observer(
           title={() => (
             <VariableRenamingInput
               validateName={(name) => props.validateName(name)}
-              width="7ch"
+              width={doc.variables.maxNameLength + 1 + "ch"}
               name={props.name}
               setName={(name) => props.setName(name)}
             ></VariableRenamingInput>
@@ -64,7 +68,10 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
         <Add
           sx={{ color: "var(--accent-purple)" }}
           onClick={(_) => {
-            if (doc.variables.validateName(props.name, "")) {
+            if (
+              isNameIssueError(doc.variables.validateName(props.name, "")) ===
+              undefined
+            ) {
               doc.variables.add(
                 props.name,
                 props.expr.serialize.exp,

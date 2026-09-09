@@ -61,4 +61,11 @@ public class ChoreoAlert {
 
   /** Factory class. */
   private ChoreoAlert() {}
+
+  /**
+   * An alert to be used when alliance-dependent logic is called before an alliance has been
+   * determined.
+   */
+  public static final Alert allianceNotReady =
+      ChoreoAlert.alert("Alliance used but not ready", AlertType.kError);
 }

@@ -137,19 +137,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     dts.emplace_back(problem.decision_variable());
   }
 
+  constexpr int num_wheels = 2;
+
   // Minimize total time
-  const double max_force =
-      path.drivetrain.wheel_max_torque * 2 / path.drivetrain.wheel_radius;
-  const auto max_accel = max_force / path.drivetrain.mass;
-  const double max_drivetrain_velocity =
+  const double chassis_max_force = path.drivetrain.wheel_max_torque *
+                                   num_wheels / path.drivetrain.wheel_radius;
+  const double chassis_max_a = chassis_max_force / path.drivetrain.mass;
+  const double chassis_max_v =
       path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
-  const auto max_ang_vel =
-      max_drivetrain_velocity * 2 / path.drivetrain.trackwidth;
-  const auto max_ang_accel = max_accel * 2 / path.drivetrain.trackwidth;
+  const double chassis_max_ω = chassis_max_v * (path.drivetrain.trackwidth / 2);
+  const double chassis_max_α = chassis_max_a * (path.drivetrain.trackwidth / 2);
   for (size_t sgmt_index = 0; sgmt_index < Ns.size(); ++sgmt_index) {
-    auto N_sgmt = Ns.at(sgmt_index);
-    const auto sgmt_start = get_index(Ns, sgmt_index);
-    const auto sgmt_end = get_index(Ns, sgmt_index + 1);
+    size_t N_sgmt = Ns.at(sgmt_index);
+    size_t sgmt_start = get_index(Ns, sgmt_index);
+    size_t sgmt_end = get_index(Ns, sgmt_index + 1);
 
     if (N_sgmt == 0) {
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
@@ -157,23 +158,19 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       }
     } else {
       // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-      const auto dx =
+      const double dx =
           initial_guess.x.at(sgmt_end) - initial_guess.x.at(sgmt_start);
-      const auto dy =
+      const double dy =
           initial_guess.y.at(sgmt_end) - initial_guess.y.at(sgmt_start);
-      const auto dist = std::hypot(dx, dy);
-      const auto θ_0 = initial_guess.heading.at(sgmt_start);
-      const auto θ_1 = initial_guess.heading.at(sgmt_end);
-      const auto dθ = std::abs(angle_modulus(θ_1 - θ_0));
+      const double dist = std::hypot(dx, dy);
+      const double θ_0 = initial_guess.heading.at(sgmt_start);
+      const double θ_1 = initial_guess.heading.at(sgmt_end);
+      const double dθ = std::abs(angle_modulus(θ_1 - θ_0));
 
-      auto max_linear_vel = max_drivetrain_velocity;
-
-      const auto angular_time =
-          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel);
-      max_linear_vel = std::min(max_linear_vel, dist / angular_time);
-
-      const auto linear_time =
-          calculate_trapezoidal_time(dist, max_linear_vel, max_accel);
+      const double angular_time =
+          calculate_trapezoidal_time(dθ, chassis_max_ω, chassis_max_α);
+      const double linear_time = calculate_trapezoidal_time(
+          dist, std::min(chassis_max_v, dist / angular_time), chassis_max_a);
       const double sgmt_time = angular_time + linear_time;
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
@@ -231,33 +228,32 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   // Apply wheel power constraints
   for (size_t index = 0; index < samp_tot; ++index) {
-    double max_wheel_velocity = path.drivetrain.wheel_radius *
-                                path.drivetrain.wheel_max_angular_velocity;
+    const double v_max = path.drivetrain.wheel_radius *
+                         path.drivetrain.wheel_max_angular_velocity;
 
     // −vₘₐₓ < vₗ < vₘₐₓ
-    problem.subject_to(
-        slp::bounds(-max_wheel_velocity, vl.at(index), max_wheel_velocity));
-
     // −vₘₐₓ < vᵣ < vₘₐₓ
-    problem.subject_to(
-        slp::bounds(-max_wheel_velocity, vr.at(index), max_wheel_velocity));
+    problem.subject_to(slp::bounds(-v_max, vl.at(index), v_max));
+    problem.subject_to(slp::bounds(-v_max, vr.at(index), v_max));
 
     // τ = r x F
     // F = τ/r
-    double max_wheel_force =
+    const double wheel_max_force =
         path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
 
     // friction = μmg
-    double max_friction_force =
-        path.drivetrain.wheel_cof * path.drivetrain.mass * 9.8;
+    const double normal_force_per_wheel =
+        path.drivetrain.mass * 9.8 / num_wheels;
+    const double wheel_max_friction_force =
+        path.drivetrain.wheel_cof * normal_force_per_wheel;
 
-    double max_force = std::min(max_wheel_force, max_friction_force);
+    const double F_max = std::min(wheel_max_force, wheel_max_friction_force);
 
     // −Fₘₐₓ < Fₗ < Fₘₐₓ
-    problem.subject_to(slp::bounds(-max_force, Fl.at(index), max_force));
+    problem.subject_to(slp::bounds(-F_max, Fl.at(index), F_max));
 
     // −Fₘₐₓ < Fᵣ < Fₘₐₓ
-    problem.subject_to(slp::bounds(-max_force, Fr.at(index), max_force));
+    problem.subject_to(slp::bounds(-F_max, Fr.at(index), F_max));
   }
 
   for (size_t wpt_index = 0; wpt_index < wpt_cnt; ++wpt_index) {

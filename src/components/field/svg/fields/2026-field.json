@@ -1,0 +1,12 @@
+{
+  "game": "Rebuilt",
+  "field-image": "2026-field.png",
+  "field-corners": {
+    "top-left": [256, 113],
+    "bottom-right": [3939, 1914]
+  },
+  "field-size": [16.541, 8.0692],
+  "field-unit": "meter",
+  "size-pixels": [4196, 2035],
+  "origin-fraction": [0, 0]
+}

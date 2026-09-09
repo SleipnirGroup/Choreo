@@ -19,10 +19,9 @@ import {
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import { path } from "@tauri-apps/api";
-import { confirm } from "@tauri-apps/plugin-dialog";
+import { ask } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { toast } from "react-toastify";
 import {
   newProject,
   saveProjectDialog,
@@ -52,7 +51,6 @@ class AppMenu extends Component<Props, State> {
   CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
     const handleAction = async function () {
       await navigator.clipboard.writeText(data);
-      toast.success("Copied to clipboard");
     };
 
     return (
@@ -164,12 +162,16 @@ class AppMenu extends Component<Props, State> {
             <ListItemButton
               onClick={async () => {
                 if (
-                  await confirm("You may lose unsaved changes. Continue?", {
+                  uiState.hasSaveLocation ||
+                  !(await ask("Do you want to save this project first?", {
                     title: "Choreo",
                     kind: "warning"
-                  })
+                  }))
                 ) {
-                  newProject();
+                  await newProject();
+                } else {
+                  await saveProjectDialog();
+                  await newProject();
                 }
               }}
             >

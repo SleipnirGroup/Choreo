@@ -6,6 +6,10 @@ import { doc } from "../../../document/DocumentManager";
 import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import VariableRenamingInput from "./VariableRenamingInput";
+import {
+  isNameIssueError,
+  NameIssue
+} from "../../../document/path/NameIsIdentifier";
 
 type PoseVariablePanelProps = {
   name: string;
@@ -13,7 +17,7 @@ type PoseVariablePanelProps = {
   setName: (name: string) => void;
   actionButton: () => React.JSX.Element;
   logo: () => React.JSX.Element;
-  validateName: (name: string) => boolean;
+  validateName: (name: string) => NameIssue | undefined;
 };
 
 const PoseVariablePanel = observer(
@@ -28,7 +32,7 @@ const PoseVariablePanel = observer(
         {props.logo()}
 
         <VariableRenamingInput
-          width="7ch"
+          width={doc.variables.maxNameLength + 1 + "ch"}
           key={props.name + ".name"}
           name={props.name}
           setName={(name) => props.setName(name)}
@@ -141,7 +145,10 @@ export const AddPoseVariablePanel = observer(
           <Add
             sx={{ color: "var(--accent-purple)" }}
             onClick={(_) => {
-              if (doc.variables.validateName(props.name, "")) {
+              if (
+                isNameIssueError(doc.variables.validateName(props.name, "")) ===
+                undefined
+              ) {
                 const pose = {
                   x: props.pose.x.serialize,
                   y: props.pose.y.serialize,

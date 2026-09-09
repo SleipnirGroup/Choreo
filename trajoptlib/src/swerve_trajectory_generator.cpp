@@ -12,6 +12,7 @@
 #include <sleipnir/optimization/problem.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 
+#include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/util/cancellation.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
@@ -115,23 +116,23 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
         min_width, std::hypot(mod_a.x() - mod_b.x(), mod_a.y() - mod_b.y()));
   }
 
+  constexpr int num_wheels = 4;
+
   // Minimize total time
-  const double max_force =
-      path.drivetrain.wheel_max_torque * 4 / path.drivetrain.wheel_radius;
-  const auto max_accel = max_force / path.drivetrain.mass;
-  const double max_drivetrain_velocity =
+  const double chassis_max_force = path.drivetrain.wheel_max_torque *
+                                   num_wheels / path.drivetrain.wheel_radius;
+  const double chassis_max_a = chassis_max_force / path.drivetrain.mass;
+  const double chassis_max_v =
       path.drivetrain.wheel_radius * path.drivetrain.wheel_max_angular_velocity;
-  auto max_wheel_position_radius = 0.0;
-  for (auto module : path.drivetrain.modules) {
-    max_wheel_position_radius =
-        std::max(max_wheel_position_radius, module.norm());
-  }
-  const auto max_ang_vel = max_drivetrain_velocity / max_wheel_position_radius;
-  const auto max_ang_accel = max_accel / max_wheel_position_radius;
+  const double wheel_max_position_radius =
+      std::ranges::max(path.drivetrain.modules, {}, &Translation2d::norm)
+          .norm();
+  const double chassis_max_ω = chassis_max_v / wheel_max_position_radius;
+  const double chassis_max_α = chassis_max_a / wheel_max_position_radius;
   for (size_t sgmt_index = 0; sgmt_index < Ns.size(); ++sgmt_index) {
-    auto N_sgmt = Ns.at(sgmt_index);
-    const auto sgmt_start = get_index(Ns, sgmt_index);
-    const auto sgmt_end = get_index(Ns, sgmt_index + 1);
+    size_t N_sgmt = Ns.at(sgmt_index);
+    size_t sgmt_start = get_index(Ns, sgmt_index);
+    size_t sgmt_end = get_index(Ns, sgmt_index + 1);
 
     if (N_sgmt == 0) {
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
@@ -139,25 +140,21 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       }
     } else {
       // Use initial_guess and Ns to find the dx, dy, dθ between wpts
-      const auto dx =
+      const double dx =
           initial_guess.x.at(sgmt_end) - initial_guess.x.at(sgmt_start);
-      const auto dy =
+      const double dy =
           initial_guess.y.at(sgmt_end) - initial_guess.y.at(sgmt_start);
-      const auto dist = std::hypot(dx, dy);
-      const auto θ_0 = std::atan2(initial_guess.thetasin.at(sgmt_start),
-                                  initial_guess.thetacos.at(sgmt_start));
-      const auto θ_1 = std::atan2(initial_guess.thetasin.at(sgmt_end),
-                                  initial_guess.thetacos.at(sgmt_end));
-      const auto dθ = std::abs(angle_modulus(θ_1 - θ_0));
+      const double dist = std::hypot(dx, dy);
+      const double θ_0 = std::atan2(initial_guess.thetasin.at(sgmt_start),
+                                    initial_guess.thetacos.at(sgmt_start));
+      const double θ_1 = std::atan2(initial_guess.thetasin.at(sgmt_end),
+                                    initial_guess.thetacos.at(sgmt_end));
+      const double dθ = std::abs(angle_modulus(θ_1 - θ_0));
 
-      auto max_linear_vel = max_drivetrain_velocity;
-
-      const auto angular_time =
-          calculate_trapezoidal_time(dθ, max_ang_vel, max_ang_accel);
-      max_linear_vel = std::min(max_linear_vel, dist / angular_time);
-
-      const auto linear_time =
-          calculate_trapezoidal_time(dist, max_linear_vel, max_accel);
+      const double angular_time =
+          calculate_trapezoidal_time(dθ, chassis_max_ω, chassis_max_α);
+      const double linear_time = calculate_trapezoidal_time(
+          dist, std::min(chassis_max_v, dist / angular_time), chassis_max_a);
       const double sgmt_time = angular_time + linear_time;
 
       for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
@@ -201,11 +198,13 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       }
 
       // xₖ₊₁ = xₖ + vₖt + 1/2aₖt²
-      // θₖ₊₁ = θₖ + ωₖt
+      // θₖ₊₁ = θₖ + ωₖt + 1/2αₖt²
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
       problem.subject_to(x_k_1 == x_k + v_k * dt_k + a_k * 0.5 * dt_k * dt_k);
-      problem.subject_to((θ_k_1 - θ_k) == Rotation2v<double>{ω_k * dt_k});
+      problem.subject_to(θ_k_1 ==
+                         θ_k + Rotation2v<double>{ω_k * dt_k} +
+                             Rotation2v<double>{α_k * 0.5 * dt_k * dt_k});
       problem.subject_to(v_k_1 == v_k + a_k * dt_k);
       problem.subject_to(ω_k_1 == ω_k + α_k * dt_k);
     }
@@ -242,29 +241,30 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v<double> v_wheel_wrt_robot{
           v_wrt_robot.x() - translation.y() * ω.at(index),
           v_wrt_robot.y() + translation.x() * ω.at(index)};
-      double max_wheel_velocity = path.drivetrain.wheel_radius *
-                                  path.drivetrain.wheel_max_angular_velocity;
+      const double v_max = path.drivetrain.wheel_radius *
+                           path.drivetrain.wheel_max_angular_velocity;
 
       // |v|₂² ≤ vₘₐₓ²
-      problem.subject_to(v_wheel_wrt_robot.squared_norm() <=
-                         max_wheel_velocity * max_wheel_velocity);
+      problem.subject_to(v_wheel_wrt_robot.squared_norm() <= v_max * v_max);
 
-      Translation2v<double> module_f{Fx.at(index).at(module_index),
-                                     Fy.at(index).at(module_index)};
+      Translation2v<double> module_force{Fx.at(index).at(module_index),
+                                         Fy.at(index).at(module_index)};
 
       // τ = r x F
       // F = τ/r
-      double max_wheel_force =
+      const double wheel_max_force =
           path.drivetrain.wheel_max_torque / path.drivetrain.wheel_radius;
 
       // friction = μmg
-      double max_friction_force =
-          path.drivetrain.wheel_cof * path.drivetrain.mass * 9.8;
+      const double normal_force_per_wheel =
+          path.drivetrain.mass * 9.8 / num_wheels;
+      const double wheel_max_friction_force =
+          path.drivetrain.wheel_cof * normal_force_per_wheel;
 
-      double max_force = std::min(max_wheel_force, max_friction_force);
+      const double F_max = std::min(wheel_max_force, wheel_max_friction_force);
 
       // |F|₂² ≤ Fₘₐₓ²
-      problem.subject_to(module_f.squared_norm() <= max_force * max_force);
+      problem.subject_to(module_force.squared_norm() <= F_max * F_max);
     }
 
     // Apply dynamics constraints

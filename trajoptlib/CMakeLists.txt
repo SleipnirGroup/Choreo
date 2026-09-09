@@ -17,8 +17,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(TRAJOPT_BUILD_EXAMPLES "Build examples" OFF)
 
 file(GLOB_RECURSE TrajoptLib_src src/*.cpp)
 list(FILTER TrajoptLib_src EXCLUDE REGEX rust_ffi.cpp)
@@ -37,12 +37,12 @@ target_include_directories(
         $<INSTALL_INTERFACE:include>
 )
 
-if(BUILD_TESTING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     # Catch2 dependency
     FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.11.0
+        GIT_TAG v3.16.0
         GIT_SHALLOW ON
         EXCLUDE_FROM_ALL
         SYSTEM
@@ -50,23 +50,14 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(Catch2)
 endif()
 
-set(BUILD_TESTING_SAVE ${BUILD_TESTING})
-set(BUILD_EXAMPLES_SAVE ${BUILD_EXAMPLES})
-
-set(BUILD_TESTING OFF)
-set(BUILD_EXAMPLES OFF)
-
 FetchContent_Declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    GIT_TAG v0.3.3
+    GIT_TAG v0.6.6
     GIT_SHALLOW ON
     SYSTEM
 )
 FetchContent_MakeAvailable(Sleipnir)
-
-set(BUILD_TESTING ${BUILD_TESTING_SAVE})
-set(BUILD_EXAMPLES ${BUILD_EXAMPLES_SAVE})
 
 target_link_libraries(TrajoptLib PUBLIC Sleipnir::Sleipnir)
 
@@ -79,7 +70,7 @@ install(
     INCLUDES DESTINATION include
 )
 export(TARGETS TrajoptLib FILE TrajoptLib.cmake NAMESPACE TrajoptLib::)
-install(DIRECTORY include/ COMPONENT TrajoptLib DESTINATION "include")
+install(DIRECTORY include/ COMPONENT TrajoptLib DESTINATION include)
 install(
     EXPORT TrajoptLibTargets
     FILE TrajoptLib.cmake
@@ -91,7 +82,7 @@ install(
 configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/TrajoptLibConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/TrajoptLibConfig.cmake
-    INSTALL_DESTINATION "lib/cmake/TrajoptLib"
+    INSTALL_DESTINATION lib/cmake/TrajoptLib
     NO_SET_AND_CHECK_MACRO
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
@@ -103,14 +94,14 @@ install(
     DESTINATION lib/cmake/TrajoptLib
 )
 
-if(BUILD_TESTING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     enable_testing()
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     include(Catch)
 endif()
 get_cmake_property(IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 # Build TrajoptLib tests
-if(BUILD_TESTING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     file(GLOB_RECURSE trajoptlib_test_src test/src/*.cpp)
     add_executable(trajoptlib_test ${trajoptlib_test_src})
     compiler_flags(trajoptlib_test)
@@ -120,7 +111,10 @@ if(BUILD_TESTING)
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     )
-    target_link_libraries(trajoptlib_test TrajoptLib Catch2::Catch2WithMain)
+    target_link_libraries(
+        trajoptlib_test
+        PUBLIC TrajoptLib Catch2::Catch2WithMain
+    )
     catch_discover_tests(
         trajoptlib_test
         DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
@@ -128,7 +122,7 @@ if(BUILD_TESTING)
 endif()
 
 # Build examples and example tests
-if(BUILD_EXAMPLES)
+if(TRAJOPT_BUILD_EXAMPLES)
     include(SubdirList)
     subdir_list(EXAMPLES ${CMAKE_CURRENT_SOURCE_DIR}/examples)
     foreach(example ${EXAMPLES})
@@ -140,11 +134,12 @@ if(BUILD_EXAMPLES)
             ${example}
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/include
         )
-        target_link_libraries(${example} TrajoptLib)
+        target_link_libraries(${example} PUBLIC TrajoptLib)
 
         # Build example test if files exist for it
         if(
-            BUILD_TESTING
+            PROJECT_IS_TOP_LEVEL
+            AND BUILD_TESTING
             AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
         )
             file(GLOB_RECURSE test_sources examples/${example}/test/*.cpp)
@@ -163,8 +158,7 @@ if(BUILD_EXAMPLES)
             )
             target_link_libraries(
                 ${example}_test
-                TrajoptLib
-                Catch2::Catch2WithMain
+                PUBLIC TrajoptLib Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
                 catch_discover_tests(

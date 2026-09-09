@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, MecanumTrajectorySample, SwerveTrajectorySample};
 
+use crate::spec::project::RobotConfig;
+
 use super::{Expr, SnapshottableType, upgraders::upgrade_traj_file};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
@@ -19,7 +21,8 @@ pub struct Waypoint<T: SnapshottableType> {
     ///
     /// Units: radians
     pub heading: T,
-    /// The number of control intervals to use between this waypoint and the next.
+    /// The number of control intervals to use between this waypoint and the
+    /// next.
     pub intervals: usize,
     /// Whether to split the trajectory at this waypoint.
     pub split: bool,
@@ -27,7 +30,8 @@ pub struct Waypoint<T: SnapshottableType> {
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
-    /// Whether to override the intervals. Not an Option because unused overrides still get persisted to file.
+    /// Whether to override the intervals. Not an Option because unused
+    /// overrides still get persisted to file.
     pub override_intervals: bool,
     /// Whether this waypoint is an initial guess,
     /// completely invisible to the frontend.
@@ -143,13 +147,16 @@ pub enum ConstraintData<T: SnapshottableType> {
     },
     /// A constraint to stop at a waypoint.
     StopPoint {},
-    /// A constraint to contain the bumpers within a circlular region of the field
+    /// A constraint to contain the bumpers within a circlular region of the
+    /// field
     KeepInCircle { x: T, y: T, r: T },
-    /// A constraint to contain the bumpers within a rectangular region of the field
+    /// A constraint to contain the bumpers within a rectangular region of the
+    /// field
     KeepInRectangle { x: T, y: T, w: T, h: T },
     /// A constraint to contain the bumpers within two line
     KeepInLane { tolerance: T },
-    /// A constraint to contain the bumpers outside a circlular region of the field
+    /// A constraint to contain the bumpers outside a circlular region of the
+    /// field
     KeepOutCircle { x: T, y: T, r: T },
 }
 
@@ -300,6 +307,35 @@ pub enum Sample {
         f: [f64; 4],
     },
 }
+impl Sample {
+    pub fn t(&self) -> f64 {
+        match self {
+            Sample::Swerve { t, .. } => *t,
+            Sample::DifferentialDrive { t, .. } => *t,
+        }
+    }
+
+    pub fn x(&self) -> f64 {
+        match self {
+            Sample::Swerve { x, .. } => *x,
+            Sample::DifferentialDrive { x, .. } => *x,
+        }
+    }
+
+    pub fn y(&self) -> f64 {
+        match self {
+            Sample::Swerve { y, .. } => *y,
+            Sample::DifferentialDrive { y, .. } => *y,
+        }
+    }
+
+    pub fn heading(&self) -> f64 {
+        match self {
+            Sample::Swerve { heading, .. } => *heading,
+            Sample::DifferentialDrive { heading, .. } => *heading,
+        }
+    }
+}
 fn round(input: f64) -> f64 {
     let factor = 100_000.0;
     let result = (input * factor).round() / factor;
@@ -437,6 +473,7 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
+    pub config: Option<RobotConfig<f64>>,
     /// The sample type of this trajectory.
     /// Must match the type in samples if that list is non-empty
     /// Only None if trajectory was never generated.
@@ -446,8 +483,8 @@ pub struct Trajectory {
     /// The samples of the trajectory.
     pub samples: Vec<Sample>,
     /// The indices of samples which are associated with split waypoints.
-    /// This includes 0, but the index of the last sample is never in this list even if the split toggle is set
-    /// for the last waypoint
+    /// This includes 0, but the index of the last sample is never in this list
+    /// even if the split toggle is set for the last waypoint
     pub splits: Vec<usize>,
 }
 
@@ -488,6 +525,15 @@ impl TrajectoryFile {
         // Can't use is_some_and due to its move semantics.
         if let Some(snap) = &self.snapshot {
             snap == &self.params.snapshot()
+        } else {
+            false
+        }
+    }
+
+    pub fn config_up_to_date(&self, config: &RobotConfig<f64>) -> bool {
+        // Can't use is_some_and due to its move semantics.
+        if let Some(snap) = &self.trajectory.config {
+            snap == config
         } else {
             false
         }
@@ -536,7 +582,7 @@ pub enum PplibCommand {
 
 #[cfg(test)]
 mod tests {
-    use crate::spec::TRAJ_SCHEMA_VERSION;
+    use crate::spec::{TRAJ_SCHEMA_VERSION, project::ProjectFile};
 
     use super::*;
     fn test_trajectory() -> TrajectoryFile {
@@ -565,6 +611,7 @@ mod tests {
                 waypoints: Vec::new(),
                 samples: Vec::new(),
                 splits: Vec::new(),
+                config: Some(ProjectFile::default().config.snapshot()),
             },
             events: Vec::new(),
         }

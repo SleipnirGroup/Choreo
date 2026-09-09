@@ -5,7 +5,7 @@
 #include <wpi/SymbolExports.h>
 #include <wpi/struct/Struct.h>
 
-#include "choreo/trajectory/DifferentialSample.h"
+#include "choreo/trajectory/DifferentialSample.hpp"
 
 template <>
 struct wpi::Struct<choreo::DifferentialSample> {

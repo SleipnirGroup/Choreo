@@ -16,11 +16,11 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
-#include "choreo/trajectory/DifferentialSample.h"
-#include "choreo/trajectory/SwerveSample.h"
-#include "choreo/trajectory/Trajectory.h"
-#include "choreo/trajectory/TrajectorySample.h"
-#include "choreo/util/TrajSchemaVersion.h"
+#include "choreo/trajectory/DifferentialSample.hpp"
+#include "choreo/trajectory/SwerveSample.hpp"
+#include "choreo/trajectory/Trajectory.hpp"
+#include "choreo/trajectory/TrajectorySample.hpp"
+#include "choreo/util/TrajSchemaVersion.hpp"
 
 namespace choreo {
 

@@ -18,7 +18,8 @@ fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
 pub struct ConstraintSetter {
     guess_points: Vec<usize>,
     constraint_idx: Vec<ConstraintIDX<f64>>,
-    /// A vector of remaining waypoints matching the indexing scheme of constraint_idx
+    /// A vector of remaining waypoints matching the indexing scheme of
+    /// constraint_idx
     waypoint_idx: Vec<Waypoint<f64>>,
 }
 

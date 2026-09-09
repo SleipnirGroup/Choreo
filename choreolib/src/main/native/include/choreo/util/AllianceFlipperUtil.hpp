@@ -9,8 +9,8 @@
 #include <units/angle.h>
 #include <units/length.h>
 
-#include "choreo/util/FieldDimensions.h"
-#include "choreo/util/Map.h"
+#include "choreo/util/FieldDimensions.hpp"
+#include "choreo/util/Map.hpp"
 
 namespace choreo::util {
 
@@ -42,6 +42,35 @@ struct MirroredFlipper {
   /// @return The flipped heading.
   static constexpr units::radian_t FlipHeading(units::radian_t heading) {
     return units::radian_t{std::numbers::pi} - heading;
+  }
+};
+
+/// X is unchanged, y becomes fieldWidth - y, and heading
+/// becomes -heading.
+struct MirroredYFlipper {
+  /// Whether pose should be mirrored.
+  static constexpr bool isMirrored = true;
+
+  /// Flips the X coordinate.
+  ///
+  /// @param x The X coordinate to flip.
+  /// @return The flipped X coordinate.
+  static constexpr units::meter_t FlipX(units::meter_t x) { return x; }
+
+  /// Flips the Y coordinate.
+  ///
+  /// @param y The Y coordinate to flip.
+  /// @return The flipped Y coordinate.
+  static constexpr units::meter_t FlipY(units::meter_t y) {
+    return fieldWidth - y;
+  }
+
+  /// Flips the heading.
+  ///
+  /// @param heading The heading to flip.
+  /// @return The flipped heading.
+  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
+    return -heading;
   }
 };
 
@@ -80,9 +109,10 @@ inline constexpr Map flipperMap{
     std::array{std::pair{2022, FlipperType::RotateAround},
                std::pair{2023, FlipperType::Mirrored},
                std::pair{2024, FlipperType::Mirrored},
-               std::pair{2025, FlipperType::RotateAround}}};
+               std::pair{2025, FlipperType::RotateAround},
+               std::pair{2026, FlipperType::RotateAround}}};
 
-inline constexpr int kDefaultYear = 2025;
+inline constexpr int kDefaultYear = 2026;
 
 /// A utility to standardize flipping of coordinate data based on the current
 /// alliance across different years.
@@ -116,6 +146,17 @@ constexpr auto GetFlipperForYear() {
                         flipperType == FlipperType::Mirrored,
                     "Invalid FlipperType in flipperMap");
     }
+  }
+}
+
+template <FlipperType flipperType>
+constexpr auto GetFlipper() {
+  if constexpr (flipperType == FlipperType::RotateAround) {
+    return RotateAroundFlipper{};
+  } else if constexpr (flipperType == FlipperType::Mirrored) {
+    return MirroredFlipper{};
+  } else {
+    return MirroredYFlipper{};
   }
 }
 

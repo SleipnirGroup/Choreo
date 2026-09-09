@@ -24,24 +24,24 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Install LLVM 21
+      - name: Install LLVM 22
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 21 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 200
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 200
+          sudo ./llvm.sh 22 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-22 200
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-22 200
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@v0.0.11
 
       - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
         working-directory: trajoptlib

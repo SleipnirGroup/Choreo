@@ -18,7 +18,7 @@
 #include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/util/AllianceFlipperUtil.h"
+#include "choreo/util/AllianceFlipperUtil.hpp"
 
 namespace choreo {
 
@@ -96,42 +96,82 @@ class SwerveSample {
   constexpr SwerveSample Flipped() const {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
-      return SwerveSample{timestamp,
-                          flipper.FlipX(x),
-                          flipper.FlipY(y),
-                          flipper.FlipHeading(heading),
-                          -vx,
-                          vy,
-                          -omega,
-                          -ax,
-                          ay,
-                          -alpha,
-                          // FL, FR, BL, BR
-                          // Mirrored
-                          // -FR, -FL, -BR, -BL
-                          {-moduleForcesX[1], -moduleForcesX[0],
-                           -moduleForcesX[3], -moduleForcesX[2]},
-                          // FL, FR, BL, BR
-                          // Mirrored
-                          // -FR, -FL, -BR, -BL
-                          {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
-                           moduleForcesY[2]}};
+      return MirrorX();
     } else {
-      return SwerveSample{timestamp,
-                          flipper.FlipX(x),
-                          flipper.FlipY(y),
-                          flipper.FlipHeading(heading),
-                          -vx,
-                          -vy,
-                          omega,
-                          -ax,
-                          -ay,
-                          alpha,
-                          {-moduleForcesX[0], -moduleForcesX[1],
-                           -moduleForcesX[2], -moduleForcesX[3]},
-                          {-moduleForcesY[0], -moduleForcesY[1],
-                           -moduleForcesY[2], -moduleForcesY[3]}};
+      return RotateAround();
     }
+  }
+
+  /// Returns the sample, mirrored to the other alliance.
+  ///
+  /// @return the sample, mirrored to the other alliance.
+  constexpr SwerveSample MirrorX() const {
+    return SwerveSample{timestamp,
+                        choreo::util::MirroredFlipper::FlipX(x),
+                        choreo::util::MirroredFlipper::FlipY(y),
+                        choreo::util::MirroredFlipper::FlipHeading(heading),
+                        -vx,
+                        vy,
+                        -omega,
+                        -ax,
+                        ay,
+                        -alpha,
+                        // FL, FR, BL, BR
+                        // Mirrored
+                        // -FR, -FL, -BR, -BL
+                        {-moduleForcesX[1], -moduleForcesX[0],
+                         -moduleForcesX[3], -moduleForcesX[2]},
+                        // FL, FR, BL, BR
+                        // Mirrored
+                        // FR, FL, BR, BL
+                        {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
+                         moduleForcesY[2]}};
+  }
+
+  /// Returns the sample, mirrored left-to-right from the driver's perspective.
+  ///
+  /// @return the sample, mirrored left-to-right from the driver's perspective.
+  constexpr SwerveSample MirrorY() const {
+    return SwerveSample{timestamp,
+                        choreo::util::MirroredYFlipper::FlipX(x),
+                        choreo::util::MirroredYFlipper::FlipY(y),
+                        choreo::util::MirroredYFlipper::FlipHeading(heading),
+                        vx,
+                        -vy,
+                        -omega,
+                        ax,
+                        -ay,
+                        -alpha,
+                        // FL, FR, BL, BR
+                        // Mirrored
+                        // FR, FL, BR, BL
+                        {moduleForcesX[1], moduleForcesX[0], moduleForcesX[3],
+                         moduleForcesX[2]},
+                        // FL, FR, BL, BR
+                        // Mirrored
+                        // -FR, -FL, -BR, -BL
+                        {-moduleForcesY[1], -moduleForcesY[0],
+                         -moduleForcesY[3], -moduleForcesY[2]}};
+  }
+
+  /// Returns the sample, rotated 180 degrees around the center of the field.
+  ///
+  /// @return the sample, rotated 180 degrees around the center of the field.
+  constexpr SwerveSample RotateAround() const {
+    return SwerveSample{timestamp,
+                        choreo::util::RotateAroundFlipper::FlipX(x),
+                        choreo::util::RotateAroundFlipper::FlipY(y),
+                        choreo::util::RotateAroundFlipper::FlipHeading(heading),
+                        -vx,
+                        -vy,
+                        omega,
+                        -ax,
+                        -ay,
+                        alpha,
+                        {-moduleForcesX[0], -moduleForcesX[1],
+                         -moduleForcesX[2], -moduleForcesX[3]},
+                        {-moduleForcesY[0], -moduleForcesY[1],
+                         -moduleForcesY[2], -moduleForcesY[3]}};
   }
 
   /// Returns the current sample offset by a the time offset passed in.
@@ -266,4 +306,4 @@ void from_json(const wpi::json& json, SwerveSample& trajectorySample);
 
 }  // namespace choreo
 
-#include "choreo/trajectory/struct/SwerveSampleStruct.h"
+#include "choreo/trajectory/struct/SwerveSampleStruct.hpp"

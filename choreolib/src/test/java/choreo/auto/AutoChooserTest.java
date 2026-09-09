@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class AutoChooserTest {
-  private static final String NONE_NAME = AutoChooser.NONE_NAME;
   private static final String NOT_FOUND = "__NOT_FOUND__";
 
   private SendableBuilderImpl builder;
@@ -70,9 +69,9 @@ public class AutoChooserTest {
     assertEquals(expected, type);
   }
 
-  private void assertNTDefault(String testFuncName) {
+  private void assertNTDefault(String testFuncName, String expectedDefault) {
     String type = table(testFuncName).getEntry("default").getString(NOT_FOUND);
-    assertEquals(NONE_NAME, type);
+    assertEquals(expectedDefault, type);
   }
 
   private void assertNTOptions(String testFuncName, String... expected) {
@@ -93,13 +92,14 @@ public class AutoChooserTest {
   public void initializeTest() {
     final String fnName = "initializeTest";
     builder.setTable(table(fnName));
-    new AutoChooser().initSendable(builder);
+    final var chooser = new AutoChooser();
+    chooser.initSendable(builder);
     builder.update();
     assertNTType(fnName);
     assertNTSelected(fnName, NOT_FOUND);
-    assertNTActive(fnName, NONE_NAME);
-    assertNTDefault(fnName);
-    assertNTOptions(fnName, NONE_NAME);
+    assertNTActive(fnName, chooser.getDefaultName());
+    assertNTDefault(fnName, chooser.getDefaultName());
+    assertNTOptions(fnName, chooser.getDefaultName());
   }
 
   @Test
@@ -114,7 +114,7 @@ public class AutoChooserTest {
 
     builder.update();
 
-    assertNTOptions(fnName, NONE_NAME, "AddAutoTestCommand", "AddAutoTestRoutine");
+    assertNTOptions(fnName, chooser.getDefaultName(), "AddAutoTestCommand", "AddAutoTestRoutine");
   }
 
   @Test
@@ -131,12 +131,12 @@ public class AutoChooserTest {
 
     selectNT(fnName, "SelectTestRoutine");
     assertNTSelected(fnName, "SelectTestRoutine");
-    assertNTActive(fnName, NONE_NAME);
+    assertNTActive(fnName, chooser.getDefaultName());
 
     builder.update();
 
     // DriverStation should report disconnected causing the active to not update
-    assertNTActive(fnName, NONE_NAME);
+    assertNTActive(fnName, chooser.getDefaultName());
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
     DriverStationSim.setEnabled(false);

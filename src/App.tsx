@@ -1,4 +1,4 @@
-import "@fontsource-variable/roboto-mono/wght-italic.css";
+import "@fontsource-variable/roboto-mono/wght-italic";
 import "@fontsource-variable/roboto-mono";
 import "@fontsource/roboto";
 import "./App.css";
@@ -6,26 +6,24 @@ import { observer } from "mobx-react";
 import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
-import { OverridesStyleRules } from "@mui/material/styles/overrides";
-import { ButtonClasses, Theme } from "@mui/material";
+import { Theme } from "@mui/material";
 
 function App() {
-  const buttonOverrides: Partial<
-    OverridesStyleRules<
-      keyof ButtonClasses,
-      "MuiButton",
-      Omit<Theme, "components">
-    >
-  > = {
+  const buttonOverrides = {
     // Name of the slot
-    root: ({ ownerState, theme }) => ({
-      variants: [],
+    root: ({
+      ownerState,
+      theme
+    }: {
+      ownerState: { color?: string };
+      theme: Theme;
+    }) => ({
       // Some CSS
       fontSize: "1rem",
       color: "white",
       borderRadius: "10px",
       marginInline: "0.3rem",
-      boxSizing: "border-box",
+      boxSizing: "border-box" as const,
       backgroundColor:
         ownerState.color === "primary" ? theme.palette.primary.main : undefined,
       "&:hover": {
@@ -36,22 +34,21 @@ function App() {
       }
     })
   };
-  const iconButtonOverrides: Partial<
-    OverridesStyleRules<
-      keyof ButtonClasses,
-      "MuiIconButton",
-      Omit<Theme, "components">
-    >
-  > = {
+  const iconButtonOverrides = {
     // Name of the slot
-    root: ({ ownerState, theme }) => ({
-      variants: [],
+    root: ({
+      ownerState,
+      theme
+    }: {
+      ownerState: { color?: string };
+      theme: Theme;
+    }) => ({
       // Some CSS
       fontSize: "1rem",
       color: "white",
       borderRadius: "10px",
       marginInline: "0.3rem",
-      boxSizing: "border-box",
+      boxSizing: "border-box" as const,
       backgroundColor:
         ownerState.color === "primary" ? theme.palette.primary.main : undefined,
       "&:hover": {
