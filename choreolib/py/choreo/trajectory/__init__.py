@@ -5,9 +5,7 @@ from dataclasses import dataclass
 from typing import TypeGuard
 
 import numpy as np
-from wpimath import Pose2d, Rotation2d
-from wpimath.kinematics import ChassisVelocities
-from wpimath.system import RKDP
+from wpimath import Pose2d, Rotation2d, ChassisVelocities, RKDP
 
 from choreo.util import (
     DEFAULT_YEAR,
