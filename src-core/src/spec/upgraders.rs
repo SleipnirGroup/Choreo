@@ -23,10 +23,11 @@ mod traj_file {
     }
     /// To devs adding new schema versions:
     /// If the change adds/exposes a new field in the trajectory sample,
-    /// the upgrade process includes calling this function, which deletes the generation output.
-    /// The new field likely can't be derived from other .traj contents, so the upgrader does
-    /// not have enough information to autopopulate it without regenerating.
-    /// No other upgrader work is needed to accommodate new sample fields.
+    /// the upgrade process includes calling this function, which deletes the
+    /// generation output. The new field likely can't be derived from other
+    /// .traj contents, so the upgrader does not have enough information to
+    /// autopopulate it without regenerating. No other upgrader work is
+    /// needed to accommodate new sample fields.
     fn clear_generation_result(editor: &mut Editor) -> ChoreoResult<()> {
         // Clear generated output
         editor.set_path_serialize(
@@ -60,7 +61,8 @@ mod traj_file {
         use crate::spec::upgraders::testing_shared::{FileType, get_contents};
 
         use crate::spec::trajectory::TrajectoryFile;
-        // beta6 is technically the same spec as 0, but with a string version number
+        // beta6 is technically the same spec as 0, but with a string version
+        // number
         #[test]
         pub fn test_beta6_differential() -> ChoreoResult<()> {
             test_trajectory("beta-6", "differential")
@@ -105,7 +107,8 @@ mod traj_file {
             test_trajectory("3", "swerve")
         }
 
-        /// Tests that the file upgrades to the current version and deserializes properly.
+        /// Tests that the file upgrades to the current version and deserializes
+        /// properly.
         fn test_trajectory(version: &str, file_name: &str) -> ChoreoResult<()> {
             let contents = get_contents(FileType::Trajectory, version, file_name);
             let file = TrajectoryFile::from_content(&(contents))?;
@@ -197,7 +200,8 @@ mod project_file {
 
         use crate::spec::project::ProjectFile;
 
-        /// Tests that the file upgrades to the current version and deserializes properly.
+        /// Tests that the file upgrades to the current version and deserializes
+        /// properly.
         fn test_project(version: &str, file_name: &str) -> ChoreoResult<()> {
             let contents = get_contents(FileType::Project, version, file_name);
             let file = ProjectFile::from_content(&(contents))?;

@@ -4,17 +4,17 @@
 
 ### Requirements for Windows
 
-- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
+- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) (nightly, installed automatically by `rustup` from `rust-toolchain.toml`), [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) ≥ 17.13 with C++ programming language selected during installation
 
 ### Requirements for macOS
 
-- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
+- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) (nightly, installed automatically by `rustup` from `rust-toolchain.toml`), [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - Xcode ≥ 16.2 command-line tools via `xcode-select --install`
 
 ### Requirements for Linux
 
-- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
+- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) (nightly, installed automatically by `rustup` from `rust-toolchain.toml`), [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - GCC ≥ 14 via `sudo apt install g++-14`
 - Tauri dependencies (see [here](https://v2.tauri.app/start/prerequisites/#linux)).
 

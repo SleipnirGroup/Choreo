@@ -210,10 +210,7 @@ javadoc {
 
     title = "ChoreoLib API"
 
-    // Treat javadoc warnings as errors.
-    //
-
-    // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
+    options.addBooleanOption('Werror', true)
 }
 
 jacocoTestReport {

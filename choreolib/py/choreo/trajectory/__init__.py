@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from typing import TypeGuard
 
 import numpy as np
+from wpimath.geometry import Pose2d, Rotation2d
+from wpimath.kinematics import ChassisSpeeds
+from wpimath.system import RKDP
+
 from choreo.util import (
     DEFAULT_YEAR,
     MirroredFlipper,
@@ -12,9 +16,6 @@ from choreo.util import (
     RotateAroundFlipper,
     get_flipper_for_year,
 )
-from wpimath.geometry import Pose2d, Rotation2d
-from wpimath.kinematics import ChassisSpeeds
-from wpimath.system import RKDP
 
 
 def lerp(a, b, t) -> float:

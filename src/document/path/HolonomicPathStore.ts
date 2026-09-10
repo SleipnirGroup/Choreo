@@ -201,7 +201,7 @@ export const HolonomicPathStore = types
     let autosaveDisposer: IReactionDisposer;
     let robotConfigListenerDisposer: IReactionDisposer;
     let exporter: Env["exporter"] = (uuid) => getEnv(self)?.exporter(uuid);
-    let debounceId: NodeJS.Timeout | undefined = undefined;
+    let debounceId: ReturnType<typeof setTimeout> | undefined = undefined;
     const afterCreate = () => {
       const performSave = () => {
         if (!uiState.hasSaveLocation) {
@@ -239,7 +239,8 @@ export const HolonomicPathStore = types
           debounceId = setTimeout(performSave, 50);
         }
       );
-      let checkUpToDateDebounceId: NodeJS.Timeout | undefined = undefined;
+      let checkUpToDateDebounceId: ReturnType<typeof setTimeout> | undefined =
+        undefined;
       robotConfigListenerDisposer = reaction(
         () => self.trajectory.currentConfigSnapshot,
         () => {

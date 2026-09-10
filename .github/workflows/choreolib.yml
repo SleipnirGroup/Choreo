@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
           fetch-depth: 0
@@ -64,7 +64,7 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -93,7 +93,7 @@ jobs:
     name: C++ and Java - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
           persist-credentials: false
@@ -134,7 +134,7 @@ jobs:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -143,27 +143,27 @@ jobs:
     name: Python
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.12
 
       - run: pip3 install build mypy numpy pytest scipy scipy-stubs wheel wpilib==2027.0.0a5
 
-      - run: python3 -m build
+      - run: python -m build
         working-directory: ./choreolib/py
-      - run: pip3 install --no-cache-dir dist/*.whl
+      - run: pip install --no-cache-dir dist/*.whl
         working-directory: ./choreolib/py
       - run: pytest
         working-directory: ./choreolib/py
       - run: mypy --pretty --show-column-numbers choreolib/py
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: Python
           path: ./choreolib/py/dist
@@ -179,7 +179,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: "Python"

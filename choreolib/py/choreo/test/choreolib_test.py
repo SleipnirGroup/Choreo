@@ -109,7 +109,7 @@ def test_basic_parse():
         os.path.join(os.path.dirname(__file__), "resources", "swerve_test")
     )
 
-    for i in range(0, 500):
+    for i in range(500):
         trajectory.sample_at(i * 0.01)
 
 

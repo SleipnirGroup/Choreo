@@ -1,0 +1,60 @@
+{#-
+  Based on the mkdocs-material partial of the same name. Sections whose children
+  are all raw links (the generated API docs) render as a hover/focus dropdown,
+  because such a section is otherwise collapsed to its first child and the
+  remaining entries are unreachable - clicking the tab leaves the mkdocs site, so
+  the sidebar that would list them never gets shown.
+-#}
+{% macro render_content(nav_item, ref) %}
+  {% set ref = ref or nav_item %}
+  {% if nav_item == ref or "navigation.indexes" in features %}
+    {% if nav_item.is_index and nav_item.meta.icon %}
+      {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
+    {% endif %}
+  {% endif %}
+  {{ ref.title }}
+{% endmacro %}
+{% macro render(nav_item, ref) %}
+  {% set ref = ref or nav_item %}
+  {% set class = "md-tabs__item" %}
+  {% if ref.active %}
+    {% set class = class ~ " md-tabs__item--active" %}
+  {% endif %}
+  {% if nav_item.children %}
+    {% set first = nav_item.children | first %}
+    {% set links = nav_item.children | selectattr("is_link") | list %}
+    {% if links | length == nav_item.children | length and links | length > 1 %}
+      <li class="{{ class }} md-tabs__item--nested">
+        <button type="button" class="md-tabs__link md-tabs__link--nested" aria-haspopup="true">
+          {{ ref.title }}
+          <span class="md-tabs__caret">
+            {% include ".icons/material/chevron-down.svg" %}
+          </span>
+        </button>
+        <ul class="md-tabs__menu">
+          {% for child in links %}
+            <li class="md-tabs__menu-item">
+              <a href="{{ child.url | url }}" class="md-tabs__menu-link">
+                {{ child.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% elif first.children %}
+      {{ render(first, ref) }}
+    {% else %}
+      <li class="{{ class }}">
+        <a href="{{ first.url | url }}" class="md-tabs__link">
+          {{ render_content(first, ref) }}
+        </a>
+      </li>
+    {% endif %}
+  {% else %}
+    <li class="{{ class }}">
+      <a href="{{ nav_item.url | url }}" class="md-tabs__link">
+        {{ render_content(nav_item) }}
+      </a>
+    </li>
+  {% endif %}
+{% endmacro %}

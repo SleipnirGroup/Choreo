@@ -9,8 +9,8 @@
 #include <wpi/units/angle.hpp>
 #include <wpi/units/length.hpp>
 
-#include "choreo/util/FieldDimensions.h"
-#include "choreo/util/Map.h"
+#include "choreo/util/FieldDimensions.hpp"
+#include "choreo/util/Map.hpp"
 
 namespace choreo::util {
 

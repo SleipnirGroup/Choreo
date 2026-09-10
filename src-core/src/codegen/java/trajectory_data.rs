@@ -62,7 +62,8 @@ impl From<&TrajectoryFile> for Vec<TrajEntry> {
                 return entries;
             };
             for (i, intervals) in split_intervals.windows(2).enumerate() {
-                // These should never fail, but Rust can't yet determine that intervals is actually a size 2 array.
+                // These should never fail, but Rust can't yet determine that
+                // intervals is actually a size 2 array.
                 if let Some(first_sample) = intervals
                     .first()
                     .and_then(|start| traj.trajectory.samples.get(*start))

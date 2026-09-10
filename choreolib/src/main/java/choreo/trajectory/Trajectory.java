@@ -255,7 +255,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   public Trajectory<SampleType> rotateAround() {
     var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
-      flippedStates.add(state.mirrorY());
+      flippedStates.add(state.rotateAround());
     }
     return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
   }

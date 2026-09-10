@@ -38,7 +38,7 @@ struct TRAJOPT_DLLEXPORT KeepOutRegion {
 template <typename Drivetrain, typename Solution>
 class TRAJOPT_DLLEXPORT PathBuilder {
  public:
-  /// Set the Drivetrain object
+  /// Set the Drivetrain object.
   ///
   /// @param drivetrain the new drivetrain
   void set_drivetrain(Drivetrain drivetrain) {

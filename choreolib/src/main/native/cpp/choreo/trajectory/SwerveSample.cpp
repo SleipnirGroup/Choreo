@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/SwerveSample.h"
+#include "choreo/trajectory/SwerveSample.hpp"
 
 #include <algorithm>
 

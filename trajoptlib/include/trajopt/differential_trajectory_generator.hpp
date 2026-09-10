@@ -25,13 +25,13 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   /// The moment of inertia of the robot about the origin (kg−m²).
   double moi;
 
-  /// Radius of wheel (m).
+  /// Radius of the wheels (m).
   double wheel_radius;
 
-  /// Maximum angular velocity of wheel (rad/s).
+  /// Maximum angular velocity of the wheels (rad/s).
   double wheel_max_angular_velocity;
 
-  /// Maximum torque applied to wheel (N−m).
+  /// Maximum torque applied to the wheels (N−m).
   double wheel_max_torque;
 
   /// The Coefficient of Friction (CoF) of the wheels.
@@ -97,28 +97,28 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   /// The heading.
   double heading = 0.0;
 
-  /// The left wheel velocity.
+  /// The left wheel's velocity.
   double velocity_l = 0.0;
 
-  /// The right wheel velocity.
+  /// The right wheel's velocity.
   double velocity_r = 0.0;
 
   /// The chassis angular velocity.
   double angular_velocity = 0.0;
 
-  /// The left wheel acceleration.
+  /// The left wheel's acceleration.
   double acceleration_l = 0.0;
 
-  /// The right wheel acceleration.
+  /// The right wheel's acceleration.
   double acceleration_r = 0.0;
 
   /// The chassis angular acceleration.
   double angular_acceleration = 0.0;
 
-  /// The left wheel force.
+  /// The left wheel's force.
   double force_l = 0.0;
 
-  /// The right wheel force.
+  /// The right wheel's force.
   double force_r = 0.0;
 
   DifferentialTrajectorySample() = default;
@@ -159,14 +159,14 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
 /// Differential trajectory.
 class TRAJOPT_DLLEXPORT DifferentialTrajectory {
  public:
-  /// Trajectory samples.
+  /// The samples that make up the trajectory.
   std::vector<DifferentialTrajectorySample> samples;
 
   DifferentialTrajectory() = default;
 
   /// Construct a DifferentialTrajectory from samples.
   ///
-  /// @param samples The samples.
+  /// @param samples The samples that make up the trajectory.
   explicit DifferentialTrajectory(
       std::vector<DifferentialTrajectorySample> samples)
       : samples{std::move(samples)} {}

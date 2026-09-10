@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/EventMarker.h"
+#include "choreo/trajectory/EventMarker.hpp"
 
 #include <string>
 

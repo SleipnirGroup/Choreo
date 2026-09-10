@@ -2,6 +2,8 @@ import json
 import os
 
 import hal
+from wpilib import getDeployDirectory
+
 from choreo.trajectory import (
     DifferentialSample,
     DifferentialTrajectory,
@@ -14,7 +16,6 @@ from choreo.trajectory import (
 from choreo.util.traj_schema_version import (
     TRAJ_SCHEMA_VERSION as generated_TRAJ_SCHEMA_VERSION,
 )
-from wpilib import getDeployDirectory
 
 TRAJ_SCHEMA_VERSION = generated_TRAJ_SCHEMA_VERSION
 

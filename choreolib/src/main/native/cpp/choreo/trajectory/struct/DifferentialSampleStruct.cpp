@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/struct/DifferentialSampleStruct.h"
+#include "choreo/trajectory/struct/DifferentialSampleStruct.hpp"
 
 #include <wpi/util/struct/Struct.hpp>
 
