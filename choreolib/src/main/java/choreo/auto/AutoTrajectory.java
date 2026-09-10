@@ -24,11 +24,11 @@ import org.wpilib.command2.Commands;
 import org.wpilib.command2.FunctionalCommand;
 import org.wpilib.command2.Subsystem;
 import org.wpilib.command2.button.Trigger;
-import org.wpilib.driverstation.Alert.Level;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.system.Timer;
+import org.wpilib.util.Alert.Level;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers

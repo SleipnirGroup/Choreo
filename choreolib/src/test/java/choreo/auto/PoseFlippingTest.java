@@ -44,10 +44,10 @@ public class PoseFlippingTest {
 
   @Test
   void testGetEndPose() {
-    assert HAL.initialize(500, 0);
+    assert HAL.initialize();
     factoryFlip = AutoTestHelper.factory(true);
     factoryNoFlip = AutoTestHelper.factory(false);
-    Pose2d start = Pose2d.kZero;
+    Pose2d start = new Pose2d();
     Pose2d end = new Pose2d(1, 1, Rotation2d.fromRadians(1));
     Pose2d startFlipped = ChoreoAllianceFlipUtil.flip(start);
     Pose2d endFlipped = ChoreoAllianceFlipUtil.flip(end);

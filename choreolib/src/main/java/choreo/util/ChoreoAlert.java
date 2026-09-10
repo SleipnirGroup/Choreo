@@ -5,8 +5,8 @@ package choreo.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.Level;
 
 /** A utility class for creating alerts under the "Choreo Alerts" group. */
 public class ChoreoAlert {

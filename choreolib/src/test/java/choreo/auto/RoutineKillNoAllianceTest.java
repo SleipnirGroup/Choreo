@@ -21,7 +21,7 @@ public class RoutineKillNoAllianceTest {
 
   @BeforeEach
   void setup() {
-    assert HAL.initialize(500, 0);
+    assert HAL.initialize();
     factoryFlip = AutoTestHelper.factory(true);
     factoryNoFlip = AutoTestHelper.factory(false);
   }

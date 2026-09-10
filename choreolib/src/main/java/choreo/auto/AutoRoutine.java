@@ -2,7 +2,7 @@
 
 package choreo.auto;
 
-import static org.wpilib.driverstation.Alert.Level.MEDIUM;
+import static org.wpilib.util.Alert.Level.MEDIUM;
 
 import choreo.auto.AutoFactory.AllianceContext;
 import choreo.trajectory.Trajectory;

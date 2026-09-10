@@ -2,7 +2,7 @@
 
 package choreo;
 
-import static org.wpilib.driverstation.Alert.Level.HIGH;
+import static org.wpilib.util.Alert.Level.HIGH;
 import static org.wpilib.util.ErrorMessages.requireNonNullParam;
 
 import choreo.trajectory.DifferentialSample;
@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import org.wpilib.driverstation.Alert.Level;
 import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.system.Filesystem;
+import org.wpilib.util.Alert.Level;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {

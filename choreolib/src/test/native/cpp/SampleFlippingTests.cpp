@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 #include <wpi/units/force.hpp>
 #include <wpi/util/json.hpp>
 
@@ -12,7 +12,7 @@
 
 using namespace choreo;
 
-TEST(SampleFlippingTest, ZeroSwerveSample) {
+TEST_CASE("SampleFlippingTest - ZeroSwerveSample") {
   try {
     SwerveSample sample{0_s,
                         0_m,
@@ -51,14 +51,14 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
                              {0_N, 0_N, 0_N, 0_N},
                              {0_N, 0_N, 0_N, 0_N}};
 
-    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
-    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
+    CHECK(sample.Flipped<2024>() == mirrored2024);
+    CHECK(sample.Flipped<2022>() == rotated2022);
   } catch (std::exception& e) {
-    FAIL() << e.what();
+    FAIL(e.what());
   }
 }
 
-TEST(SampleFlippingTest, SwerveSample) {
+TEST_CASE("SampleFlippingTest - SwerveSample") {
   try {
     SwerveSample sample{0_s,
                         1_m,
@@ -97,14 +97,14 @@ TEST(SampleFlippingTest, SwerveSample) {
                              {-10_N, -11_N, -12_N, -13_N},
                              {-14_N, -15_N, -16_N, -17_N}};
 
-    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
-    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
+    CHECK(sample.Flipped<2024>() == mirrored2024);
+    CHECK(sample.Flipped<2022>() == rotated2022);
   } catch (std::exception& e) {
-    FAIL() << e.what();
+    FAIL(e.what());
   }
 }
 
-TEST(SampleFlippingTest, ZeroDifferentialSample) {
+TEST_CASE("SampleFlippingTest - ZeroDifferentialSample") {
   try {
     DifferentialSample sample{
         0_s,         0_m,      0_m,      0_rad,          0_mps, 0_mps,
@@ -130,14 +130,14 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
         0_N,
         0_N};
 
-    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
-    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
+    CHECK(sample.Flipped<2024>() == mirrored2024);
+    CHECK(sample.Flipped<2022>() == rotated2022);
   } catch (std::exception& e) {
-    FAIL() << e.what();
+    FAIL(e.what());
   }
 }
 
-TEST(SampleFlippingTest, DifferentialSample) {
+TEST_CASE("SampleFlippingTest - DifferentialSample") {
   try {
     DifferentialSample sample{
         0_s,         1_m,      2_m,      3_rad,          4_mps, 5_mps,
@@ -163,9 +163,9 @@ TEST(SampleFlippingTest, DifferentialSample) {
         10_N,
         11_N};
 
-    EXPECT_EQ(sample.Flipped<2024>(), mirrored2024);
-    EXPECT_EQ(sample.Flipped<2022>(), rotated2022);
+    CHECK(sample.Flipped<2024>() == mirrored2024);
+    CHECK(sample.Flipped<2022>() == rotated2022);
   } catch (std::exception& e) {
-    FAIL() << e.what();
+    FAIL(e.what());
   }
 }

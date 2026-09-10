@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 #include <wpi/units/force.hpp>
 #include <wpi/util/json.hpp>
 
@@ -107,12 +107,12 @@ const Trajectory<SwerveSample> correctSwerveTrajectory{
     {0},
     {{0_s, "testEvent"}}};
 
-TEST(TrajectoryFileTest, DeserializeSwerveTrajectory) {
+TEST_CASE("TrajectoryFileTest - DeserializeSwerveTrajectory") {
   try {
     Trajectory<SwerveSample> deserializedSwerveTrajectory =
         swerveTrajectoryJson.get<Trajectory<SwerveSample>>();
-    EXPECT_EQ(correctSwerveTrajectory, deserializedSwerveTrajectory);
+    CHECK(correctSwerveTrajectory == deserializedSwerveTrajectory);
   } catch (std::exception& e) {
-    FAIL() << e.what();
+    FAIL(e.what());
   }
 }

@@ -26,7 +26,7 @@ public class DoneTest {
 
   @Test
   public void testExecution() {
-    assert HAL.initialize(500, 0);
+    assert HAL.initialize();
     CommandScheduler scheduler = SchedulerMaker.make();
 
     AutoFactory factory = AutoTestHelper.factory();

@@ -79,7 +79,7 @@ class Choreo {
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     wpi::util::json json =
         wpi::util::json::parse_or_throw(trajectoryJsonString);
-    uint32_t version = json["version"];
+    auto version = json["version"].get_int();
     if (version != kTrajSchemaVersion) {
       throw std::format("{}.traj: Wrong version {}. Expected {}",
                         trajectoryName, version, kTrajSchemaVersion);
