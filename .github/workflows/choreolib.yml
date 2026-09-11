@@ -165,15 +165,16 @@ jobs:
         run: |
           uv venv
           uv pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
+          echo "VIRTUAL_ENV=$PWD/.venv" >> "$GITHUB_ENV"
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
-      - run: uv python -m build
+      - run: '"$VIRTUAL_ENV/bin/python" -m build'
         working-directory: ./choreolib/py
-      - run: uv pip install --no-cache-dir dist/*.whl
+      - run: 'uv pip install --python "$VIRTUAL_ENV/bin/python" --no-cache-dir dist/*.whl'
         working-directory: ./choreolib/py
-      - run: uv pytest
+      - run: '"$VIRTUAL_ENV/bin/python" -m pytest'
         working-directory: ./choreolib/py
-      - run: uv mypy --pretty --show-column-numbers choreolib/py
+      - run: '"$VIRTUAL_ENV/bin/python" -m mypy --pretty --show-column-numbers choreolib/py'
 
       - uses: actions/upload-artifact@v7
         with:
