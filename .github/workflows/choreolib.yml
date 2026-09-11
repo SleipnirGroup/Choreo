@@ -167,13 +167,13 @@ jobs:
           uv pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
-      - run: python -m build
+      - run: uv python -m build
         working-directory: ./choreolib/py
-      - run: pip install --no-cache-dir dist/*.whl
+      - run: uv pip install --no-cache-dir dist/*.whl
         working-directory: ./choreolib/py
-      - run: pytest
+      - run: uv pytest
         working-directory: ./choreolib/py
-      - run: mypy --pretty --show-column-numbers choreolib/py
+      - run: uv mypy --pretty --show-column-numbers choreolib/py
 
       - uses: actions/upload-artifact@v7
         with:
