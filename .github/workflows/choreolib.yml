@@ -3,24 +3,28 @@ name: ChoreoLib
 on: [push, pull_request]
 
 jobs:
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gradle/actions/wrapper-validation@v6
+
   build-docker:
+    needs: [validation]
     strategy:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2025-24.04
-            artifact-name: Athena
-            build-options: -Ponlylinuxathena
+          - container: wpilib/systemcore-cross-debian:trixie
+            artifact-name: Systemcore
+            build-options: -Ponlylinuxsystemcore
 
-          - container: wpilib/raspbian-cross-ubuntu:bookworm-24.04
-            artifact-name: Linux-arm32
-            build-options: -Ponlylinuxarm32
-
-          - container: wpilib/aarch64-cross-ubuntu:bookworm-24.04
+          - container: wpilib/aarch64-cross-debian:trixie
             artifact-name: Linux-arm64
             build-options: -Ponlylinuxarm64
 
-          - container: wpilib/ubuntu-base:24.04
+          - container: wpilib/systemcore-cross-debian:trixie
             artifact-name: Linux-x86_64
             build-options:
 
@@ -38,6 +42,11 @@ jobs:
       - name: Fetch all history and metadata
         run: |
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 25
 
       - name: Set version (release)
         if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
@@ -62,6 +71,7 @@ jobs:
           path: choreolib/build/allOutputs
 
   build-host:
+    needs: [validation]
     env:
       MACOSX_DEPLOYMENT_TARGET: 13.3
     strategy:
@@ -96,7 +106,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 17
+          java-version: 25
 
       # 6/27/25: an Actions issue makes GITHUB_REF unset on Windows
       - name: Set version (Windows release)
@@ -130,23 +140,10 @@ jobs:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
 
-  vendordep:
-    name: Upload vendordep JSON
-    runs-on: ubuntu-slim
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-          token: ${{secrets.GITHUB_TOKEN}}
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: ChoreoLib-json
-          path: choreolib/ChoreoLib2026Beta.json
-
   build-python:
     name: Python
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04
+    container: wpilib/systemcore-cross-debian:trixie
     steps:
       - uses: actions/checkout@v7
         with:
@@ -154,19 +151,23 @@ jobs:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
+      - name: Trust checkout for Git versioning
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - uses: actions/setup-python@v7
         with:
           python-version: 3.12
 
-      - run: pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
+      - uses: astral-sh/setup-uv@v7
 
-      - run: python -m build
+      - run: |
+          uv venv
+          uv build
+          uv pip install dist/*.whl
+          uv run pytest
+          uv pip install mypy
+          uv run mypy --pretty --show-column-numbers .
         working-directory: ./choreolib/py
-      - run: pip install --no-cache-dir dist/*.whl
-        working-directory: ./choreolib/py
-      - run: pytest
-        working-directory: ./choreolib/py
-      - run: mypy --pretty --show-column-numbers choreolib/py
 
       - uses: actions/upload-artifact@v7
         with:

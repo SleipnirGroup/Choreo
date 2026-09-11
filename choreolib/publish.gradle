@@ -1,8 +1,12 @@
+import groovy.json.JsonSlurper
+
 apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '0.0.0'
+def templateVendorFile = file('vendor_jsons/ChoreoLib2027Alpha.json')
+def templateVendorJson = new JsonSlurper().parse(templateVendorFile)
+def pubVersion = templateVendorJson.version
 
 def outputsFolder = file("$buildDir/outputs")
 

@@ -8,25 +8,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectoryTestHelper;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.simulation.SimHooks;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.SchedulerMaker;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.SchedulerMaker;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.hardware.hal.RobotMode;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.simulation.DriverStationSim;
+import org.wpilib.simulation.SimHooks;
 
 public class TrajectoryCmdTest {
   private static final Pose2d start = new Pose2d();
-  private static final Pose2d end = new Pose2d(2.0, 2.0, new Rotation2d(Math.PI));
+  private static final Pose2d end = new Pose2d(2.0, 2.0, Rotation2d.k180deg);
 
   @Test
   public void testExecution() {
-    assert HAL.initialize(500, 0);
+    assert HAL.initialize();
     CommandScheduler scheduler = SchedulerMaker.make();
     AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
     AutoFactory factory = AutoTestHelper.factory(false, pose);
@@ -42,12 +42,7 @@ public class TrajectoryCmdTest {
 
     SimHooks.pauseTiming();
 
-    DriverStationSim.setDsAttached(true);
-    DriverStationSim.setEnabled(true);
-    DriverStationSim.setAutonomous(true);
-    DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
-    assertTrue(DriverStation.isAutonomousEnabled());
+    updateAndAssertIsAutonomous();
 
     for (int i = 0; i < 149; i++) {
       scheduler.run();
@@ -62,13 +57,16 @@ public class TrajectoryCmdTest {
 
     assertTrue(pose.get().getTranslation().getDistance(end.getTranslation()) < 0.5);
 
-    DriverStationSim.setDsAttached(true);
-    DriverStationSim.setEnabled(true);
-    DriverStationSim.setAutonomous(true);
-    DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
-    assertTrue(DriverStation.isAutonomousEnabled());
+    updateAndAssertIsAutonomous();
 
     SimHooks.resumeTiming();
+  }
+
+  private void updateAndAssertIsAutonomous() {
+    DriverStationSim.setDsAttached(true);
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
+    DriverStationSim.notifyNewData();
+    assertTrue(DriverStationSim.getRobotMode() == RobotMode.AUTONOMOUS);
   }
 }

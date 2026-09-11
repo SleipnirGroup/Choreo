@@ -2,7 +2,7 @@
 
 package choreo.auto;
 
-import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
+import static org.wpilib.util.ErrorMessages.requireNonNullParam;
 
 import choreo.Choreo.TrajectoryCache;
 import choreo.Choreo.TrajectoryLogger;
@@ -10,16 +10,6 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAllianceFlipUtil;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +17,15 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.Subsystem;
+import org.wpilib.command2.button.Trigger;
+import org.wpilib.driverstation.Alliance;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.framework.RobotBase;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Pose2d;
 
 /**
  * A factory used to create {@link AutoRoutine}s and {@link AutoTrajectory}s.
@@ -46,7 +45,7 @@ public class AutoFactory {
               .get()
               .orElseThrow(
                   () -> new RuntimeException("Flip check was called with an unknown alliance"))
-              .equals(Alliance.Red);
+              .equals(Alliance.RED);
     }
 
     Optional<Alliance> alliance() {
@@ -133,9 +132,9 @@ public class AutoFactory {
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
-    this.allianceCtx = new AllianceContext(useAllianceFlipping, DriverStation::getAlliance);
+    this.allianceCtx = new AllianceContext(useAllianceFlipping, MatchState::getAlliance);
     this.trajectoryLogger = trajectoryLogger;
-    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
+    HAL.reportUsage("ChoreoTrigger", 1, "AutoFactory");
 
     voidRoutine =
         new AutoRoutine(this, "VOID-ROUTINE", allianceCtx) {

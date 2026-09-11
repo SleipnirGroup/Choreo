@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include <wpi/SymbolExports.h>
-#include <wpi/struct/Struct.h>
+#include <wpi/util/SymbolExports.hpp>
+#include <wpi/util/struct/Struct.hpp>
 
 #include "choreo/trajectory/SwerveSample.hpp"
 
 template <>
-struct wpi::Struct<choreo::SwerveSample> {
+struct wpi::util::Struct<choreo::SwerveSample> {
   static constexpr std::string_view GetTypeName() { return "SwerveSample"; }
   static constexpr size_t GetSize() { return 144; }
   static constexpr std::string_view GetSchema() {
@@ -21,4 +21,4 @@ struct wpi::Struct<choreo::SwerveSample> {
   static void Pack(std::span<uint8_t> data, const choreo::SwerveSample& value);
 };
 
-static_assert(wpi::StructSerializable<choreo::SwerveSample>);
+static_assert(wpi::util::StructSerializable<choreo::SwerveSample>);

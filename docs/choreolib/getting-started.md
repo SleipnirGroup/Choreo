@@ -11,7 +11,7 @@ To use ChoreoLib in your robot code, it must first be installed as a vendor libr
     === "Release"
 
         ```
-        https://choreo.autos/lib/ChoreoLib2026.json
+        https://choreo.autos/lib/ChoreoLib2027Alpha.json
         ```
 
 === "Python"
@@ -77,9 +77,9 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 frc::Pose2d pose = GetPose();
 
                 // Calculate feedback velocities
-                units::meters_per_second_t xFeedback{xController.Calculate(pose.X().value(), sample.x.value())};
-                units::meters_per_second_t yFeedback{yController.Calculate(pose.Y().value(), sample.y.value())};
-                units::radians_per_second_t headingFeedback{
+                wpi::units::meters_per_second_t xFeedback{xController.Calculate(pose.X().value(), sample.x.value())};
+                wpi::units::meters_per_second_t yFeedback{yController.Calculate(pose.Y().value(), sample.y.value())};
+                wpi::units::radians_per_second_t headingFeedback{
                     headingController.Calculate(pose.Rotation().Radians().value(), sample.heading.value())
                 };
 
