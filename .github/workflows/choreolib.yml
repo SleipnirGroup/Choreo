@@ -142,7 +142,8 @@ jobs:
 
   build-python:
     name: Python
-    runs-on: wpilib/systemcore-cross-debian:trixie
+    runs-on: ubuntu-slim
+    container: wpilib/systemcore-cross-debian:trixie
     steps:
       - uses: actions/checkout@v7
         with:
