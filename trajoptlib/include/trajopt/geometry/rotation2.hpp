@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/util/concepts.hpp>
 
 namespace trajopt {
 

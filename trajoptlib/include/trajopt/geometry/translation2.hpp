@@ -3,12 +3,14 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include <sleipnir/autodiff/variable.hpp>
 #include <sleipnir/autodiff/variable_matrix.hpp>
+#include <sleipnir/util/concepts.hpp>
 
 #include "trajopt/geometry/rotation2.hpp"
 

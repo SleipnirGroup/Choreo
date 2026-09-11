@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <concepts>
+#include <cstddef>
 #include <vector>
 
 #include "trajopt/geometry/pose2.hpp"
