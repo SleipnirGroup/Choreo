@@ -160,15 +160,13 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
 
-      - run: uv venv
-        working-directory: ./choreolib/py
-      - run: uv build
-        working-directory: ./choreolib/py
-      - run: uv pip install dist/*.whl
-        working-directory: ./choreolib/py
-      - run: uv run pytest
-        working-directory: ./choreolib/py
-      - run: uv run mypy --pretty --show-column-numbers .
+      - run: |
+          uv venv
+          uv build
+          uv pip install dist/*.whl
+          uv run pytest
+          uv pip install mypy
+          uv run mypy --pretty --show-column-numbers .
         working-directory: ./choreolib/py
 
       - uses: actions/upload-artifact@v7
