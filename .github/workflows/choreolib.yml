@@ -161,20 +161,18 @@ jobs:
       - uses: astral-sh/setup-uv@v7
 
       - name: Install Python dependencies
-        working-directory: ./choreolib/py
         run: |
           uv venv
           uv pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
-          echo "VIRTUAL_ENV=$PWD/.venv" >> "$GITHUB_ENV"
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+        working-directory: ./choreolib/py
 
-      - run: '"$VIRTUAL_ENV/bin/python" -m build'
+      - run: uv build
         working-directory: ./choreolib/py
-      - run: 'uv pip install --python "$VIRTUAL_ENV/bin/python" --no-cache-dir dist/*.whl'
+      - run: uv pip install dist/*.whl
         working-directory: ./choreolib/py
-      - run: '"$VIRTUAL_ENV/bin/python" -m pytest'
+      - run: uv run pytest
         working-directory: ./choreolib/py
-      - run: '"$VIRTUAL_ENV/bin/python" -m mypy --pretty --show-column-numbers choreolib/py'
+      - run: uv run mypy --pretty --show-column-numbers choreolib/py
 
       - uses: actions/upload-artifact@v7
         with:
