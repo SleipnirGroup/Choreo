@@ -12,6 +12,9 @@ CMakeUserPresets.json
 __pycache__/
 dist/
 
+# Python - uv
+uv.lock
+
 # Visual Studio Code
 .vscode/*
 !.vscode/extensions.json
