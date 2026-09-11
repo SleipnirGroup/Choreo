@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TypeGuard
 
 import numpy as np
-from wpimath import RKDP, ChassisVelocities, Pose2d, Rotation2d
+from wpimath import rkdp, ChassisVelocities, Pose2d, Rotation2d
 
 from choreo.util import (
     DEFAULT_YEAR,
@@ -174,7 +174,7 @@ class DifferentialSample:
             return [v * math.cos(θ), v * math.sin(θ), ω, al, ar, α]
 
         τ = t - self.timestamp
-        sample = RKDP(
+        sample = rkdp(
             f, initial_state, np.array([[self.al], [self.ar], [self.alpha]]), τ
         )
 
