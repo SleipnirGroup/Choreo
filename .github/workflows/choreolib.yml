@@ -160,12 +160,8 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
 
-      - name: Install Python dependencies
-        run: |
-          uv venv
-          uv pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
+      - run: uv venv
         working-directory: ./choreolib/py
-
       - run: uv build
         working-directory: ./choreolib/py
       - run: uv pip install dist/*.whl
