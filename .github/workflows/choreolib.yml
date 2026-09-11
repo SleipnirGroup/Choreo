@@ -151,6 +151,9 @@ jobs:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
+      - name: Trust checkout for Git versioning
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - uses: actions/setup-python@v7
         with:
           python-version: 3.12
