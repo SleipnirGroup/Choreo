@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <stdint.h>
+
+#include <cmath>
+#include <cstddef>
 #include <expected>
 #include <utility>
 #include <vector>
@@ -11,6 +15,7 @@
 #include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/geometry/translation2.hpp"
+#include "trajopt/path/path.hpp"
 #include "trajopt/path/path_builder.hpp"
 #include "trajopt/util/symbol_exports.hpp"
 

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <sleipnir/autodiff/variable.hpp>
 
 #include "trajopt/geometry/translation2.hpp"

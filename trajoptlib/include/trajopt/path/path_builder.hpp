@@ -5,11 +5,15 @@
 #include <stdint.h>
 
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <utility>
 #include <vector>
 
 #include "trajopt/constraint/constraint.hpp"
+#include "trajopt/constraint/pose_equality_constraint.hpp"
+#include "trajopt/constraint/translation_equality_constraint.hpp"
+#include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/translation2.hpp"
 #include "trajopt/path/path.hpp"
 #include "trajopt/util/generate_linear_initial_guess.hpp"

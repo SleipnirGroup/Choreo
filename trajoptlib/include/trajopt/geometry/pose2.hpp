@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <concepts>
 #include <type_traits>
 #include <utility>
 
 #include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/util/concepts.hpp>
 
 #include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/geometry/translation2.hpp"

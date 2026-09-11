@@ -6,13 +6,22 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
+#include <cstddef>
+#include <expected>
+#include <numeric>
 #include <ranges>
+#include <variant>
 #include <vector>
 
+#include <sleipnir/autodiff/variable.hpp>
 #include <sleipnir/optimization/problem.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
+#include <sleipnir/optimization/solver/iteration_info.hpp>
 
+#include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/rotation2.hpp"
+#include "trajopt/geometry/translation2.hpp"
 #include "trajopt/util/cancellation.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
