@@ -1,15 +1,15 @@
 import org.gradle.internal.os.OperatingSystem
 
 nativeUtils.addWpiNativeUtils()
-nativeUtils.withCrossRoboRIO()
-nativeUtils.withCrossLinuxArm32()
+nativeUtils.withCrossSystemCore()
 nativeUtils.withCrossLinuxArm64()
 
 nativeUtils {
     wpi {
         configureDependencies {
-            wpiVersion = "2026.1.1"
-            niLibVersion = "2026.1.0"
+            wpiVersion = wpilibVersion
+            mrcLibVersion = '2027.1.0-alpha-1-116-g5288562'
+            opencvVersion = "2027-4.13.0-3"
         }
     }
 }
@@ -18,11 +18,6 @@ nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
 
 nativeUtils.setSinglePrintPerPlatform()
-
-nativeUtils.wpi.addVendorDeps()
-nativeUtils.wpi.getVendorDeps().loadAll()
-nativeUtils.wpi.getVendorDeps().getNativeVendor().initializeNativeDependencies()
-nativeUtils.wpi.getVendorDeps().addVendorReposToMaven(false)
 
 model {
     components {
@@ -33,7 +28,6 @@ model {
     binaries {
         withType(NativeBinarySpec).all {
             nativeUtils.usePlatformArguments(it)
-            nativeUtils.wpi.getVendorDeps().getNativeVendor().cpp(it)
         }
     }
 }
@@ -96,7 +90,7 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
             description = 'Creates component archive for platform ' + key
             destinationDirectory = outputsFolder
             archiveClassifier = key
-            archiveBaseName = '_M_' + base
+            archiveBaseName = base
             duplicatesStrategy = 'exclude'
 
             from(licenseFile) {
@@ -115,32 +109,6 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
         addTaskToCopyAllOutputs(task)
     }
     return taskList
-}
-
-ext.createAllCombined = { list, name, base, type, project ->
-    def outputsFolder = file("$project.buildDir/outputs")
-
-    def task = project.tasks.create(base + "-all", type) {
-        description = "Creates component archive for all classifiers"
-        destinationDirectory = outputsFolder
-        classifier = "all"
-        archiveBaseName = base
-        duplicatesStrategy = 'exclude'
-
-        list.each {
-            if (it.name.endsWith('debug')) return
-                from project.zipTree(it.archiveFile)
-            dependsOn it
-        }
-    }
-
-    project.build.dependsOn task
-
-    project.artifacts {
-        task
-    }
-
-    return task
 }
 
 ext.includeStandardZipFormat = { task, value ->

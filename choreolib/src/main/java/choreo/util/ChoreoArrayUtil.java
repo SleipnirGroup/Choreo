@@ -26,10 +26,7 @@ public class ChoreoArrayUtil {
     if (arr1 == null && arr2 == null) {
       return true;
     }
-    if (arr1 != null && arr2 == null) {
-      return false;
-    }
-    if (arr1 == null && arr2 != null) {
+    if (arr1 == null || arr2 == null) {
       return false;
     }
     // arr1 and arr2 both not null
