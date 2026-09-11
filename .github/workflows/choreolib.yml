@@ -172,7 +172,8 @@ jobs:
         working-directory: ./choreolib/py
       - run: uv run pytest
         working-directory: ./choreolib/py
-      - run: uv run mypy --pretty --show-column-numbers choreolib/py
+      - run: uv run mypy --pretty --show-column-numbers .
+        working-directory: ./choreolib/py
 
       - uses: actions/upload-artifact@v7
         with:
