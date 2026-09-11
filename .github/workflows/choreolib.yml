@@ -155,7 +155,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
+      - run: pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib --break-system-packages
 
       - run: python -m build
         working-directory: ./choreolib/py
