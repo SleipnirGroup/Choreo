@@ -155,7 +155,14 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib --break-system-packages
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Install Python dependencies
+        working-directory: ./choreolib/py
+        run: |
+          uv venv
+          uv pip install build mypy numpy pytest scipy scipy-stubs wheel wpilib
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - run: python -m build
         working-directory: ./choreolib/py
