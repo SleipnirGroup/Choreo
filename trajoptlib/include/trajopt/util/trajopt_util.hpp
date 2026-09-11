@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <numbers>
 #include <numeric>
 #include <vector>

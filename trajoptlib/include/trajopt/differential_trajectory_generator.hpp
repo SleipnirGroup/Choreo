@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <expected>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include <sleipnir/optimization/problem.hpp>
 #include <sleipnir/optimization/solver/exit_status.hpp>
 
+#include "trajopt/path/path.hpp"
 #include "trajopt/path/path_builder.hpp"
 #include "trajopt/util/symbol_exports.hpp"
 

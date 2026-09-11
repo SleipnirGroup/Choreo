@@ -2,6 +2,8 @@
 
 #include "trajopt/util/cancellation.hpp"
 
+#include <atomic>
+
 namespace trajopt {
 
 std::atomic<int>& get_cancellation_flag() {

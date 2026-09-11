@@ -3,12 +3,15 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 #include <optional>
 #include <utility>
 
 #include <Eigen/Core>
 
 #include "trajopt/geometry/pose2.hpp"
+#include "trajopt/geometry/rotation2.hpp"
+#include "trajopt/geometry/translation2.hpp"
 
 namespace trajopt {
 
