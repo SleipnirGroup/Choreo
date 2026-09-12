@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "document/rs",
     "src-cli",
     "src-core",
     "src-tauri",

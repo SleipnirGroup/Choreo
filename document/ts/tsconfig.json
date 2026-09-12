@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*.ts", "../schema.json"]
+}

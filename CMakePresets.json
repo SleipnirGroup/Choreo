@@ -1,0 +1,50 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default build using Ninja generator",
+      "binaryDir": "build",
+      "generator": "Ninja",
+      "cacheVariables": {}
+    },
+    {
+      "name": "with-sccache",
+      "displayName": "",
+      "description": "Ninja config with sccache",
+      "generator": "Ninja",
+      "binaryDir": "build",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
+      }
+    },
+    {
+      "name": "with-examples",
+      "displayName": "Default config to build examples",
+      "description": "Default examples build using Ninja generator",
+      "binaryDir": "build",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "TRAJOPT_BUILD_EXAMPLES": "ON"
+      }
+    },
+    {
+      "name": "with-examples-and-sccache",
+      "displayName": "",
+      "description": "Ninja config with sccache",
+      "generator": "Ninja",
+      "binaryDir": "build",
+      "inherits": "with-sccache",
+      "cacheVariables": {
+        "TRAJOPT_BUILD_EXAMPLES": "ON"
+      }
+    }
+  ]
+}
