@@ -1,0 +1,34 @@
+{
+  "uuid": "00000000-0000-0000-0000-000000000002",
+  "name": "Straight",
+  "version": 4,
+  "params": {
+    "waypoints": [
+      {
+        "uuid": "00000000-0000-0000-0000-000000000010",
+        "x": { "exp": "1 m", "val": 1.0 },
+        "y": { "exp": "1 m", "val": 1.0 },
+        "heading": { "exp": "0 rad", "val": 0.0 },
+        "intervals": 20,
+        "split": false,
+        "fix_translation": true,
+        "fix_heading": true,
+        "override_intervals": true
+      },
+      {
+        "uuid": "00000000-0000-0000-0000-000000000011",
+        "x": { "exp": "3 m", "val": 3.0 },
+        "y": { "exp": "1 m", "val": 1.0 },
+        "heading": { "exp": "0 rad", "val": 0.0 },
+        "intervals": 20,
+        "split": false,
+        "fix_translation": true,
+        "fix_heading": true,
+        "override_intervals": true
+      }
+    ],
+    "constraints": [],
+    "target_dt": { "exp": "0.05 s", "val": 0.05 }
+  },
+  "events": []
+}
