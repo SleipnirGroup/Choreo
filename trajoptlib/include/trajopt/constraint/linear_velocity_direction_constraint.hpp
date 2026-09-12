@@ -16,7 +16,7 @@ class TRAJOPT_DLLEXPORT LinearVelocityDirectionConstraint {
  public:
   /// Constructs a LinearVelocityDirectionConstraint.
   ///
-  /// @param angle The angle (radians).
+  /// @param angle The angle in radians.
   explicit LinearVelocityDirectionConstraint(double angle) : m_angle{angle} {}
 
   /// Applies this constraint to the given problem.
