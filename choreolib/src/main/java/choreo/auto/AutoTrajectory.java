@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.ScheduleCommand;
 import org.wpilib.command2.Subsystem;
 import org.wpilib.command2.button.Trigger;
 import org.wpilib.math.geometry.Pose2d;
@@ -221,6 +222,18 @@ public class AutoTrajectory {
             this::cmdIsFinished,
             driveSubsystem)
         .withName("Trajectory_" + name);
+  }
+
+  /**
+   * Creates a command that will schedule <b>another</b> command that will follow the trajectory.
+   *
+   * <p>This can be useful when putting {@link AutoTrajectory} commands in sequences that require
+   * subsystems also required by in AutoTrajectory-bound subsystems.
+   *
+   * @return The command that will schedule the trajectory following command.
+   */
+  public Command spawnCmd() {
+    return new ScheduleCommand(cmd()).withName("Trajectory_" + name + "_Spawner");
   }
 
   /**
@@ -442,6 +455,15 @@ public class AutoTrajectory {
    */
   public Trigger recentlyDone() {
     return enterExitTrigger(doneDelayed(0), routine.idle().negate());
+  }
+
+  /**
+   * A shorthand for `.done().onTrue(otherTrajectory.cmd())`
+   *
+   * @param otherTrajectory The other trajectory to run when this one is done.
+   */
+  public void chain(AutoTrajectory otherTrajectory) {
+    done().onTrue(otherTrajectory.cmd());
   }
 
   private Trigger timeTrigger(double targetTime, Timer timer) {
