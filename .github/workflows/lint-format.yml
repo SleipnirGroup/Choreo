@@ -11,7 +11,7 @@ jobs:
     name: "Format"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 21
+          java-version: 25
 
       - name: Make GCC 14 the default toolchain (Linux)
         run: |
@@ -57,11 +57,14 @@ jobs:
 
       - run: pnpm install prettier@3.8.1
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.14
 
       - run: pip install wpiformat==2026.71
+
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
 
       - run: pnpm run fmt
 
@@ -92,7 +95,7 @@ jobs:
     name: "TypeScript compiler"
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -112,7 +115,7 @@ jobs:
     name: "ChoreoLib clang-tidy"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -124,7 +127,7 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.14
 
@@ -153,7 +156,7 @@ jobs:
     name: "TrajoptLib clang-tidy"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -165,7 +168,7 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.14
 

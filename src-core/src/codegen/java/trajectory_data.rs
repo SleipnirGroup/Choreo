@@ -62,7 +62,8 @@ impl From<&TrajectoryFile> for Vec<TrajEntry> {
                 return entries;
             };
             for (i, intervals) in split_intervals.windows(2).enumerate() {
-                // These should never fail, but Rust can't yet determine that intervals is actually a size 2 array.
+                // These should never fail, but Rust can't yet determine that
+                // intervals is actually a size 2 array.
                 if let Some(first_sample) = intervals
                     .first()
                     .and_then(|start| traj.trajectory.samples.get(*start))
@@ -167,8 +168,8 @@ pub fn traj_file_contents(
         r#"// spotless:off
 package {package_name};
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
 import java.util.Map;
 import java.util.OptionalInt;
 

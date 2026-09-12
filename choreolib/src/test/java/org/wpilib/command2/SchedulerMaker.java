@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package edu.wpi.first.wpilibj2.command;
+package org.wpilib.command2;
 
 public class SchedulerMaker {
   public static CommandScheduler make() {

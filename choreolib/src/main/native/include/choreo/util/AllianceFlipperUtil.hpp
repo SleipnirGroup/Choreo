@@ -6,8 +6,8 @@
 #include <numbers>
 #include <utility>
 
-#include <units/angle.h>
-#include <units/length.h>
+#include <wpi/units/angle.hpp>
+#include <wpi/units/length.hpp>
 
 #include "choreo/util/FieldDimensions.hpp"
 #include "choreo/util/Map.hpp"
@@ -26,7 +26,7 @@ struct MirroredFlipper {
   ///
   /// @param x The X coordinate to flip.
   /// @return The flipped X coordinate.
-  static constexpr units::meter_t FlipX(units::meter_t x) {
+  static constexpr wpi::units::meter_t FlipX(wpi::units::meter_t x) {
     return fieldLength - x;
   }
 
@@ -34,14 +34,17 @@ struct MirroredFlipper {
   ///
   /// @param y The Y coordinate to flip.
   /// @return The flipped Y coordinate.
-  static constexpr units::meter_t FlipY(units::meter_t y) { return y; }
+  static constexpr wpi::units::meter_t FlipY(wpi::units::meter_t y) {
+    return y;
+  }
 
   /// Flips the heading.
   ///
   /// @param heading The heading to flip.
   /// @return The flipped heading.
-  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
-    return units::radian_t{std::numbers::pi} - heading;
+  static constexpr wpi::units::radian_t FlipHeading(
+      wpi::units::radian_t heading) {
+    return wpi::units::radian_t{std::numbers::pi} - heading;
   }
 };
 
@@ -55,13 +58,15 @@ struct MirroredYFlipper {
   ///
   /// @param x The X coordinate to flip.
   /// @return The flipped X coordinate.
-  static constexpr units::meter_t FlipX(units::meter_t x) { return x; }
+  static constexpr wpi::units::meter_t FlipX(wpi::units::meter_t x) {
+    return x;
+  }
 
   /// Flips the Y coordinate.
   ///
   /// @param y The Y coordinate to flip.
   /// @return The flipped Y coordinate.
-  static constexpr units::meter_t FlipY(units::meter_t y) {
+  static constexpr wpi::units::meter_t FlipY(wpi::units::meter_t y) {
     return fieldWidth - y;
   }
 
@@ -69,7 +74,8 @@ struct MirroredYFlipper {
   ///
   /// @param heading The heading to flip.
   /// @return The flipped heading.
-  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
+  static constexpr wpi::units::radian_t FlipHeading(
+      wpi::units::radian_t heading) {
     return -heading;
   }
 };
@@ -84,7 +90,7 @@ struct RotateAroundFlipper {
   ///
   /// @param x The X coordinate to flip.
   /// @return The flipped X coordinate.
-  static constexpr units::meter_t FlipX(units::meter_t x) {
+  static constexpr wpi::units::meter_t FlipX(wpi::units::meter_t x) {
     return fieldLength - x;
   }
 
@@ -92,7 +98,7 @@ struct RotateAroundFlipper {
   ///
   /// @param y The Y coordinate to flip.
   /// @return The flipped Y coordinate.
-  static constexpr units::meter_t FlipY(units::meter_t y) {
+  static constexpr wpi::units::meter_t FlipY(wpi::units::meter_t y) {
     return fieldWidth - y;
   }
 
@@ -100,8 +106,9 @@ struct RotateAroundFlipper {
   ///
   /// @param heading The heading to flip.
   /// @return The flipped heading.
-  static constexpr units::radian_t FlipHeading(units::radian_t heading) {
-    return units::radian_t{std::numbers::pi} + heading;
+  static constexpr wpi::units::radian_t FlipHeading(
+      wpi::units::radian_t heading) {
+    return wpi::units::radian_t{std::numbers::pi} + heading;
   }
 };
 

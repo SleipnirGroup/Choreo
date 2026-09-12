@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
@@ -76,6 +76,9 @@ jobs:
         run: pnpm install
         continue-on-error: true
 
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
+
       - name: Set up Windows aarch64 Rust compiler
         if: matrix.artifact-name == 'Windows-aarch64'
         run: rustup target install aarch64-pc-windows-msvc
@@ -85,7 +88,7 @@ jobs:
         run: rustup target add x86_64-apple-darwin
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.10
+        uses: mozilla-actions/sccache-action@v0.0.11
       - name: Cargo test
         run: cargo test --release
         env:

@@ -35,7 +35,8 @@ pub struct RemoteGenerationResources {
 }
 
 impl RemoteGenerationResources {
-    /// Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
+    /// Should be called after [`setup_progress_sender`] to ensure that the
+    /// sender is initialized.
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
@@ -262,7 +263,7 @@ pub async fn remote_generate_parent(
             let string = unsafe { String::from_utf8_unchecked(std::mem::take(&mut buffer)) };
             let lines: Vec<String> = string.split('\n').map(ToString::to_string).collect();
             for line in lines {
-                println! {"{line}"}
+                println!("{line}");
                 remote_resources.emit_progress(
                     LocalProgressUpdate::DiagnosticText { update: line }.handled(handle),
                 );

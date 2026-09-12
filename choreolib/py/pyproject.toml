@@ -5,8 +5,8 @@ dynamic = ["version"]
 readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE.txt"]
-requires-python = ">=3.9"
-dependencies = ["numpy", "wpilib>=2025.1.1,<2027"]
+requires-python = ">=3.11"
+dependencies = ["numpy", "wpilib>=2027.0.0a7,<2027.0.0a8"]
 
   [[project.authors]]
   name = "Choreo Development Team"

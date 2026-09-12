@@ -5,7 +5,11 @@
 #include <cmath>
 #include <optional>
 
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
+
 #include "trajopt/constraint/point_line_region_constraint.hpp"
+#include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/geometry/translation2.hpp"
 #include "trajopt/util/symbol_exports.hpp"

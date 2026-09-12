@@ -5,11 +5,15 @@
 #include <stdint.h>
 
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <utility>
 #include <vector>
 
 #include "trajopt/constraint/constraint.hpp"
+#include "trajopt/constraint/pose_equality_constraint.hpp"
+#include "trajopt/constraint/translation_equality_constraint.hpp"
+#include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/translation2.hpp"
 #include "trajopt/path/path.hpp"
 #include "trajopt/util/generate_linear_initial_guess.hpp"
@@ -38,7 +42,7 @@ struct TRAJOPT_DLLEXPORT KeepOutRegion {
 template <typename Drivetrain, typename Solution>
 class TRAJOPT_DLLEXPORT PathBuilder {
  public:
-  /// Set the Drivetrain object
+  /// Set the Drivetrain object.
   ///
   /// @param drivetrain the new drivetrain
   void set_drivetrain(Drivetrain drivetrain) {

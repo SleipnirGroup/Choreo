@@ -269,7 +269,8 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> TauriResult<Ve
             Ok(trajectory) => out.push(trajectory),
             Err(e) => {
                 tracing::error!("{e}");
-                // Early terminate if any are too new, and return no trajectories.
+                // Early terminate if any are too new, and return no
+                // trajectories.
                 if let ChoreoError::SchemaTooNew(_, _, _) = e {
                     debug_result!(Err(e));
                 }

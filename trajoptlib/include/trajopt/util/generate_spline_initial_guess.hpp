@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <concepts>
 #include <utility>
 #include <vector>

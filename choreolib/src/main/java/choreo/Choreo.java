@@ -2,8 +2,8 @@
 
 package choreo;
 
-import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+import static org.wpilib.util.Alert.Level.HIGH;
+import static org.wpilib.util.ErrorMessages.requireNonNullParam;
 
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
@@ -17,10 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import org.wpilib.driverstation.DriverStationErrors;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.system.Filesystem;
+import org.wpilib.util.Alert.Level;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -42,9 +42,13 @@ public final class Choreo {
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final int TRAJ_SCHEMA_VERSION = TrajSchemaVersion.TRAJ_SCHEMA_VERSION;
   private static final MultiAlert cantFindTrajectory =
-      ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, HIGH);
   private static final MultiAlert cantParseTrajectory =
-      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, Level.HIGH);
+  private static final MultiAlert unknownTrajectoryError =
+      ChoreoAlert.multiAlert(
+          causes -> "Unknown error when parsing " + causes + "; check console for more details",
+          Level.HIGH);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -99,11 +103,8 @@ public final class Choreo {
     } catch (JsonSyntaxException ex) {
       cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
-      ChoreoAlert.alert(
-              "Unknown error when parsing " + trajectoryFile + "; check console for more details",
-              kError)
-          .set(true);
-      DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
+      unknownTrajectoryError.addCause(trajectoryFile.toString());
+      DriverStationErrors.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return Optional.empty();
   }
@@ -171,12 +172,12 @@ public final class Choreo {
     }
     String sampleType = trajectoryObj.get("sampleType").getAsString();
     if (sampleType.equals("Swerve")) {
-      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
+      HAL.reportUsage("ChoreoTrajectory", 1, "Swerve");
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (sampleType.equals("Differential")) {
-      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
+      HAL.reportUsage("ChoreoTrajectory", 2, "Differential");
 
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);

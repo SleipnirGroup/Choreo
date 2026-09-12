@@ -21,7 +21,8 @@ pub struct Waypoint<T: SnapshottableType> {
     ///
     /// Units: radians
     pub heading: T,
-    /// The number of control intervals to use between this waypoint and the next.
+    /// The number of control intervals to use between this waypoint and the
+    /// next.
     pub intervals: usize,
     /// Whether to split the trajectory at this waypoint.
     pub split: bool,
@@ -29,7 +30,8 @@ pub struct Waypoint<T: SnapshottableType> {
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
-    /// Whether to override the intervals. Not an Option because unused overrides still get persisted to file.
+    /// Whether to override the intervals. Not an Option because unused
+    /// overrides still get persisted to file.
     pub override_intervals: bool,
     /// Whether this waypoint is an initial guess,
     /// completely invisible to the frontend.
@@ -145,13 +147,16 @@ pub enum ConstraintData<T: SnapshottableType> {
     },
     /// A constraint to stop at a waypoint.
     StopPoint {},
-    /// A constraint to contain the bumpers within a circlular region of the field
+    /// A constraint to contain the bumpers within a circlular region of the
+    /// field
     KeepInCircle { x: T, y: T, r: T },
-    /// A constraint to contain the bumpers within a rectangular region of the field
+    /// A constraint to contain the bumpers within a rectangular region of the
+    /// field
     KeepInRectangle { x: T, y: T, w: T, h: T },
     /// A constraint to contain the bumpers within two line
     KeepInLane { tolerance: T },
-    /// A constraint to contain the bumpers outside a circlular region of the field
+    /// A constraint to contain the bumpers outside a circlular region of the
+    /// field
     KeepOutCircle { x: T, y: T, r: T },
 }
 
@@ -434,8 +439,8 @@ pub struct Trajectory {
     /// The samples of the trajectory.
     pub samples: Vec<Sample>,
     /// The indices of samples which are associated with split waypoints.
-    /// This includes 0, but the index of the last sample is never in this list even if the split toggle is set
-    /// for the last waypoint
+    /// This includes 0, but the index of the last sample is never in this list
+    /// even if the split toggle is set for the last waypoint
     pub splits: Vec<usize>,
 }
 

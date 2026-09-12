@@ -3,7 +3,6 @@
 package choreo.auto;
 
 import static choreo.util.ChoreoAlert.allianceNotReady;
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AllianceContext;
@@ -15,21 +14,22 @@ import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.FunctionalCommand;
+import org.wpilib.command2.ScheduleCommand;
+import org.wpilib.command2.Subsystem;
+import org.wpilib.command2.button.Trigger;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.system.Timer;
+import org.wpilib.util.Alert.Level;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -44,42 +44,37 @@ public class AutoTrajectory {
   // and far between. This helps with more novice users
 
   private static final MultiAlert triggerTimeNegative =
-      ChoreoAlert.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Trigger time cannot be negative for " + causes, Level.HIGH);
   private static final MultiAlert triggerTimeAboveMax =
       ChoreoAlert.multiAlert(
           causes -> "Trigger time cannot be greater than total trajectory time for " + causes + ".",
-          kError);
+          Level.HIGH);
   private static final MultiAlert eventNotFound =
-      ChoreoAlert.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
+      ChoreoAlert.multiAlert(causes -> "Event Markers " + causes + " not found.", Level.HIGH);
   private static final MultiAlert noSamples =
-      ChoreoAlert.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+      ChoreoAlert.multiAlert(causes -> "Trajectories " + causes + " have no samples.", Level.HIGH);
   private static final MultiAlert noInitialPose =
       ChoreoAlert.multiAlert(
-          causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
+          causes -> "Unable to get initial pose for trajectories " + causes + ".", Level.HIGH);
 
-  private final String name;
-  private final Trajectory<? extends TrajectorySample<?>> trajectory;
-  private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
-  private final Supplier<Pose2d> poseSupplier;
-  private final Consumer<Pose2d> resetOdometry;
-  private final Consumer<? extends TrajectorySample<?>> controller;
-  private final AllianceContext allianceCtx;
+  final String name;
+  final Trajectory<? extends TrajectorySample<?>> trajectory;
+  final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
+  final Supplier<Pose2d> poseSupplier;
+  final Consumer<Pose2d> resetOdometry;
+  final Consumer<? extends TrajectorySample<?>> controller;
+  final AllianceContext allianceCtx;
+  final Subsystem driveSubsystem;
+  final AutoRoutine routine;
+  final AutoBindings bindings;
+
   private final Timer activeTimer = new Timer();
   private final Timer inactiveTimer = new Timer();
-  private final Subsystem driveSubsystem;
-  private final AutoRoutine routine;
-  private final AutoBindings bindings;
-
-  /**
-   * A way to create slightly less triggers for many actions. Not static as to not leak triggers
-   * made here into another static EventLoop.
-   */
-  private final Trigger offTrigger;
 
   /** If this trajectory us currently running */
   private boolean isActive = false;
 
-  /** If the trajectory ran to completion */
+  /** If the trajectory ran to completion. */
   private boolean isCompleted = false;
 
   /** Whether to suppress warnings for this trajectory. */
@@ -117,7 +112,6 @@ public class AutoTrajectory {
     this.allianceCtx = allianceCtx;
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
-    this.offTrigger = new Trigger(routine.loop(), () -> false);
     this.trajectoryLogger = trajectoryLogger;
     this.bindings = bindings;
 
@@ -153,7 +147,6 @@ public class AutoTrajectory {
     isActive = true;
     isCompleted = false;
     logTrajectory(true);
-    routine.updateIdle(false);
   }
 
   @SuppressWarnings("unchecked")
@@ -199,7 +192,6 @@ public class AutoTrajectory {
     }
 
     logTrajectory(false);
-    routine.updateIdle(true);
   }
 
   private boolean cmdIsFinished() {
@@ -220,7 +212,6 @@ public class AutoTrajectory {
    * @return The command that will follow the trajectory
    */
   public Command cmd() {
-    // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty() && warnUser) {
       return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
     }
@@ -251,17 +242,17 @@ public class AutoTrajectory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry() {
-    return Commands.either(
-            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
-            Commands.runOnce(
-                    () -> {
-                      if (warnUser) {
-                        noInitialPose.addCause(name);
-                      }
-                      routine.kill();
-                    })
-                .andThen(driveSubsystem.run(() -> {})),
-            () -> getInitialPose().isPresent())
+    return Commands.runOnce(
+            () ->
+                getInitialPose()
+                    .ifPresentOrElse(
+                        resetOdometry,
+                        () -> {
+                          if (warnUser) {
+                            noInitialPose.addCause(name);
+                          }
+                        }),
+            driveSubsystem)
         .withName("Trajectory_ResetOdometry_" + name);
   }
 
@@ -395,7 +386,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(routine.loop(), () -> this.isActive && routine.active().getAsBoolean());
+    return routine.active().and(new Trigger(routine.loop(), () -> this.isActive));
   }
 
   /**
@@ -409,48 +400,11 @@ public class AutoTrajectory {
     return active().negate();
   }
 
-  private Trigger timeTrigger(double targetTime, Timer timer) {
-    // Make the trigger only be high for 1 cycle when the time has elapsed
-    return new Trigger(
-        routine.loop(),
-        new BooleanSupplier() {
-          double lastTimestamp = -1.0;
-          OptionalInt pollTarget = OptionalInt.empty();
-
-          public boolean getAsBoolean() {
-            if (!timer.isRunning()) {
-              lastTimestamp = -1.0;
-              pollTarget = OptionalInt.empty();
-              return false;
-            }
-            double nowTimestamp = timer.get();
-            try {
-              boolean timeAligns = lastTimestamp < targetTime && nowTimestamp >= targetTime;
-              if (pollTarget.isEmpty() && timeAligns) {
-                // if the time aligns for this cycle and it hasn't aligned previously this cycle
-                pollTarget = OptionalInt.of(routine.pollCount());
-                return true;
-              } else if (pollTarget.isPresent() && routine.pollCount() == pollTarget.getAsInt()) {
-                // if the time aligned previously this cycle
-                return true;
-              } else if (pollTarget.isPresent()) {
-                // if the time aligned last cycle
-                pollTarget = OptionalInt.empty();
-                return false;
-              }
-              return false;
-            } finally {
-              lastTimestamp = nowTimestamp;
-            }
-          }
-        });
-  }
-
   private Trigger enterExitTrigger(Trigger enter, Trigger exit) {
     return new Trigger(
         routine.loop(),
         new BooleanSupplier() {
-          boolean output = false;
+          private boolean output = false;
 
           @Override
           public boolean getAsBoolean() {
@@ -466,97 +420,38 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
-   * after one pulse.
+   * Returns a trigger that is true after the trajectory completes.
    *
-   * <p>This is different from inactive() in a few ways.
-   *
-   * <ul>
-   *   <li>This will never be true if the trajectory is interrupted
-   *   <li>This will never be true before the trajectory is run
-   *   <li>This will fall the next cycle after the trajectory ends
-   * </ul>
-   *
-   * <p>Why does the trigger need to fall?
-   *
-   * <pre><code>
-   * //Lets say we had this code segment
-   * Trigger hasGamepiece = ...;
-   * Trigger noGamepiece = hasGamepiece.negate();
-   *
-   * AutoTrajectory rushMidTraj = ...;
-   * AutoTrajectory goShootGamepiece = ...;
-   * AutoTrajectory pickupAnotherGamepiece = ...;
-   *
-   * routine.enabled().onTrue(rushMidTraj.cmd());
-   *
-   * rushMidTraj.doneDelayed(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.doneDelayed(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
-   *
-   * // If done never falls when a new trajectory is scheduled
-   * // then these triggers leak into the next trajectory, causing the next note pickup
-   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
-   * </code></pre>
-   *
-   * @param seconds The seconds to delay the trigger from rising to true.
-   * @return A trigger that is true when the trajectory is finished.
-   */
-  public Trigger doneDelayed(double seconds) {
-    return timeTrigger(seconds, inactiveTimer).and(new Trigger(routine.loop(), () -> isCompleted));
-  }
-
-  /**
-   * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
-   *
-   * <p>This is different from inactive() in a few ways.
-   *
-   * <ul>
-   *   <li>This will never be true if the trajectory is interrupted
-   *   <li>This will never be true before the trajectory is run
-   *   <li>This will fall the next cycle after the trajectory ends
-   * </ul>
-   *
-   * <p>Why does the trigger need to fall?
-   *
-   * <pre><code>
-   * //Lets say we had this code segment
-   * Trigger hasGamepiece = ...;
-   * Trigger noGamepiece = hasGamepiece.negate();
-   *
-   * AutoTrajectory rushMidTraj = ...;
-   * AutoTrajectory goShootGamepiece = ...;
-   * AutoTrajectory pickupAnotherGamepiece = ...;
-   *
-   * routine.enabled().onTrue(rushMidTraj.cmd());
-   *
-   * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
-   *
-   * // If done never falls when a new trajectory is scheduled
-   * // then these triggers leak into the next trajectory, causing the next note pickup
-   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
-   * </code></pre>
-   *
-   * @return A trigger that is true when the trajectory is finished.
+   * @return a trigger that is true after the trajectory completes
    */
   public Trigger done() {
     return doneDelayed(0);
   }
 
   /**
-   * Returns a trigger that stays true for a number of cycles after the trajectory ends.
+   * Returns a trigger that becomes true after the trajectory completes and the given delay.
    *
-   * @param seconds Seconds to stay true after the trajectory ends.
-   * @return A trigger that stays true for a number of cycles after the trajectory ends.
+   * @param seconds the delay after completion, in seconds
+   * @return a trigger that is true after the trajectory completes and the given delay
+   */
+  public Trigger doneDelayed(double seconds) {
+    return timeTrigger(seconds, inactiveTimer).and(new Trigger(routine.loop(), () -> isCompleted));
+  }
+
+  /**
+   * Returns a trigger that remains true for the given duration after completion.
+   *
+   * @param seconds the duration for which the trigger remains true, in seconds
+   * @return a trigger that remains true for the given duration after completion
    */
   public Trigger doneFor(double seconds) {
     return enterExitTrigger(doneDelayed(0), doneDelayed(seconds));
   }
 
   /**
-   * Returns a trigger that is true when the trajectory was the last one active and is done.
+   * Returns a trigger that remains true after completion until the routine becomes idle.
    *
-   * @return A trigger that is true when the trajectory was the last one active and is done.
+   * @return a trigger that remains true after completion until the routine becomes idle
    */
   public Trigger recentlyDone() {
     return enterExitTrigger(doneDelayed(0), routine.idle().negate());
@@ -571,6 +466,41 @@ public class AutoTrajectory {
     done().onTrue(otherTrajectory.cmd());
   }
 
+  private Trigger timeTrigger(double targetTime, Timer timer) {
+    // Make the trigger only be high for 1 cycle when the time has elapsed
+    return new Trigger(
+        routine.loop(),
+        new BooleanSupplier() {
+          double lastTimestamp = -1.0;
+          OptionalInt pollTarget = OptionalInt.empty();
+
+          @Override
+          public boolean getAsBoolean() {
+            if (!timer.isRunning()) {
+              lastTimestamp = -1.0;
+              pollTarget = OptionalInt.empty();
+              return false;
+            }
+            double nowTimestamp = timer.get();
+            try {
+              boolean timeAligns = lastTimestamp < targetTime && nowTimestamp >= targetTime;
+              if (pollTarget.isEmpty() && timeAligns) {
+                pollTarget = OptionalInt.of(routine.pollCount());
+                return true;
+              } else if (pollTarget.isPresent() && routine.pollCount() == pollTarget.getAsInt()) {
+                return true;
+              } else if (pollTarget.isPresent()) {
+                pollTarget = OptionalInt.empty();
+                return false;
+              }
+              return false;
+            } finally {
+              lastTimestamp = nowTimestamp;
+            }
+          }
+        });
+  }
+
   /**
    * Returns a trigger that will go true for 1 cycle when the desired time has elapsed
    *
@@ -583,7 +513,7 @@ public class AutoTrajectory {
       if (warnUser) {
         triggerTimeNegative.addCause(name);
       }
-      return offTrigger;
+      return new Trigger(routine.loop(), () -> false);
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
@@ -591,7 +521,7 @@ public class AutoTrajectory {
       if (warnUser) {
         triggerTimeAboveMax.addCause(name);
       }
-      return offTrigger;
+      return new Trigger(routine.loop(), () -> false);
     }
 
     return timeTrigger(timeSinceStart, activeTimer);
@@ -623,7 +553,7 @@ public class AutoTrajectory {
    */
   public Trigger atTime(String eventName) {
     boolean foundEvent = false;
-    Trigger trig = offTrigger;
+    Trigger trig = new Trigger(routine.loop(), () -> false);
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create a lot of objects, could be done a more efficient way
@@ -669,7 +599,6 @@ public class AutoTrajectory {
   public Trigger atPose(Pose2d pose, double toleranceMeters, double toleranceRadians) {
     Pose2d flippedPose = ChoreoAllianceFlipUtil.flip(pose);
     return new Trigger(
-            routine.loop(),
             () -> {
               if (allianceCtx.allianceKnownOrIgnored()) {
                 final Pose2d currentPose = poseSupplier.get();
@@ -715,7 +644,7 @@ public class AutoTrajectory {
    */
   public Trigger atPose(String eventName, double toleranceMeters, double toleranceRadians) {
     boolean foundEvent = false;
-    Trigger trig = offTrigger;
+    Trigger trig = new Trigger(() -> false);
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create a lot of objects, could be done a more efficient way
@@ -761,7 +690,6 @@ public class AutoTrajectory {
   public Trigger atTranslation(Translation2d translation, double toleranceMeters) {
     Translation2d flippedTranslation = ChoreoAllianceFlipUtil.flip(translation);
     return new Trigger(
-            routine.loop(),
             () -> {
               if (allianceCtx.allianceKnownOrIgnored()) {
                 final Translation2d currentTrans = poseSupplier.get().getTranslation();
@@ -794,7 +722,7 @@ public class AutoTrajectory {
    */
   public Trigger atTranslation(String eventName, double toleranceMeters) {
     boolean foundEvent = false;
-    Trigger trig = offTrigger;
+    Trigger trig = new Trigger(() -> false);
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create a lot of objects, could be done a more efficient way

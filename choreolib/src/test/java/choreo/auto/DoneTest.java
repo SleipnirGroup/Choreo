@@ -8,17 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectoryTestHelper;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
-import edu.wpi.first.wpilibj.simulation.SimHooks;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SchedulerMaker;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.junit.jupiter.api.Test;
+import org.wpilib.command2.CommandScheduler;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SchedulerMaker;
+import org.wpilib.command2.button.Trigger;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.hardware.hal.RobotMode;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.simulation.DriverStationSim;
+import org.wpilib.simulation.SimHooks;
 
 public class DoneTest {
   private static final Pose2d start = new Pose2d();
@@ -26,7 +26,7 @@ public class DoneTest {
 
   @Test
   public void testExecution() {
-    assert HAL.initialize(500, 0);
+    assert HAL.initialize();
     CommandScheduler scheduler = SchedulerMaker.make();
 
     AutoFactory factory = AutoTestHelper.factory();
@@ -55,10 +55,9 @@ public class DoneTest {
 
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setEnabled(true);
-    DriverStationSim.setAutonomous(true);
+    DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
-    assertTrue(DriverStation.isAutonomousEnabled());
+    assertTrue(DriverStationSim.getRobotMode() == RobotMode.AUTONOMOUS);
 
     assertFalse(oneSecondIn);
     assertFalse(twoSecondIn);
@@ -143,9 +142,8 @@ public class DoneTest {
 
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setEnabled(true);
-    DriverStationSim.setAutonomous(true);
+    DriverStationSim.setRobotMode(RobotMode.AUTONOMOUS);
     DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
-    assertTrue(DriverStation.isAutonomousEnabled());
+    assertTrue(DriverStationSim.getRobotMode() == RobotMode.AUTONOMOUS);
   }
 }

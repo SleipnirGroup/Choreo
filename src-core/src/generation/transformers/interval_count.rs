@@ -25,7 +25,8 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
         let mut wpt_cnt = 0;
         for i in 0..waypoints.len() {
             let wpt = &waypoints[i];
-            // add initial guess points (actually unconstrained empty wpts in Choreo terms)
+            // add initial guess points (actually unconstrained empty wpts in
+            // Choreo terms)
             if wpt.is_initial_guess && !wpt.fix_heading && !wpt.fix_translation {
                 let guess_point = Pose2d {
                     x: wpt.x,
@@ -73,7 +74,8 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
         let mut wpt_cnt = 0;
         for i in 0..waypoints.len() {
             let wpt = &waypoints[i];
-            // add initial guess points (actually unconstrained empty wpts in Choreo terms)
+            // add initial guess points (actually unconstrained empty wpts in
+            // Choreo terms)
             if wpt.is_initial_guess && !wpt.fix_heading && !wpt.fix_translation {
                 let guess_point = Pose2d {
                     x: wpt.x,

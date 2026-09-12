@@ -3,6 +3,7 @@
 #pragma once
 
 #include <array>
+#include <optional>
 #include <utility>
 
 #include "trajopt/geometry/pose2.hpp"

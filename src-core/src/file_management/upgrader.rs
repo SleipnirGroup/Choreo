@@ -72,7 +72,8 @@ impl Editor {
         serde_json::from_value(jdata.clone()).map_err(Into::into)
     }
 
-    /// Set the value of a JSON path. If the path does not exist, it will be created.
+    /// Set the value of a JSON path. If the path does not exist, it will be
+    /// created.
     ///
     /// # Arguments
     /// - `path`: The JSON path to set the value of.
