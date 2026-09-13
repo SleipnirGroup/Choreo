@@ -123,9 +123,9 @@ class DifferentialSample:
         """
         return Pose2d(self.x, self.y, Rotation2d(value=self.heading))
 
-    def get_chassis_speeds(self) -> ChassisVelocities:
+    def get_chassis_velocities(self) -> ChassisVelocities:
         """
-        Returns the field-relative chassis speeds of this state.
+        Returns the field-relative chassis velocities of this state.
         """
 
         return ChassisVelocities((self.vl + self.vr) / 2.0, 0.0, self.omega)
@@ -498,9 +498,9 @@ class SwerveSample:
         """
         return Pose2d(self.x, self.y, Rotation2d(value=self.heading))
 
-    def get_chassis_speeds(self) -> ChassisVelocities:
+    def get_chassis_velocities(self) -> ChassisVelocities:
         """
-        Returns the field-relative chassis speeds of this state.
+        Returns the field-relative chassis velocities of this state.
         """
         return ChassisVelocities(self.vx, self.vy, self.omega)
 

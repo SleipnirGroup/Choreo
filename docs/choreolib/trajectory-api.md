@@ -83,7 +83,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
         }
 
         private boolean isRedAlliance() {
-            return DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red);
+            return MatchState.getAlliance().orElse(Alliance.BLUE).equals(Alliance.RED);
         }
     }
     ```
@@ -116,15 +116,14 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
         }
 
         bool Robot::IsRedAlliance() {
-            auto alliance = frc::DriverStation::GetAlliance().value_or(frc::DriverStation::kBlue);
-            return alliance == frc::DriverStation::kRed;
+            return wpi::MatchState::GetAlliance().value_or(wpi::Alliance::BLUE) == wpi::Alliance::RED;
         }
         ```
 
     === "Header"
 
         ```cpp title="Robot.h"
-        class Robot : public frc::TimedRobot {
+        class Robot : public wpi::TimedRobot {
             public:
                 void AutonomousInit() override;
                 void AutonomousPeriodic() override;
@@ -135,7 +134,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
                     choreo::Choreo::LoadTrajectory<choreo::SwerveSample>("myTrajectory");
 
                 Drive drive;
-                frc::Timer timer;
+                wpi::Timer timer;
         };
         ```
 
@@ -143,7 +142,9 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
 
     ```py
     class MyRobot(wpilib.TimedRobot):
-        def robotInit(self):
+        def __init__(self):
+            super().__init__()
+
             # Loads a swerve trajectory, alternatively use load_differential_trajectory if the robot is tank drive
             try:
                 self.trajectory = choreo.load_swerve_trajectory("myTrajectory")
@@ -153,7 +154,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
             self.drive_subsystem = Drive()
             self.timer = wpilib.Timer()
 
-        def autonomousInit(self):
+        def autonomous_init(self):
             if self.trajectory:
                 # Get the initial pose of the trajectory
                 initial_pose = self.trajectory.get_initial_pose(self.is_red_alliance())
@@ -165,7 +166,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
             # Reset and start the timer when the autonomous period begins
             self.timer.restart()
 
-        def autonomousPeriodic(self):
+        def autonomous_periodic(self):
             if self.trajectory:
                 # Sample the trajectory at the current time into the autonomous period
                 sample = self.trajectory.sample_at(self.timer.get(), self.is_red_alliance())
@@ -174,5 +175,5 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
                     self.drive_subsystem.follow_trajectory(sample)
 
         def is_red_alliance(self):
-            return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
+            return wpilib.MatchState.getAlliance() == wpilib.MatchState.Alliance.RED
     ```

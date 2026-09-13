@@ -41,12 +41,12 @@
 
 namespace trajopt {
 
-inline Translation2d wheel_to_chassis_speeds(double vl, double vr) {
+inline Translation2d wheel_to_chassis_velocities(double vl, double vr) {
   return Translation2d{(vl + vr) / 2, 0.0};
 }
 
-inline Translation2v<double> wheel_to_chassis_speeds(slp::Variable<double> vl,
-                                                     slp::Variable<double> vr) {
+inline Translation2v<double> wheel_to_chassis_velocities(
+    slp::Variable<double> vl, slp::Variable<double> vr) {
   return Translation2v<double>{(vl + vr) / 2, 0.0};
 }
 
@@ -272,10 +272,10 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
     Pose2v<double> pose_k{x.at(index), y.at(index), {θ.at(index)}};
     Translation2v<double> v_k =
-        wheel_to_chassis_speeds(vl.at(index), vr.at(index));
+        wheel_to_chassis_velocities(vl.at(index), vr.at(index));
     auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
     Translation2v<double> a_k =
-        wheel_to_chassis_speeds(al.at(index), ar.at(index));
+        wheel_to_chassis_velocities(al.at(index), ar.at(index));
     auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
     for (auto& constraint : path.waypoints.at(wpt_index).waypoint_constraints) {
@@ -292,10 +292,10 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     for (size_t index = start_index; index < end_index; ++index) {
       Pose2v<double> pose_k{x.at(index), y.at(index), {θ.at(index)}};
       Translation2v<double> v_k =
-          wheel_to_chassis_speeds(vl.at(index), vr.at(index));
+          wheel_to_chassis_velocities(vl.at(index), vr.at(index));
       auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
       Translation2v<double> a_k =
-          wheel_to_chassis_speeds(al.at(index), ar.at(index));
+          wheel_to_chassis_velocities(al.at(index), ar.at(index));
       auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
       for (auto& constraint :

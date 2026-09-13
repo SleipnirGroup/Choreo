@@ -50,15 +50,15 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 // Get the current pose of the robot
                 Pose2d pose = getPose();
 
-                // Generate the next speeds for the robot
-                ChassisSpeeds speeds = new ChassisSpeeds(
+                // Generate the next velocities for the robot
+                ChassisVelocities velocities = new ChassisVelocities(
                     sample.vx + xController.calculate(pose.getX(), sample.x),
                     sample.vy + yController.calculate(pose.getY(), sample.y),
                     sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading)
                 );
 
-                // Apply the generated speeds
-                driveFieldRelative(speeds);
+                // Apply the generated velocities
+                driveFieldRelative(velocities);
             }
         }
         ```
@@ -74,7 +74,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
             void Drive::FollowTrajectory(const choreo::SwerveSample& sample) {
                 // Get the current pose of the robot
-                frc::Pose2d pose = GetPose();
+                wpi::math::Pose2d pose = GetPose();
 
                 // Calculate feedback velocities
                 wpi::units::meters_per_second_t xFeedback{xController.Calculate(pose.X().value(), sample.x.value())};
@@ -83,15 +83,15 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                     headingController.Calculate(pose.Rotation().Radians().value(), sample.heading.value())
                 };
 
-                // Generate the next speeds for the robot
-                frc::ChassisSpeeds speeds{
+                // Generate the next velocities for the robot
+                wpi::math::ChassisVelocities velocities{
                     sample.vx + xFeedback,
                     sample.vy + yFeedback,
                     sample.omega + headingFeedback
                 };
 
-                // Apply the generated speeds
-                DriveFieldRelative(speeds);
+                // Apply the generated velocities
+                DriveFieldRelative(velocities);
             };
             ```
 
@@ -103,9 +103,9 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                     void FollowTrajectory(const choreo::SwerveSample& sample);
 
                 private:
-                    frc::PIDController xController{10.0, 0.0, 0.0};
-                    frc::PIDController yController{10.0, 0.0, 0.0};
-                    frc::PIDController headingController{7.5, 0.0, 0.0};
+                    wpi::math::PIDController xController{10.0, 0.0, 0.0};
+                    wpi::math::PIDController yController{10.0, 0.0, 0.0};
+                    wpi::math::PIDController headingController{7.5, 0.0, 0.0};
             };
             ```
 
@@ -129,15 +129,15 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 # Get the current pose of the robot
                 pose = self.get_pose()
 
-                # Generate the next speeds for the robot
-                speeds = ChassisSpeeds(
+                # Generate the next velocities for the robot
+                velocities = ChassisVelocities(
                     sample.vx + self.x_controller.calculate(pose.X(), sample.x),
                     sample.vy + self.y_controller.calculate(pose.Y(), sample.y),
                     sample.omega + self.heading_controller.calculate(pose.rotation().radians(), sample.heading)
                 )
 
-                # Apply the generated speeds
-                self.drive_field_relative(speeds)
+                # Apply the generated velocities
+                self.drive_field_relative(velocities)
         ```
 
 === "Differential (Tank)"
@@ -155,22 +155,22 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 Pose2d pose = getPose();
 
                 // Get the velocity feedforward specified by the sample
-                ChassisSpeeds ff = sample.getChassisSpeeds();
+                ChassisVelocities ff = sample.getChassisVelocities();
 
-                // Generate the next speeds for the robot
-                ChassisSpeeds speeds = controller.calculate(
+                // Generate the next velocities for the robot
+                ChassisVelocities velocities = controller.calculate(
                     pose,
                     sample.getPose(),
                     ff.vxMetersPerSecond,
                     ff.omegaRadiansPerSecond
                 );
 
-                // Apply the generated speeds
-                drive(speeds);
+                // Apply the generated velocities
+                drive(velocities);
 
-                // Or, if you don't drive via ChassisSpeeds
-                DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds); // (1)
-                drive(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
+                // Or, if you don't drive via ChassisVelocities
+                DifferentialDriveWheelVelocities wheelVelocities = kinematics.toWheelVelocities(velocities); // (1)
+                drive(wheelVelocities.leftMetersPerSecond, wheelVelocities.rightMetersPerSecond);
             }
         }
         ```
@@ -184,25 +184,25 @@ In general, trajectory followers accept trajectory "samples" that represent the 
             ```cpp title="Drive.cpp"
             void Drive::FollowTrajectory(const choreo::DifferentialSample& sample) {
                 // Get the current pose of the robot
-                frc::Pose2d pose = GetPose();
+                wpi::math::Pose2d pose = GetPose();
 
                 // Get the velocity feedforward specified by the sample
-                frc::ChassisSpeeds ff = sample.GetChassisSpeeds();
+                wpi::math::ChassisVelocities ff = sample.GetChassisVelocities();
 
-                // Generate the next speeds for the robot
-                frc::ChassisSpeeds speeds = controller.Calculate(
+                // Generate the next velocities for the robot
+                wpi::math::ChassisVelocities velocities = controller.Calculate(
                     pose,
                     sample.GetPose(),
                     ff.vx,
                     ff.vy
                 );
 
-                // Apply the generated speeds
-                Drive(speeds);
+                // Apply the generated velocities
+                Drive(velocities);
 
-                // Or, if you don't drive via ChassisSpeeds
-                frc::DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.ToWheelSpeeds(speeds); // (1)
-                Drive(wheelSpeeds.left, wheelSpeeds.right);
+                // Or, if you don't drive via ChassisVelocities
+                wpi::math::DifferentialDriveWheelVelocities wheelVelocities = kinematics.ToWheelVelocities(velocities); // (1)
+                Drive(wheelVelocities.left, wheelVelocities.right);
             };
             ```
 
@@ -216,7 +216,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                     void FollowTrajectory(const choreo::DifferentialSample& sample);
 
                 private:
-                    frc::LTVUnicycleController controller{0.02_s};
+                    wpi::math::LTVUnicycleController controller{0.02_s};
             };
             ```
 
@@ -237,22 +237,22 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 pose = self.get_pose()
 
                 # Get the velocity feedforward specified by the sample
-                ff = sample.get_chassis_speeds()
+                ff = sample.get_chassis_velocities()
 
-                # Generate the next speeds for the robot
-                speeds = self.controller.calculate(
+                # Generate the next velocities for the robot
+                velocities = self.controller.calculate(
                     pose,
                     sample.get_pose(),
                     ff.vx,
                     ff.omega
                 )
 
-                # Apply the generated speeds
-                self.drive(speeds)
+                # Apply the generated velocities
+                self.drive(velocities)
 
-                # Or, if you don't drive via ChassisSpeeds
-                wheelSpeeds = self.kinematics.toWheelSpeeds(speeds) # (1)
-                self.drive(wheelSpeeds.left, wheelSpeeds.right)
+                # Or, if you don't drive via ChassisVelocities
+                wheel_velocities = self.kinematics.to_wheel_velocities(velocities) # (1)
+                self.drive(wheel_velocities.left, wheel_velocities.right)
         ```
 
         1. For more information about differential drive kinematics, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/differential-drive-kinematics.html). In this example, we assume you have created an instance of `DifferentialDriveKinematics`, named `kinematics`.

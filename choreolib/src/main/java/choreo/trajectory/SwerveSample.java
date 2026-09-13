@@ -137,7 +137,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   }
 
   @Override
-  public ChassisVelocities getChassisSpeeds() {
+  public ChassisVelocities getChassisVelocities() {
     return new ChassisVelocities(vx, vy, omega);
   }
 

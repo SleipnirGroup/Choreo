@@ -68,7 +68,7 @@ Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronou
 
 ## Safety
 
-FRC robots are inherently dangerous, especially when operated at high speeds. Choreo is designed to enable users to operate their FRC robot at the very limits of its physical capabilities.
+FRC robots are inherently dangerous, especially when operated at high velocities. Choreo is designed to enable users to operate their FRC robot at the very limits of its physical capabilities.
 
 When using Choreo, operators should consider the following best practices to maximize their safety and the safety of their teammates. See the [FIRST Safety Manual](https://www.firstinspires.org/robotics/frc/safety) for additional guidance.
 
