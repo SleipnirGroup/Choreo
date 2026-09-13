@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include <cstddef>
+#include <exception>
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,7 +16,7 @@
 #include "trajopt/differential_trajectory_generator.hpp"
 #include "trajopt/swerve_trajectory_generator.hpp"
 
-// override cxx try/catch so it catches thrown integers/exit conditions
+// Override cxx try/catch so it catches thrown integers/exit conditions
 namespace rust::behavior {
 template <typename Try, typename Fail>
 static void trycatch(Try&& func, Fail&& fail) noexcept try {
@@ -50,35 +53,34 @@ class SwerveTrajectoryGenerator {
 
   void wpt_linear_velocity_direction(size_t index, double angle);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
-  void wpt_angular_velocity_max_magnitude(size_t index,
-                                          double angular_velocity);
+  void wpt_angular_velocity_max_magnitude(size_t index, double magnitude);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
-                    double heading_tolerance, bool flip);
-  void wpt_keep_in_circle(size_t index, double field_point_x,
-                          double field_point_y, double keep_in_radius);
+                    double heading_tolerance, bool point_away);
+  void wpt_keep_in_circle(size_t index, double center_x, double center_y,
+                          double radius);
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
   void wpt_keep_in_lane(size_t index, double center_line_start_x,
                         double center_line_start_y, double center_line_end_x,
                         double center_line_end_y, double tolerance);
-  void wpt_keep_out_circle(size_t index, double field_point_x,
-                           double field_point_y, double keep_in_radius);
+  void wpt_keep_out_circle(size_t index, double center_x, double center_y,
+                           double radius);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
   void sgmt_linear_velocity_max_magnitude(size_t from_index, size_t to_index,
                                           double magnitude);
   void sgmt_angular_velocity_max_magnitude(size_t from_index, size_t to_index,
-                                           double angular_velocity);
+                                           double magnitude);
   void sgmt_linear_acceleration_max_magnitude(size_t from_index,
                                               size_t to_index,
                                               double magnitude);
   void sgmt_point_at(size_t from_index, size_t to_index, double field_point_x,
-                     double field_point_y, double heading_tolerance, bool flip);
-  void sgmt_keep_in_circle(size_t from_index, size_t to_index,
-                           double field_point_x, double field_point_y,
-                           double keep_in_radius);
+                     double field_point_y, double heading_tolerance,
+                     bool point_away);
+  void sgmt_keep_in_circle(size_t from_index, size_t to_index, double center_x,
+                           double center_y, double radius);
   void sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                             rust::Vec<double> field_points_x,
                             rust::Vec<double> field_points_y);
@@ -86,10 +88,10 @@ class SwerveTrajectoryGenerator {
                          double center_line_start_x, double center_line_start_y,
                          double center_line_end_x, double center_line_end_y,
                          double tolerance);
-  void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
-                            double y, double radius);
+  void sgmt_keep_out_circle(size_t from_index, size_t to_index, double center_x,
+                            double center_y, double radius);
 
-  /// Add a callback that will be called on each iteration of the solver.
+  /// Adds a callback that will be called on each iteration of the solver.
   ///
   /// This function can be called multiple times to add multiple callbacks.
   ///
@@ -125,34 +127,31 @@ class DifferentialTrajectoryGenerator {
 
   void wpt_linear_velocity_direction(size_t index, double angle);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
-  void wpt_angular_velocity_max_magnitude(size_t index,
-                                          double angular_velocity);
+  void wpt_angular_velocity_max_magnitude(size_t index, double magnitude);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
-                    double heading_tolerance, bool flip);
-  void wpt_keep_in_circle(size_t index, double field_point_x,
-                          double field_point_y, double keep_in_radius);
+                    double heading_tolerance, bool point_away);
+  void wpt_keep_in_circle(size_t index, double center_x, double center_y,
+                          double radius);
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
   void wpt_keep_in_lane(size_t index, double center_line_start_x,
                         double center_line_start_y, double center_line_end_x,
                         double center_line_end_y, double tolerance);
-
-  void wpt_keep_out_circle(size_t index, double field_point_x,
-                           double field_point_y, double keep_in_radius);
+  void wpt_keep_out_circle(size_t index, double center_x, double center_y,
+                           double radius);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
   void sgmt_linear_velocity_max_magnitude(size_t from_index, size_t to_index,
                                           double magnitude);
   void sgmt_angular_velocity_max_magnitude(size_t from_index, size_t to_index,
-                                           double angular_velocity);
+                                           double magnitude);
   void sgmt_linear_acceleration_max_magnitude(size_t from_index,
                                               size_t to_index,
                                               double magnitude);
-  void sgmt_keep_in_circle(size_t from_index, size_t to_index,
-                           double field_point_x, double field_point_y,
-                           double keep_in_radius);
+  void sgmt_keep_in_circle(size_t from_index, size_t to_index, double center_x,
+                           double center_y, double radius);
   void sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                             rust::Vec<double> field_points_x,
                             rust::Vec<double> field_points_y);
@@ -160,11 +159,10 @@ class DifferentialTrajectoryGenerator {
                          double center_line_start_x, double center_line_start_y,
                          double center_line_end_x, double center_line_end_y,
                          double tolerance);
+  void sgmt_keep_out_circle(size_t from_index, size_t to_index, double center_x,
+                            double center_y, double radius);
 
-  void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
-                            double y, double radius);
-
-  /// Add a callback that will be called on each iteration of the solver.
+  /// Adds a callback that will be called on each iteration of the solver.
   ///
   /// This function can be called multiple times to add multiple callbacks.
   ///
