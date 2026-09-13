@@ -59,21 +59,20 @@ void SwerveTrajectoryGenerator::sgmt_initial_guess_points(
                                          std::move(cpp_guess_points));
 }
 
-void SwerveTrajectoryGenerator::pose_wpt(size_t index, double x, double y,
-                                         double heading) {
-  path_builder.pose_wpt(index, x, y, heading);
+void SwerveTrajectoryGenerator::pose_wpt(size_t index, Pose2d pose) {
+  path_builder.pose_wpt(index, {pose.x, pose.y, {pose.heading}});
 }
 
-void SwerveTrajectoryGenerator::translation_wpt(size_t index, double x,
-                                                double y,
+void SwerveTrajectoryGenerator::translation_wpt(size_t index,
+                                                Translation2d translation,
                                                 double heading_guess) {
-  path_builder.translation_wpt(index, x, y, heading_guess);
+  path_builder.translation_wpt(index, {translation.x, translation.y},
+                               heading_guess);
 }
 
-void SwerveTrajectoryGenerator::empty_wpt(size_t index, double x_guess,
-                                          double y_guess,
-                                          double heading_guess) {
-  path_builder.empty_wpt(index, {x_guess, y_guess, heading_guess});
+void SwerveTrajectoryGenerator::empty_wpt(size_t index, Pose2d pose_guess) {
+  path_builder.empty_wpt(index,
+                         {pose_guess.x, pose_guess.y, pose_guess.heading});
 }
 
 void SwerveTrajectoryGenerator::wpt_linear_velocity_direction(size_t index,
@@ -96,48 +95,41 @@ void SwerveTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
   path_builder.wpt_linear_acceleration_max_magnitude(index, magnitude);
 }
 
-void SwerveTrajectoryGenerator::wpt_point_at(size_t index, double field_point_x,
-                                             double field_point_y,
+void SwerveTrajectoryGenerator::wpt_point_at(size_t index,
+                                             Translation2d field_point,
                                              double heading_tolerance,
                                              bool flip) {
-  path_builder.wpt_point_at(index, {field_point_x, field_point_y},
+  path_builder.wpt_point_at(index, {field_point.x, field_point.y},
                             heading_tolerance, flip);
 }
 
 void SwerveTrajectoryGenerator::wpt_keep_in_circle(size_t index,
-                                                   double center_x,
-                                                   double center_y,
+                                                   Translation2d center,
                                                    double radius) {
-  path_builder.wpt_keep_in_circle(index, {center_x, center_y}, radius);
+  path_builder.wpt_keep_in_circle(index, {center.x, center.y}, radius);
 }
 
 void SwerveTrajectoryGenerator::wpt_keep_in_polygon(
-    size_t index, rust::Vec<double> field_points_x,
-    rust::Vec<double> field_points_y) {
-  if (field_points_x.size() != field_points_y.size()) {
-    return;
+    size_t index, rust::Vec<Translation2d> field_points) {
+  std::vector<trajopt::Translation2d> cpp_field_points;
+  for (const auto& field_point : field_points) {
+    cpp_field_points.emplace_back(field_point.x, field_point.y);
   }
-
-  std::vector<trajopt::Translation2d> field_points;
-  for (size_t i = 0; i < field_points_x.size(); ++i) {
-    field_points.emplace_back(field_points_x[i], field_points_y[i]);
-  }
-  path_builder.wpt_keep_in_polygon(index, field_points);
+  path_builder.wpt_keep_in_polygon(index, cpp_field_points);
 }
 
 void SwerveTrajectoryGenerator::wpt_keep_in_lane(
-    size_t index, double center_line_start_x, double center_line_start_y,
-    double center_line_end_x, double center_line_end_y, double tolerance) {
+    size_t index, Translation2d center_line_start,
+    Translation2d center_line_end, double tolerance) {
   path_builder.wpt_keep_in_lane(
-      index, {center_line_start_x, center_line_start_y},
-      {center_line_end_x, center_line_end_y}, tolerance);
+      index, {center_line_start.x, center_line_start.y},
+      {center_line_end.x, center_line_end.y}, tolerance);
 }
 
 void SwerveTrajectoryGenerator::wpt_keep_out_circle(size_t index,
-                                                    double center_x,
-                                                    double center_y,
+                                                    Translation2d center,
                                                     double radius) {
-  path_builder.wpt_keep_out_circle(index, {center_x, center_y}, radius);
+  path_builder.wpt_keep_out_circle(index, {center.x, center.y}, radius);
 }
 
 void SwerveTrajectoryGenerator::sgmt_linear_velocity_direction(
@@ -163,52 +155,46 @@ void SwerveTrajectoryGenerator::sgmt_linear_acceleration_max_magnitude(
                                                       magnitude);
 }
 
-void SwerveTrajectoryGenerator::sgmt_point_at(
-    size_t from_index, size_t to_index, double field_point_x,
-    double field_point_y, double heading_tolerance, bool flip) {
+void SwerveTrajectoryGenerator::sgmt_point_at(size_t from_index,
+                                              size_t to_index,
+                                              Translation2d field_point,
+                                              double heading_tolerance,
+                                              bool flip) {
   path_builder.sgmt_point_at(from_index, to_index,
-                             {field_point_x, field_point_y}, heading_tolerance,
+                             {field_point.x, field_point.y}, heading_tolerance,
                              flip);
 }
 
 void SwerveTrajectoryGenerator::sgmt_keep_in_circle(size_t from_index,
                                                     size_t to_index,
-                                                    double center_x,
-                                                    double center_y,
+                                                    Translation2d center,
                                                     double radius) {
-  path_builder.sgmt_keep_in_circle(from_index, to_index, {center_x, center_y},
+  path_builder.sgmt_keep_in_circle(from_index, to_index, {center.x, center.y},
                                    radius);
 }
 
 void SwerveTrajectoryGenerator::sgmt_keep_in_polygon(
-    size_t from_index, size_t to_index, rust::Vec<double> field_points_x,
-    rust::Vec<double> field_points_y) {
-  if (field_points_x.size() != field_points_y.size()) {
-    return;
+    size_t from_index, size_t to_index, rust::Vec<Translation2d> field_points) {
+  std::vector<trajopt::Translation2d> cpp_field_points;
+  for (const auto& field_point : field_points) {
+    cpp_field_points.emplace_back(field_point.x, field_point.y);
   }
-
-  std::vector<trajopt::Translation2d> field_points;
-  for (size_t i = 0; i < field_points_x.size(); ++i) {
-    field_points.emplace_back(field_points_x[i], field_points_y[i]);
-  }
-  path_builder.sgmt_keep_in_polygon(from_index, to_index, field_points);
+  path_builder.sgmt_keep_in_polygon(from_index, to_index, cpp_field_points);
 }
 
 void SwerveTrajectoryGenerator::sgmt_keep_in_lane(
-    size_t from_index, size_t to_index, double center_line_start_x,
-    double center_line_start_y, double center_line_end_x,
-    double center_line_end_y, double tolerance) {
+    size_t from_index, size_t to_index, Translation2d center_line_start,
+    Translation2d center_line_end, double tolerance) {
   path_builder.sgmt_keep_in_lane(
-      from_index, to_index, {center_line_start_x, center_line_start_y},
-      {center_line_end_x, center_line_end_y}, tolerance);
+      from_index, to_index, {center_line_start.x, center_line_start.y},
+      {center_line_end.x, center_line_end.y}, tolerance);
 }
 
 void SwerveTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,
                                                      size_t to_index,
-                                                     double center_x,
-                                                     double center_y,
+                                                     Translation2d center,
                                                      double radius) {
-  path_builder.sgmt_keep_out_circle(from_index, to_index, {center_x, center_y},
+  path_builder.sgmt_keep_out_circle(from_index, to_index, {center.x, center.y},
                                     radius);
 }
 
@@ -309,21 +295,21 @@ void DifferentialTrajectoryGenerator::sgmt_initial_guess_points(
                                          std::move(cpp_guess_points));
 }
 
-void DifferentialTrajectoryGenerator::pose_wpt(size_t index, double x, double y,
-                                               double heading) {
-  path_builder.pose_wpt(index, x, y, heading);
+void DifferentialTrajectoryGenerator::pose_wpt(size_t index, Pose2d pose) {
+  path_builder.pose_wpt(index, {pose.x, pose.y, pose.heading});
 }
 
-void DifferentialTrajectoryGenerator::translation_wpt(size_t index, double x,
-                                                      double y,
+void DifferentialTrajectoryGenerator::translation_wpt(size_t index,
+                                                      Translation2d translation,
                                                       double heading_guess) {
-  path_builder.translation_wpt(index, x, y, heading_guess);
+  path_builder.translation_wpt(index, {translation.x, translation.y},
+                               heading_guess);
 }
 
-void DifferentialTrajectoryGenerator::empty_wpt(size_t index, double x_guess,
-                                                double y_guess,
-                                                double heading_guess) {
-  path_builder.empty_wpt(index, {x_guess, y_guess, heading_guess});
+void DifferentialTrajectoryGenerator::empty_wpt(size_t index,
+                                                Pose2d pose_guess) {
+  path_builder.empty_wpt(index,
+                         {pose_guess.x, pose_guess.y, pose_guess.heading});
 }
 
 void DifferentialTrajectoryGenerator::wpt_linear_velocity_direction(
@@ -347,48 +333,40 @@ void DifferentialTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
 }
 
 void DifferentialTrajectoryGenerator::wpt_point_at(size_t index,
-                                                   double field_point_x,
-                                                   double field_point_y,
+                                                   Translation2d field_point,
                                                    double heading_tolerance,
                                                    bool flip) {
-  path_builder.wpt_point_at(index, {field_point_x, field_point_y},
+  path_builder.wpt_point_at(index, {field_point.x, field_point.y},
                             heading_tolerance, flip);
 }
 
 void DifferentialTrajectoryGenerator::wpt_keep_in_circle(size_t index,
-                                                         double center_x,
-                                                         double center_y,
+                                                         Translation2d center,
                                                          double radius) {
-  path_builder.wpt_keep_in_circle(index, {center_x, center_y}, radius);
+  path_builder.wpt_keep_in_circle(index, {center.x, center.y}, radius);
 }
 
 void DifferentialTrajectoryGenerator::wpt_keep_in_polygon(
-    size_t index, rust::Vec<double> field_points_x,
-    rust::Vec<double> field_points_y) {
-  if (field_points_x.size() != field_points_y.size()) {
-    return;
+    size_t index, rust::Vec<Translation2d> field_points) {
+  std::vector<trajopt::Translation2d> cpp_field_points;
+  for (const auto& field_point : field_points) {
+    cpp_field_points.emplace_back(field_point.x, field_point.y);
   }
-
-  std::vector<trajopt::Translation2d> field_points;
-  for (size_t i = 0; i < field_points_x.size(); ++i) {
-    field_points.emplace_back(field_points_x[i], field_points_y[i]);
-  }
-  path_builder.wpt_keep_in_polygon(index, field_points);
+  path_builder.wpt_keep_in_polygon(index, cpp_field_points);
 }
 
 void DifferentialTrajectoryGenerator::wpt_keep_in_lane(
-    size_t index, double center_line_start_x, double center_line_start_y,
-    double center_line_end_x, double center_line_end_y, double tolerance) {
+    size_t index, Translation2d center_line_start,
+    Translation2d center_line_end, double tolerance) {
   path_builder.wpt_keep_in_lane(
-      index, {center_line_start_x, center_line_start_y},
-      {center_line_end_x, center_line_end_y}, tolerance);
+      index, {center_line_start.x, center_line_start.y},
+      {center_line_end.x, center_line_end.y}, tolerance);
 }
 
 void DifferentialTrajectoryGenerator::wpt_keep_out_circle(size_t index,
-                                                          double center_x,
-                                                          double center_y,
+                                                          Translation2d center,
                                                           double radius) {
-  path_builder.wpt_keep_out_circle(index, {center_x, center_y}, radius);
+  path_builder.wpt_keep_out_circle(index, {center.x, center.y}, radius);
 }
 
 void DifferentialTrajectoryGenerator::sgmt_linear_velocity_direction(
@@ -416,42 +394,34 @@ void DifferentialTrajectoryGenerator::sgmt_linear_acceleration_max_magnitude(
 
 void DifferentialTrajectoryGenerator::sgmt_keep_in_circle(size_t from_index,
                                                           size_t to_index,
-                                                          double center_x,
-                                                          double center_y,
+                                                          Translation2d center,
                                                           double radius) {
-  path_builder.sgmt_keep_in_circle(from_index, to_index, {center_x, center_y},
+  path_builder.sgmt_keep_in_circle(from_index, to_index, {center.x, center.y},
                                    radius);
 }
 
 void DifferentialTrajectoryGenerator::sgmt_keep_in_polygon(
-    size_t from_index, size_t to_index, rust::Vec<double> field_points_x,
-    rust::Vec<double> field_points_y) {
-  if (field_points_x.size() != field_points_y.size()) {
-    return;
+    size_t from_index, size_t to_index, rust::Vec<Translation2d> field_points) {
+  std::vector<trajopt::Translation2d> cpp_field_points;
+  for (const auto& field_point : field_points) {
+    cpp_field_points.emplace_back(field_point.x, field_point.y);
   }
-
-  std::vector<trajopt::Translation2d> field_points;
-  for (size_t i = 0; i < field_points_x.size(); ++i) {
-    field_points.emplace_back(field_points_x[i], field_points_y[i]);
-  }
-  path_builder.sgmt_keep_in_polygon(from_index, to_index, field_points);
+  path_builder.sgmt_keep_in_polygon(from_index, to_index, cpp_field_points);
 }
 
 void DifferentialTrajectoryGenerator::sgmt_keep_in_lane(
-    size_t from_index, size_t to_index, double center_line_start_x,
-    double center_line_start_y, double center_line_end_x,
-    double center_line_end_y, double tolerance) {
+    size_t from_index, size_t to_index, Translation2d center_line_start,
+    Translation2d center_line_end, double tolerance) {
   path_builder.sgmt_keep_in_lane(
-      from_index, to_index, {center_line_start_x, center_line_start_y},
-      {center_line_end_x, center_line_end_y}, tolerance);
+      from_index, to_index, {center_line_start.x, center_line_start.y},
+      {center_line_end.x, center_line_end.y}, tolerance);
 }
 
 void DifferentialTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,
                                                            size_t to_index,
-                                                           double center_x,
-                                                           double center_y,
+                                                           Translation2d center,
                                                            double radius) {
-  path_builder.sgmt_keep_out_circle(from_index, to_index, {center_x, center_y},
+  path_builder.sgmt_keep_out_circle(from_index, to_index, {center.x, center.y},
                                     radius);
 }
 
