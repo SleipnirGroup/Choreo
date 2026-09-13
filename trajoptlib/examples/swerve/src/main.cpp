@@ -37,8 +37,8 @@ int main() {
   {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(swerve_drivetrain);
-    path.pose_wpt(0, 0.0, 0.0, 0.0);
-    path.pose_wpt(1, 1.0, 0.0, 0.0);
+    path.pose_wpt(0, {0.0, 0.0, 0.0});
+    path.pose_wpt(1, {1.0, 0.0, 0.0});
     path.wpt_linear_velocity_max_magnitude(0, 0.0);
     path.wpt_linear_velocity_max_magnitude(1, 0.0);
     path.set_control_interval_counts({40});
@@ -54,8 +54,8 @@ int main() {
   {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(swerve_drivetrain);
-    path.pose_wpt(0, 1.0, 1.0, -std::numbers::pi / 2);
-    path.pose_wpt(1, 2.0, 0.0, 0.0);
+    path.pose_wpt(0, {1.0, 1.0, -std::numbers::pi / 2});
+    path.pose_wpt(1, {2.0, 0.0, 0.0});
     path.wpt_linear_velocity_max_magnitude(0, 0.0);
     path.wpt_linear_velocity_max_magnitude(1, 0.0);
     path.set_control_interval_counts({40});
@@ -71,9 +71,9 @@ int main() {
   {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(swerve_drivetrain);
-    path.pose_wpt(0, 0.0, 0.0, std::numbers::pi / 2);
-    path.pose_wpt(1, 1.0, 1.0, 0.0);
-    path.pose_wpt(2, 2.0, 0.0, std::numbers::pi / 2);
+    path.pose_wpt(0, {0.0, 0.0, std::numbers::pi / 2});
+    path.pose_wpt(1, {1.0, 1.0, 0.0});
+    path.pose_wpt(2, {2.0, 0.0, std::numbers::pi / 2});
     path.wpt_linear_velocity_max_magnitude(0, 0.0);
     path.wpt_linear_velocity_max_magnitude(1, 0.0);
     path.set_control_interval_counts({40, 40});
@@ -89,8 +89,8 @@ int main() {
   {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(swerve_drivetrain);
-    path.pose_wpt(0, 0.0, 0.0, 0.0);
-    path.pose_wpt(1, 0.0, 1.0, 0.0);
+    path.pose_wpt(0, {0.0, 0.0, 0.0});
+    path.pose_wpt(1, {0.0, 1.0, 0.0});
     path.wpt_linear_velocity_max_magnitude(0, 0.0);
     path.set_control_interval_counts({40});
 
@@ -106,10 +106,10 @@ int main() {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(swerve_drivetrain);
     path.set_bumpers(0.65, 0.65, 0.65, 0.65);
-    path.pose_wpt(0, 0.0, 0.0, 0.0);
+    path.pose_wpt(0, {0.0, 0.0, 0.0});
     path.sgmt_keep_out_circle(0, 1, {0.5, 0.5}, 0.1);
 
-    path.pose_wpt(1, 1.0, 0.0, 0.0);
+    path.pose_wpt(1, {1.0, 0.0, 0.0});
     path.wpt_linear_velocity_max_magnitude(0, 0.0);
     path.wpt_linear_velocity_max_magnitude(1, 0.0);
     path.set_control_interval_counts({40});
@@ -127,24 +127,24 @@ int main() {
     path.set_drivetrain(swerve_drivetrain);
 
     // Starting position
-    path.pose_wpt(0, 0.0, 0.0, 0.0);
+    path.pose_wpt(0, {0.0, 0.0, 0.0});
 
     // Align towards the station one meter behind
-    path.pose_wpt(1, 1.0, 1.0, std::numbers::pi / 2);
+    path.pose_wpt(1, {1.0, 1.0, std::numbers::pi / 2});
     path.wpt_angular_velocity_max_magnitude(1, 0.0);
     path.wpt_linear_velocity_direction(1, std::numbers::pi / 2);
 
     // Go up to the station. In practice, the optimizer will still end up
     // aligning the heading without the pose constraint since it's most optimal.
-    path.translation_wpt(2, 1.0, 2.0);
+    path.translation_wpt(2, {1.0, 2.0});
 
     // Realign behind the station
-    path.pose_wpt(3, 1.0, 1.0, std::numbers::pi / 2);
+    path.pose_wpt(3, {1.0, 1.0, std::numbers::pi / 2});
     path.wpt_angular_velocity_max_magnitude(3, 0.0);
     path.wpt_linear_velocity_direction(3, std::numbers::pi / 2);
 
     // Ending position
-    path.pose_wpt(4, 2.0, 0.0, std::numbers::pi);
+    path.pose_wpt(4, {2.0, 0.0, std::numbers::pi});
 
     path.wpt_linear_velocity_max_magnitude(0, 0.0);
     path.wpt_linear_velocity_max_magnitude(1, 0.0);

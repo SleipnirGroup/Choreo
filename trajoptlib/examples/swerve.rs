@@ -1,4 +1,4 @@
-use trajoptlib::{SwerveDrivetrain, SwerveTrajectoryGenerator, Translation2d};
+use trajoptlib::{Pose2d, SwerveDrivetrain, SwerveTrajectoryGenerator, Translation2d};
 
 fn main() {
     let drivetrain = SwerveDrivetrain {
@@ -29,12 +29,26 @@ fn main() {
     generator.set_drivetrain(&drivetrain);
     generator.set_bumpers(0.65, 0.65, 0.65, 0.65);
 
-    generator.pose_wpt(0, 0.0, 0.0, 0.0);
-    generator.pose_wpt(1, 1.0, 0.0, 0.0);
+    generator.pose_wpt(
+        0,
+        Pose2d {
+            x: 0.0,
+            y: 0.0,
+            heading: 0.0,
+        },
+    );
+    generator.pose_wpt(
+        1,
+        Pose2d {
+            x: 1.0,
+            y: 0.0,
+            heading: 0.0,
+        },
+    );
 
     generator.wpt_angular_velocity_max_magnitude(0, 0.0);
     generator.wpt_angular_velocity_max_magnitude(1, 0.0);
-    generator.sgmt_keep_out_circle(0, 1, 0.5, 0.1, 0.2);
+    generator.sgmt_keep_out_circle(0, 1, Translation2d { x: 0.5, y: 0.1 }, 0.2);
 
     generator.set_control_interval_counts(vec![40]);
 

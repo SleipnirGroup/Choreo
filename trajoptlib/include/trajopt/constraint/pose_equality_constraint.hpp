@@ -16,11 +16,8 @@ class TRAJOPT_DLLEXPORT PoseEqualityConstraint {
  public:
   /// Constructs a PoseEqualityConstraint.
   ///
-  /// @param x The robot's x position.
-  /// @param y The robot's y position.
-  /// @param heading The robot's heading.
-  PoseEqualityConstraint(double x, double y, double heading)
-      : m_pose{x, y, heading} {}
+  /// @param pose The robot's pose.
+  explicit PoseEqualityConstraint(const Pose2d& pose) : m_pose{pose} {}
 
   /// Applies this constraint to the given problem.
   ///
