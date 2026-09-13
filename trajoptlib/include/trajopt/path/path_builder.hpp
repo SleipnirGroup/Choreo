@@ -100,25 +100,22 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   /// the same pose.
   ///
   /// @param index The waypoint's index.
-  /// @param x The x.
-  /// @param y The y.
-  /// @param heading The heading.
-  void pose_wpt(size_t index, double x, double y, double heading) {
-    wpt_constraint(index, PoseEqualityConstraint{x, y, heading});
-    empty_wpt(index, {x, y, {heading}});
+  /// @param pose The pose.
+  void pose_wpt(size_t index, const Pose2d& pose) {
+    wpt_constraint(index, PoseEqualityConstraint{pose});
+    empty_wpt(index, pose);
   }
 
   /// Applies a translation constraint to a waypoint, and adds an initial guess
   /// point with the same translation.
   ///
   /// @param index The waypoint's index.
-  /// @param x The x.
-  /// @param y The y.
+  /// @param translation The translation.
   /// @param heading_guess The heading initial guess.
-  void translation_wpt(size_t index, double x, double y,
+  void translation_wpt(size_t index, const Translation2d& translation,
                        double heading_guess = 0.0) {
-    wpt_constraint(index, TranslationEqualityConstraint{x, y});
-    empty_wpt(index, {x, y, {heading_guess}});
+    wpt_constraint(index, TranslationEqualityConstraint{translation});
+    empty_wpt(index, {translation, {heading_guess}});
   }
 
   /// Sets a waypoint's pose initial guess.
@@ -167,11 +164,11 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   /// @param index The waypoint's index.
   /// @param field_point The field point to point at.
   /// @param heading_tolerance The heading tolerance.
-  /// @param point_away Whether to point away from the field point.
+  /// @param flip Whether to point away from the field point.
   void wpt_point_at(size_t index, const Translation2d& field_point,
-                    double heading_tolerance, bool point_away) {
-    wpt_constraint(
-        index, PointAtConstraint{field_point, heading_tolerance, point_away});
+                    double heading_tolerance, bool flip) {
+    wpt_constraint(index,
+                   PointAtConstraint{field_point, heading_tolerance, flip});
   }
 
   /// Applies a keep-in circle constraint to a waypoint.
@@ -305,13 +302,12 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   /// @param to_index The second waypoint's index.
   /// @param field_point The field point to point at.
   /// @param heading_tolerance The heading tolerance.
-  /// @param point_away Whether to face away from the field point.
+  /// @param flip Whether to face away from the field point.
   void sgmt_point_at(size_t from_index, size_t to_index,
                      Translation2d field_point, double heading_tolerance,
-                     bool point_away) {
-    sgmt_constraint(
-        from_index, to_index,
-        PointAtConstraint{field_point, heading_tolerance, point_away});
+                     bool flip) {
+    sgmt_constraint(from_index, to_index,
+                    PointAtConstraint{field_point, heading_tolerance, flip});
   }
 
   /// Applies a keep-in circle constraint between two waypoints.

@@ -1,4 +1,4 @@
-use trajoptlib::Pose2d;
+use trajoptlib::{Pose2d, Translation2d};
 
 use crate::spec::trajectory::Waypoint;
 
@@ -43,11 +43,29 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
                 }
                 guess_points_after_waypoint.clear();
                 if wpt.fix_heading && wpt.fix_translation {
-                    generator.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.pose_wpt(
+                        wpt_cnt,
+                        Pose2d {
+                            x: wpt.x,
+                            y: wpt.y,
+                            heading: wpt.heading,
+                        },
+                    );
                 } else if wpt.fix_translation {
-                    generator.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.translation_wpt(
+                        wpt_cnt,
+                        Translation2d { x: wpt.x, y: wpt.y },
+                        wpt.heading,
+                    );
                 } else {
-                    generator.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.empty_wpt(
+                        wpt_cnt,
+                        Pose2d {
+                            x: wpt.x,
+                            y: wpt.y,
+                            heading: wpt.heading,
+                        },
+                    );
                 }
                 wpt_cnt += 1;
                 if i != waypoints.len() - 1 {
@@ -92,11 +110,29 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
                 }
                 guess_points_after_waypoint.clear();
                 if wpt.fix_heading && wpt.fix_translation {
-                    generator.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.pose_wpt(
+                        wpt_cnt,
+                        Pose2d {
+                            x: wpt.x,
+                            y: wpt.y,
+                            heading: wpt.heading,
+                        },
+                    );
                 } else if wpt.fix_translation {
-                    generator.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.translation_wpt(
+                        wpt_cnt,
+                        Translation2d { x: wpt.x, y: wpt.y },
+                        wpt.heading,
+                    );
                 } else {
-                    generator.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                    generator.empty_wpt(
+                        wpt_cnt,
+                        Pose2d {
+                            x: wpt.x,
+                            y: wpt.y,
+                            heading: wpt.heading,
+                        },
+                    );
                 }
                 wpt_cnt += 1;
                 if i != waypoints.len() - 1 {

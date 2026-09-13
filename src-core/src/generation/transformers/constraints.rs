@@ -4,6 +4,7 @@ use super::{
     DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
     SwerveGenerationTransformer,
 };
+use trajoptlib::Translation2d;
 
 fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
     let mut to_subtract: usize = 0;
@@ -108,8 +109,10 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     tolerance,
                     flip,
                 } => match to_opt {
-                    None => generator.wpt_point_at(from, x, y, tolerance, flip),
-                    Some(to) => generator.sgmt_point_at(from, to, x, y, tolerance, flip),
+                    None => generator.wpt_point_at(from, Translation2d { x, y }, tolerance, flip),
+                    Some(to) => {
+                        generator.sgmt_point_at(from, to, Translation2d { x, y }, tolerance, flip)
+                    }
                 },
                 ConstraintData::MaxVelocity { max } => match to_opt {
                     None => generator.wpt_linear_velocity_max_magnitude(from, max),
@@ -130,15 +133,19 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     }
                 }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
-                    None => generator.wpt_keep_in_circle(from, x, y, r),
-                    Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
+                    None => generator.wpt_keep_in_circle(from, Translation2d { x, y }, r),
+                    Some(to) => generator.sgmt_keep_in_circle(from, to, Translation2d { x, y }, r),
                 },
                 ConstraintData::KeepInRectangle { x, y, w, h } => {
-                    let xs = vec![x, x + w, x + w, x];
-                    let ys = vec![y, y, y + h, y + h];
+                    let field_points = vec![
+                        Translation2d { x, y },
+                        Translation2d { x: x + w, y },
+                        Translation2d { x: x + w, y: y + h },
+                        Translation2d { x, y: y + h },
+                    ];
                     match to_opt {
-                        None => generator.wpt_keep_in_polygon(from, xs, ys),
-                        Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
+                        None => generator.wpt_keep_in_polygon(from, field_points),
+                        Some(to) => generator.sgmt_keep_in_polygon(from, to, field_points),
                     }
                 }
                 ConstraintData::KeepInLane { tolerance } => {
@@ -147,13 +154,23 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         && let Some(wpt_to) = self.waypoint_idx.get(idx_to)
                     {
                         generator.sgmt_keep_in_lane(
-                            from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y, tolerance,
+                            from,
+                            idx_to,
+                            Translation2d {
+                                x: wpt_from.x,
+                                y: wpt_from.y,
+                            },
+                            Translation2d {
+                                x: wpt_to.x,
+                                y: wpt_to.y,
+                            },
+                            tolerance,
                         );
                     }
                 }
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
-                    None => generator.wpt_keep_out_circle(from, x, y, r),
-                    Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
+                    None => generator.wpt_keep_out_circle(from, Translation2d { x, y }, r),
+                    Some(to) => generator.sgmt_keep_out_circle(from, to, Translation2d { x, y }, r),
                 },
             };
         }
@@ -177,7 +194,7 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     flip,
                 } => {
                     if to_opt.is_none() {
-                        generator.wpt_point_at(from, x, y, tolerance, flip)
+                        generator.wpt_point_at(from, Translation2d { x, y }, tolerance, flip)
                     }
                 }
                 ConstraintData::MaxVelocity { max } => match to_opt {
@@ -199,15 +216,19 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     }
                 }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
-                    None => generator.wpt_keep_in_circle(from, x, y, r),
-                    Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
+                    None => generator.wpt_keep_in_circle(from, Translation2d { x, y }, r),
+                    Some(to) => generator.sgmt_keep_in_circle(from, to, Translation2d { x, y }, r),
                 },
                 ConstraintData::KeepInRectangle { x, y, w, h } => {
-                    let xs = vec![x, x + w, x + w, x];
-                    let ys = vec![y, y, y + h, y + h];
+                    let field_points = vec![
+                        Translation2d { x, y },
+                        Translation2d { x: x + w, y },
+                        Translation2d { x: x + w, y: y + h },
+                        Translation2d { x, y: y + h },
+                    ];
                     match to_opt {
-                        None => generator.wpt_keep_in_polygon(from, xs, ys),
-                        Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
+                        None => generator.wpt_keep_in_polygon(from, field_points),
+                        Some(to) => generator.sgmt_keep_in_polygon(from, to, field_points),
                     }
                 }
                 ConstraintData::KeepInLane { tolerance } => {
@@ -216,13 +237,23 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         && let Some(wpt_to) = self.waypoint_idx.get(idx_to)
                     {
                         generator.sgmt_keep_in_lane(
-                            from, idx_to, wpt_from.x, wpt_from.y, wpt_to.x, wpt_to.y, tolerance,
+                            from,
+                            idx_to,
+                            Translation2d {
+                                x: wpt_from.x,
+                                y: wpt_from.y,
+                            },
+                            Translation2d {
+                                x: wpt_to.x,
+                                y: wpt_to.y,
+                            },
+                            tolerance,
                         );
                     }
                 }
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
-                    None => generator.wpt_keep_out_circle(from, x, y, r),
-                    Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
+                    None => generator.wpt_keep_out_circle(from, Translation2d { x, y }, r),
+                    Some(to) => generator.sgmt_keep_out_circle(from, to, Translation2d { x, y }, r),
                 },
             };
         }

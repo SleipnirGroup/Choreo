@@ -162,29 +162,16 @@ mod ffi {
 
         // Pose constraints
 
-        fn pose_wpt(
-            self: Pin<&mut SwerveTrajectoryGenerator>,
-            index: usize,
-            x: f64,
-            y: f64,
-            heading: f64,
-        );
+        fn pose_wpt(self: Pin<&mut SwerveTrajectoryGenerator>, index: usize, pose: Pose2d);
 
         fn translation_wpt(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
-            x: f64,
-            y: f64,
+            translation: Translation2d,
             heading_guess: f64,
         );
 
-        fn empty_wpt(
-            self: Pin<&mut SwerveTrajectoryGenerator>,
-            index: usize,
-            x_guess: f64,
-            y_guess: f64,
-            heading_guess: f64,
-        );
+        fn empty_wpt(self: Pin<&mut SwerveTrajectoryGenerator>, index: usize, pose_guess: Pose2d);
 
         // Segment initial guess points setter
 
@@ -223,42 +210,36 @@ mod ffi {
         fn wpt_point_at(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
-            field_point_x: f64,
-            field_point_y: f64,
+            field_point: Translation2d,
             heading_tolerance: f64,
-            point_away: bool,
+            flip: bool,
         );
 
         fn wpt_keep_in_circle(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
         fn wpt_keep_in_polygon(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
-            field_points_x: Vec<f64>,
-            field_points_y: Vec<f64>,
+            field_points: Vec<Translation2d>,
         );
 
         fn wpt_keep_in_lane(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
-            center_line_start_x: f64,
-            center_line_start_y: f64,
-            center_line_end_x: f64,
-            center_line_end_y: f64,
+            center_line_start: Translation2d,
+            center_line_end: Translation2d,
             tolerance: f64,
         );
 
         fn wpt_keep_out_circle(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
@@ -296,18 +277,16 @@ mod ffi {
             self: Pin<&mut SwerveTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            field_point_x: f64,
-            field_point_y: f64,
+            field_point: Translation2d,
             heading_tolerance: f64,
-            point_away: bool,
+            flip: bool,
         );
 
         fn sgmt_keep_in_circle(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
@@ -315,8 +294,7 @@ mod ffi {
             self: Pin<&mut SwerveTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            field_points_x: Vec<f64>,
-            field_points_y: Vec<f64>,
+            field_points: Vec<Translation2d>,
         );
 
         #[allow(clippy::too_many_arguments)]
@@ -324,10 +302,8 @@ mod ffi {
             self: Pin<&mut SwerveTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            center_line_start_x: f64,
-            center_line_start_y: f64,
-            center_line_end_x: f64,
-            center_line_end_y: f64,
+            center_line_start: Translation2d,
+            center_line_end: Translation2d,
             tolerance: f64,
         );
 
@@ -335,8 +311,7 @@ mod ffi {
             self: Pin<&mut SwerveTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
@@ -377,28 +352,19 @@ mod ffi {
 
         // Pose constraints
 
-        fn pose_wpt(
-            self: Pin<&mut DifferentialTrajectoryGenerator>,
-            index: usize,
-            x: f64,
-            y: f64,
-            heading: f64,
-        );
+        fn pose_wpt(self: Pin<&mut DifferentialTrajectoryGenerator>, index: usize, pose: Pose2d);
 
         fn translation_wpt(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            x: f64,
-            y: f64,
+            translation: Translation2d,
             heading_guess: f64,
         );
 
         fn empty_wpt(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            x_guess: f64,
-            y_guess: f64,
-            heading_guess: f64,
+            pose_guess: Pose2d,
         );
 
         // Segment initial guess points setter
@@ -438,42 +404,36 @@ mod ffi {
         fn wpt_point_at(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            field_point_x: f64,
-            field_point_y: f64,
+            field_point: Translation2d,
             heading_tolerance: f64,
-            point_away: bool,
+            flip: bool,
         );
 
         fn wpt_keep_in_circle(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
         fn wpt_keep_in_polygon(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            field_points_x: Vec<f64>,
-            field_points_y: Vec<f64>,
+            field_points: Vec<Translation2d>,
         );
 
         fn wpt_keep_in_lane(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            center_line_start_x: f64,
-            center_line_start_y: f64,
-            center_line_end_x: f64,
-            center_line_end_y: f64,
+            center_line_start: Translation2d,
+            center_line_end: Translation2d,
             tolerance: f64,
         );
 
         fn wpt_keep_out_circle(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
@@ -511,8 +471,7 @@ mod ffi {
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
@@ -520,8 +479,7 @@ mod ffi {
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            field_points_x: Vec<f64>,
-            field_points_y: Vec<f64>,
+            field_points: Vec<Translation2d>,
         );
 
         #[allow(clippy::too_many_arguments)]
@@ -529,10 +487,8 @@ mod ffi {
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            center_line_start_x: f64,
-            center_line_start_y: f64,
-            center_line_end_x: f64,
-            center_line_end_y: f64,
+            center_line_start: Translation2d,
+            center_line_end: Translation2d,
             tolerance: f64,
         );
 
@@ -540,8 +496,7 @@ mod ffi {
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             from_index: usize,
             to_index: usize,
-            center_x: f64,
-            center_y: f64,
+            center: Translation2d,
             radius: f64,
         );
 
@@ -625,32 +580,27 @@ impl SwerveTrajectoryGenerator {
     /// the same pose.
     ///
     /// * `index` - The waypoint's index.
-    /// * `x` - The x.
-    /// * `y` - The y.
-    /// * `heading` - The heading.
-    pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
-        crate::ffi::SwerveTrajectoryGenerator::pose_wpt(
-            self.generator.pin_mut(),
-            index,
-            x,
-            y,
-            heading,
-        );
+    /// * `pose` - The pose.
+    pub fn pose_wpt(&mut self, index: usize, pose: Pose2d) {
+        crate::ffi::SwerveTrajectoryGenerator::pose_wpt(self.generator.pin_mut(), index, pose);
     }
 
     /// Applies a translation constraint to a waypoint, and adds an initial
     /// guess point with the same translation.
     ///
     /// * `index` - The waypoint's index.
-    /// * `x` - The x.
-    /// * `y` - The y.
+    /// * `translation` - The translation.
     /// * `heading_guess` - The heading initial guess.
-    pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
+    pub fn translation_wpt(
+        &mut self,
+        index: usize,
+        translation: Translation2d,
+        heading_guess: f64,
+    ) {
         crate::ffi::SwerveTrajectoryGenerator::translation_wpt(
             self.generator.pin_mut(),
             index,
-            x,
-            y,
+            translation,
             heading_guess,
         );
     }
@@ -658,16 +608,12 @@ impl SwerveTrajectoryGenerator {
     /// Sets a waypoint's pose initial guess.
     ///
     /// * `index` - The waypoint's index.
-    /// * `x_guess` - The x initial guess.
-    /// * `y_guess` - The y initial guess.
-    /// * `heading_guess` - The heading initial guess.
-    pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
+    /// * `pose_guess` - The pose initial guess.
+    pub fn empty_wpt(&mut self, index: usize, pose_guess: Pose2d) {
         crate::ffi::SwerveTrajectoryGenerator::empty_wpt(
             self.generator.pin_mut(),
             index,
-            x_guess,
-            y_guess,
-            heading_guess,
+            pose_guess,
         );
     }
 
@@ -748,25 +694,22 @@ impl SwerveTrajectoryGenerator {
     /// Applies a point-at constraint to a waypoint.
     ///
     /// * `index` - The waypoint's index.
-    /// * `field_point_x` - The x coordinate of the field point to point at.
-    /// * `field_point_y` - The y coordinate of the field point to point at.
+    /// * `field_point` - The field point to point at.
     /// * `heading_tolerance` - The heading tolerance.
-    /// * `point_away` - Whether to point away from the field point.
+    /// * `flip` - Whether to point away from the field point.
     pub fn wpt_point_at(
         &mut self,
         index: usize,
-        field_point_x: f64,
-        field_point_y: f64,
+        field_point: Translation2d,
         heading_tolerance: f64,
-        point_away: bool,
+        flip: bool,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_point_at(
             self.generator.pin_mut(),
             index,
-            field_point_x,
-            field_point_y,
+            field_point,
             heading_tolerance,
-            point_away,
+            flip,
         )
     }
 
@@ -775,15 +718,13 @@ impl SwerveTrajectoryGenerator {
     /// Applies to the robot bumpers.
     ///
     /// * `index` - The waypoint's index.
-    /// * `center_x` - The x coordinate of the circle's center.
-    /// * `center_y` - The y coordinate of the circle's center.
+    /// * `center` - The circle's center.
     /// * `radius` - The circle's radius.
-    pub fn wpt_keep_in_circle(&mut self, index: usize, center_x: f64, center_y: f64, radius: f64) {
+    pub fn wpt_keep_in_circle(&mut self, index: usize, center: Translation2d, radius: f64) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_keep_in_circle(
             self.generator.pin_mut(),
             index,
-            center_x,
-            center_y,
+            center,
             radius,
         )
     }
@@ -793,21 +734,13 @@ impl SwerveTrajectoryGenerator {
     /// Applies to the robot bumpers.
     ///
     /// * `index` - The waypoint's index.
-    /// * `field_points_x` - The x coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
-    /// * `field_points_y` - The x coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
-    pub fn wpt_keep_in_polygon(
-        &mut self,
-        index: usize,
-        field_points_x: Vec<f64>,
-        field_points_y: Vec<f64>,
-    ) {
+    /// * `field_points` - The points defining the keep-in polygon (must wind
+    ///   counterclockwise).
+    pub fn wpt_keep_in_polygon(&mut self, index: usize, field_points: Vec<Translation2d>) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_keep_in_polygon(
             self.generator.pin_mut(),
             index,
-            field_points_x,
-            field_points_y,
+            field_points,
         );
     }
 
@@ -816,29 +749,21 @@ impl SwerveTrajectoryGenerator {
     /// Applies to the robot center.
     ///
     /// * `index` - The waypoint's index.
-    /// * `center_line_start_x` - The x coordinate of the center line's start
-    ///   point.
-    /// * `center_line_start_y` - The y coordinate of the center line's start
-    ///   point.
-    /// * `center_line_end_x` - The x coordinate of the center line's end point.
-    /// * `center_line_end_y` - The x coordinate of the center line's end point.
+    /// * `center_line_start` - The center line's start point.
+    /// * `center_line_end` - The center line's end point.
     /// * `tolerance` - The distance from the center line to each lane edge.
     pub fn wpt_keep_in_lane(
         &mut self,
         index: usize,
-        center_line_start_x: f64,
-        center_line_start_y: f64,
-        center_line_end_x: f64,
-        center_line_end_y: f64,
+        center_line_start: Translation2d,
+        center_line_end: Translation2d,
         tolerance: f64,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_keep_in_lane(
             self.generator.pin_mut(),
             index,
-            center_line_start_x,
-            center_line_start_y,
-            center_line_end_x,
-            center_line_end_y,
+            center_line_start,
+            center_line_end,
             tolerance,
         );
     }
@@ -848,15 +773,13 @@ impl SwerveTrajectoryGenerator {
     /// Applies to the robot bumpers.
     ///
     /// * `index` - The waypoint's index.
-    /// * `center_x` - The x coordinate of the circle's center.
-    /// * `center_y` - The y coordinate of the circle's center.
+    /// * `center` - The circle's center.
     /// * `radius` - The circle's radius.
-    pub fn wpt_keep_out_circle(&mut self, index: usize, center_x: f64, center_y: f64, radius: f64) {
+    pub fn wpt_keep_out_circle(&mut self, index: usize, center: Translation2d, radius: f64) {
         crate::ffi::SwerveTrajectoryGenerator::wpt_keep_out_circle(
             self.generator.pin_mut(),
             index,
-            center_x,
-            center_y,
+            center,
             radius,
         )
     }
@@ -946,27 +869,24 @@ impl SwerveTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `field_point_x` - The x coordinate of the field point to point at.
-    /// * `field_point_y` - The y coordinate of the field point to point at.
+    /// * `field_point` - The field point to point at.
     /// * `heading_tolerance` - The heading tolerance.
-    /// * `point_away` - Whether to face away from the field point.
+    /// * `flip` - Whether to face away from the field point.
     pub fn sgmt_point_at(
         &mut self,
         from_index: usize,
         to_index: usize,
-        field_point_x: f64,
-        field_point_y: f64,
+        field_point: Translation2d,
         heading_tolerance: f64,
-        point_away: bool,
+        flip: bool,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::sgmt_point_at(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            field_point_x,
-            field_point_y,
+            field_point,
             heading_tolerance,
-            point_away,
+            flip,
         )
     }
 
@@ -982,16 +902,14 @@ impl SwerveTrajectoryGenerator {
         &mut self,
         from_index: usize,
         to_index: usize,
-        center_x: f64,
-        center_y: f64,
+        center: Translation2d,
         radius: f64,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::sgmt_keep_in_circle(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            center_x,
-            center_y,
+            center,
             radius,
         )
     }
@@ -1002,23 +920,19 @@ impl SwerveTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `field_points_x` - The x coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
-    /// * `field_points_y` - The y coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
+    /// * `field_points` - The points defining the keep-in polygon (must wind
+    ///   counterclockwise).
     pub fn sgmt_keep_in_polygon(
         &mut self,
         from_index: usize,
         to_index: usize,
-        field_points_x: Vec<f64>,
-        field_points_y: Vec<f64>,
+        field_points: Vec<Translation2d>,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::sgmt_keep_in_polygon(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            field_points_x,
-            field_points_y,
+            field_points,
         );
     }
 
@@ -1028,32 +942,24 @@ impl SwerveTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `center_line_start_x` - The x coordinate of the center line's start
-    ///   point.
-    /// * `center_line_start_y` - The y coordinate of the center line's start
-    ///   point.
-    /// * `center_line_end_x` - The x coordinate of the center line's end point.
-    /// * `center_line_end_y` - The y coordinate of the center line's end point.
+    /// * `center_line_start` - The center line's start point.
+    /// * `center_line_end` - The center line's end point.
     /// * `tolerance` - The distance from the center line to each lane edge.
     #[allow(clippy::too_many_arguments)]
     pub fn sgmt_keep_in_lane(
         &mut self,
         from_index: usize,
         to_index: usize,
-        center_line_start_x: f64,
-        center_line_start_y: f64,
-        center_line_end_x: f64,
-        center_line_end_y: f64,
+        center_line_start: Translation2d,
+        center_line_end: Translation2d,
         tolerance: f64,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::sgmt_keep_in_lane(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            center_line_start_x,
-            center_line_start_y,
-            center_line_end_x,
-            center_line_end_y,
+            center_line_start,
+            center_line_end,
             tolerance,
         )
     }
@@ -1064,23 +970,20 @@ impl SwerveTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `center_x` - The x coordinate of the circle's center.
-    /// * `center_y` - The y coordinate of the circle's center.
+    /// * `center` - The circle's center.
     /// * `radius` - The circle's radius.
     pub fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
-        center_x: f64,
-        center_y: f64,
+        center: Translation2d,
         radius: f64,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::sgmt_keep_out_circle(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            center_x,
-            center_y,
+            center,
             radius,
         );
     }
@@ -1188,16 +1091,12 @@ impl DifferentialTrajectoryGenerator {
     /// the same pose.
     ///
     /// * `index` - The waypoint's index.
-    /// * `x` - The x.
-    /// * `y` - The y.
-    /// * `heading` - The heading.
-    pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+    /// * `pose` - The pose.
+    pub fn pose_wpt(&mut self, index: usize, pose: Pose2d) {
         crate::ffi::DifferentialTrajectoryGenerator::pose_wpt(
             self.generator.pin_mut(),
             index,
-            x,
-            y,
-            heading,
+            pose,
         );
     }
 
@@ -1205,15 +1104,18 @@ impl DifferentialTrajectoryGenerator {
     /// guess point with the same translation.
     ///
     /// * `index` - The waypoint's index.
-    /// * `x` - The x.
-    /// * `y` - The y.
+    /// * `translation` - The translation.
     /// * `heading_guess` - The heading initial guess.
-    pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
+    pub fn translation_wpt(
+        &mut self,
+        index: usize,
+        translation: Translation2d,
+        heading_guess: f64,
+    ) {
         crate::ffi::DifferentialTrajectoryGenerator::translation_wpt(
             self.generator.pin_mut(),
             index,
-            x,
-            y,
+            translation,
             heading_guess,
         );
     }
@@ -1221,16 +1123,12 @@ impl DifferentialTrajectoryGenerator {
     /// Sets a waypoint's pose initial guess.
     ///
     /// * `index` - The waypoint's index.
-    /// * `x_guess` - The x initial guess.
-    /// * `y_guess` - The y initial guess.
-    /// * `heading_guess` - The heading initial guess.
-    pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
+    /// * `pose_guess` - The pose initial guess.
+    pub fn empty_wpt(&mut self, index: usize, pose_guess: Pose2d) {
         crate::ffi::DifferentialTrajectoryGenerator::empty_wpt(
             self.generator.pin_mut(),
             index,
-            x_guess,
-            y_guess,
-            heading_guess,
+            pose_guess,
         );
     }
 
@@ -1311,25 +1209,22 @@ impl DifferentialTrajectoryGenerator {
     /// Applies a point-at constraint to a waypoint.
     ///
     /// * `index` - The waypoint's index.
-    /// * `field_point_x` - The x coordinate of the field point to point at.
-    /// * `field_point_y` - The y coordinate of the field point to point at.
+    /// * `field_point` - The field point to point at.
     /// * `heading_tolerance` - The heading tolerance.
-    /// * `point_away` - Whether to point away from the field point.
+    /// * `flip` - Whether to point away from the field point.
     pub fn wpt_point_at(
         &mut self,
         index: usize,
-        field_point_x: f64,
-        field_point_y: f64,
+        field_point: Translation2d,
         heading_tolerance: f64,
-        point_away: bool,
+        flip: bool,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_point_at(
             self.generator.pin_mut(),
             index,
-            field_point_x,
-            field_point_y,
+            field_point,
             heading_tolerance,
-            point_away,
+            flip,
         )
     }
 
@@ -1338,15 +1233,13 @@ impl DifferentialTrajectoryGenerator {
     /// Applies to the robot bumpers.
     ///
     /// * `index` - The waypoint's index.
-    /// * `center_x` - The x coordinate of the circle's center.
-    /// * `center_y` - The y coordinate of the circle's center.
+    /// * `center` - The circle's center.
     /// * `radius` - The circle's radius.
-    pub fn wpt_keep_in_circle(&mut self, index: usize, center_x: f64, center_y: f64, radius: f64) {
+    pub fn wpt_keep_in_circle(&mut self, index: usize, center: Translation2d, radius: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_keep_in_circle(
             self.generator.pin_mut(),
             index,
-            center_x,
-            center_y,
+            center,
             radius,
         )
     }
@@ -1356,21 +1249,13 @@ impl DifferentialTrajectoryGenerator {
     /// Applies to the robot bumpers.
     ///
     /// * `index` - The waypoint's index.
-    /// * `field_points_x` - The x coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
-    /// * `field_points_y` - The x coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
-    pub fn wpt_keep_in_polygon(
-        &mut self,
-        index: usize,
-        field_points_x: Vec<f64>,
-        field_points_y: Vec<f64>,
-    ) {
+    /// * `field_points` - The points defining the keep-in polygon (must wind
+    ///   counterclockwise).
+    pub fn wpt_keep_in_polygon(&mut self, index: usize, field_points: Vec<Translation2d>) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_keep_in_polygon(
             self.generator.pin_mut(),
             index,
-            field_points_x,
-            field_points_y,
+            field_points,
         );
     }
 
@@ -1379,29 +1264,21 @@ impl DifferentialTrajectoryGenerator {
     /// Applies to the robot center.
     ///
     /// * `index` - The waypoint's index.
-    /// * `center_line_start_x` - The x coordinate of the center line's start
-    ///   point.
-    /// * `center_line_start_y` - The y coordinate of the center line's start
-    ///   point.
-    /// * `center_line_end_x` - The x coordinate of the center line's end point.
-    /// * `center_line_end_y` - The x coordinate of the center line's end point.
+    /// * `center_line_start` - The center line's start point.
+    /// * `center_line_end` - The center line's end point.
     /// * `tolerance` - The distance from the center line to each lane edge.
     pub fn wpt_keep_in_lane(
         &mut self,
         index: usize,
-        center_line_start_x: f64,
-        center_line_start_y: f64,
-        center_line_end_x: f64,
-        center_line_end_y: f64,
+        center_line_start: Translation2d,
+        center_line_end: Translation2d,
         tolerance: f64,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_keep_in_lane(
             self.generator.pin_mut(),
             index,
-            center_line_start_x,
-            center_line_start_y,
-            center_line_end_x,
-            center_line_end_y,
+            center_line_start,
+            center_line_end,
             tolerance,
         );
     }
@@ -1411,15 +1288,13 @@ impl DifferentialTrajectoryGenerator {
     /// Applies to the robot bumpers.
     ///
     /// * `index` - The waypoint's index.
-    /// * `center_x` - The x coordinate of the circle's center.
-    /// * `center_y` - The y coordinate of the circle's center.
+    /// * `center` - The circle's center.
     /// * `radius` - The circle's radius.
-    pub fn wpt_keep_out_circle(&mut self, index: usize, center_x: f64, center_y: f64, radius: f64) {
+    pub fn wpt_keep_out_circle(&mut self, index: usize, center: Translation2d, radius: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::wpt_keep_out_circle(
             self.generator.pin_mut(),
             index,
-            center_x,
-            center_y,
+            center,
             radius,
         )
     }
@@ -1517,16 +1392,14 @@ impl DifferentialTrajectoryGenerator {
         &mut self,
         from_index: usize,
         to_index: usize,
-        center_x: f64,
-        center_y: f64,
+        center: Translation2d,
         radius: f64,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::sgmt_keep_in_circle(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            center_x,
-            center_y,
+            center,
             radius,
         )
     }
@@ -1537,23 +1410,19 @@ impl DifferentialTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `field_points_x` - The x coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
-    /// * `field_points_y` - The y coordinates of the points defining the
-    ///   keep-in polygon (must wind counterclockwise).
+    /// * `field_points` - The points defining the keep-in polygon (must wind
+    ///   counterclockwise).
     pub fn sgmt_keep_in_polygon(
         &mut self,
         from_index: usize,
         to_index: usize,
-        field_points_x: Vec<f64>,
-        field_points_y: Vec<f64>,
+        field_points: Vec<Translation2d>,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::sgmt_keep_in_polygon(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            field_points_x,
-            field_points_y,
+            field_points,
         );
     }
 
@@ -1563,32 +1432,24 @@ impl DifferentialTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `center_line_start_x` - The x coordinate of the center line's start
-    ///   point.
-    /// * `center_line_start_y` - The y coordinate of the center line's start
-    ///   point.
-    /// * `center_line_end_x` - The x coordinate of the center line's end point.
-    /// * `center_line_end_y` - The y coordinate of the center line's end point.
+    /// * `center_line_start` - The center line's start point.
+    /// * `center_line_end` - The center line's end point.
     /// * `tolerance` - The distance from the center line to each lane edge.
     #[allow(clippy::too_many_arguments)]
     pub fn sgmt_keep_in_lane(
         &mut self,
         from_index: usize,
         to_index: usize,
-        center_line_start_x: f64,
-        center_line_start_y: f64,
-        center_line_end_x: f64,
-        center_line_end_y: f64,
+        center_line_start: Translation2d,
+        center_line_end: Translation2d,
         tolerance: f64,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::sgmt_keep_in_lane(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            center_line_start_x,
-            center_line_start_y,
-            center_line_end_x,
-            center_line_end_y,
+            center_line_start,
+            center_line_end,
             tolerance,
         )
     }
@@ -1599,23 +1460,20 @@ impl DifferentialTrajectoryGenerator {
     ///
     /// * `from_index` - The first waypoint's index.
     /// * `to_index` - The second waypoint's index.
-    /// * `center_x` - The x coordinate of the circle's center.
-    /// * `center_y` - The y coordinate of the circle's center.
+    /// * `center` - The circle's center.
     /// * `radius` - The circle's radius.
     pub fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
-        center_x: f64,
-        center_y: f64,
+        center: Translation2d,
         radius: f64,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::sgmt_keep_out_circle(
             self.generator.pin_mut(),
             from_index,
             to_index,
-            center_x,
-            center_y,
+            center,
             radius,
         );
     }

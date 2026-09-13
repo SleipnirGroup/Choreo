@@ -16,9 +16,9 @@ class TRAJOPT_DLLEXPORT TranslationEqualityConstraint {
  public:
   /// Constructs a TranslationEqualityConstraint.
   ///
-  /// @param x The robot's x position.
-  /// @param y The robot's y position.
-  TranslationEqualityConstraint(double x, double y) : m_translation{x, y} {}
+  /// @param translation The robot's translation.
+  explicit TranslationEqualityConstraint(const Translation2d& translation)
+      : m_translation{translation} {}
 
   /// Applies this constraint to the given problem.
   ///
