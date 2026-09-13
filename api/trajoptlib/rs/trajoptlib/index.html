@@ -1,0 +1,83 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="TrajoptLib"><title>trajoptlib - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-203241e4.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="trajoptlib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.100.0-nightly (809936eac 2026-09-12)" data-channel="nightly" data-search-js="search-b167f383.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-1814ead3.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate trajoptlib</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../trajoptlib/index.html">trajoptlib</a><span class="version">0.1.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#trajoptlib" title="TrajoptLib">TrajoptLib</a><ul><li><a href="#features" title="Features">Features</a></li><li><a href="#build" title="Build">Build</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>trajoptlib</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/trajoptlib/lib.rs.html#1-1683">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="trajoptlib"><a class="doc-anchor" href="#trajoptlib">§</a>TrajoptLib</h2>
+<p><img src="https://github.com/SleipnirGroup/Choreo/actions/workflows/trajoptlib.yml/badge.svg" alt="Build" /></p>
+<p>TrajoptLib is a library for generating time-optimal drivetrain trajectories subject to waypoint, kinematic, and dynamic constraints.</p>
+<h3 id="features"><a class="doc-anchor" href="#features">§</a>Features</h3>
+<ul>
+<li>Currently only supports swerve drives with arbitrary module configurations</li>
+<li>Position and velocity constraints at each waypoint</li>
+<li>Keep-out circle and polygons</li>
+<li>Custom physical constraints of robot</li>
+<li>Custom bumper shape</li>
+</ul>
+<h3 id="build"><a class="doc-anchor" href="#build">§</a>Build</h3><h4 id="dependencies"><a class="doc-anchor" href="#dependencies">§</a>Dependencies</h4>
+<ul>
+<li>C++23 compiler
+<ul>
+<li>On Windows 11 or greater, install <a href="https://visualstudio.microsoft.com/vs/community/">Visual Studio Community 2022</a> and select the C++ programming language during installation</li>
+<li>On Ubuntu 24.04 or greater, install GCC 14 via <code>sudo apt install g++-14</code></li>
+<li>On macOS 14 or greater, install the Xcode 15.3 command-line build tools via <code>xcode-select --install</code></li>
+</ul>
+</li>
+<li><a href="https://cmake.org/download/">CMake</a> 3.21 or greater
+<ul>
+<li>On Windows, install from the link above</li>
+<li>On Linux, install via <code>sudo apt install cmake</code></li>
+<li>On macOS, install via <code>brew install cmake</code></li>
+</ul>
+</li>
+<li><a href="https://www.rust-lang.org/">Rust</a> compiler</li>
+<li><a href="https://github.com/SleipnirGroup/Sleipnir">Sleipnir</a></li>
+<li><a href="https://github.com/catchorg/Catch2">Catch2</a> (tests only)</li>
+</ul>
+<p>Library dependencies which aren’t installed locally will be automatically downloaded and built by CMake.</p>
+<h4 id="c-library"><a class="doc-anchor" href="#c-library">§</a>C++ library</h4>
+<p>On Windows, open a <a href="https://learn.microsoft.com/en-us/visualstudio/ide/reference/command-prompt-powershell?view=vs-2022">Developer PowerShell</a>. On Linux or macOS, open a Bash shell.</p>
+<div class="example-wrap"><pre class="language-bash"><code># Clone the repository
+git clone git@github.com:SleipnirGroup/Choreo
+cd Choreo/trajoptlib
+
+# Configure
+cmake -B build -S .
+
+# Build
+cmake --build build
+
+# Test
+ctest --test-dir build --output-on-failure
+
+# Install
+cmake --install build --prefix pkgdir</code></pre></div>
+<p>The following build types can be specified via <code>-DCMAKE_BUILD_TYPE</code> during CMake configure:</p>
+<ul>
+<li>Debug
+<ul>
+<li>Optimizations off</li>
+<li>Debug symbols on</li>
+</ul>
+</li>
+<li>Release
+<ul>
+<li>Optimizations on</li>
+<li>Debug symbols off</li>
+</ul>
+</li>
+<li>RelWithDebInfo (default)
+<ul>
+<li>Release build type, but with debug info</li>
+</ul>
+</li>
+<li>MinSizeRel
+<ul>
+<li>Minimum size release build</li>
+</ul>
+</li>
+</ul>
+<h4 id="rust-library"><a class="doc-anchor" href="#rust-library">§</a>Rust library</h4>
+<p>On Windows, open a <a href="https://learn.microsoft.com/en-us/visualstudio/ide/reference/command-prompt-powershell?view=vs-2022">Developer PowerShell</a>. On Linux or macOS, open a Bash shell.</p>
+<div class="example-wrap"><pre class="language-bash"><code># Clone the repository
+git clone git@github.com:SleipnirGroup/Choreo
+cd Choreo/trajoptlib
+
+cargo build</code></pre></div></div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="error/index.html" title="mod trajoptlib::error">error</a></dt><dd>Solver error types.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.DifferentialDrivetrain.html" title="struct trajoptlib::DifferentialDrivetrain">Differential<wbr>Drivetrain</a></dt><dd>A differential drivetrain physical model.</dd><dt><a class="struct" href="struct.DifferentialTrajectory.html" title="struct trajoptlib::DifferentialTrajectory">Differential<wbr>Trajectory</a></dt><dd>Differential trajectory.</dd><dt><a class="struct" href="struct.DifferentialTrajectoryGenerator.html" title="struct trajoptlib::DifferentialTrajectoryGenerator">Differential<wbr>Trajectory<wbr>Generator</a></dt><dd>This trajectory generator class contains functions to generate
+time-optimal trajectories for differential drivetrain types.</dd><dt><a class="struct" href="struct.DifferentialTrajectorySample.html" title="struct trajoptlib::DifferentialTrajectorySample">Differential<wbr>Trajectory<wbr>Sample</a></dt><dd>Differential trajectory sample.</dd><dt><a class="struct" href="struct.Pose2d.html" title="struct trajoptlib::Pose2d">Pose2d</a></dt><dd>Represents a 2D pose with translation and rotation.</dd><dt><a class="struct" href="struct.SwerveDrivetrain.html" title="struct trajoptlib::SwerveDrivetrain">Swerve<wbr>Drivetrain</a></dt><dd>A swerve drivetrain physical model.</dd><dt><a class="struct" href="struct.SwerveTrajectory.html" title="struct trajoptlib::SwerveTrajectory">Swerve<wbr>Trajectory</a></dt><dd>Swerve trajectory.</dd><dt><a class="struct" href="struct.SwerveTrajectoryGenerator.html" title="struct trajoptlib::SwerveTrajectoryGenerator">Swerve<wbr>Trajectory<wbr>Generator</a></dt><dd>This trajectory generator class contains functions to generate
+time-optimal trajectories for several drivetrain types.</dd><dt><a class="struct" href="struct.SwerveTrajectorySample.html" title="struct trajoptlib::SwerveTrajectorySample">Swerve<wbr>Trajectory<wbr>Sample</a></dt><dd>Swerve trajectory sample.</dd><dt><a class="struct" href="struct.Translation2d.html" title="struct trajoptlib::Translation2d">Translation2d</a></dt><dd>Represents a translation in 2D space.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.cancel_all.html" title="fn trajoptlib::cancel_all">cancel_<wbr>all</a></dt><dd>Cancels all running generations.</dd></dl></section></div></main></body></html>

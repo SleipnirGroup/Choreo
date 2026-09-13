@@ -1,0 +1,88 @@
+/* Dropdown menus for navigation tabs, rendered by overrides/partials/tabs-item.html. */
+
+/* The tab bar clips its children so it can scroll horizontally; the flyout has
+   to be allowed out of both containers. */
+.md-tabs,
+.md-tabs__list {
+  overflow: visible;
+}
+
+.md-tabs__list {
+  contain: none;
+}
+
+.md-tabs__item--nested {
+  position: relative;
+}
+
+.md-tabs__link--nested {
+  cursor: pointer;
+}
+
+.md-tabs__caret {
+  display: flex;
+  transition: transform 0.25s;
+}
+
+[dir="ltr"] .md-tabs__caret {
+  margin-left: 0.2rem;
+}
+
+[dir="rtl"] .md-tabs__caret {
+  margin-right: 0.2rem;
+}
+
+[dir="ltr"] .md-tabs__link .md-tabs__caret svg {
+  margin-right: 0;
+}
+
+[dir="rtl"] .md-tabs__link .md-tabs__caret svg {
+  margin-left: 0;
+}
+
+.md-tabs__menu {
+  background-color: var(--md-default-bg-color);
+  border-radius: 0.1rem;
+  box-shadow: var(--md-shadow-z2);
+  color: var(--md-default-fg-color);
+  display: none;
+  list-style: none;
+  margin: 0;
+  min-width: 5rem;
+  padding: 0.2rem 0;
+  position: absolute;
+  top: 100%;
+  z-index: 4;
+}
+
+[dir="ltr"] .md-tabs__menu {
+  left: 0.6rem;
+}
+
+[dir="rtl"] .md-tabs__menu {
+  right: 0.6rem;
+}
+
+.md-tabs__item--nested:hover .md-tabs__menu,
+.md-tabs__item--nested:focus-within .md-tabs__menu {
+  display: block;
+}
+
+.md-tabs__item--nested:hover .md-tabs__caret,
+.md-tabs__item--nested:focus-within .md-tabs__caret {
+  transform: rotate(180deg);
+}
+
+.md-tabs__menu-link {
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+}
+
+.md-tabs__menu-link:focus,
+.md-tabs__menu-link:hover {
+  background-color: var(--md-accent-fg-color--transparent);
+  color: var(--md-accent-fg-color);
+}
