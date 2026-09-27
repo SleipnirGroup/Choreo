@@ -43,15 +43,8 @@ jobs:
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
-        # sccache doesn't work with MSBuild
-        if: runner.os != 'Windows'
 
-      - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
-        if: runner.os != 'Windows'
-        working-directory: trajoptlib
-
-      - run: cmake -B build -S . -DTRAJOPT_BUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
-        if: runner.os == 'Windows'
+      - run: cmake -B build -S . -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DTRAJOPT_BUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
         working-directory: trajoptlib
 
       - run: cmake --build build --config RelWithDebInfo --parallel 4
