@@ -16,6 +16,9 @@ jobs:
           - artifact-name: Windows x86_64
             cmake-args:
             os: windows-2025
+          - artifact-name: Windows aarch64
+            cmake-args:
+            os: windows-11-arm
           - artifact-name: macOS universal
             cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             os: macos-15
