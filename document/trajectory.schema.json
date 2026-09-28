@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://choreo.dev/schemas/trajectory.schema.json",
+  "title": "Choreo Trajectory File Schema",
+  "$defs": {
+    "Waypoint": {
+      "type": "object",
+      "description": "A trajectory waypoint with pose and optimization hints.",
+      "properties": {
+        "uuid": {
+          "$ref": "./shared.schema.json#/$defs/UUID",
+          "description": "Stable UUID for this waypoint."
+        },
+        "x": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "X position (m)"
+        },
+        "y": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Y position (m)"
+        },
+        "heading": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Heading (rad)"
+        },
+        "intervals": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Optimization intervals to next waypoint"
+        },
+        "split": {
+          "type": "boolean",
+          "description": "Start a new trajectory split here"
+        },
+        "fixTranslation": {
+          "type": "boolean",
+          "description": "Constrain XY position exactly during optimization"
+        },
+        "fixHeading": {
+          "type": "boolean",
+          "description": "Constrain heading exactly during optimization"
+        },
+        "overrideIntervals": {
+          "type": "boolean",
+          "description": "Use intervals instead of auto-selection"
+        }
+      },
+      "required": [
+        "uuid",
+        "x",
+        "y",
+        "heading",
+        "intervals",
+        "split",
+        "fixTranslation",
+        "fixHeading",
+        "overrideIntervals"
+      ],
+      "additionalProperties": false
+    },
+    "Constraint": {
+      "type": "object",
+      "description": "A typed constraint applied at or between waypoints.",
+      "properties": {
+        "uuid": {
+          "$ref": "./shared.schema.json#/$defs/UUID",
+          "description": "Stable UUID for this constraint."
+        },
+        "from": {
+          "$ref": "./shared.schema.json#/$defs/WaypointID",
+          "description": "Waypoint the constraint starts at"
+        },
+        "to": {
+          "$ref": "./shared.schema.json#/$defs/WaypointID",
+          "description": "Waypoint the constraint ends at (omit for point constraint)"
+        },
+        "data": {
+          "$ref": "./constraints.schema.json#/$defs/ConstraintVariant"
+        },
+        "enabled": { "type": "boolean" }
+      },
+      "required": ["uuid", "from", "data", "enabled"],
+      "additionalProperties": false
+    },
+    "Parameters": {
+      "type": "object",
+      "description": "Trajectory parameters: waypoints, constraints, and target time step.",
+      "properties": {
+        "waypoints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Waypoint" }
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Constraint" }
+        },
+        "targetDt": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Target optimization time step (s)"
+        }
+      },
+      "required": ["waypoints", "constraints", "targetDt"],
+      "additionalProperties": false
+    },
+    "EventMarkerData": {
+      "type": "object",
+      "description": "Timing information anchoring an event marker to the trajectory.",
+      "properties": {
+        "target": {
+          "$ref": "./shared.schema.json#/$defs/WaypointID",
+          "description": "Target waypoint reference."
+        },
+        "targetTime": {
+          "oneOf": [{ "type": "number" }, { "type": "null" }],
+          "description": "Pre-computed trajectory time at the target waypoint (s); null if not available."
+        },
+        "offset": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Time offset from the target (s)"
+        }
+      },
+      "required": ["target", "targetTime", "offset"],
+      "additionalProperties": false
+    },
+    "EventMarker": {
+      "type": "object",
+      "description": "A named event placed at a time on the trajectory.",
+      "properties": {
+        "uuid": {
+          "$ref": "./shared.schema.json#/$defs/UUID",
+          "description": "Stable UUID for this event marker."
+        },
+        "name": { "type": "string" },
+        "from": { "$ref": "#/$defs/EventMarkerData" }
+      },
+      "required": ["uuid", "name", "from"],
+      "additionalProperties": false
+    },
+    "Output": {
+      "type": "object",
+      "description": "A generated trajectory for one drive type (Trajectory<SwerveDriveType> or Trajectory<DifferentialDriveType>).",
+      "properties": {
+        "sampleType": {
+          "type": "string",
+          "enum": ["Swerve", "Differential"],
+          "description": "Drive-type discriminator tag."
+        },
+        "waypoints": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Trajectory timestamps (s) corresponding to each waypoint."
+        },
+        "splits": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "description": "Sample indices at which trajectory splits begin."
+        },
+        "trajectory": {
+          "oneOf": [
+            { "$ref": "./wpi.schema.json#/$defs/WpiHolonomicTrajectory" },
+            { "$ref": "./wpi.schema.json#/$defs/WpiDifferentialTrajectory" }
+          ],
+          "description": "Drive-type-specific trajectory samples serialized by WPILib (Swerve -> HolonomicSample, Differential -> DifferentialSample)."
+        }
+      },
+      "required": ["sampleType", "waypoints", "splits", "trajectory"],
+      "additionalProperties": false
+    },
+    "TrajectoryFile": {
+      "type": "object",
+      "description": "Contents of a .traj file: a single named trajectory with its parameters and events.",
+      "properties": {
+        "uuid": {
+          "$ref": "./shared.schema.json#/$defs/UUID",
+          "description": "Stable UUID for this trajectory document."
+        },
+        "name": { "type": "string" },
+        "version": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File format version"
+        },
+        "config": {
+          "oneOf": [
+            { "$ref": "./project.schema.json#/$defs/RobotConfig" },
+            { "type": "null" }
+          ],
+          "description": "Robot config snapshot used when the trajectory was generated; null if not stored."
+        },
+        "snapshot": {
+          "oneOf": [{ "$ref": "#/$defs/Parameters" }, { "type": "null" }],
+          "description": "Frozen parameter snapshot from the last generation run; null if not generated yet."
+        },
+        "params": {
+          "$ref": "#/$defs/Parameters",
+          "description": "Current (editable) trajectory parameters."
+        },
+        "output": {
+          "oneOf": [{ "$ref": "#/$defs/Output" }, { "type": "null" }],
+          "description": "Generated trajectory output; null if not yet generated."
+        },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EventMarker" }
+        }
+      },
+      "required": [
+        "uuid",
+        "name",
+        "version",
+        "config",
+        "snapshot",
+        "params",
+        "output",
+        "events"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/TrajectoryFile" }]
+}
