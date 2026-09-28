@@ -67,7 +67,11 @@ export const UIStateStore = types
 
     contextMenuSelectedWaypoint: types.maybe(types.number),
     contextMenuWaypointType: types.maybe(types.number),
-    contextMenuMouseSelection: types.maybe(types.array(types.number)) // [clientX, clientY] from `MouseEvent`
+    contextMenuMouseSelection: types.maybe(types.array(types.number)), // [clientX, clientY] from `MouseEvent`
+
+    trajSearchQuery: types.maybe(types.string),
+    trajSearchRegex: false,
+    sortAlphabetical: false
   })
   .views((self: any) => {
     return {
@@ -210,6 +214,15 @@ export const UIStateStore = types
       self.contextMenuMouseSelection = mouseSelection
         ? [mouseSelection.clientX, mouseSelection.clientY]
         : undefined;
+    },
+    setTrajSearchQuery(query: string) {
+      self.trajSearchQuery = query;
+    },
+    toggleTrajSearchRegex() {
+      self.trajSearchRegex = !self.trajSearchRegex;
+    },
+    toggleSortAlphabetical() {
+      self.sortAlphabetical = !self.sortAlphabetical;
     }
   }));
 export type IUIStateStore = Instance<typeof UIStateStore>;
