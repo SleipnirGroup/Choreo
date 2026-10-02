@@ -29,7 +29,7 @@ jobs:
             build-options:
 
     name: C++ and Java - ${{ matrix.artifact-name }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v7
@@ -142,7 +142,7 @@ jobs:
 
   build-python:
     name: Python
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container: wpilib/systemcore-cross-debian:trixie
     steps:
       - uses: actions/checkout@v7
@@ -176,7 +176,7 @@ jobs:
 
   pypi-publish:
     name: Upload release to PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [build-python]
     if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
     environment:
