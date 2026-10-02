@@ -24,7 +24,7 @@ jobs:
             os: macos-15
           - artifact-name: Linux x86_64
             cmake-args:
-            os: ubuntu-24.04
+            os: ubuntu-26.04
 
     name: C++ - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
@@ -34,12 +34,6 @@ jobs:
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Make GCC 14 the default toolchain (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
@@ -90,7 +84,7 @@ jobs:
           - artifact-name: macOS universal
             os: macos-15
           - artifact-name: Linux x86_64
-            os: ubuntu-24.04
+            os: ubuntu-26.04
 
     name: Rust - ${{ matrix.artifact-name }}
     runs-on: ${{ matrix.os }}
@@ -100,12 +94,6 @@ jobs:
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Make GCC 14 the default toolchain (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
