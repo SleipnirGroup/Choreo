@@ -22,7 +22,7 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: "temurin"
           java-version: 25
@@ -41,11 +41,11 @@ jobs:
             libxdo-dev \
             wget
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 10
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 18.x
           cache: "pnpm"
@@ -94,11 +94,11 @@ jobs:
         with:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 18.x
           cache: "pnpm"
