@@ -12,6 +12,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
 
-      - uses: actions/labeler@v6
+      - uses: actions/labeler@v7
         with:
           sync-labels: true

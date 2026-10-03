@@ -30,11 +30,11 @@ jobs:
       - name: Install Python dependencies
         run: pip install tomlkit
 
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 10
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 18.x
           cache: "pnpm"
