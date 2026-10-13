@@ -1,0 +1,307 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://choreo.dev/schemas/project.schema.json",
+  "title": "Choreo Project File Schema",
+  "$defs": {
+    "Dimension": {
+      "type": "string",
+      "enum": [
+        "Number",
+        "Length",
+        "LinVel",
+        "LinAcc",
+        "Angle",
+        "AngVel",
+        "AngAcc",
+        "Time",
+        "Mass",
+        "Torque",
+        "MoI",
+        "Current",
+        "KT",
+        "KV"
+      ],
+      "description": "Dimension tag (matches choreo::dimensions::*::tag)"
+    },
+    "ExpressionVariableEntry": {
+      "type": "object",
+      "description": "Named scalar/dimensional variable keyed by UUID in variables.expressions.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "dimension": { "$ref": "#/$defs/Dimension" },
+        "value": { "$ref": "./shared.schema.json#/$defs/Expr" }
+      },
+      "required": ["name", "dimension", "value"],
+      "additionalProperties": false
+    },
+    "TranslationVariableEntry": {
+      "type": "object",
+      "description": "Named translation variable keyed by UUID in variables.translations.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "$ref": "./shared.schema.json#/$defs/Translation2e" }
+      },
+      "required": ["name", "value"],
+      "additionalProperties": false
+    },
+    "PoseVariableEntry": {
+      "type": "object",
+      "description": "Named pose variable keyed by UUID in variables.poses.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "$ref": "./shared.schema.json#/$defs/Pose2e" }
+      },
+      "required": ["name", "value"],
+      "additionalProperties": false
+    },
+    "RegionVariableEntry": {
+      "type": "object",
+      "description": "Named region variable keyed by UUID in variables.regions.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "$ref": "./shared.schema.json#/$defs/Region2e" }
+      },
+      "required": ["name", "value"],
+      "additionalProperties": false
+    },
+    "PolygonVariableEntry": {
+      "type": "object",
+      "description": "Named polygon variable keyed by UUID in variables.polygons.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "$ref": "./shared.schema.json#/$defs/Polygon2e" }
+      },
+      "required": ["name", "value"],
+      "additionalProperties": false
+    },
+    "Variables": {
+      "type": "object",
+      "description": "All document-level variables keyed by UUID, grouped by variable kind.",
+      "properties": {
+        "expressions": {
+          "type": "object",
+          "propertyNames": { "$ref": "./shared.schema.json#/$defs/UUID" },
+          "additionalProperties": { "$ref": "#/$defs/ExpressionVariableEntry" },
+          "description": "Scalar/dimensional variables keyed by UUID."
+        },
+        "translations": {
+          "type": "object",
+          "propertyNames": { "$ref": "./shared.schema.json#/$defs/UUID" },
+          "additionalProperties": {
+            "$ref": "#/$defs/TranslationVariableEntry"
+          },
+          "description": "2D translation variables keyed by UUID."
+        },
+        "poses": {
+          "type": "object",
+          "propertyNames": { "$ref": "./shared.schema.json#/$defs/UUID" },
+          "additionalProperties": { "$ref": "#/$defs/PoseVariableEntry" },
+          "description": "2D pose variables keyed by UUID."
+        },
+        "regions": {
+          "type": "object",
+          "propertyNames": { "$ref": "./shared.schema.json#/$defs/UUID" },
+          "additionalProperties": { "$ref": "#/$defs/RegionVariableEntry" },
+          "description": "2D region variables keyed by UUID."
+        },
+        "polygons": {
+          "type": "object",
+          "propertyNames": { "$ref": "./shared.schema.json#/$defs/UUID" },
+          "additionalProperties": { "$ref": "#/$defs/PolygonVariableEntry" },
+          "description": "2D convex polygon variables keyed by UUID."
+        }
+      },
+      "additionalProperties": false
+    },
+    "MotorConfig": {
+      "type": "object",
+      "description": "Drivetrain motor model parameters.",
+      "properties": {
+        "freeSpeed": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "No-load speed (rad/s)"
+        },
+        "stallTorque": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Stall torque (N·m)"
+        },
+        "kT": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Torque constant (N·m/A)"
+        },
+        "kV": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Back-EMF constant (V·s/rad)"
+        },
+        "supplyLimit": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Supply current limit (A)"
+        },
+        "statorLimit": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Stator current limit (A)"
+        }
+      },
+      "required": [
+        "freeSpeed",
+        "stallTorque",
+        "kT",
+        "kV",
+        "supplyLimit",
+        "statorLimit"
+      ],
+      "additionalProperties": false
+    },
+    "RobotConfig": {
+      "type": "object",
+      "description": "Complete physical robot configuration.",
+      "properties": {
+        "mass": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Robot mass (kg)"
+        },
+        "inertia": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Moment of inertia (kg·m²)"
+        },
+        "gearing": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Motor-to-wheel gear ratio (dimensionless)"
+        },
+        "radius": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Wheel radius (m)"
+        },
+        "cof": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Wheel coefficient of friction (dimensionless)"
+        },
+        "wheels": {
+          "type": "object",
+          "description": "Drive-type-specific wheel configuration. One or more drive types may be configured.",
+          "properties": {
+            "differential": {
+              "type": "object",
+              "properties": {
+                "trackwidth": {
+                  "$ref": "./shared.schema.json#/$defs/Expr",
+                  "description": "Distance between the left and right wheel contact patches (m)"
+                }
+              },
+              "required": ["trackwidth"],
+              "additionalProperties": false
+            },
+            "swerve": {
+              "type": "object",
+              "properties": {
+                "modules": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "./shared.schema.json#/$defs/Translation2e"
+                  },
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "description": "Module positions relative to robot center. Order is not assumed in the optimizer. (m)"
+                }
+              },
+              "required": ["modules"],
+              "additionalProperties": false
+            },
+            "mecanum": {
+              "type": "object",
+              "properties": {
+                "frontLeft": {
+                  "$ref": "./shared.schema.json#/$defs/Translation2e"
+                },
+                "frontRight": {
+                  "$ref": "./shared.schema.json#/$defs/Translation2e"
+                },
+                "backLeft": {
+                  "$ref": "./shared.schema.json#/$defs/Translation2e"
+                },
+                "backRight": {
+                  "$ref": "./shared.schema.json#/$defs/Translation2e"
+                }
+              },
+              "required": ["frontLeft", "frontRight", "backLeft", "backRight"],
+              "additionalProperties": false
+            }
+          },
+          "minProperties": 1,
+          "additionalProperties": false
+        },
+        "bumpers": { "$ref": "./shared.schema.json#/$defs/Polygon2e" },
+
+        "motor": { "$ref": "#/$defs/MotorConfig" }
+      },
+      "required": [
+        "mass",
+        "inertia",
+        "gearing",
+        "radius",
+        "cof",
+        "wheels",
+        "bumpers",
+        "motor"
+      ],
+      "additionalProperties": false
+    },
+    "CodeGenConfig": {
+      "type": "object",
+      "description": "Code generation settings stored in the project file.",
+      "properties": {
+        "root": {
+          "type": "string",
+          "description": "Output root directory path. Empty string means 'not set'."
+        },
+        "genVars": {
+          "type": "boolean",
+          "description": "Generate named variable accessors.",
+          "default": true
+        },
+        "genTrajData": {
+          "type": "boolean",
+          "description": "Generate data objects with details on each trajectory.",
+          "default": true
+        },
+        "useChoreoLib": {
+          "type": "boolean",
+          "description": "Emit ChoreoLib-compatible API calls.",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProjectFile": {
+      "type": "object",
+      "description": "Contents of a .chor project file: robot config, drive type, document-level variables, and code-gen settings.",
+      "properties": {
+        "uuid": {
+          "$ref": "./shared.schema.json#/$defs/UUID",
+          "description": "Stable UUID for this project document."
+        },
+        "name": { "type": "string" },
+        "version": {
+          "type": "integer",
+          "minimum": 4,
+          "description": "File format version"
+        },
+        "type": { "$ref": "./shared.schema.json#/$defs/DriveType" },
+        "variables": { "$ref": "#/$defs/Variables" },
+        "config": { "$ref": "#/$defs/RobotConfig" },
+        "codegen": { "$ref": "#/$defs/CodeGenConfig" }
+      },
+      "required": [
+        "uuid",
+        "name",
+        "version",
+        "type",
+        "variables",
+        "config",
+        "codegen"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/ProjectFile" }]
+}

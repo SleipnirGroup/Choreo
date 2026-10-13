@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://choreo.dev/schemas/shared.schema.json",
+  "title": "Choreo Shared Definitions",
+  "description": "Common schema definitions shared by project and trajectory files.",
+  "$defs": {
+    "Expr": {
+      "type": "object",
+      "description": "A mathematical expression paired with a pre-evaluated numeric value in SI base units.",
+      "properties": {
+        "exp": {
+          "type": "string",
+          "description": "MathJS expression string (e.g. '1.5 * kg', '90 deg')"
+        },
+        "val": {
+          "type": "number",
+          "description": "Pre-evaluated SI base-unit value (e.g. metres, radians, kg, s)"
+        }
+      },
+      "required": ["exp", "val"],
+      "additionalProperties": false
+    },
+    "DriveType": {
+      "description": "The drive topology of the robot.",
+      "type": "string",
+      "enum": ["Swerve", "Differential"]
+    },
+    "ConstraintScope": {
+      "description": "Which samples a constraint applies to.",
+      "type": "string",
+      "enum": ["both", "waypoint", "segment"]
+    },
+    "UUID": {
+      "type": "string",
+      "description": "A stable persisted UUID string."
+    },
+    "WaypointID": {
+      "description": "Identifies a waypoint by UUID or by a first/last sentinel string.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Waypoint by UUID.",
+          "properties": {
+            "uuid": { "$ref": "#/$defs/UUID" }
+          },
+          "required": ["uuid"],
+          "additionalProperties": false
+        },
+        {
+          "type": "string",
+          "const": "first",
+          "description": "The first waypoint."
+        },
+        {
+          "type": "string",
+          "const": "last",
+          "description": "The last waypoint."
+        }
+      ]
+    },
+    "Translation2e": {
+      "type": "object",
+      "description": "A 2D translation parameterized by Expr values (metres), matching WPILib Translation2d.",
+      "properties": {
+        "x": { "$ref": "#/$defs/Expr", "description": "X coordinate (m)" },
+        "y": { "$ref": "#/$defs/Expr", "description": "Y coordinate (m)" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "Rotation2e": {
+      "type": "object",
+      "description": "A 2D rotation parameterized by an Expr value (radians), matching WPILib Rotation2d.",
+      "properties": {
+        "radians": {
+          "$ref": "#/$defs/Expr",
+          "description": "Rotation angle (rad)"
+        }
+      },
+      "required": ["radians"],
+      "additionalProperties": false
+    },
+    "Pose2e": {
+      "type": "object",
+      "description": "A 2D pose parameterized by Expr values, matching WPILib Pose2d.",
+      "properties": {
+        "translation": {
+          "$ref": "#/$defs/Translation2e",
+          "description": "Position (m)"
+        },
+        "rotation": {
+          "$ref": "#/$defs/Rotation2e",
+          "description": "Heading (rad)"
+        }
+      },
+      "required": ["translation", "rotation"],
+      "additionalProperties": false
+    },
+    "Region2e": {
+      "type": "object",
+      "description": "A 2D rectangle parameterized by Expr values, matching WPILib Rectangle2d.",
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/Pose2e",
+          "description": "Center pose of the rectangle"
+        },
+        "xWidth": {
+          "$ref": "#/$defs/Expr",
+          "description": "Width along the local x axis (m)"
+        },
+        "yWidth": {
+          "$ref": "#/$defs/Expr",
+          "description": "Width along the local y axis (m)"
+        }
+      },
+      "required": ["center", "xWidth", "yWidth"],
+      "additionalProperties": false
+    },
+    "Polygon2e": {
+      "type": "object",
+      "description": "A 2D convex polygon parameterized by Expr values.",
+      "properties": {
+        "vertices": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Translation2e" },
+          "minItems": 3,
+          "description": "Polygon vertices in counter-clockwise order, relative to the polygon's local frame (m)"
+        }
+      },
+      "required": ["vertices"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://choreo.dev/schemas/wpi.schema.json",
+  "title": "Choreo WPILib Types Schema",
+  "$defs": {
+    "WpiTranslation2d": {
+      "type": "object",
+      "description": "WPILib Translation2d in metres.",
+      "properties": {
+        "x": { "type": "number", "description": "X position (m)" },
+        "y": { "type": "number", "description": "Y position (m)" }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "WpiRotation2d": {
+      "type": "object",
+      "description": "WPILib Rotation2d in radians.",
+      "properties": {
+        "radians": { "type": "number", "description": "Rotation angle (rad)" }
+      },
+      "required": ["radians"],
+      "additionalProperties": false
+    },
+    "WpiPose2d": {
+      "type": "object",
+      "description": "WPILib Pose2d with translation and rotation.",
+      "properties": {
+        "translation": { "$ref": "#/$defs/WpiTranslation2d" },
+        "rotation": { "$ref": "#/$defs/WpiRotation2d" }
+      },
+      "required": ["translation", "rotation"],
+      "additionalProperties": false
+    },
+    "WpiRectangle2d": {
+      "type": "object",
+      "description": "WPILib Rectangle2d with a center pose and width/height.",
+      "properties": {
+        "center": { "$ref": "#/$defs/WpiPose2d" },
+        "xWidth": {
+          "type": "number",
+          "description": "Width along the local x axis (m)"
+        },
+        "yWidth": {
+          "type": "number",
+          "description": "Width along the local y axis (m)"
+        }
+      },
+      "required": ["center", "xWidth", "yWidth"],
+      "additionalProperties": false
+    },
+    "WpiChassisVelocities": {
+      "type": "object",
+      "description": "WPILib ChassisVelocities in field coordinates.",
+      "properties": {
+        "vx": { "type": "number", "description": "X velocity (m/s)" },
+        "vy": { "type": "number", "description": "Y velocity (m/s)" },
+        "omega": { "type": "number", "description": "Angular velocity (rad/s)" }
+      },
+      "required": ["vx", "vy", "omega"],
+      "additionalProperties": false
+    },
+    "WpiChassisAccelerations": {
+      "type": "object",
+      "description": "WPILib ChassisAccelerations in field coordinates.",
+      "properties": {
+        "ax": { "type": "number", "description": "X acceleration (m/s^2)" },
+        "ay": { "type": "number", "description": "Y acceleration (m/s^2)" },
+        "alpha": {
+          "type": "number",
+          "description": "Angular acceleration (rad/s^2)"
+        }
+      },
+      "required": ["ax", "ay", "alpha"],
+      "additionalProperties": false
+    },
+    "WpiHolonomicSample": {
+      "type": "object",
+      "description": "wpi::math::HolonomicSample serialized as JSON.",
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "Sample timestamp relative to trajectory start (s)"
+        },
+        "pose": { "$ref": "#/$defs/WpiPose2d" },
+        "velocity": { "$ref": "#/$defs/WpiChassisVelocities" },
+        "acceleration": { "$ref": "#/$defs/WpiChassisAccelerations" }
+      },
+      "required": ["time", "pose", "velocity", "acceleration"],
+      "additionalProperties": false
+    },
+    "WpiDifferentialSample": {
+      "type": "object",
+      "description": "wpi::math::DifferentialSample serialized as JSON.",
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "Sample timestamp relative to trajectory start (s)"
+        },
+        "pose": { "$ref": "#/$defs/WpiPose2d" },
+        "velocity": { "$ref": "#/$defs/WpiChassisVelocities" },
+        "acceleration": { "$ref": "#/$defs/WpiChassisAccelerations" },
+        "leftVelocity": {
+          "type": "number",
+          "description": "Left wheel speed (m/s)"
+        },
+        "rightVelocity": {
+          "type": "number",
+          "description": "Right wheel speed (m/s)"
+        }
+      },
+      "required": [
+        "time",
+        "pose",
+        "velocity",
+        "acceleration",
+        "leftVelocity",
+        "rightVelocity"
+      ],
+      "additionalProperties": false
+    },
+    "WpiHolonomicTrajectory": {
+      "type": "object",
+      "description": "WPILib HolonomicTrajectory JSON sample container.",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/WpiHolonomicSample" }
+        }
+      },
+      "required": ["samples"],
+      "additionalProperties": false
+    },
+    "WpiDifferentialTrajectory": {
+      "type": "object",
+      "description": "WPILib DifferentialTrajectory JSON sample container.",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/WpiDifferentialSample" }
+        }
+      },
+      "required": ["samples"],
+      "additionalProperties": false
+    }
+  }
+}
