@@ -14,6 +14,7 @@
 #include "trajopt/constraint/angular_velocity_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/lane_constraint.hpp"
 #include "trajopt/constraint/linear_acceleration_max_magnitude_constraint.hpp"
+#include "trajopt/constraint/linear_velocity_diff_constraint.hpp"
 #include "trajopt/constraint/linear_velocity_direction_constraint.hpp"
 #include "trajopt/constraint/linear_velocity_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/point_at_constraint.hpp"
@@ -133,6 +134,15 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   /// @param angle The angle in radians.
   void wpt_linear_velocity_direction(size_t index, double angle) {
     wpt_constraint(index, LinearVelocityDirectionConstraint{angle});
+  }
+
+  /// Applies a linear velocity diff constraint to a waypoint, which requires
+  /// the linear velocity to be parallel to the heading (zero lateral
+  /// velocity).
+  ///
+  /// @param index The waypoint's index.
+  void wpt_linear_velocity_diff(size_t index) {
+    wpt_constraint(index, LinearVelocityDiffConstraint{});
   }
 
   /// Applies a linear velocity max magnitude constraint to a waypoint.
@@ -258,6 +268,16 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                       double angle) {
     sgmt_constraint(from_index, to_index,
                     LinearVelocityDirectionConstraint{angle});
+  }
+
+  /// Applies a linear velocity diff constraint between two waypoints, which
+  /// requires the linear velocity to be parallel to the heading (zero lateral
+  /// velocity).
+  ///
+  /// @param from_index The first waypoint's index.
+  /// @param to_index The second waypoint's index.
+  void sgmt_linear_velocity_diff(size_t from_index, size_t to_index) {
+    sgmt_constraint(from_index, to_index, LinearVelocityDiffConstraint{});
   }
 
   /// Applies a linear velocity max magnitude constraint between two waypoints.
