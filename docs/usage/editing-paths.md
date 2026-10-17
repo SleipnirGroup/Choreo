@@ -108,6 +108,9 @@ The following 5 constraints all have draggable shapes on the field tied to their
     * If there are intermediate waypoints, the lane still goes straight between the start and end of the constraint range.
 9. **Keep Out Circle** (Both): Keep all portions of the bumper outside of the circle.
     * See "Keep Out Regions" below.
+10. **Keep In Bounds** (Segment): Keeps the **center** of the robot within a given distance of the line between **each consecutive pair** of waypoints in the range.
+    * Unlike Keep In Lane, which uses one lane between the two end waypoints, this follows the path through any intermediate waypoints.
+    * Use Pose or Translation waypoints at the corners. Empty waypoints in the range are usually treated as initial guesses and skipped, so the lane goes straight past them.
 
 ### Adding Constraints
 
