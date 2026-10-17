@@ -158,6 +158,9 @@ pub enum ConstraintData<T: SnapshottableType> {
     /// A constraint to contain the bumpers outside a circlular region of the
     /// field
     KeepOutCircle { x: T, y: T, r: T },
+    /// A constraint to keep the center of the robot within a lane between each
+    /// consecutive pair of waypoints in the scope
+    KeepInBounds { tolerance: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -166,6 +169,7 @@ impl<T: SnapshottableType> ConstraintData<T> {
         match self {
             ConstraintData::StopPoint {} => ConstraintScope::Waypoint,
             ConstraintData::KeepInLane { tolerance: _ } => ConstraintScope::Segment,
+            ConstraintData::KeepInBounds { tolerance: _ } => ConstraintScope::Segment,
             _ => ConstraintScope::Both,
         }
     }
@@ -212,6 +216,9 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 x: x.snapshot(),
                 y: y.snapshot(),
                 r: r.snapshot(),
+            },
+            ConstraintData::KeepInBounds { tolerance } => ConstraintData::KeepInBounds {
+                tolerance: tolerance.snapshot(),
             },
         }
     }
