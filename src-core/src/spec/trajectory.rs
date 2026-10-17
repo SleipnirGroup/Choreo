@@ -128,6 +128,11 @@ pub enum ConstraintData<T: SnapshottableType> {
         /// The maximum angular velocity.
         max: T,
     },
+    /// A constraint on the maximum angular acceleration.
+    MaxAngularAcceleration {
+        /// The maximum angular acceleration.
+        max: T,
+    },
     /// A constraint on the robot's orientation.
     PointAt {
         /// The x coordinate of the point to face (blue origin).
@@ -179,6 +184,11 @@ impl<T: SnapshottableType> ConstraintData<T> {
             ConstraintData::MaxAngularVelocity { max } => ConstraintData::MaxAngularVelocity {
                 max: max.snapshot(),
             },
+            ConstraintData::MaxAngularAcceleration { max } => {
+                ConstraintData::MaxAngularAcceleration {
+                    max: max.snapshot(),
+                }
+            }
             ConstraintData::PointAt {
                 x,
                 y,

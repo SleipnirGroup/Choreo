@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "trajopt/constraint/angular_acceleration_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/angular_velocity_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/lane_constraint.hpp"
 #include "trajopt/constraint/linear_acceleration_max_magnitude_constraint.hpp"
@@ -151,6 +152,14 @@ class TRAJOPT_DLLEXPORT PathBuilder {
     wpt_constraint(index, AngularVelocityMaxMagnitudeConstraint{magnitude});
   }
 
+  /// Applies an angular acceleration max magnitude constraint to a waypoint.
+  ///
+  /// @param index The waypoint's index.
+  /// @param magnitude The magnitude.
+  void wpt_angular_acceleration_max_magnitude(size_t index, double magnitude) {
+    wpt_constraint(index, AngularAccelerationMaxMagnitudeConstraint{magnitude});
+  }
+
   /// Applies a linear acceleration max magnitude constraint to a waypoint.
   ///
   /// @param index The waypoint's index.
@@ -281,6 +290,19 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                            double magnitude) {
     sgmt_constraint(from_index, to_index,
                     AngularVelocityMaxMagnitudeConstraint{magnitude});
+  }
+
+  /// Applies an angular acceleration max magnitude constraint between two
+  /// waypoints.
+  ///
+  /// @param from_index The first waypoint's index.
+  /// @param to_index The second waypoint's index.
+  /// @param magnitude The magnitude.
+  void sgmt_angular_acceleration_max_magnitude(size_t from_index,
+                                               size_t to_index,
+                                               double magnitude) {
+    sgmt_constraint(from_index, to_index,
+                    AngularAccelerationMaxMagnitudeConstraint{magnitude});
   }
 
   /// Applies a linear acceleration max magnitude constraint between two
