@@ -151,7 +151,7 @@ if(TRAJOPT_BUILD_EXAMPLES)
                     ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
             )
             compiler_flags(${example}_test)
-            target_compile_definitions(${example}_test PUBLIC RUNNING_TESTS)
+            target_compile_definitions(${example}_test PRIVATE RUNNING_TESTS)
             target_include_directories(
                 ${example}_test
                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/include
