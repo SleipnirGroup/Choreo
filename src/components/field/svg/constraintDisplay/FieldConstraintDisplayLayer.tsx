@@ -63,7 +63,8 @@ const overlays = {
   StopPoint: () => <></>,
   MaxAcceleration: () => <></>,
   MaxVelocity: () => <></>,
-  MaxAngularVelocity: () => <></>
+  MaxAngularVelocity: () => <></>,
+  MaxAngularAcceleration: () => <></>
 } satisfies {
   [K in ConstraintKey]: (props: OverlayProps<K>) => React.JSX.Element;
 };
