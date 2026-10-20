@@ -3,6 +3,7 @@ import {
   DoNotDisturb,
   NearMe,
   StopCircleOutlined,
+  SwapHoriz,
   SyncOutlined,
   SystemUpdateAlt
 } from "@mui/icons-material";
@@ -75,6 +76,9 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     r: Expr;
   };
+  // Record<string,never> broke the keyof operator
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  StrafeDiff: {};
 };
 export type DataMap = {
   [K in keyof ConstraintDataTypeMap]: IConstraintData<
@@ -294,7 +298,18 @@ export const ConstraintDefinitions: defs = {
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<"KeepOutCircle">
+  } satisfies ConstraintDefinition<"KeepOutCircle">,
+  StrafeDiff: {
+    type: "StrafeDiff" as const,
+    name: "Strafe Diff",
+    shortName: "Strafe Diff",
+    description:
+      "Keep velocity parallel to heading (no strafing), like a differential drive. Swerve only.",
+    icon: <SwapHoriz />,
+    properties: {},
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"StrafeDiff">
 };
 
 export type ConstraintKey = keyof DataMap;

@@ -54,6 +54,7 @@ class SwerveTrajectoryGenerator {
   void empty_wpt(size_t index, Pose2d pose_guess);
 
   void wpt_linear_velocity_direction(size_t index, double angle);
+  void wpt_linear_velocity_diff(size_t index);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
   void wpt_angular_velocity_max_magnitude(size_t index, double magnitude);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
@@ -67,6 +68,7 @@ class SwerveTrajectoryGenerator {
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
+  void sgmt_linear_velocity_diff(size_t from_index, size_t to_index);
   void sgmt_linear_velocity_max_magnitude(size_t from_index, size_t to_index,
                                           double magnitude);
   void sgmt_angular_velocity_max_magnitude(size_t from_index, size_t to_index,
