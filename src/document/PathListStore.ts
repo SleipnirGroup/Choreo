@@ -1,5 +1,5 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { Trajectory } from "./schema/DocumentTypes";
+import { Expr, Trajectory } from "./schema/DocumentTypes";
 import { Env } from "./DocumentManager";
 import {
   HolonomicPathStore,
@@ -213,6 +213,81 @@ export const PathListStore = types
           const copyOfOldPath = { ...oldPath.serialize, name: path!.name };
           path!.deserialize(copyOfOldPath);
         }
+      },
+      mirrorPath(uuid: string) {
+        if (!self.pathUUIDs.includes(uuid)) {
+          return;
+        }
+        const oldPath = self.paths.get(uuid);
+        // shouldn't hit this ever since we checked if the path exists
+        if (oldPath === undefined) {
+          return;
+        }
+        const newuuid = self.addPath(oldPath.name + "_Mirror", false);
+        const path = self.paths.get(newuuid);
+        const serialized = oldPath.serialize;
+
+        // Mirror over the horizontal center line of the field (y = width / 2)
+        const flipY = (val: number) => FieldDimensions.FIELD_WIDTH - val;
+        const flipExprY = (e: Expr): Expr => ({
+          exp: `${flipY(e.val)} m`,
+          val: flipY(e.val)
+        });
+        const flipExprHeading = (e: Expr): Expr => ({
+          exp: `${-e.val} rad`,
+          val: -e.val
+        });
+
+        const mirrored: Trajectory = {
+          ...serialized,
+          name: path!.name,
+          params: {
+            ...serialized.params,
+            waypoints: serialized.params.waypoints.map((wpt) => ({
+              ...wpt,
+              y: flipExprY(wpt.y),
+              heading: flipExprHeading(wpt.heading)
+            })),
+            constraints: serialized.params.constraints.map((con) => {
+              const d = con.data;
+              if (d.type === "KeepInCircle" || d.type === "KeepOutCircle") {
+                return {
+                  ...con,
+                  data: { ...d, props: { ...d.props, y: flipExprY(d.props.y) } }
+                };
+              }
+              if (d.type === "PointAt") {
+                return {
+                  ...con,
+                  data: { ...d, props: { ...d.props, y: flipExprY(d.props.y) } }
+                };
+              }
+              if (d.type === "KeepInRectangle") {
+                // Rectangle spans [y, y + h], so the mirrored bottom edge is at
+                // FIELD_WIDTH - (y + h)
+                const newY = flipY(d.props.y.val + d.props.h.val);
+                return {
+                  ...con,
+                  data: {
+                    ...d,
+                    props: { ...d.props, y: { exp: `${newY} m`, val: newY } }
+                  }
+                };
+              }
+              return con;
+            })
+          },
+          // The generated trajectory is not mirrored, so the new path must be
+          // regenerated
+          snapshot: { waypoints: [], constraints: [], targetDt: 0.05 },
+          trajectory: {
+            ...serialized.trajectory,
+            waypoints: [],
+            samples: [],
+            splits: []
+          }
+        };
+        path!.deserialize(mirrored);
       }
     };
   })
