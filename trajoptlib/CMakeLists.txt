@@ -37,8 +37,12 @@ target_include_directories(
         $<INSTALL_INTERFACE:include>
 )
 
-if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING)
     # Catch2 dependency
+    if(CMAKE_SYSTEM_NAME STREQUAL "Generic")
+        # Bare-metal targets don't support POSIX signals
+        set(CATCH_CONFIG_NO_POSIX_SIGNALS ON)
+    endif()
     FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
@@ -94,14 +98,14 @@ install(
     DESTINATION lib/cmake/TrajoptLib
 )
 
-if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING)
     enable_testing()
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     include(Catch)
 endif()
 get_cmake_property(IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 # Build TrajoptLib tests
-if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING)
     file(GLOB_RECURSE trajoptlib_test_src test/src/*.cpp)
     add_executable(trajoptlib_test ${trajoptlib_test_src})
     compiler_flags(trajoptlib_test)
@@ -115,10 +119,12 @@ if(PROJECT_IS_TOP_LEVEL AND BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
         trajoptlib_test
         PUBLIC TrajoptLib Catch2::Catch2WithMain
     )
-    catch_discover_tests(
-        trajoptlib_test
-        DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
-    )
+    if(NOT CMAKE_CROSSCOMPILING OR CMAKE_CROSSCOMPILING_EMULATOR)
+        catch_discover_tests(
+            trajoptlib_test
+            DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+        )
+    endif()
 endif()
 
 # Build examples and example tests
@@ -160,7 +166,7 @@ if(TRAJOPT_BUILD_EXAMPLES)
                 ${example}_test
                 PUBLIC TrajoptLib Catch2::Catch2WithMain
             )
-            if(NOT CMAKE_TOOLCHAIN_FILE)
+            if(NOT CMAKE_CROSSCOMPILING OR CMAKE_CROSSCOMPILING_EMULATOR)
                 catch_discover_tests(
                     ${example}_test
                     DL_PATHS
