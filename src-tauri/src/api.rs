@@ -333,7 +333,8 @@ pub async fn get_deploy_root(app_handle: tauri::AppHandle) -> TauriResult<String
     let resources = app_handle.state::<WritingResources>();
     match resources.get_deploy_path().await {
         Ok(path) => Ok(path.to_string_lossy().to_string()),
-        // an absent deploy path is represented as an empty string in the frontend
+        // an absent deploy path is represented as an empty string in the
+        // frontend
         Err(ChoreoError::NoDeployPath) => Ok(String::new()),
         Err(e) => {
             tracing::error!("{e}");
