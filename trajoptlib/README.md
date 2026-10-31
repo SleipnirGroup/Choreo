@@ -20,7 +20,7 @@ TrajoptLib is a library for generating time-optimal drivetrain trajectories subj
   * On Windows 11 or greater, install [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) and select the C++ programming language during installation
   * On Ubuntu 24.04 or greater, install GCC 14 via `sudo apt install g++-14`
   * On macOS 14 or greater, install the Xcode 15.3 command-line build tools via `xcode-select --install`
-* [CMake](https://cmake.org/download/) 3.21 or greater
+* [CMake](https://cmake.org/download/) 3.28 or greater
   * On Windows, install from the link above
   * On Linux, install via `sudo apt install cmake`
   * On macOS, install via `brew install cmake`

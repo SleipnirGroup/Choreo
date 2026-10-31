@@ -36,10 +36,13 @@ fn main() {
         "cargo:rustc-link-search=native={}/bin",
         cmake_dest.display()
     );
-    println!(
-        "cargo:rustc-link-search=native={}/lib",
-        cmake_dest.display()
-    );
+    // GNUInstallDirs installs libraries to lib64 instead of lib on some distros
+    for libdir in ["lib", "lib64"] {
+        let path = cmake_dest.join(libdir);
+        if path.is_dir() {
+            println!("cargo:rustc-link-search=native={}", path.display());
+        }
+    }
     println!(
         "cargo:rustc-link-search=native={}/build/_deps/sleipnir-build/",
         cmake_dest.display()
