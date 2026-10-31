@@ -1,8 +1,8 @@
 {
-  "version": 3,
+  "version": 8,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 21,
+    "minor": 28,
     "patch": 0
   },
   "configurePresets": [
@@ -45,6 +45,53 @@
       "cacheVariables": {
         "TRAJOPT_BUILD_EXAMPLES": "ON"
       }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "with-sccache",
+      "configurePreset": "with-sccache"
+    },
+    {
+      "name": "with-examples",
+      "configurePreset": "with-examples"
+    },
+    {
+      "name": "with-examples-and-sccache",
+      "configurePreset": "with-examples-and-sccache"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "default",
+      "inherits": "base",
+      "configurePreset": "default"
+    },
+    {
+      "name": "with-sccache",
+      "inherits": "base",
+      "configurePreset": "with-sccache"
+    },
+    {
+      "name": "with-examples",
+      "inherits": "base",
+      "configurePreset": "with-examples"
+    },
+    {
+      "name": "with-examples-and-sccache",
+      "inherits": "base",
+      "configurePreset": "with-examples-and-sccache"
     }
   ]
 }

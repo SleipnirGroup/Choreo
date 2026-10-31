@@ -1,4 +1,4 @@
-macro(compiler_flags target)
+function(compiler_flags target)
     if(NOT MSVC)
         target_compile_options(${target} PRIVATE -Wall -Wextra -pedantic)
     else()
@@ -11,7 +11,8 @@ macro(compiler_flags target)
 
     target_compile_features(${target} PUBLIC cxx_std_23)
     if(MSVC)
-        target_compile_options(${target} PUBLIC /MP /utf-8 /bigobj)
+        target_compile_options(${target} PUBLIC /utf-8 /bigobj)
+        target_compile_options(${target} PRIVATE /MP)
         # /Zf is an MSVC argument not currently supported by clang-cl.
         # See https://github.com/llvm/llvm-project/issues/51578.
         if(
@@ -20,7 +21,7 @@ macro(compiler_flags target)
                 AND ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL "MSVC"
             )
         )
-            target_compile_options(${target} PUBLIC /Zf)
+            target_compile_options(${target} PRIVATE /Zf)
         endif()
     endif()
-endmacro()
+endfunction()
