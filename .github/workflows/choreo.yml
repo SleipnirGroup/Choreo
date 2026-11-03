@@ -19,11 +19,11 @@ jobs:
             tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: Windows-aarch64
-            os: windows-2025
+            os: windows-11-arm
             tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: macOS-x86_64
-            os: macos-15
+            os: macos-15-intel
             tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: macOS-aarch64
@@ -73,24 +73,27 @@ jobs:
       - name: Install Rust nightly
         run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
 
-      - name: Set up Windows aarch64 Rust compiler
-        if: matrix.artifact-name == 'Windows-aarch64'
-        run: rustup target install aarch64-pc-windows-msvc
-
-      - name: Set up macOS x86_64 Rust compiler
-        if: matrix.artifact-name == 'macOS-x86_64'
-        run: rustup target add x86_64-apple-darwin
+      - uses: TheMrMilchmann/setup-msvc-dev@v4
+        if: runner.os == 'Windows'
+        with:
+          arch: ${{ runner.arch }}
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
       - name: Cargo test
         run: cargo test --release
         env:
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+          CMAKE_GENERATOR: Ninja
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+          CMAKE_GENERATOR: Ninja
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
 
