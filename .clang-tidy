@@ -72,4 +72,4 @@ Checks:
   modernize-use-using,
   readability-braces-around-statements'
 FormatStyle: file
-HeaderFilterRegex: '^((?!Eigen/).)*$'
+ExcludeHeaderFilterRegex: '\.gradle/caches/'
