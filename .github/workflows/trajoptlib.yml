@@ -35,15 +35,35 @@ jobs:
           persist-credentials: false
           token: ${{secrets.GITHUB_TOKEN}}
 
+      - uses: TheMrMilchmann/setup-msvc-dev@v4
+        if: runner.os == 'Windows'
+        with:
+          arch: ${{ runner.arch }}
+
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
 
-      - run: cmake -B build -S . -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DTRAJOPT_BUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+      # In MSVC RelWithDebInfo builds, CMake writes debug info to a PDB shared
+      # by the whole target by default, which sccache doesn't cache. Use
+      # -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded to embed debug info in
+      # each object file instead.
+      - run: >-
+          cmake -B build -S .
+          ${{ runner.os == 'Windows' && '-G "Ninja Multi-Config"' || '' }}
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded
+          -DTRAJOPT_BUILD_EXAMPLES=ON
+          ${{ matrix.cmake-args }}
         working-directory: trajoptlib
+        env:
+          SCCACHE_CACHE_MULTIARCH: true
+          SCCACHE_GHA_ENABLED: true
 
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
         env:
+          SCCACHE_CACHE_MULTIARCH: true
           SCCACHE_GHA_ENABLED: true
 
       - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
@@ -104,17 +124,26 @@ jobs:
       - run: cargo build
         working-directory: trajoptlib
         env:
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+          CMAKE_GENERATOR: Ninja
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
 
       - run: cargo build --example differential
         working-directory: trajoptlib
         env:
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+          CMAKE_GENERATOR: Ninja
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
 
       - run: cargo build --example swerve
         working-directory: trajoptlib
         env:
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+          CMAKE_GENERATOR: Ninja
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
