@@ -126,6 +126,10 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     None => generator.wpt_angular_velocity_max_magnitude(from, max),
                     Some(to) => generator.sgmt_angular_velocity_max_magnitude(from, to, max),
                 },
+                ConstraintData::MaxAngularAcceleration { max } => match to_opt {
+                    None => generator.wpt_angular_acceleration_max_magnitude(from, max),
+                    Some(to) => generator.sgmt_angular_acceleration_max_magnitude(from, to, max),
+                },
                 ConstraintData::StopPoint {} => {
                     if to_opt.is_none() {
                         generator.wpt_linear_velocity_max_magnitude(from, 0.0f64);
@@ -208,6 +212,10 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                 ConstraintData::MaxAngularVelocity { max } => match to_opt {
                     None => generator.wpt_angular_velocity_max_magnitude(from, max),
                     Some(to) => generator.sgmt_angular_velocity_max_magnitude(from, to, max),
+                },
+                ConstraintData::MaxAngularAcceleration { max } => match to_opt {
+                    None => generator.wpt_angular_acceleration_max_magnitude(from, max),
+                    Some(to) => generator.sgmt_angular_acceleration_max_magnitude(from, to, max),
                 },
                 ConstraintData::StopPoint {} => {
                     if to_opt.is_none() {

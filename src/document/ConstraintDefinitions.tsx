@@ -50,6 +50,7 @@ export type ConstraintDataTypeMap = {
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
   MaxAngularVelocity: { max: Expr };
+  MaxAngularAcceleration: { max: Expr };
   PointAt: {
     x: Expr;
     y: Expr;
@@ -147,6 +148,23 @@ export const ConstraintDefinitions: defs = {
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"MaxAngularVelocity">,
+  MaxAngularAcceleration: {
+    type: "MaxAngularAcceleration" as const,
+    name: "Max Angular Acceleration",
+    shortName: "Max Ang Acc",
+    description: "Maximum Angular Acceleration",
+    icon: <SyncOutlined />,
+    properties: {
+      max: {
+        name: "Max Angular Acceleration",
+        description: "Maximum Angular Acceleration of robot chassis",
+        dimension: Dimensions.AngAcc,
+        defaultVal: { exp: "0 rad/s^2", val: 0 }
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"MaxAngularAcceleration">,
   PointAt: {
     type: "PointAt" as const,
     name: "Point At",
