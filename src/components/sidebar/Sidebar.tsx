@@ -8,6 +8,7 @@ import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   ContentCopy,
+  Flip,
   Redo,
   ShapeLine,
   Polyline,
@@ -92,7 +93,9 @@ class Sidebar extends Component<Props, State> {
         </div>
         <div
           className={styles.SidebarHeading}
-          style={{ gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px" }}
+          style={{
+            gridTemplateColumns: "auto 33.6px 33.6px 33.6px 33.6px 33.6px"
+          }}
         >
           PATHS
           <Tooltip disableInteractive title="Generate All">
@@ -122,6 +125,23 @@ class Sidebar extends Component<Props, State> {
                 onClick={() => doc.generateAllOutdated()}
               >
                 <ShapeLine fontSize="small"></ShapeLine>
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip disableInteractive title="Mirror Path (over center line)">
+            <span>
+              <IconButton
+                size="small"
+                color="default"
+                style={{
+                  float: "right"
+                }}
+                disabled={Object.keys(doc.pathlist.paths).length == 0}
+                onClick={() =>
+                  doc.pathlist.mirrorPath(doc.pathlist.activePathUUID)
+                }
+              >
+                <Flip fontSize="small"></Flip>
               </IconButton>
             </span>
           </Tooltip>
