@@ -1,0 +1,46 @@
+var annotated_dup =
+[
+    [ "std", null, [
+      [ "tuple_size&lt; trajopt::Translation2&lt; T &gt; &gt;", "structstd_1_1tuple__size_3_01trajopt_1_1Translation2_3_01T_01_4_01_4.html", null ],
+      [ "tuple_element&lt; 0, trajopt::Translation2&lt; T &gt; &gt;", "structstd_1_1tuple__element_3_010_00_01trajopt_1_1Translation2_3_01T_01_4_01_4.html", "structstd_1_1tuple__element_3_010_00_01trajopt_1_1Translation2_3_01T_01_4_01_4" ],
+      [ "tuple_element&lt; 1, trajopt::Translation2&lt; T &gt; &gt;", "structstd_1_1tuple__element_3_011_00_01trajopt_1_1Translation2_3_01T_01_4_01_4.html", "structstd_1_1tuple__element_3_011_00_01trajopt_1_1Translation2_3_01T_01_4_01_4" ]
+    ] ],
+    [ "trajopt", null, [
+      [ "AngularVelocityMaxMagnitudeConstraint", "classtrajopt_1_1AngularVelocityMaxMagnitudeConstraint.html", "classtrajopt_1_1AngularVelocityMaxMagnitudeConstraint" ],
+      [ "HoldsConstraintTypes", "structtrajopt_1_1HoldsConstraintTypes.html", null ],
+      [ "HoldsConstraintTypes&lt; std::variant&lt; Ts... &gt; &gt;", "structtrajopt_1_1HoldsConstraintTypes_3_01std_1_1variant_3_01Ts_8_8_8_01_4_01_4.html", "structtrajopt_1_1HoldsConstraintTypes_3_01std_1_1variant_3_01Ts_8_8_8_01_4_01_4" ],
+      [ "LaneConstraint", "classtrajopt_1_1LaneConstraint.html", "classtrajopt_1_1LaneConstraint" ],
+      [ "LinePointConstraint", "classtrajopt_1_1LinePointConstraint.html", "classtrajopt_1_1LinePointConstraint" ],
+      [ "LinearAccelerationMaxMagnitudeConstraint", "classtrajopt_1_1LinearAccelerationMaxMagnitudeConstraint.html", "classtrajopt_1_1LinearAccelerationMaxMagnitudeConstraint" ],
+      [ "LinearVelocityDirectionConstraint", "classtrajopt_1_1LinearVelocityDirectionConstraint.html", "classtrajopt_1_1LinearVelocityDirectionConstraint" ],
+      [ "LinearVelocityMaxMagnitudeConstraint", "classtrajopt_1_1LinearVelocityMaxMagnitudeConstraint.html", "classtrajopt_1_1LinearVelocityMaxMagnitudeConstraint" ],
+      [ "PointAtConstraint", "classtrajopt_1_1PointAtConstraint.html", "classtrajopt_1_1PointAtConstraint" ],
+      [ "PointLineConstraint", "classtrajopt_1_1PointLineConstraint.html", "classtrajopt_1_1PointLineConstraint" ],
+      [ "PointLineRegionConstraint", "classtrajopt_1_1PointLineRegionConstraint.html", "classtrajopt_1_1PointLineRegionConstraint" ],
+      [ "PointPointMaxConstraint", "classtrajopt_1_1PointPointMaxConstraint.html", "classtrajopt_1_1PointPointMaxConstraint" ],
+      [ "PointPointMinConstraint", "classtrajopt_1_1PointPointMinConstraint.html", "classtrajopt_1_1PointPointMinConstraint" ],
+      [ "PoseEqualityConstraint", "classtrajopt_1_1PoseEqualityConstraint.html", "classtrajopt_1_1PoseEqualityConstraint" ],
+      [ "TranslationEqualityConstraint", "classtrajopt_1_1TranslationEqualityConstraint.html", "classtrajopt_1_1TranslationEqualityConstraint" ],
+      [ "DifferentialDrivetrain", "structtrajopt_1_1DifferentialDrivetrain.html", "structtrajopt_1_1DifferentialDrivetrain" ],
+      [ "DifferentialSolution", "structtrajopt_1_1DifferentialSolution.html", "structtrajopt_1_1DifferentialSolution" ],
+      [ "DifferentialTrajectorySample", "classtrajopt_1_1DifferentialTrajectorySample.html", "classtrajopt_1_1DifferentialTrajectorySample" ],
+      [ "DifferentialTrajectory", "classtrajopt_1_1DifferentialTrajectory.html", "classtrajopt_1_1DifferentialTrajectory" ],
+      [ "DifferentialTrajectoryGenerator", "classtrajopt_1_1DifferentialTrajectoryGenerator.html", "classtrajopt_1_1DifferentialTrajectoryGenerator" ],
+      [ "Pose2", "classtrajopt_1_1Pose2.html", "classtrajopt_1_1Pose2" ],
+      [ "Rotation2", "classtrajopt_1_1Rotation2.html", "classtrajopt_1_1Rotation2" ],
+      [ "Translation2", "classtrajopt_1_1Translation2.html", "classtrajopt_1_1Translation2" ],
+      [ "Waypoint", "structtrajopt_1_1Waypoint.html", "structtrajopt_1_1Waypoint" ],
+      [ "Path", "structtrajopt_1_1Path.html", "structtrajopt_1_1Path" ],
+      [ "PathBuilder", "classtrajopt_1_1PathBuilder.html", "classtrajopt_1_1PathBuilder" ],
+      [ "CubicHermitePoseSplineHolonomic", "classtrajopt_1_1CubicHermitePoseSplineHolonomic.html", "classtrajopt_1_1CubicHermitePoseSplineHolonomic" ],
+      [ "CubicHermiteSpline", "classtrajopt_1_1CubicHermiteSpline.html", "classtrajopt_1_1CubicHermiteSpline" ],
+      [ "CubicHermiteSpline1d", "classtrajopt_1_1CubicHermiteSpline1d.html", "classtrajopt_1_1CubicHermiteSpline1d" ],
+      [ "Spline", "classtrajopt_1_1Spline.html", "classtrajopt_1_1Spline" ],
+      [ "SplineHelper", "classtrajopt_1_1SplineHelper.html", "classtrajopt_1_1SplineHelper" ],
+      [ "SwerveDrivetrain", "structtrajopt_1_1SwerveDrivetrain.html", "structtrajopt_1_1SwerveDrivetrain" ],
+      [ "SwerveSolution", "structtrajopt_1_1SwerveSolution.html", "structtrajopt_1_1SwerveSolution" ],
+      [ "SwerveTrajectorySample", "classtrajopt_1_1SwerveTrajectorySample.html", "classtrajopt_1_1SwerveTrajectorySample" ],
+      [ "SwerveTrajectory", "classtrajopt_1_1SwerveTrajectory.html", "classtrajopt_1_1SwerveTrajectory" ],
+      [ "SwerveTrajectoryGenerator", "classtrajopt_1_1SwerveTrajectoryGenerator.html", "classtrajopt_1_1SwerveTrajectoryGenerator" ]
+    ] ]
+];
