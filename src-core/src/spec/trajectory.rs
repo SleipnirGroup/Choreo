@@ -158,6 +158,9 @@ pub enum ConstraintData<T: SnapshottableType> {
     /// A constraint to contain the bumpers outside a circlular region of the
     /// field
     KeepOutCircle { x: T, y: T, r: T },
+    /// A constraint that requires the robot's velocity to be parallel to its
+    /// heading (zero lateral velocity), like a differential drive. Swerve only.
+    StrafeDiff {},
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -213,6 +216,7 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 y: y.snapshot(),
                 r: r.snapshot(),
             },
+            ConstraintData::StrafeDiff {} => ConstraintData::StrafeDiff {},
         }
     }
 }

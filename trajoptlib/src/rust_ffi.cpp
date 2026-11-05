@@ -80,6 +80,10 @@ void SwerveTrajectoryGenerator::wpt_linear_velocity_direction(size_t index,
   path_builder.wpt_linear_velocity_direction(index, angle);
 }
 
+void SwerveTrajectoryGenerator::wpt_linear_velocity_diff(size_t index) {
+  path_builder.wpt_linear_velocity_diff(index);
+}
+
 void SwerveTrajectoryGenerator::wpt_linear_velocity_max_magnitude(
     size_t index, double magnitude) {
   path_builder.wpt_linear_velocity_max_magnitude(index, magnitude);
@@ -135,6 +139,11 @@ void SwerveTrajectoryGenerator::wpt_keep_out_circle(size_t index,
 void SwerveTrajectoryGenerator::sgmt_linear_velocity_direction(
     size_t from_index, size_t to_index, double angle) {
   path_builder.sgmt_linear_velocity_direction(from_index, to_index, angle);
+}
+
+void SwerveTrajectoryGenerator::sgmt_linear_velocity_diff(size_t from_index,
+                                                          size_t to_index) {
+  path_builder.sgmt_linear_velocity_diff(from_index, to_index);
 }
 
 void SwerveTrajectoryGenerator::sgmt_linear_velocity_max_magnitude(

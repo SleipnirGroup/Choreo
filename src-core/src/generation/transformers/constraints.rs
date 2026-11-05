@@ -172,6 +172,10 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     None => generator.wpt_keep_out_circle(from, Translation2d { x, y }, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, Translation2d { x, y }, r),
                 },
+                ConstraintData::StrafeDiff {} => match to_opt {
+                    None => generator.wpt_linear_velocity_diff(from),
+                    Some(to) => generator.sgmt_linear_velocity_diff(from, to),
+                },
             };
         }
     }
@@ -255,6 +259,8 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     None => generator.wpt_keep_out_circle(from, Translation2d { x, y }, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, Translation2d { x, y }, r),
                 },
+                // Differential drives can't strafe, so this is already satisfied
+                ConstraintData::StrafeDiff {} => {}
             };
         }
     }
