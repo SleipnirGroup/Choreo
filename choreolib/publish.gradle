@@ -94,43 +94,73 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-task outputJar(type: Jar, dependsOn: classes) {
-    archiveBaseName = javaBaseName
-    destinationDirectory = outputsFolder
-    from sourceSets.main.output
-}
+// src/main/java becomes choreolib-java
+// src/commands2/java becomes choreolib-commands2-java
+// src/commands3/java becomes choreolib-commands3-java
+def javaVariants = [
+    core    : [sourceSet: sourceSets.main, javadoc: tasks.named('javadoc'), artifactId: "${baseArtifactId}-java"],
+    commands2: [sourceSet: sourceSets.commands2, javadoc: tasks.named('commands2Javadoc'), artifactId: "${baseArtifactId}-commands2-java"],
+    commands3: [sourceSet: sourceSets.commands3, javadoc: tasks.named('commands3Javadoc'), artifactId: "${baseArtifactId}-commands3-java"],
+]
 
-task outputSourcesJar(type: Jar, dependsOn: classes) {
-    archiveBaseName = javaBaseName
-    destinationDirectory = outputsFolder
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
+def variantArtifactTasks = [:]
+javaVariants.each { name, v ->
+    def baseName = "_GROUP_choreo_ID_${v.artifactId}_CLS"
+    def cap = name.capitalize()
+    def classesTask = tasks.named(v.sourceSet.classesTaskName)
 
-task outputJavadocJar(type: Jar, dependsOn: javadoc) {
-    archiveBaseName = javaBaseName
-    destinationDirectory = outputsFolder
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
-}
+    def jarTask = tasks.register("output${cap}Jar", Jar) {
+        dependsOn classesTask
+        archiveBaseName = baseName
+        destinationDirectory = outputsFolder
+        from v.sourceSet.output
+    }
+    def srcTask = tasks.register("output${cap}SourcesJar", Jar) {
+        dependsOn classesTask
+        archiveBaseName = baseName
+        destinationDirectory = outputsFolder
+        archiveClassifier = 'sources'
+        from v.sourceSet.allSource
+    }
+    def docTask = tasks.register("output${cap}JavadocJar", Jar) {
+        dependsOn v.javadoc
+        archiveBaseName = baseName
+        destinationDirectory = outputsFolder
+        archiveClassifier = 'javadoc'
+        from { v.javadoc.get().destinationDir }
+    }
 
-artifacts {
-    tasks.named("assemble") {
-        dependsOn(sourcesJar)
-        dependsOn(javadocJar)
-        dependsOn(outputJar)
-        dependsOn(outputSourcesJar)
-        dependsOn(outputJavadocJar)
+    // Standalone jars used by the maven publications
+    def pubJar = name == 'core' ? tasks.named('jar') : tasks.register("${name}Jar", Jar) {
+        dependsOn classesTask
+        archiveBaseName = v.artifactId
+        from v.sourceSet.output
+    }
+    def pubSrc = name == 'core' ? tasks.named('sourcesJar') : tasks.register("${name}SourcesJar", Jar) {
+        dependsOn classesTask
+        archiveBaseName = v.artifactId
+        archiveClassifier = 'sources'
+        from v.sourceSet.allSource
+    }
+    def pubDoc = name == 'core' ? tasks.named('javadocJar') : tasks.register("${name}JavadocJar", Jar) {
+        dependsOn v.javadoc
+        archiveBaseName = v.artifactId
+        archiveClassifier = 'javadoc'
+        from { v.javadoc.get().destinationDir }
+    }
+    variantArtifactTasks[name] = [jar: pubJar, sources: pubSrc, javadoc: pubDoc]
+
+    [jarTask, srcTask, docTask].each { t ->
+        build.dependsOn t
+        copyAllOutputs.dependsOn t
+        copyAllOutputs.from { t.get().archiveFile }
+    }
+    artifacts {
+        tasks.named("assemble") {
+            dependsOn(pubJar, pubSrc, pubDoc, jarTask, srcTask, docTask)
+        }
     }
 }
-
-addTaskToCopyAllOutputs(outputSourcesJar)
-addTaskToCopyAllOutputs(outputJavadocJar)
-addTaskToCopyAllOutputs(outputJar)
-
-build.dependsOn outputSourcesJar
-build.dependsOn outputJavadocJar
-build.dependsOn outputJar
 
 libraryBuild.dependsOn build
 
@@ -175,14 +205,28 @@ model {
                 version = pubVersion
             }
 
-            java(MavenPublication) {
-                artifact jar
-                artifact sourcesJar
-                artifact javadocJar
+            javaVariants.each { name, v ->
+                "${name == 'core' ? 'java' : name + 'Java'}"(MavenPublication) {
+                    artifact variantArtifactTasks[name].jar
+                    artifact variantArtifactTasks[name].sources
+                    artifact variantArtifactTasks[name].javadoc
 
-                artifactId = "${baseArtifactId}-java"
-                groupId = artifactGroupId
-                version = pubVersion
+                    artifactId = v.artifactId
+                    groupId = artifactGroupId
+                    version = pubVersion
+
+                    if (name != 'core') {
+                        // Add-ons depend on the core jar; the command framework itself
+                        // comes from the user's commands vendordep.
+                        pom.withXml {
+                            def dep = asNode().appendNode('dependencies').appendNode('dependency')
+                            dep.appendNode('groupId', artifactGroupId)
+                            dep.appendNode('artifactId', "${baseArtifactId}-java")
+                            dep.appendNode('version', pubVersion)
+                            dep.appendNode('scope', 'runtime')
+                        }
+                    }
+                }
             }
         }
     }
