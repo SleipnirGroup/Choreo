@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://choreo.dev/schemas/constraints.schema.json",
+  "title": "Choreo Trajectory Constraints Schema",
+  "$defs": {
+    "MaxLinearVelocity": {
+      "type": "object",
+      "description": "Constraint: maximum linear speed along the path.",
+      "properties": {
+        "type": { "type": "string", "const": "MaxLinearVelocity" },
+        "max": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Maximum speed (m/s)"
+        }
+      },
+      "required": ["type", "max"],
+      "additionalProperties": false
+    },
+    "MaxAngularVelocity": {
+      "type": "object",
+      "description": "Constraint: maximum rotational speed.",
+      "properties": {
+        "type": { "type": "string", "const": "MaxAngularVelocity" },
+        "max": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Maximum angular speed (rad/s)"
+        }
+      },
+      "required": ["type", "max"],
+      "additionalProperties": false
+    },
+    "KeepInCircle": {
+      "type": "object",
+      "description": "Constraint: keep the robot within a circular field region.",
+      "properties": {
+        "type": { "type": "string", "const": "KeepInCircle" },
+        "x": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Circle center X (m)"
+        },
+        "y": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Circle center Y (m)"
+        },
+        "r": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Circle radius (m)"
+        }
+      },
+      "required": ["type", "x", "y", "r"],
+      "additionalProperties": false
+    },
+    "HeadingConstraint": {
+      "type": "object",
+      "description": "Constraint: robot heading must stay within tolerance of a target angle.",
+      "properties": {
+        "type": { "type": "string", "const": "Heading" },
+        "heading": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Target heading (rad)"
+        },
+        "tolerance": {
+          "$ref": "./shared.schema.json#/$defs/Expr",
+          "description": "Allowed deviation (rad)"
+        }
+      },
+      "required": ["type", "heading", "tolerance"],
+      "additionalProperties": false
+    },
+    "ConstraintVariant": {
+      "description": "A typed constraint; discriminated by the 'type' string field.",
+      "oneOf": [
+        { "$ref": "#/$defs/MaxLinearVelocity" },
+        { "$ref": "#/$defs/MaxAngularVelocity" },
+        { "$ref": "#/$defs/KeepInCircle" },
+        { "$ref": "#/$defs/HeadingConstraint" }
+      ]
+    }
+  }
+}
