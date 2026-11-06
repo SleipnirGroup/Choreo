@@ -6,7 +6,7 @@ rm -rf site
 
 pushd choreolib
 mkdir -p build/docs
-./gradlew javadoc
+./gradlew javadoc commands2Javadoc commands3Javadoc
 doxygen docs/Doxyfile
 popd
 
@@ -18,6 +18,8 @@ popd
 
 mkdir -p site/api/{choreolib,trajoptlib}
 cp -r choreolib/build/docs/javadoc site/api/choreolib/java
+cp -r choreolib/build/docs/commands2Javadoc site/api/choreolib/java-commands2
+cp -r choreolib/build/docs/commands3Javadoc site/api/choreolib/java-commands3
 cp -r choreolib/build/docs/cpp/html site/api/choreolib/cpp
 cp -r trajoptlib/build/docs/html site/api/trajoptlib/cpp
 cp -r target/doc site/api/trajoptlib/rs

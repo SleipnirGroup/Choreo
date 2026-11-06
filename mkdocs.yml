@@ -103,9 +103,12 @@ nav:
       - Code Generation: usage/code-generation.md
   - ChoreoLib:
       - Getting Started: choreolib/getting-started.md
-      - Auto Factory: choreolib/auto-factory.md
+      - Auto Factory (Commands v3): choreolib/auto-factory-cmd3.md
+      - Auto Factory (Commands v2): choreolib/auto-factory-cmd2.md
       - Trajectory API: choreolib/trajectory-api.md
-      - Java API: api/choreolib/java/index.html
+      - Java Core API: api/choreolib/java/index.html
+      - Java Commands v3 API: api/choreolib/java-commands3/index.html
+      - Java Commands v2 API: api/choreolib/java-commands2/index.html
       - C++ API: api/choreolib/cpp/index.html
   - TrajoptLib (Internal API):
       - C++ API: api/trajoptlib/cpp/index.html

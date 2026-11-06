@@ -154,7 +154,7 @@ Event Markers are a way to mark timestamps during a path for use in ChoreoLib or
 
 ![Event Markers and Command Bindings](../media/event-markers.png)
 
-In ChoreoLib, markers can be used with the Java AutoTrajectory API in `AutoTrajectory.atTime(String)` ([Javadoc](/api/choreolib/java/choreo/auto/AutoTrajectory.html#atTime(java.lang.String))) and similar.
+In ChoreoLib, markers can be used with the Java AutoTrajectory API in `AutoTrajectory.atTime(String)` ([Commands v2 Javadoc](/api/choreolib/java-commands2/choreo/auto/AutoTrajectory.html#atTime(java.lang.String)), [Commands v3 Javadoc](/api/choreolib/java-commands3/choreo/commands3/AutoTrajectory.html#atTime(java.lang.String))) and similar.
 
 For teams that use the PathPlannerLib interoperability to follow Choreo paths, Choreo offers event marker support to trigger commands during the path. Though Choreo's process for positioning markers is different than PathPlanner, the process for attaching a command to a marker is very similar.
 
