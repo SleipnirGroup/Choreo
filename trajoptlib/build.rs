@@ -22,10 +22,10 @@ fn main() {
         .include("src")
         .include(format!("{}/include", cmake_dest.display()))
         .include(format!("{}/include/eigen3", cmake_dest.display()))
-        .flag_if_supported("-std=c++23")
         .flag_if_supported("-std=c++2b")
-        .flag_if_supported("/std:c++23")
-        .flag_if_supported("/std:c++23preview");
+        .flag_if_supported("-std=c++23")
+        .flag_if_supported("/std:c++23preview")
+        .flag_if_supported("/std:c++23");
 
     if cfg!(target_os = "windows") {
         bridge_build.flag("/EHsc").flag("/utf-8");
