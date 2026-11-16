@@ -147,6 +147,9 @@ fn setup_tracing() -> Vec<WorkerGuard> {
     guards
 }
 
+// clippy::large_unopt_stack_frames is caused by tauri::generate_context!()
+// embedding the frontend assets
+#[allow(clippy::large_unopt_stack_frames)]
 pub fn run_tauri(project: Option<PathBuf>) {
     let guards = setup_tracing();
 
