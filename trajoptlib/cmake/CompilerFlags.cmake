@@ -13,15 +13,5 @@ function(compiler_flags target)
     if(MSVC)
         target_compile_options(${target} PUBLIC /utf-8 /bigobj)
         target_compile_options(${target} PRIVATE /MP)
-        # /Zf is an MSVC argument not currently supported by clang-cl.
-        # See https://github.com/llvm/llvm-project/issues/51578.
-        if(
-            NOT (
-                ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"
-                AND ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL "MSVC"
-            )
-        )
-            target_compile_options(${target} PRIVATE /Zf)
-        endif()
     endif()
 endfunction()
