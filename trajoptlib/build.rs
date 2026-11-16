@@ -24,6 +24,7 @@ fn main() {
         .include(format!("{}/include/eigen3", cmake_dest.display()))
         .flag_if_supported("-std=c++23")
         .flag_if_supported("-std=c++2b")
+        .flag_if_supported("/std:c++23")
         .flag_if_supported("/std:c++23preview");
 
     if cfg!(target_os = "windows") {
