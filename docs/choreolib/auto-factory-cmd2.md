@@ -1,10 +1,13 @@
 
-# AutoFactory (Java Only)
+# AutoFactory (Java Only, Commands v2)
 
 !!! note
     This API is only available for Java. C++ and Python users should instead utilize the [Trajectory API](./trajectory-api.md).
 
-ChoreoLib provides the `AutoFactory` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.html)) class as a higher level API to make it easier to create complex auto routines inside your robot code.
+!!! note
+    This page covers ChoreoLib's integration with WPILib's Commands v2. If your robot uses Commands v3, see [AutoFactory (Commands v3)](auto-factory-cmd3.md) instead. The two use different ChoreoLib vendordeps and can't be installed together.
+
+ChoreoLib provides the `AutoFactory` ([Java](/api/choreolib/java-commands2/choreo/auto/AutoFactory.html)) class as a higher level API to make it easier to create complex auto routines inside your robot code.
 
 ```java title="Robot.java"
 public class Robot extends TimedRobot {
@@ -82,7 +85,7 @@ public Command pickupAndScoreAuto() {
 
 ## Using AutoRoutine
 
-While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [`Trigger`](https://docs.wpilib.org/en/stable/docs/software/commandbased/binding-commands-to-triggers.html) class to define a control flow based on reactions to state that don't require subsystems until they are needed.
+While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java-commands2/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [`Trigger`](https://docs.wpilib.org/en/stable/docs/software/commandbased/binding-commands-to-triggers.html) class to define a control flow based on reactions to state that don't require subsystems until they are needed.
 
 To get started, create a new routine using `AutoFactory.newRoutine()`:
 
@@ -97,7 +100,7 @@ The "entrance" to all routines is the `AutoRoutine.active()` trigger. You should
 routine.active().onTrue(Commands.print("Started the routine!"));
 ```
 
-Trajectories can be loaded using `AutoRoutine.trajectory()`, which will return an `AutoTrajectory` ([Java](/api/choreolib/java/choreo/auto/AutoTrajectory.html)). The `AutoTrajectory` class exposes multiple triggers for you to attach reactive logic to, as well as `AutoTrajectory.cmd()` for scheduling the trajectory.
+Trajectories can be loaded using `AutoRoutine.trajectory()`, which will return an `AutoTrajectory` ([Java](/api/choreolib/java-commands2/choreo/auto/AutoTrajectory.html)). The `AutoTrajectory` class exposes multiple triggers for you to attach reactive logic to, as well as `AutoTrajectory.cmd()` for scheduling the trajectory.
 
 ```java
 public AutoRoutine pickupAndScoreAuto() {
@@ -165,7 +168,7 @@ public AutoRoutine pickupAndScoreAuto() {
 
     Advanced users may use vision to get the robot's starting position, however this is not recommended for most teams.
 
-2. Alternatively, you can use `AutoTrajectory.atPose()` for utilizing event markers. See the [Java reference documentation](/api/choreolib/java/choreo/auto/AutoTrajectory.html#atPose(java.lang.String,double,double)) for more information about behavior.
+2. Alternatively, you can use `AutoTrajectory.atPose()` for utilizing event markers. See the [Java reference documentation](/api/choreolib/java-commands2/choreo/auto/AutoTrajectory.html#atPose(java.lang.String,double,double)) for more information about behavior.
 
 !!! warning
     The `AutoTrajectory.done()` trigger is only `true` for one cycle of the command scheduler after the trajectory is finished, meaning that using bindings such as `Trigger.whileTrue()` may not produce the desired behavior. Instead, use bindings such as `Trigger.onTrue()`.
@@ -272,7 +275,7 @@ autoFactory
 
 ## AutoChooser
 
-The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) class allows you to send a list of your autonomous routines to a driver dashboard for selection before a match. It is meant to be a more efficient alternative to `Selectable`, taking a [lazy loading](https://en.wikipedia.org/wiki/Lazy_loading) approach to generating command compositions or an `AutoRoutine`. This approach has the benefit of not loading all autos on startup, but also not loading the auto after the match starts, which may cause a delay when using many or large trajectories.
+The `AutoChooser` ([Java](/api/choreolib/java-commands2/choreo/auto/AutoChooser.html)) class allows you to send a list of your autonomous routines to a driver dashboard for selection before a match. It is meant to be a more efficient alternative to `Selectable`, taking a [lazy loading](https://en.wikipedia.org/wiki/Lazy_loading) approach to generating command compositions or an `AutoRoutine`. This approach has the benefit of not loading all autos on startup, but also not loading the auto after the match starts, which may cause a delay when using many or large trajectories.
 
 !!! tip
     Due to its performance implications and support for `AutoRoutine`, using `AutoChooser` is the recommended pattern for auto selection, instead of `Selectable` or other alternatives.
