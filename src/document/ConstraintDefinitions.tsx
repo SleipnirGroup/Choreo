@@ -75,6 +75,9 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     r: Expr;
   };
+  KeepInBounds: {
+    tolerance: Expr;
+  };
 };
 export type DataMap = {
   [K in keyof ConstraintDataTypeMap]: IConstraintData<
@@ -294,7 +297,26 @@ export const ConstraintDefinitions: defs = {
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<"KeepOutCircle">
+  } satisfies ConstraintDefinition<"KeepOutCircle">,
+  KeepInBounds: {
+    type: "KeepInBounds" as const,
+    name: "Keep In Bounds",
+    shortName: "Keep In Bounds",
+    description:
+      "Keep the robot within a lane between each consecutive pair of waypoints",
+    icon: <KeepInLane />,
+    properties: {
+      tolerance: {
+        name: "Tolerance",
+        description:
+          "Max distance from the line between each pair of waypoints",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0.5 m", val: 0.5 }
+      }
+    },
+    wptScope: false,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInBounds">
 };
 
 export type ConstraintKey = keyof DataMap;
