@@ -135,10 +135,6 @@ jobs:
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64release/compile_commands.json
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64debug/compile_commands.json
 
-      - name: List changed files
-        working-directory: choreolib
-        run: wpiformat -f . -list-changed-files
-
       - name: Run clang-tidy debug
         working-directory: choreolib
         run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug
@@ -182,10 +178,6 @@ jobs:
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
-        working-directory: trajoptlib
-
-      - name: List changed files
-        run: wpiformat -f . -list-changed-files
         working-directory: trajoptlib
 
       - name: Run clang-tidy
