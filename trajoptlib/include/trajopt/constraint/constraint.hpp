@@ -12,6 +12,7 @@
 #include "trajopt/constraint/lane_constraint.hpp"
 #include "trajopt/constraint/line_point_constraint.hpp"
 #include "trajopt/constraint/linear_acceleration_max_magnitude_constraint.hpp"
+#include "trajopt/constraint/linear_velocity_diff_constraint.hpp"
 #include "trajopt/constraint/linear_velocity_direction_constraint.hpp"
 #include "trajopt/constraint/linear_velocity_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/point_at_constraint.hpp"
@@ -47,6 +48,7 @@ using Constraint = std::variant<
     LaneConstraint,
     LinePointConstraint,
     LinearAccelerationMaxMagnitudeConstraint,
+    LinearVelocityDiffConstraint,
     LinearVelocityDirectionConstraint,
     LinearVelocityMaxMagnitudeConstraint,
     PointAtConstraint,

@@ -189,6 +189,8 @@ mod ffi {
             angle: f64,
         );
 
+        fn wpt_linear_velocity_diff(self: Pin<&mut SwerveTrajectoryGenerator>, index: usize);
+
         fn wpt_linear_velocity_max_magnitude(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
@@ -250,6 +252,12 @@ mod ffi {
             from_index: usize,
             to_index: usize,
             angle: f64,
+        );
+
+        fn sgmt_linear_velocity_diff(
+            self: Pin<&mut SwerveTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
         );
 
         fn sgmt_linear_velocity_max_magnitude(
@@ -655,6 +663,18 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Applies a linear velocity diff constraint to a waypoint, which requires
+    /// the linear velocity to be parallel to the heading (zero lateral
+    /// velocity).
+    ///
+    /// * `index` - The waypoint's index.
+    pub fn wpt_linear_velocity_diff(&mut self, index: usize) {
+        crate::ffi::SwerveTrajectoryGenerator::wpt_linear_velocity_diff(
+            self.generator.pin_mut(),
+            index,
+        );
+    }
+
     /// Applies a linear velocity max magnitude constraint to a waypoint.
     ///
     /// * `index` - The waypoint's index.
@@ -802,6 +822,20 @@ impl SwerveTrajectoryGenerator {
             from_index,
             to_index,
             angle,
+        );
+    }
+
+    /// Applies a linear velocity diff constraint between two waypoints, which
+    /// requires the linear velocity to be parallel to the heading (zero lateral
+    /// velocity).
+    ///
+    /// * `from_index` - The first waypoint's index.
+    /// * `to_index` - The second waypoint's index.
+    pub fn sgmt_linear_velocity_diff(&mut self, from_index: usize, to_index: usize) {
+        crate::ffi::SwerveTrajectoryGenerator::sgmt_linear_velocity_diff(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
         );
     }
 

@@ -108,6 +108,10 @@ The following 5 constraints all have draggable shapes on the field tied to their
     * If there are intermediate waypoints, the lane still goes straight between the start and end of the constraint range.
 9. **Keep Out Circle** (Both): Keep all portions of the bumper outside of the circle.
     * See "Keep Out Regions" below.
+10. **Strafe Diff** (Both, swerve only): Keeps the robot's velocity parallel to its heading, so it drives like a differential drive and doesn't strafe.
+    * Useful for keeping an intake or shooter facing the direction of travel.
+    * The robot can still drive backward along its heading. Use waypoint headings to choose which side leads.
+    * Has no effect on differential drive robots, which can't strafe anyway.
 
 ### Adding Constraints
 
