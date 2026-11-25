@@ -8,8 +8,10 @@ import java.util.function.Function;
 import org.wpilib.util.Alert;
 import org.wpilib.util.Alert.Level;
 
-/** A utility class for creating alerts under the "Choreo Alerts" group. */
+/** A utility class for creating alerts under the "Choreo" group. */
 public class ChoreoAlert {
+  private static final String GROUP = "Choreo";
+
   /**
    * Creates an alert under the "Choreo" group, using the name as the displayed text.
    *
@@ -30,7 +32,7 @@ public class ChoreoAlert {
    * @return an Alert published under the "Choreo" group
    */
   public static Alert alert(String name, String text, Level level) {
-    return new Alert(name, text, level);
+    return new Alert(GROUP, name, text, level);
   }
 
   /**
@@ -71,7 +73,7 @@ public class ChoreoAlert {
     }
 
     MultiAlert(String name, Function<List<String>, String> textGenerator, Level level) {
-      super(name, textGenerator.apply(List.of()), level);
+      super(GROUP, name, textGenerator.apply(List.of()), level);
       this.textGenerator = textGenerator;
     }
 
