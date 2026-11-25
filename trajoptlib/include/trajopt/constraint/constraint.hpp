@@ -8,6 +8,7 @@
 #include <sleipnir/autodiff/variable.hpp>
 #include <sleipnir/optimization/problem.hpp>
 
+#include "trajopt/constraint/angular_acceleration_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/angular_velocity_max_magnitude_constraint.hpp"
 #include "trajopt/constraint/lane_constraint.hpp"
 #include "trajopt/constraint/line_point_constraint.hpp"
@@ -43,6 +44,7 @@ concept ConstraintLike =
 /// List of constraint types (must satisfy ConstraintLike concept).
 using Constraint = std::variant<
     // clang-format off
+    AngularAccelerationMaxMagnitudeConstraint,
     AngularVelocityMaxMagnitudeConstraint,
     LaneConstraint,
     LinePointConstraint,

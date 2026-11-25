@@ -56,6 +56,7 @@ class SwerveTrajectoryGenerator {
   void wpt_linear_velocity_direction(size_t index, double angle);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
   void wpt_angular_velocity_max_magnitude(size_t index, double magnitude);
+  void wpt_angular_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, Translation2d field_point,
                     double heading_tolerance, bool flip);
@@ -71,6 +72,9 @@ class SwerveTrajectoryGenerator {
                                           double magnitude);
   void sgmt_angular_velocity_max_magnitude(size_t from_index, size_t to_index,
                                            double magnitude);
+  void sgmt_angular_acceleration_max_magnitude(size_t from_index,
+                                               size_t to_index,
+                                               double magnitude);
   void sgmt_linear_acceleration_max_magnitude(size_t from_index,
                                               size_t to_index,
                                               double magnitude);
@@ -124,6 +128,7 @@ class DifferentialTrajectoryGenerator {
   void wpt_linear_velocity_direction(size_t index, double angle);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
   void wpt_angular_velocity_max_magnitude(size_t index, double magnitude);
+  void wpt_angular_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, Translation2d field_point,
                     double heading_tolerance, bool flip);
@@ -139,6 +144,9 @@ class DifferentialTrajectoryGenerator {
                                           double magnitude);
   void sgmt_angular_velocity_max_magnitude(size_t from_index, size_t to_index,
                                            double magnitude);
+  void sgmt_angular_acceleration_max_magnitude(size_t from_index,
+                                               size_t to_index,
+                                               double magnitude);
   void sgmt_linear_acceleration_max_magnitude(size_t from_index,
                                               size_t to_index,
                                               double magnitude);

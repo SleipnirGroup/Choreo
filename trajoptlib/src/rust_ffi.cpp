@@ -90,6 +90,11 @@ void SwerveTrajectoryGenerator::wpt_angular_velocity_max_magnitude(
   path_builder.wpt_angular_velocity_max_magnitude(index, magnitude);
 }
 
+void SwerveTrajectoryGenerator::wpt_angular_acceleration_max_magnitude(
+    size_t index, double magnitude) {
+  path_builder.wpt_angular_acceleration_max_magnitude(index, magnitude);
+}
+
 void SwerveTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
     size_t index, double magnitude) {
   path_builder.wpt_linear_acceleration_max_magnitude(index, magnitude);
@@ -147,6 +152,12 @@ void SwerveTrajectoryGenerator::sgmt_angular_velocity_max_magnitude(
     size_t from_index, size_t to_index, double angular_velocity) {
   path_builder.sgmt_angular_velocity_max_magnitude(from_index, to_index,
                                                    angular_velocity);
+}
+
+void SwerveTrajectoryGenerator::sgmt_angular_acceleration_max_magnitude(
+    size_t from_index, size_t to_index, double magnitude) {
+  path_builder.sgmt_angular_acceleration_max_magnitude(from_index, to_index,
+                                                       magnitude);
 }
 
 void SwerveTrajectoryGenerator::sgmt_linear_acceleration_max_magnitude(
@@ -327,6 +338,11 @@ void DifferentialTrajectoryGenerator::wpt_angular_velocity_max_magnitude(
   path_builder.wpt_angular_velocity_max_magnitude(index, magnitude);
 }
 
+void DifferentialTrajectoryGenerator::wpt_angular_acceleration_max_magnitude(
+    size_t index, double magnitude) {
+  path_builder.wpt_angular_acceleration_max_magnitude(index, magnitude);
+}
+
 void DifferentialTrajectoryGenerator::wpt_linear_acceleration_max_magnitude(
     size_t index, double magnitude) {
   path_builder.wpt_linear_acceleration_max_magnitude(index, magnitude);
@@ -384,6 +400,12 @@ void DifferentialTrajectoryGenerator::sgmt_angular_velocity_max_magnitude(
     size_t from_index, size_t to_index, double magnitude) {
   path_builder.sgmt_angular_velocity_max_magnitude(from_index, to_index,
                                                    magnitude);
+}
+
+void DifferentialTrajectoryGenerator::sgmt_angular_acceleration_max_magnitude(
+    size_t from_index, size_t to_index, double magnitude) {
+  path_builder.sgmt_angular_acceleration_max_magnitude(from_index, to_index,
+                                                       magnitude);
 }
 
 void DifferentialTrajectoryGenerator::sgmt_linear_acceleration_max_magnitude(

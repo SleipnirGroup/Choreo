@@ -201,6 +201,12 @@ mod ffi {
             magnitude: f64,
         );
 
+        fn wpt_angular_acceleration_max_magnitude(
+            self: Pin<&mut SwerveTrajectoryGenerator>,
+            index: usize,
+            magnitude: f64,
+        );
+
         fn wpt_linear_acceleration_max_magnitude(
             self: Pin<&mut SwerveTrajectoryGenerator>,
             index: usize,
@@ -264,6 +270,13 @@ mod ffi {
             from_index: usize,
             to_index: usize,
             angular_velocity: f64,
+        );
+
+        fn sgmt_angular_acceleration_max_magnitude(
+            self: Pin<&mut SwerveTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            magnitude: f64,
         );
 
         fn sgmt_linear_acceleration_max_magnitude(
@@ -395,6 +408,12 @@ mod ffi {
             angular_velocity: f64,
         );
 
+        fn wpt_angular_acceleration_max_magnitude(
+            self: Pin<&mut DifferentialTrajectoryGenerator>,
+            index: usize,
+            magnitude: f64,
+        );
+
         fn wpt_linear_acceleration_max_magnitude(
             self: Pin<&mut DifferentialTrajectoryGenerator>,
             index: usize,
@@ -458,6 +477,13 @@ mod ffi {
             from_index: usize,
             to_index: usize,
             angular_velocity: f64,
+        );
+
+        fn sgmt_angular_acceleration_max_magnitude(
+            self: Pin<&mut DifferentialTrajectoryGenerator>,
+            from_index: usize,
+            to_index: usize,
+            magnitude: f64,
         );
 
         fn sgmt_linear_acceleration_max_magnitude(
@@ -679,6 +705,18 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Applies an angular acceleration max magnitude constraint to a waypoint.
+    ///
+    /// * `index` - The waypoint's index.
+    /// * `magnitude` - The magnitude.
+    pub fn wpt_angular_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
+        crate::ffi::SwerveTrajectoryGenerator::wpt_angular_acceleration_max_magnitude(
+            self.generator.pin_mut(),
+            index,
+            magnitude,
+        );
+    }
+
     /// Applies a linear acceleration max magnitude constraint to a waypoint.
     ///
     /// * `index` - The waypoint's index.
@@ -838,6 +876,26 @@ impl SwerveTrajectoryGenerator {
         magnitude: f64,
     ) {
         crate::ffi::SwerveTrajectoryGenerator::sgmt_angular_velocity_max_magnitude(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            magnitude,
+        );
+    }
+
+    /// Applies an angular acceleration max magnitude constraint between two
+    /// waypoints.
+    ///
+    /// * `from_index` - The first waypoint's index.
+    /// * `to_index` - The second waypoint's index.
+    /// * `magnitude` - The magnitude.
+    pub fn sgmt_angular_acceleration_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        magnitude: f64,
+    ) {
+        crate::ffi::SwerveTrajectoryGenerator::sgmt_angular_acceleration_max_magnitude(
             self.generator.pin_mut(),
             from_index,
             to_index,
@@ -1194,6 +1252,18 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Applies an angular acceleration max magnitude constraint to a waypoint.
+    ///
+    /// * `index` - The waypoint's index.
+    /// * `magnitude` - The magnitude.
+    pub fn wpt_angular_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
+        crate::ffi::DifferentialTrajectoryGenerator::wpt_angular_acceleration_max_magnitude(
+            self.generator.pin_mut(),
+            index,
+            magnitude,
+        );
+    }
+
     /// Applies a linear acceleration max magnitude constraint to a waypoint.
     ///
     /// * `index` - The waypoint's index.
@@ -1353,6 +1423,26 @@ impl DifferentialTrajectoryGenerator {
         magnitude: f64,
     ) {
         crate::ffi::DifferentialTrajectoryGenerator::sgmt_angular_velocity_max_magnitude(
+            self.generator.pin_mut(),
+            from_index,
+            to_index,
+            magnitude,
+        );
+    }
+
+    /// Applies an angular acceleration max magnitude constraint between two
+    /// waypoints.
+    ///
+    /// * `from_index` - The first waypoint's index.
+    /// * `to_index` - The second waypoint's index.
+    /// * `magnitude` - The magnitude.
+    pub fn sgmt_angular_acceleration_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        magnitude: f64,
+    ) {
+        crate::ffi::DifferentialTrajectoryGenerator::sgmt_angular_acceleration_max_magnitude(
             self.generator.pin_mut(),
             from_index,
             to_index,
