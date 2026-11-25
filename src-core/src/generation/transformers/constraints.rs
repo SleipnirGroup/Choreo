@@ -172,6 +172,29 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     None => generator.wpt_keep_out_circle(from, Translation2d { x, y }, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, Translation2d { x, y }, r),
                 },
+                ConstraintData::KeepInBounds { tolerance } => {
+                    if let Some(idx_to) = to_opt {
+                        for i in from..idx_to {
+                            if let Some(wpt_from) = self.waypoint_idx.get(i)
+                                && let Some(wpt_to) = self.waypoint_idx.get(i + 1)
+                            {
+                                generator.sgmt_keep_in_lane(
+                                    i,
+                                    i + 1,
+                                    Translation2d {
+                                        x: wpt_from.x,
+                                        y: wpt_from.y,
+                                    },
+                                    Translation2d {
+                                        x: wpt_to.x,
+                                        y: wpt_to.y,
+                                    },
+                                    tolerance,
+                                );
+                            }
+                        }
+                    }
+                }
             };
         }
     }
@@ -255,6 +278,29 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     None => generator.wpt_keep_out_circle(from, Translation2d { x, y }, r),
                     Some(to) => generator.sgmt_keep_out_circle(from, to, Translation2d { x, y }, r),
                 },
+                ConstraintData::KeepInBounds { tolerance } => {
+                    if let Some(idx_to) = to_opt {
+                        for i in from..idx_to {
+                            if let Some(wpt_from) = self.waypoint_idx.get(i)
+                                && let Some(wpt_to) = self.waypoint_idx.get(i + 1)
+                            {
+                                generator.sgmt_keep_in_lane(
+                                    i,
+                                    i + 1,
+                                    Translation2d {
+                                        x: wpt_from.x,
+                                        y: wpt_from.y,
+                                    },
+                                    Translation2d {
+                                        x: wpt_to.x,
+                                        y: wpt_to.y,
+                                    },
+                                    tolerance,
+                                );
+                            }
+                        }
+                    }
+                }
             };
         }
     }
