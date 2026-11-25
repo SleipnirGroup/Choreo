@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://choreo.dev/schemas/progress.schema.json",
+  "title": "Choreo Progress Update Schema",
+  "$defs": {
+    "IncompleteTrajectoryProgressMessage": {
+      "type": "object",
+      "description": "Progress event carrying an incomplete trajectory sample update encoded as a WPILib struct-array base64 blob.",
+      "properties": {
+        "version": { "type": "integer", "const": 1 },
+        "event": { "type": "string", "const": "incompleteTrajectory" },
+        "driveType": { "$ref": "./shared.schema.json#/$defs/DriveType" },
+        "sampleCount": { "type": "integer", "minimum": 0 },
+        "sampleStructType": {
+          "type": "string",
+          "description": "WPILib struct type string (e.g. struct:HolonomicSample)."
+        },
+        "sampleStructSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "WPILib struct size in bytes for one sample."
+        },
+        "samplesBase64": {
+          "type": "string",
+          "description": "Base64-encoded packed WPILib struct-array bytes for the samples."
+        }
+      },
+      "required": [
+        "version",
+        "event",
+        "driveType",
+        "sampleCount",
+        "sampleStructType",
+        "sampleStructSize",
+        "samplesBase64"
+      ],
+      "additionalProperties": false
+    },
+    "DiagnosticProgressMessage": {
+      "type": "object",
+      "description": "Progress event carrying diagnostic text.",
+      "properties": {
+        "version": { "type": "integer", "const": 1 },
+        "event": { "type": "string", "const": "diagnostic" },
+        "payload": {
+          "type": "object",
+          "properties": { "text": { "type": "string" } },
+          "required": ["text"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["version", "event", "payload"],
+      "additionalProperties": false
+    },
+    "ErrorProgressMessage": {
+      "type": "object",
+      "description": "Progress event carrying an error message.",
+      "properties": {
+        "version": { "type": "integer", "const": 1 },
+        "event": { "type": "string", "const": "error" },
+        "payload": {
+          "type": "object",
+          "properties": { "message": { "type": "string" } },
+          "required": ["message"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["version", "event", "payload"],
+      "additionalProperties": false
+    },
+    "CompleteTrajectoryProgressMessage": {
+      "type": "object",
+      "description": "Progress event carrying the final generated trajectory file JSON payload.",
+      "properties": {
+        "version": { "type": "integer", "const": 1 },
+        "event": { "type": "string", "const": "completeTrajectory" },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "trajectoryFile": {
+              "type": "string",
+              "description": "Serialized TrajectoryFile JSON string."
+            }
+          },
+          "required": ["trajectoryFile"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["version", "event", "payload"],
+      "additionalProperties": false
+    },
+    "ProgressUpdateMessage": {
+      "description": "All supported JSON progress update messages emitted by the C++ progress-update-sender.",
+      "oneOf": [
+        { "$ref": "#/$defs/IncompleteTrajectoryProgressMessage" },
+        { "$ref": "#/$defs/DiagnosticProgressMessage" },
+        { "$ref": "#/$defs/ErrorProgressMessage" },
+        { "$ref": "#/$defs/CompleteTrajectoryProgressMessage" }
+      ]
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/ProgressUpdateMessage" }]
+}
