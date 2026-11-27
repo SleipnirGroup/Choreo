@@ -1,6 +1,6 @@
 {
   "fileName": "ChoreoLib2027Alpha.json",
-  "name": "ChoreoLib",
+  "name": "ChoreoLib (Commands v2)",
   "version": "2027.0.0-alpha-3",
   "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
   "wpilibYear": "2027_alpha7",
@@ -9,10 +9,22 @@
     "https://repo1.maven.org/maven2"
   ],
   "jsonUrl": "https://choreo.autos/lib/ChoreoLib2027Alpha.json",
+  "conflictsWith": [
+    {
+      "uuid": "b48dff2d-54ed-462a-80ac-a75eaf36e13c",
+      "errorMessage": "ChoreoLib for Commands v2 and ChoreoLib for Commands v3 cannot be installed together.",
+      "offlineFileName": "ChoreoLib2027AlphaCommands3.json"
+    }
+  ],
   "javaDependencies": [
     {
       "groupId": "choreo",
       "artifactId": "ChoreoLib-java",
+      "version": "2027.0.0-alpha-3"
+    },
+    {
+      "groupId": "choreo",
+      "artifactId": "ChoreoLib-commands2-java",
       "version": "2027.0.0-alpha-3"
     },
     {

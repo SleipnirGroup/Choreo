@@ -1,7 +1,7 @@
 # Trajectory API
 
 !!! tip
-    Java users are recommended to use an [Auto Factory](./auto-factory.md) instead of the Trajectory API for loading and following trajectories, as it provides a more user-friendly experience for developing complex autonomous routines.
+    Java users are recommended to use an [Auto Factory](auto-factory-cmd2.md) instead of the Trajectory API for loading and following trajectories, as it provides a more user-friendly experience for developing complex autonomous routines.
 
 To begin utilizing trajectories created by Choreo, you must first load a `Trajectory` ([Java](/api/choreolib/java/choreo/trajectory/Trajectory.html), [C++](/api/choreolib/cpp/classchoreo_1_1Trajectory.html)) from its corresponding file.
 

@@ -38,7 +38,6 @@ dependencies {
     implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
     implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
-    implementation "org.wpilib.commandsv2:commandsv2-java:+"
 
     // This is needed to use wpilibj Filesystem class
     testImplementation "org.wpilib.cscore:cscore-java:$wpilibVersion"
@@ -57,6 +56,66 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'io.avaje:avaje-jsonb:3.14'
+}
+
+// src/commands2 and src/commands3 both depend on src/main
+// src/commands2Test and src/commands3Test additionally depend on their command source set and
+// on src/test (shared test helpers)
+sourceSets {
+    commands2 {
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+        runtimeClasspath += sourceSets.main.output
+    }
+    commands3 {
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+        runtimeClasspath += sourceSets.main.output
+    }
+    commands2Test {
+        compileClasspath += sourceSets.main.output + sourceSets.commands2.output + sourceSets.test.output + configurations.testCompileClasspath
+        runtimeClasspath += output + compileClasspath + configurations.testRuntimeClasspath
+    }
+    commands3Test {
+        compileClasspath += sourceSets.main.output + sourceSets.commands3.output + sourceSets.test.output + configurations.testCompileClasspath
+        runtimeClasspath += output + compileClasspath + configurations.testRuntimeClasspath
+    }
+}
+
+configurations {
+    commands2CompileOnly.extendsFrom implementation
+    commands3CompileOnly.extendsFrom implementation
+    commands2TestImplementation.extendsFrom testImplementation
+    commands2TestRuntimeOnly.extendsFrom testRuntimeOnly
+    commands3TestImplementation.extendsFrom testImplementation
+    commands3TestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    commands2CompileOnly "org.wpilib.commandsv2:commandsv2-java:+"
+    commands3CompileOnly "org.wpilib:commandsv3-java:+"
+    commands2TestImplementation "org.wpilib.commandsv2:commandsv2-java:+"
+    commands3TestImplementation "org.wpilib:commandsv3-java:+"
+}
+
+['commands2', 'commands3'].each { name ->
+    tasks.register("${name}Test", Test) {
+        description = "Runs the ${name == 'commands2' ? 'Commands v2' : 'Commands v3'} tests"
+        group = 'verification'
+        testClassesDirs = sourceSets["${name}Test"].output.classesDirs
+        classpath = sourceSets["${name}Test"].runtimeClasspath
+        useJUnitPlatform()
+        systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+        testLogging {
+            events "failed"
+            exceptionFormat = "full"
+        }
+        jvmArgs += [
+            "--add-opens",
+            "java.base/jdk.internal.vm=ALL-UNNAMED",
+            "--add-opens",
+            "java.base/java.lang=ALL-UNNAMED",
+        ]
+    }
+    check.dependsOn "${name}Test"
 }
 
 // Set up java tests
@@ -94,6 +153,31 @@ javadoc {
     title = "ChoreoLib API"
 
     options.addBooleanOption('Werror', true)
+}
+
+// Javadocs for the command framework specific jars
+['commands2', 'commands3'].each { name ->
+    tasks.register("${name}Javadoc", Javadoc) {
+        source = sourceSets[name].allJava
+        classpath = sourceSets[name].compileClasspath
+        destinationDir = file("$buildDir/docs/${name}Javadoc")
+        options.links(*javadoc.options.links)
+        options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
+        options.addBooleanOption('html5', true)
+        options.addStringOption("charset", "utf-8")
+        options.addStringOption("docencoding", "utf-8")
+        options.addStringOption("encoding", "utf-8")
+        options.linkSource(true)
+        failOnError = true
+        // javadoc errors out on a source set with only package-info files
+        onlyIf {
+            source.files.any {
+                it.name != 'package-info.java'
+            }
+        }
+        title = "ChoreoLib ${name == 'commands2' ? 'Commands v2' : 'Commands v3'} API"
+        options.addBooleanOption('Werror', true)
+    }
 }
 
 // Set up exports properly
@@ -145,6 +229,20 @@ model {
                     test.systemProperty 'java.library.path', filePath
                     test.environment 'LD_LIBRARY_PATH', filePath
                     test.workingDir filePath
+
+                    // The Commands v2 and v3 tests need the same native libraries
+                    def installTask = it.tasks.install
+                    [
+                        'commands2Test',
+                        'commands3Test'
+                    ].each { testName ->
+                        project.tasks.named(testName).configure {
+                            dependsOn installTask
+                            systemProperty 'java.library.path', filePath
+                            environment 'LD_LIBRARY_PATH', filePath
+                            workingDir filePath
+                        }
+                    }
                 }
             }
 

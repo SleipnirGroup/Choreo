@@ -14,6 +14,21 @@ To use ChoreoLib in your robot code, it must first be installed as a vendor libr
         https://choreo.autos/lib/ChoreoLib2027Alpha.json
         ```
 
+    This installs ChoreoLib for WPILib's Commands v2 (Java and C++).
+
+=== "Java (Commands v3)"
+
+    If your robot uses WPILib's Commands v3, install the Commands v3 build of ChoreoLib with this JSON URL instead:
+
+    === "Release"
+
+        ```
+        https://choreo.autos/lib/ChoreoLib2027AlphaCommands3.json
+        ```
+
+    !!! warning
+        The Commands v2 and Commands v3 builds of ChoreoLib can't be installed together. There is no C++ build for Commands v3, because WPILib only provides Commands v3 for Java. See [AutoFactory (Commands v3)](./auto-factory-cmd3.md) for how to use it.
+
 === "Python"
 
     PyPI package: `sleipnirgroup-choreolib`
@@ -266,7 +281,7 @@ To visualize these alerts in a dashboard such as AdvantageScope simply drag the 
 
 <div class="grid cards" markdown>
 
--   __[:octicons-arrow-right-24: Auto Factory (Java Only)](./auto-factory.md)__
+-   __[:octicons-arrow-right-24: Auto Factory (Java Only)](auto-factory-cmd2.md)__
 
     ---
 
